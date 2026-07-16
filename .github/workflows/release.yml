@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub release and upload assets
+  id-token: write # keyless cosign signing via OIDC
+
+env:
+  GO_VERSION: "1.26"
+
+jobs:
+  release:
+    name: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # goreleaser needs full history + tags for the changelog
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Verify before releasing
+        run: |
+          go vet ./...
+          go test ./...
+
+      # cosign for keyless artifact signing; syft for the SBOM (goreleaser
+      # invokes both).
+      - uses: sigstore/cosign-installer@v3
+      - uses: anchore/sbom-action/download-syft@v0
+
+      - name: goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Dogfood: scan our own repo with the freshly built binary and attach
+      # the AIBOM to the release. AIROM ships its own AI Bill of Materials.
+      - name: Self-scan AIBOM
+        run: |
+          bin=$(find dist -type f -name airom -path '*linux_amd64*' | head -1)
+          "$bin" fs . -o cyclonedx=airom-self.cdx.json -o json=airom-self.aibom.json
+      - name: Attach AIBOM to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            airom-self.cdx.json
+            airom-self.aibom.json

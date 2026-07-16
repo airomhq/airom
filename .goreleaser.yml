@@ -1,0 +1,104 @@
+# goreleaser configuration for AIROM (schema v2).
+# Static, CGO-free binaries for every target (invariant P8), checksummed,
+# keyless-cosign-signed, with a per-release SBOM.
+version: 2
+
+project_name: airom
+
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+
+builds:
+  - id: airom
+    main: ./cmd/airom
+    binary: airom
+    # P8: CGO_ENABLED=0 everywhere — one static binary, no C toolchain.
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    mod_timestamp: "{{ .CommitTimestamp }}" # reproducible builds
+
+archives:
+  - id: airom
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+      - docs/**/*
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Keyless signing of the checksums file (and thereby every artifact) via
+# Sigstore/cosign OIDC — the CI job has id-token: write.
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-signature=${signature}"
+      - "--output-certificate=${certificate}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
+# A CycloneDX SBOM per archive (syft). AIROM additionally attaches its own
+# self-scanned AIBOM in the release workflow.
+sboms:
+  - id: archive
+    artifacts: archive
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: Bug fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: Roro1727
+    name: airom
+  draft: false
+  prerelease: auto
+  footer: |
+    ---
+    Verify the checksums signature (keyless cosign):
+
+    ```
+    cosign verify-blob \
+      --certificate checksums.txt.pem \
+      --signature checksums.txt.sig \
+      --certificate-identity-regexp 'https://github.com/Roro1727/airom' \
+      --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+      checksums.txt
+    ```

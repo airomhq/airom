@@ -1,0 +1,69 @@
+name: Bug report
+description: Something AIROM detected wrong, missed, or crashed on.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. AIROM emits **claims about evidence**, so the
+        single most useful thing you can attach is the input it ran on (or a
+        minimized version) plus the output it produced.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did AIROM do, and what did you expect instead?
+      placeholder: |
+        `airom fs ./app` reported the model as `unknown` but it is a GGUF file.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact command and, ideally, a minimal input tree or file.
+      placeholder: |
+        1. `mkdir demo && cp model.gguf demo/`
+        2. `airom fs demo -o json`
+        3. Component confidence is 0.2, expected higher.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Paste the JSON/SARIF/table output or the error. Redact anything sensitive.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: AIROM version
+      description: Output of `airom version`.
+      placeholder: v0.1.0 (commit abc1234)
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS / arch
+      options:
+        - linux/amd64
+        - linux/arm64
+        - darwin/amd64
+        - darwin/arm64
+        - windows/amd64
+        - other (note in "What happened")
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched existing issues for a duplicate.
+          required: true
+        - label: I can reproduce this on the latest release.
+          required: false

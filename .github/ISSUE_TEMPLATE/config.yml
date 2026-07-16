@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Roro1727/airom/security/advisories/new
+    about: Do NOT open a public issue for security reports. Use a private advisory (see SECURITY.md).
+  - name: Question or discussion
+    url: https://github.com/Roro1727/airom/discussions
+    about: Usage questions, ideas, and general discussion.

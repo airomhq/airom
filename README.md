@@ -178,7 +178,7 @@ Rules can even declare relationships and capture generation parameters at the ca
 
 ## Project status
 
-AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tagged release. Phase 1 of the 10-phase plan — the architecture — is accepted and stable; implementation lands phase by phase, and Phase 2 (repository structure) is current. Honest ledger:
+AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tagged release. Phases 1–8 of the 10-phase plan — architecture through the full test matrix — are complete; Phase 9 (release automation) is current, and Phase 10 (production review) closes it out. Honest ledger:
 
 | Area | Status |
 |---|---|
@@ -189,10 +189,10 @@ AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tag
 | Plugin framework: public SDK (`pkg/airom` domain graph with tri-state fields, `pkg/airom/detect` contracts + dispatch index, `purl` discipline, `detectortest` harness), dispatcher with per-detector isolation and accounting, explicit catalog + Syft-style `--select`, assembler (CanonicalKey identity, keep-and-relate merge, grouped noisy-OR confidence, refusal-first relations), rule-engine compiler (full [rule-schema.md](docs/rule-schema.md) lint contract, three-layer merge, self-invalidating ruleset hash, Aho–Corasick prefilter, region lexers for all 8 languages), `detectors-gen`, `airom detectors list/explain` | **Complete** — Phase 5. `airom fs . --rules pack.yaml` runs user rule packs end-to-end today |
 | Detectors & rule packs: binary model-file parsers (GGUF, safetensors, ONNX, Torch + static pickle-opcode security scan, SavedModel, TFLite, HDF5, TensorRT — fuzzed), 8-ecosystem manifest detectors, Go AST detector, prompt/dataset/infra detectors, phase-2 project detectors (HF-dir assembly, adapter lineage, config binding, RAG synthesis), 47 embedded rule packs / 98 rules across all 8 categories, `rules list/lint/test` + `dev` scaffolding | **Complete** — Phase 6. Scans a real AI project into a rich AIBOM (models, embeddings, vector DBs, frameworks, weights, prompts, infra, RAG pipelines) |
 | Sources: `repo` (exec-git shallow clone + local worktrees), `image` (docker-save/OCI archive + OCI layout — live registry/daemon pull is a follow-up), `k8s` (offline `--manifests` image enumeration — live cluster is a follow-up) | **Complete** — Phase 6 (with the noted follow-ups) |
-| Binary model-file parsers (GGUF, safetensors, ONNX, torch/pickle, …) | Designed, lands with the detector phases |
 | Writers: native JSON (versioned, lossless superset — round-trip tested), CycloneDX 1.6/1.7 ML-BOM (modelCard + `evidence.occurrences[]`, validated against the official schemas), SARIF 2.1.0 (one rule per detector, one result per occurrence, line-free fingerprints), YAML, table; multi-output `-o fmt=path` | **Complete** — Phase 7. `airom scan . -o cyclonedx=bom.json -o sarif=scan.sarif` emits both from one pass |
 | Test suite: golden end-to-end fixture repos through the whole pipeline into all five formats, official CycloneDX/SARIF schema conformance, `docs/mapping.md` round-trip enforcement, full-scan determinism (`--parallel 1` vs `16`), chaos degradation, and a P2 RSS-ceiling regression harness — everything under `-race`, ~74% coverage | **Complete** — Phase 8 |
-| Image & k8s sources, caching, phase-2 project detectors, RAG stitching | Designed, later phases |
+| Release automation: CI (lint/vet/gofmt, `-race` tests on Linux+macOS, `CGO_ENABLED=0` cross-compile matrix for all six targets, generated-code drift check, fuzz smoke, CodeQL), goreleaser (static matrix builds, checksums, keyless cosign signing, per-release SBOM + self-scanned AIBOM), Dependabot, issue/PR templates, `SECURITY.md`/`CODE_OF_CONDUCT.md`/`CONTRIBUTING.md` | **Complete** — Phase 9 |
+| Production hardening: whole-tree review, root→dependency edges in the CDX `dependencies[]` graph, remaining source follow-ups (live registry/daemon/cluster) | In progress — Phase 10 |
 | SPDX 3.0.1 AI profile, attestation verification, per-layer attribution, OCI rule registry | Deferred to v2 by design (reserved slots — see [ARCHITECTURE §16](docs/ARCHITECTURE.md)) |
 
 Until v0.1.0 is tagged, the badges above may 404 and `go install` will not resolve — the module is unpublished.
