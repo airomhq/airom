@@ -1,0 +1,116 @@
+{
+  "pom.xml": [
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain4j",
+        "Group": "dev.langchain4j",
+        "Version": "0.35.0",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "maven"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 8
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain4j-open-ai",
+        "Group": "dev.langchain4j",
+        "Version": "0.35.0",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "maven"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 13
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "milvus-sdk-java",
+        "Group": "io.milvus",
+        "Version": "2.4.1",
+        "Provider": "Milvus",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "maven"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 18
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "service",
+        "Group": "com.theokanning.openai-gpt3-java",
+        "Version": "0.18.2",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "maven"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 28
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

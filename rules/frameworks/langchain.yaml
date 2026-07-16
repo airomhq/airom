@@ -1,0 +1,27 @@
+# rules/frameworks/langchain.yaml — LangChain orchestration framework usage.
+# One file per framework (D3). Import + client-construction usage patterns.
+pack: langchain
+version: 1
+rules:
+  # Python module import (langchain / langchain_openai / langchain.chains …) and
+  # the JS/TS package specifier ("langchain/…" or "@langchain/…", a string region).
+  - id: langchain/import
+    kind: framework
+    provider: langchain
+    languages: [python, javascript, typescript]
+    keywords: ["langchain", "@langchain/"]
+    pattern: '(?:\b(?:import|from)\s+langchain[\w.]*|["'']@?langchain(?:/[\w.-]+)*["''])'
+    regions: [code, string]
+    claim: { name: "langchain" }
+    confidence: 0.7
+
+  # Client / chain construction: ChatOpenAI(…), LLMChain(…).
+  - id: langchain/client-construct
+    kind: framework
+    provider: langchain
+    languages: [python, javascript, typescript]
+    keywords: ["ChatOpenAI", "LLMChain"]
+    pattern: '\b(?:ChatOpenAI|LLMChain)\s*\('
+    regions: [code]
+    claim: { name: "langchain" }
+    confidence: 0.7

@@ -1,0 +1,25 @@
+# rules/vectordb/mongodb-atlas.yaml — MongoDB Atlas Vector Search usage.
+pack: mongodb-atlas
+version: 1
+rules:
+  # $vectorSearch aggregation stage.
+  - id: mongodb-atlas/vector-search
+    kind: vector-db
+    provider: mongodb
+    languages: [python, javascript, typescript, go, java, csharp]
+    keywords: ["$vectorSearch"]
+    pattern: '["'']\$vectorSearch["'']'
+    regions: [code, string]
+    claim: { name: "mongodb-atlas" }
+    confidence: 0.7
+
+  # Atlas vector index definition (numDimensions is distinctive).
+  - id: mongodb-atlas/vector-index
+    kind: vector-db
+    provider: mongodb
+    languages: [python, javascript, typescript, go, java, csharp]
+    keywords: ["numDimensions"]
+    pattern: '["'']numDimensions["'']\s*:'
+    regions: [code, string]
+    claim: { name: "mongodb-atlas" }
+    confidence: 0.7

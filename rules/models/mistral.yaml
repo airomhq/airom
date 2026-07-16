@@ -1,0 +1,28 @@
+# rules/models/mistral.yaml — Mistral AI hosted models.
+pack: mistral
+version: 1
+rules:
+  # mistral-large-latest, mistral-small-*, open-mistral-7b, open-mixtral-8x7b,
+  # mixtral-8x22b, codestral-latest, ministral-8b-*, magistral-*, pixtral-*,
+  # devstral-* in a model= position.
+  - id: mistral/model-literal
+    kind: hosted-llm
+    provider: mistral
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["mistral-", "mixtral-", "codestral-", "ministral-", "magistral-",
+               "pixtral-", "devstral-"]
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>(?:open-mistral-|open-mixtral-|mistral-|mixtral-|codestral-|ministral-|magistral-|pixtral-|devstral-)[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK surface: Mistral(...) client with chat.complete(...).
+  - id: mistral/sdk-call
+    kind: library
+    provider: mistral
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["chat.complete", "mistralai"]
+    pattern: '\.chat\.complete(?:_async|_stream)?\s*\(|["'']mistralai["'']'
+    regions: [code, string]
+    claim: { name: "mistralai-sdk" }
+    confidence: 0.7

@@ -1,0 +1,33 @@
+# rules/models/openai.yaml — OpenAI hosted chat models (one file per provider).
+# Embedding models (text-embedding-*) live in rules/embeddings/openai.yaml by design.
+pack: openai
+version: 1
+rules:
+  # Chat/reasoning model IDs in a model= / model: / "model": position.
+  - id: openai/model-literal
+    kind: hosted-llm
+    provider: openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["gpt-", "chatgpt-", "o1", "o3", "o4"]
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>(?:gpt-|chatgpt-)[\w.\-]+|o[134][\w.\-]*)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK call shape: chat.completions.create / responses.create — mirrors the canonical
+  # example in docs/rule-schema.md (uses edge via the special `model` field + params).
+  - id: openai/chat-call
+    kind: library
+    provider: openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["chat.completions.create", "responses.create"]
+    pattern: '\.(?:chat\.completions|responses)\.create\s*\('
+    regions: [code]
+    claim: { name: "openai-sdk" }
+    relations:
+      - { type: uses, target: { kind: hosted-llm, from_field: model } }
+    capture_params:
+      within_lines: 12
+      names: [temperature, top_p, top_k, max_tokens, max_output_tokens, seed,
+              stop, reasoning_effort, response_format]
+    confidence: 0.7

@@ -1,0 +1,76 @@
+{
+  "model.engine": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.engine",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "tensorrt",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.7
+      },
+      "Relations": null
+    }
+  ],
+  "model.plan": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.plan",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "tensorrt",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.7
+      },
+      "Relations": null
+    }
+  ]
+}

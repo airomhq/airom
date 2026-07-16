@@ -1,0 +1,23 @@
+# rules/infra/rayserve.yaml — Ray Serve model-serving references.
+pack: rayserve
+version: 1
+rules:
+  - id: rayserve/import
+    kind: infra
+    provider: ray
+    languages: [python]
+    keywords: ["ray import serve"]
+    pattern: '\bfrom\s+ray\s+import\s+serve\b'
+    regions: [code]
+    claim: { name: "ray-serve" }
+    confidence: 0.7
+
+  - id: rayserve/deployment
+    kind: infra
+    provider: ray
+    languages: [python]
+    keywords: ["@serve.deployment", "serve.deployment"]
+    pattern: '@serve\.deployment\b'
+    regions: [code]
+    claim: { name: "ray-serve" }
+    confidence: 0.7

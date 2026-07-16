@@ -1,0 +1,257 @@
+{
+  "app/package.json": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "4.52.0",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 5
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "@anthropic-ai/sdk",
+        "Group": "",
+        "Version": "0.24.3",
+        "Provider": "Anthropic",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain",
+        "Group": "",
+        "Version": "0.2.5",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "@langchain/openai",
+        "Group": "",
+        "Version": "0.2.1",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 8
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "1.8.1",
+        "Provider": "Chroma",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "@pinecone-database/pinecone",
+        "Group": "",
+        "Version": "3.0.0",
+        "Provider": "Pinecone",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 11
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "ai",
+        "Group": "",
+        "Version": "3.2.0",
+        "Provider": "Vercel",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 12
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "groq-sdk",
+        "Group": "",
+        "Version": "0.5.0",
+        "Provider": "Groq",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 16
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "@qdrant/js-client-rest",
+        "Group": "",
+        "Version": "1.9.0",
+        "Provider": "Qdrant",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 17
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ],
+  "no-ai/package.json": null
+}

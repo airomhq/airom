@@ -11,6 +11,9 @@ import (
 
 	"github.com/Roro1727/airom/internal/metrics"
 	"github.com/Roro1727/airom/internal/source/dirsource"
+	"github.com/Roro1727/airom/internal/source/gitsource"
+	"github.com/Roro1727/airom/internal/source/imagesource"
+	"github.com/Roro1727/airom/internal/source/k8ssource"
 	"github.com/Roro1727/airom/pkg/airom"
 )
 
@@ -55,12 +58,14 @@ func Run(ctx context.Context, cfg *Config) error {
 	switch cfg.Source {
 	case SourceFS:
 		return runFS(ctx, cfg)
+	case SourceRepo:
+		return runRepo(ctx, cfg)
+	case SourceImage:
+		return runImage(ctx, cfg)
+	case SourceK8s:
+		return runK8s(ctx, cfg)
 	default:
-		// TODO(phase-6): wire gitsource, imagesource, and k8ssource.
-		// Suggested tracking issue: "Phase 6: implement the repo, image,
-		// and k8s sources".
-		return fmt.Errorf("cannot run %s scan of %q: %w (this source arrives in Phase 6; see docs/ROADMAP.md)",
-			cfg.Source, cfg.Target, ErrEngineNotWired)
+		return fmt.Errorf("cannot run %s scan of %q: %w", cfg.Source, cfg.Target, ErrEngineNotWired)
 	}
 }
 
@@ -79,6 +84,93 @@ func runFS(ctx context.Context, cfg *Config) error {
 	}
 
 	printSummary(inv, cfg)
+	return nil
+}
+
+// runRepo scans a git repository: a remote URL is shallow-cloned (exec-git),
+// a local path is scanned as its worktree; git provenance feeds the output.
+func runRepo(ctx context.Context, cfg *Config) error {
+	src, err := gitsource.New(cfg.Target, gitsource.Options{IgnoreGlobs: cfg.IgnoreGlobs})
+	if err != nil {
+		return &UsageError{Err: err}
+	}
+	defer func() { _ = src.Close() }()
+
+	inv, err := runScanPipeline(ctx, cfg, src)
+	if err != nil {
+		return err
+	}
+	printSummary(inv, cfg)
+	return nil
+}
+
+// runImage scans a container image: a saved archive (--input) or an OCI
+// layout / image reference. The squashed filesystem is streamed once.
+func runImage(ctx context.Context, cfg *Config) error {
+	var (
+		src *imagesource.Source
+		err error
+	)
+	opts := imagesource.Options{IgnoreGlobs: cfg.IgnoreGlobs}
+	if cfg.ImageInput != "" {
+		src, err = imagesource.NewFromTar(cfg.ImageInput, opts)
+	} else {
+		src, err = imagesource.New(cfg.Target, opts)
+	}
+	if err != nil {
+		return &UsageError{Err: err}
+	}
+	defer func() { _ = src.Close() }()
+
+	inv, err := runScanPipeline(ctx, cfg, src)
+	if err != nil {
+		return err
+	}
+	printSummary(inv, cfg)
+	return nil
+}
+
+// runK8s scans Kubernetes workloads. Offline manifest mode (--manifests)
+// enumerates workload images; each unique image is then scanned. Live-cluster
+// mode is not yet wired (k8ssource reports so).
+func runK8s(ctx context.Context, cfg *Config) error {
+	src, err := k8ssource.New(k8ssource.Options{ManifestsDir: cfg.K8sManifests})
+	if err != nil {
+		return &UsageError{Err: err}
+	}
+	images := src.Images()
+	fmt.Fprintf(stdout, "airom: k8s scan of %s\n", cfg.K8sManifests)
+	fmt.Fprintf(stdout, "  workload images: %d\n", len(images))
+	for _, img := range src.Details() {
+		fmt.Fprintf(stdout, "    %s  (%d workload(s))\n", img.Ref, len(img.Workloads))
+	}
+	if len(images) == 0 {
+		return nil
+	}
+
+	imgOpts := imagesource.Options{IgnoreGlobs: cfg.IgnoreGlobs}
+	var scanErrs []string
+	for _, ref := range images {
+		isrc, ierr := imagesource.New(ref, imgOpts)
+		if ierr != nil {
+			scanErrs = append(scanErrs, fmt.Sprintf("%s: %v", ref, ierr))
+			continue
+		}
+		inv, serr := runScanPipeline(ctx, cfg, isrc)
+		_ = isrc.Close()
+		if serr != nil {
+			scanErrs = append(scanErrs, fmt.Sprintf("%s: %v", ref, serr))
+			continue
+		}
+		fmt.Fprintf(stdout, "\n=== image %s ===\n", ref)
+		printSummary(inv, cfg)
+	}
+	if len(scanErrs) > 0 {
+		slog.Warn("k8s: some images could not be scanned", "count", len(scanErrs))
+		for _, e := range scanErrs {
+			slog.Warn("k8s image", "error", e)
+		}
+	}
 	return nil
 }
 

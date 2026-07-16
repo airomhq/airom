@@ -1,0 +1,11 @@
+{
+  "name": "plain-app",
+  "version": "2.0.0",
+  "dependencies": {
+    "express": "^4.19.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

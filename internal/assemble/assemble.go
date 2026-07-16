@@ -41,6 +41,7 @@ func Build(findings []detect.Finding, unknowns []airom.Unknown, stats airom.Scan
 	for _, f := range findings {
 		a.absorb(f)
 	}
+	a.foldPackages()
 
 	root := a.mintRoot(opts)
 	a.resolveRelations(findings)
@@ -129,6 +130,30 @@ var kindPrecedence = map[airom.ComponentKind]int{
 	airom.KindInfra:          1,
 }
 
+// nameAliases canonicalize the same asset seen under different names —
+// typically a client-package name (from a manifest) versus the service's
+// short name (from a usage rule). Data-driven per §9.1; keys and values are
+// already lowercased. Conservative: only unambiguous same-asset synonyms.
+var nameAliases = map[string]string{
+	// vector databases: client package -> service
+	"chromadb":           "chroma",
+	"pinecone-client":    "pinecone",
+	"pinecone":           "pinecone",
+	"qdrant-client":      "qdrant",
+	"weaviate-client":    "weaviate",
+	"weaviate-ts-client": "weaviate",
+	"pymilvus":           "milvus",
+	"milvus":             "milvus",
+	"faiss-cpu":          "faiss",
+	"faiss-gpu":          "faiss",
+	// frameworks: distribution name -> canonical
+	"llama-index": "llamaindex",
+	"llama_index": "llamaindex",
+	"haystack-ai": "haystack",
+	"dspy-ai":     "dspy",
+	"pyautogen":   "autogen",
+}
+
 // normalizeKey derives the canonical key for one claim (§9.1 normalizer
 // chains). Returns the key plus a version claim extracted from the raw name
 // (e.g. an OpenAI date suffix) when applicable.
@@ -145,11 +170,14 @@ func normalizeKey(c detect.ComponentClaim) (key CanonicalKey, extraVersion strin
 		if base, date, ok := splitDateSuffix(name); ok {
 			name, extraVersion = base, date
 		}
-	case "package":
+	case "package", "vecdb":
 		if c.Package != nil && c.Package.Ecosystem == "pypi" {
 			name = purl.NormalizePyPI(name)
 		} else {
 			name = strings.ToLower(name)
+		}
+		if canon, ok := nameAliases[name]; ok {
+			name = canon
 		}
 	case "weights-file", "prompt", "dataset":
 		// Path-shaped names: clean, keep case (paths are identity on
@@ -294,6 +322,73 @@ func (a *assembly) absorb(f detect.Finding) {
 	}
 
 	a.mergeFacets(d, f.Claim)
+}
+
+// foldPackages merges a usage-detected package (no ecosystem, so its
+// identity disc is empty) into the manifest-declared component of the same
+// name and provider (§9.1: "declared in requirements.txt; used in
+// src/rag.py" is ONE component). It folds only when exactly one
+// ecosystem-bearing sibling exists — ambiguity (pypi AND npm of the same
+// name) is left split, never guessed.
+func (a *assembly) foldPackages() {
+	// Group package-class drafts by (provider, name).
+	type gkey struct{ provider, name string }
+	groups := map[gkey][]*draft{}
+	for _, d := range a.byID {
+		if d.key.Class != "package" {
+			continue
+		}
+		k := gkey{d.key.Provider, d.key.Name}
+		groups[k] = append(groups[k], d)
+	}
+
+	for _, ds := range groups {
+		if len(ds) < 2 {
+			continue
+		}
+		var targets, discless []*draft
+		for _, d := range ds {
+			if d.key.Disc == "" {
+				discless = append(discless, d)
+			} else {
+				targets = append(targets, d)
+			}
+		}
+		if len(targets) != 1 || len(discless) == 0 {
+			continue // no unique home, or nothing to fold
+		}
+		into := targets[0]
+		for _, d := range discless {
+			a.mergeDraft(into, d)
+			delete(a.byID, d.id)
+		}
+	}
+}
+
+// mergeDraft folds src into dst: occurrences, claims, licenses, hashes, and
+// facets. Identity fields (key/id/name) stay dst's.
+func (a *assembly) mergeDraft(dst, src *draft) {
+	dst.occs = append(dst.occs, src.occs...)
+	dst.versionClaims = append(dst.versionClaims, src.versionClaims...)
+	dst.nameClaims = append(dst.nameClaims, src.nameClaims...)
+	dst.licenses = mergeLicenses(dst.licenses, src.licenses)
+	dst.hashes = mergeHashes(dst.hashes, src.hashes)
+	if _, known := dst.downloadLocation.Value(); !known {
+		dst.downloadLocation = src.downloadLocation
+	}
+	if src.group != "" && dst.group == "" {
+		dst.group = src.group
+	}
+	if kindPrecedence[src.kind] > kindPrecedence[dst.kind] {
+		dst.kind = src.kind
+	}
+	if src.pkg != nil {
+		if dst.pkg == nil {
+			dst.pkg = src.pkg
+		} else if dst.pkg.Ecosystem == "" {
+			dst.pkg.Ecosystem = src.pkg.Ecosystem
+		}
+	}
 }
 
 // mergeFacets folds a claim's partial facets in: Known > Unknown > Absent;

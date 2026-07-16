@@ -1,0 +1,33 @@
+# rules/prompts/prompts.yaml — prompt-template usage in code.
+pack: prompts
+version: 1
+rules:
+  # LangChain (Chat)PromptTemplate construction / factory methods.
+  - id: prompts/langchain-template
+    kind: prompt
+    languages: [python, javascript, typescript]
+    keywords: ["PromptTemplate"]
+    pattern: '\b(?:Chat)?PromptTemplate(?:\.\w+)?\s*\('
+    regions: [code]
+    claim: { name: "prompt-template" }
+    confidence: 0.6
+
+  # System-message / system-prompt declarations.
+  - id: prompts/system-message
+    kind: prompt
+    languages: [python, javascript, typescript]
+    keywords: ["SystemMessage", "system_prompt", "SYSTEM_PROMPT"]
+    pattern: '(?:\bSystemMessage\s*\(|\b(?:system_prompt|SYSTEM_PROMPT)\s*=)'
+    regions: [code]
+    claim: { name: "system-prompt" }
+    confidence: 0.6
+
+  # Jinja-style {{ }} placeholder inside a string bound to a *prompt* variable.
+  - id: prompts/jinja-var
+    kind: prompt
+    languages: [python, javascript, typescript]
+    keywords: ["{{"]
+    pattern: '\b\w*[Pp]rompt\w*\s*=\s*(?:f|r|fr|rf)?["''][^"''\n]*\{\{'
+    regions: [code, string]
+    claim: { name: "prompt-template" }
+    confidence: 0.6

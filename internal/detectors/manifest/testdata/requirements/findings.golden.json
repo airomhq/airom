@@ -1,0 +1,368 @@
+{
+  "requirements.txt": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "1.30.0",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 2
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "anthropic",
+        "Group": "",
+        "Version": "0.25.0",
+        "Provider": "Anthropic",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 3
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain",
+        "Group": "",
+        "Version": "0.2.0",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 4
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain-openai",
+        "Group": "",
+        "Version": "0.1.7",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 5
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "0.5.0",
+        "Provider": "Chroma",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "transformers",
+        "Group": "",
+        "Version": "4.40",
+        "Provider": "Hugging Face",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "torch",
+        "Group": "",
+        "Version": "2.3.0",
+        "Provider": "PyTorch",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 8
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "tiktoken",
+        "Group": "",
+        "Version": "",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 12
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "faiss-cpu",
+        "Group": "",
+        "Version": "1.8.0",
+        "Provider": "Meta",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 13
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "redis",
+        "Group": "",
+        "Version": "5.0.4",
+        "Provider": "Redis",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 14
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "sentence-transformers",
+        "Group": "",
+        "Version": "",
+        "Provider": "Hugging Face",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 15
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "pinecone-client",
+        "Group": "",
+        "Version": "4.1.0",
+        "Provider": "Pinecone",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 18
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "cohere",
+        "Group": "",
+        "Version": "5.5.0",
+        "Provider": "Cohere",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 19
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

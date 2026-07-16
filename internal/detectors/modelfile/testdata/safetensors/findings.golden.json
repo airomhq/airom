@@ -1,0 +1,46 @@
+{
+  "model.safetensors": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.safetensors",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "bert",
+          "ParamCount": 40,
+          "Quantization": "F16",
+          "ContextLength": 0,
+          "Format": "safetensors",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.95,
+        "fields": {
+          "architecture": "bert",
+          "dtype": "F16",
+          "metadata.format": "pt",
+          "parameter_count": "40",
+          "tensor_count": "2"
+        }
+      },
+      "Relations": null
+    }
+  ]
+}

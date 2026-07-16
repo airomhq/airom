@@ -27,7 +27,7 @@ var Tool = airom.ToolInfo{Name: "airom", Version: "dev"}
 // rule-engine detector when the effective ruleset is non-empty (§6.2 —
 // explicit construction, compiled matcher via constructor, no globals).
 func buildCatalog(cfg *Config) (*engine.Catalog, *ruleengine.Matcher, error) {
-	ruleset, err := ruleengine.Load(nil /* embedded packs land in Phase 6 */, cfg.RulePaths, os.ReadFile)
+	ruleset, err := ruleengine.Load(EmbeddedRules, cfg.RulePaths, os.ReadFile)
 	if err != nil {
 		return nil, nil, &UsageError{Err: err}
 	}

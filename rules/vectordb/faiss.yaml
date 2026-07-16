@@ -1,0 +1,23 @@
+# rules/vectordb/faiss.yaml — FAISS similarity-search index usage.
+pack: faiss
+version: 1
+rules:
+  - id: faiss/import
+    kind: vector-db
+    provider: faiss
+    languages: [python]
+    keywords: ["faiss"]
+    pattern: '\b(?:import|from)\s+faiss[\w.]*'
+    regions: [code]
+    claim: { name: "faiss" }
+    confidence: 0.7
+
+  - id: faiss/index
+    kind: vector-db
+    provider: faiss
+    languages: [python]
+    keywords: ["IndexFlat", "faiss.write_index", "faiss.read_index"]
+    pattern: '(?:\bfaiss\.Index\w+\s*\(|\bfaiss\.(?:write_index|read_index)\s*\()'
+    regions: [code]
+    claim: { name: "faiss" }
+    confidence: 0.7

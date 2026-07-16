@@ -1,0 +1,40 @@
+# rules/params/aiconfig.yaml — standalone generation-parameter config.
+#
+# Catches generation parameters declared as top-level config keys in settings
+# files (config-as-code .py, and — where the engine routes them — .yaml/.json/
+# .toml). The high-precision same-call-site param story is Go-side capture_params
+# (§9.5); this pack is the weak, standalone-config fallback (confidence ~0.5).
+#
+# NOTE: the `languages` gate only admits the eight lexer-backed source languages
+# (rule-schema.md), so yaml/json/toml cannot be named here. These rules omit the
+# gate (run on any routed language) and the patterns tolerate both `:` and `=`
+# separators and optional quoted keys so they read config-file syntax verbatim.
+pack: aiconfig
+version: 1
+rules:
+  # Sampling knobs: temperature / top_p / top_k = <number>.
+  - id: aiconfig/sampling
+    kind: ai-config
+    keywords: ["temperature", "top_p", "top_k"]
+    pattern: '(?m)^[ \t]*["'']?(?P<param>temperature|top_p|top_k)["'']?\s*[:=]\s*[0-9]'
+    regions: [code, string]
+    claim: { name: "${param}" }
+    confidence: 0.5
+
+  # Token / context limits.
+  - id: aiconfig/token-limits
+    kind: ai-config
+    keywords: ["max_tokens", "max_output_tokens", "max_new_tokens", "context_length", "context_window", "max_context_length", "n_ctx", "num_ctx"]
+    pattern: '(?m)^[ \t]*["'']?(?P<param>max_tokens|max_output_tokens|max_new_tokens|context_length|context_window|max_context_length|n_ctx|num_ctx)["'']?\s*[:=]\s*[0-9]'
+    regions: [code, string]
+    claim: { name: "${param}" }
+    confidence: 0.5
+
+  # Decoding controls: seed / stop / reasoning_effort / response_format.
+  - id: aiconfig/decoding
+    kind: ai-config
+    keywords: ["reasoning_effort", "response_format", "seed", "stop"]
+    pattern: '(?m)^[ \t]*["'']?(?P<param>reasoning_effort|response_format|seed|stop)["'']?\s*[:=]\s*\S'
+    regions: [code, string]
+    claim: { name: "${param}" }
+    confidence: 0.5

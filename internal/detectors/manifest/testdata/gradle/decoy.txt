@@ -1,0 +1,1 @@
+Not a build.gradle — the selector must reject it (wrong basename).

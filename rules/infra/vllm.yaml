@@ -1,0 +1,31 @@
+# rules/infra/vllm.yaml — vLLM OpenAI-compatible serving references.
+# (Offline-inference library usage for vLLM lives in rules/frameworks/vllm.yaml.)
+pack: vllm
+version: 1
+rules:
+  - id: vllm/serve
+    kind: infra
+    provider: vllm
+    keywords: ["vllm serve"]
+    pattern: '\bvllm\s+serve\b'
+    regions: [code, string]
+    claim: { name: "vllm" }
+    confidence: 0.7
+
+  - id: vllm/api-server
+    kind: infra
+    provider: vllm
+    keywords: ["vllm.entrypoints.openai.api_server"]
+    pattern: '\bvllm\.entrypoints\.openai\.api_server\b'
+    regions: [code, string]
+    claim: { name: "vllm" }
+    confidence: 0.7
+
+  - id: vllm/served-model-name
+    kind: infra
+    provider: vllm
+    keywords: ["--served-model-name"]
+    pattern: '--served-model-name\b'
+    regions: [code, string]
+    claim: { name: "vllm" }
+    confidence: 0.7

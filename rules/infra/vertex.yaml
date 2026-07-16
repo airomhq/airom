@@ -1,0 +1,23 @@
+# rules/infra/vertex.yaml — Google Vertex AI serving references.
+pack: vertex
+version: 1
+rules:
+  - id: vertex/import
+    kind: service
+    provider: gcp-vertex
+    languages: [python]
+    keywords: ["vertexai", "aiplatform"]
+    pattern: '(?:\b(?:import|from)\s+vertexai[\w.]*|\bfrom\s+google\.cloud\s+import\s+aiplatform\b|\b(?:import|from)\s+google\.cloud\.aiplatform[\w.]*)'
+    regions: [code]
+    claim: { name: "vertex-ai" }
+    confidence: 0.7
+
+  - id: vertex/endpoint
+    kind: service
+    provider: gcp-vertex
+    languages: [python]
+    keywords: ["aiplatform.Endpoint"]
+    pattern: '\baiplatform\.Endpoint\s*\('
+    regions: [code]
+    claim: { name: "vertex-ai" }
+    confidence: 0.7

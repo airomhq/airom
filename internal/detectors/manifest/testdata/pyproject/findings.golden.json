@@ -1,0 +1,258 @@
+{
+  "pep621/pyproject.toml": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "1.30.0",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain-core",
+        "Group": "",
+        "Version": "0.2.5",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 11
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "llama-index",
+        "Group": "",
+        "Version": "0.10.0",
+        "Provider": "LlamaIndex",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 13
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "0.5.0",
+        "Provider": "Chroma",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 15
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ],
+  "poetry/pyproject.toml": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "1.30.0",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "anthropic",
+        "Group": "",
+        "Version": "0.25.0",
+        "Provider": "Anthropic",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 8
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "qdrant-client",
+        "Group": "",
+        "Version": "1.9.0",
+        "Provider": "Qdrant",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain",
+        "Group": "",
+        "Version": "0.2.0",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 11
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "transformers",
+        "Group": "",
+        "Version": "4.40",
+        "Provider": "Hugging Face",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 12
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# rules/frameworks/vllm.yaml — vLLM library (offline inference) usage.
+# (Serving-infra references for vLLM live in rules/infra/vllm.yaml.)
+pack: vllm
+version: 1
+rules:
+  - id: vllm/import
+    kind: library
+    provider: vllm
+    languages: [python]
+    keywords: ["vllm"]
+    pattern: '\b(?:import|from)\s+vllm[\w.]*'
+    regions: [code]
+    claim: { name: "vllm" }
+    confidence: 0.7
+
+  - id: vllm/llm-construct
+    kind: library
+    provider: vllm
+    languages: [python]
+    keywords: ["SamplingParams"]
+    pattern: '\b(?:LLM|SamplingParams)\s*\('
+    regions: [code]
+    claim: { name: "vllm" }
+    confidence: 0.7

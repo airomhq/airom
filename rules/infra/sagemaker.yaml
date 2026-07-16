@@ -1,0 +1,24 @@
+# rules/infra/sagemaker.yaml — Amazon SageMaker hosting / runtime references.
+pack: sagemaker
+version: 1
+rules:
+  - id: sagemaker/import
+    kind: service
+    provider: aws-sagemaker
+    languages: [python]
+    keywords: ["sagemaker"]
+    pattern: '\b(?:import|from)\s+sagemaker[\w.]*'
+    regions: [code]
+    claim: { name: "sagemaker" }
+    confidence: 0.7
+
+  # boto3 sagemaker-runtime client and endpoint invocation.
+  - id: sagemaker/runtime
+    kind: service
+    provider: aws-sagemaker
+    languages: [python]
+    keywords: ["sagemaker-runtime", "invoke_endpoint"]
+    pattern: '(?:["'']sagemaker-runtime["'']|\.invoke_endpoint\s*\()'
+    regions: [code, string]
+    claim: { name: "sagemaker" }
+    confidence: 0.7

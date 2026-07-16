@@ -1,0 +1,26 @@
+# rules/models/azure-openai.yaml — Azure OpenAI deployment references and client.
+pack: azure-openai
+version: 1
+rules:
+  # Azure routes by deployment name (azure_deployment=/deployment_name=/engine=),
+  # which is the user-chosen alias for an underlying OpenAI model.
+  - id: azure-openai/deployment-literal
+    kind: hosted-llm
+    provider: azure-openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["azure_deployment", "deployment_name", "deployment_id", "azureDeployment"]
+    pattern: '\b(?:azure_deployment|deployment_name|deployment_id|azureDeployment)["'']?\s*[:=]\s*["''](?P<deployment>[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${deployment}" }
+    confidence: 0.8
+
+  # Client construction: AzureOpenAI(...) / AzureChatOpenAI(...).
+  - id: azure-openai/client-construct
+    kind: library
+    provider: azure-openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["AzureOpenAI", "AzureChatOpenAI"]
+    pattern: '\b(?:AzureOpenAI|AzureChatOpenAI)\s*\('
+    regions: [code]
+    claim: { name: "azure-openai-sdk" }
+    confidence: 0.7

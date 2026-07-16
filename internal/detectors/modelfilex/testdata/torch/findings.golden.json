@@ -1,0 +1,121 @@
+{
+  "benign.pt": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "benign.pt",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "torch-zip",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.9
+      },
+      "Relations": null
+    }
+  ],
+  "evil.pt": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "evil.pt",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "torch-zip",
+          "BaseModel": "",
+          "PickleRisk": {
+            "globals": [
+              "os.system"
+            ]
+          },
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ],
+  "legacy_evil.bin": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "legacy_evil.bin",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "torch-pickle",
+          "BaseModel": "",
+          "PickleRisk": {
+            "globals": [
+              "subprocess.Popen"
+            ]
+          },
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

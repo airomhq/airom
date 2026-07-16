@@ -1,0 +1,23 @@
+# rules/frameworks/autogen.yaml — AutoGen (pyautogen) framework usage.
+pack: autogen
+version: 1
+rules:
+  - id: autogen/import
+    kind: framework
+    provider: autogen
+    languages: [python]
+    keywords: ["autogen", "pyautogen"]
+    pattern: '\b(?:import|from)\s+(?:pyautogen|autogen)[\w.]*'
+    regions: [code]
+    claim: { name: "autogen" }
+    confidence: 0.7
+
+  - id: autogen/agent
+    kind: framework
+    provider: autogen
+    languages: [python]
+    keywords: ["AssistantAgent", "UserProxyAgent"]
+    pattern: '\b(?:AssistantAgent|UserProxyAgent)\s*\('
+    regions: [code]
+    claim: { name: "autogen" }
+    confidence: 0.7

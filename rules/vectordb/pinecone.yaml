@@ -1,0 +1,23 @@
+# rules/vectordb/pinecone.yaml — Pinecone vector database client usage.
+pack: pinecone
+version: 1
+rules:
+  - id: pinecone/import
+    kind: vector-db
+    provider: pinecone
+    languages: [python, javascript, typescript]
+    keywords: ["pinecone", "@pinecone-database/"]
+    pattern: '(?:\b(?:import|from)\s+pinecone[\w.]*|["'']@pinecone-database/[\w.-]+["''])'
+    regions: [code, string]
+    claim: { name: "pinecone" }
+    confidence: 0.7
+
+  - id: pinecone/client
+    kind: vector-db
+    provider: pinecone
+    languages: [python, javascript, typescript]
+    keywords: ["Pinecone", "pinecone.Index"]
+    pattern: '(?:\bPinecone\s*\(|\bpinecone\.Index\s*\()'
+    regions: [code]
+    claim: { name: "pinecone" }
+    confidence: 0.7

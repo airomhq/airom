@@ -1,0 +1,23 @@
+# rules/vectordb/weaviate.yaml — Weaviate vector database client usage.
+pack: weaviate
+version: 1
+rules:
+  - id: weaviate/import
+    kind: vector-db
+    provider: weaviate
+    languages: [python, javascript, typescript]
+    keywords: ["weaviate"]
+    pattern: '(?:\b(?:import|from)\s+weaviate[\w.]*|["'']weaviate-[\w.-]+["''])'
+    regions: [code, string]
+    claim: { name: "weaviate" }
+    confidence: 0.7
+
+  - id: weaviate/client
+    kind: vector-db
+    provider: weaviate
+    languages: [python]
+    keywords: ["weaviate.Client", "weaviate.connect_to_"]
+    pattern: '(?:\bweaviate\.Client\s*\(|\bweaviate\.connect_to_\w+\s*\()'
+    regions: [code]
+    claim: { name: "weaviate" }
+    confidence: 0.7

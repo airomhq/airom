@@ -1,0 +1,116 @@
+{
+  "go.mod": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "github.com/sashabaranov/go-openai",
+        "Group": "",
+        "Version": "v1.26.0",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "github.com/tmc/langchaingo",
+        "Group": "",
+        "Version": "v0.1.12",
+        "Provider": "LangChain",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "github.com/qdrant/go-client",
+        "Group": "",
+        "Version": "v1.9.0",
+        "Provider": "Qdrant",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 9
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "github.com/ollama/ollama",
+        "Group": "",
+        "Version": "v0.2.1",
+        "Provider": "Ollama",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

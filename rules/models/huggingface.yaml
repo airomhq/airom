@@ -1,0 +1,26 @@
+# rules/models/huggingface.yaml — Hugging Face Hub model references (transformers).
+pack: huggingface
+version: 1
+rules:
+  # AutoModel*.from_pretrained("org/name") / AutoTokenizer.from_pretrained(...) etc.
+  # Capture the "org/name" repo id (the slash disambiguates from bare local paths).
+  - id: huggingface/from-pretrained
+    kind: hosted-llm
+    provider: huggingface
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["from_pretrained"]
+    pattern: '\.from_pretrained\s*\(\s*["''](?P<model>[\w.\-]+/[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # transformers pipeline(...) — lowercase call distinguishes it from sklearn Pipeline().
+  - id: huggingface/pipeline
+    kind: library
+    provider: huggingface
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["pipeline("]
+    pattern: '\bpipeline\s*\(\s*["'']'
+    regions: [code, string]
+    claim: { name: "transformers" }
+    confidence: 0.6

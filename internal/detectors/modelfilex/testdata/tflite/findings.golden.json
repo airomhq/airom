@@ -1,0 +1,39 @@
+{
+  "model.tflite": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.tflite",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "tflite",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.9
+      },
+      "Relations": null
+    }
+  ]
+}

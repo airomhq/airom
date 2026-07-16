@@ -1,0 +1,1 @@
+Not a package.json — the selector must reject it (wrong basename).

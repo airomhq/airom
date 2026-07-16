@@ -1,0 +1,25 @@
+# rules/embeddings/instructor.yaml — INSTRUCTOR instruction-tuned embedding models.
+pack: instructor
+version: 1
+rules:
+  # INSTRUCTOR("hkunlp/instructor-large") constructor — capture the model argument.
+  - id: instructor/constructor
+    kind: embedding-model
+    provider: hkunlp
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["INSTRUCTOR"]
+    pattern: '\bINSTRUCTOR\s*\(\s*["''](?P<model>[\w.\-/]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.8
+
+  # The hkunlp/instructor-* repo ids anywhere (instructor-base, -large, -xl).
+  - id: instructor/model-literal
+    kind: embedding-model
+    provider: hkunlp
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["hkunlp/instructor-"]
+    pattern: '["''](?P<model>hkunlp/instructor-[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85

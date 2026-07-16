@@ -1,0 +1,116 @@
+{
+  "sample.csproj": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "Azure.AI.OpenAI",
+        "Group": "",
+        "Version": "1.0.0-beta.9",
+        "Provider": "Microsoft",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "nuget"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "Microsoft.SemanticKernel",
+        "Group": "",
+        "Version": "1.15.0",
+        "Provider": "Microsoft",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "nuget"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "Pinecone.NET",
+        "Group": "",
+        "Version": "2.1.0",
+        "Provider": "Pinecone",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "nuget"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 9
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "Betalgo.OpenAI",
+        "Group": "",
+        "Version": "8.7.2",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "nuget"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

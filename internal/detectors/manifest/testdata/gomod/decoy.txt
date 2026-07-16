@@ -1,0 +1,1 @@
+Not a go.mod — the selector must reject it (wrong basename).

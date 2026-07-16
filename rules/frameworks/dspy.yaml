@@ -1,0 +1,23 @@
+# rules/frameworks/dspy.yaml — DSPy framework usage.
+pack: dspy
+version: 1
+rules:
+  - id: dspy/import
+    kind: framework
+    provider: dspy
+    languages: [python]
+    keywords: ["dspy"]
+    pattern: '\b(?:import|from)\s+dspy[\w.]*'
+    regions: [code]
+    claim: { name: "dspy" }
+    confidence: 0.7
+
+  - id: dspy/module
+    kind: framework
+    provider: dspy
+    languages: [python]
+    keywords: ["dspy.Predict", "dspy.ChainOfThought"]
+    pattern: '\bdspy\.(?:Predict|ChainOfThought)\s*\('
+    regions: [code]
+    claim: { name: "dspy" }
+    confidence: 0.7

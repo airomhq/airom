@@ -1,0 +1,25 @@
+# rules/vectordb/elastic-vector.yaml — Elasticsearch dense-vector / kNN search.
+pack: elastic-vector
+version: 1
+rules:
+  # dense_vector mapping type.
+  - id: elastic-vector/dense-vector
+    kind: vector-db
+    provider: elastic
+    languages: [python, javascript, typescript, go, java]
+    keywords: ["dense_vector"]
+    pattern: '["'']dense_vector["'']'
+    regions: [code, string]
+    claim: { name: "elasticsearch" }
+    confidence: 0.7
+
+  # kNN search block (query_vector is distinctive to ES vector search).
+  - id: elastic-vector/knn-search
+    kind: vector-db
+    provider: elastic
+    languages: [python, javascript, typescript, go, java]
+    keywords: ["query_vector"]
+    pattern: '["'']query_vector["'']\s*:'
+    regions: [code, string]
+    claim: { name: "elasticsearch" }
+    confidence: 0.7

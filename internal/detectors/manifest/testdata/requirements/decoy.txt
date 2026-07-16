@@ -1,0 +1,3 @@
+# Not a requirements file — the selector must reject it (wrong basename).
+openai==1.30.0
+anthropic==0.25.0

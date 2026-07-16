@@ -1,0 +1,1 @@
+this is a plain text file, not a model - the selector must reject it

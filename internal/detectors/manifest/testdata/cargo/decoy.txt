@@ -1,0 +1,1 @@
+Not a Cargo.toml — the selector must reject it (wrong basename).

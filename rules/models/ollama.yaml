@@ -1,0 +1,30 @@
+# rules/models/ollama.yaml — Ollama local-serving client + model references.
+pack: ollama
+version: 1
+rules:
+  # Python/JS SDK surface: ollama.chat / ollama.generate / ollama.embeddings / etc.
+  - id: ollama/sdk-call
+    kind: library
+    provider: ollama
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["ollama.chat", "ollama.generate", "ollama.embeddings", "ollama.pull"]
+    pattern: '\bollama\.(?:chat|generate|embeddings|pull|show|list)\s*\('
+    regions: [code]
+    claim: { name: "ollama-sdk" }
+    relations:
+      - { type: uses, target: { kind: hosted-llm, from_field: model } }
+    capture_params:
+      within_lines: 12
+      names: [temperature, top_p, top_k, num_predict, num_ctx, seed, stop, format]
+    confidence: 0.7
+
+  # "ollama run <model>" as embedded in a script string / subprocess call.
+  - id: ollama/run-command
+    kind: hosted-llm
+    provider: ollama
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["ollama run"]
+    pattern: '\bollama\s+run\s+(?P<model>[a-z0-9][\w.\-:/]*)'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.75

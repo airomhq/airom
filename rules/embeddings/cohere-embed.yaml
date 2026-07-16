@@ -1,0 +1,14 @@
+# rules/embeddings/cohere-embed.yaml — Cohere embedding models.
+pack: cohere-embed
+version: 1
+rules:
+  # embed-english-v3.0, embed-english-light-v3.0, embed-multilingual-v3.0, etc.
+  - id: cohere-embed/model-literal
+    kind: embedding-model
+    provider: cohere
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["embed-english", "embed-multilingual"]
+    pattern: '["''](?P<model>embed-(?:english|multilingual)[\w.\-]*)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85

@@ -93,6 +93,8 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newImageCmd(),
 		newK8sCmd(),
 		newDetectorsCmd(),
+		newRulesCmd(),
+		newDevCmd(),
 		newCleanCmd(),
 		newVersionCmd(bi),
 	)

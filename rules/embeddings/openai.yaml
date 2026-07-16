@@ -1,0 +1,14 @@
+# rules/embeddings/openai.yaml — OpenAI embedding models.
+pack: openai
+version: 1
+rules:
+  # text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002.
+  - id: openai/embedding-literal
+    kind: embedding-model
+    provider: openai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["text-embedding-"]
+    pattern: '["''](?P<model>text-embedding-(?:3-(?:small|large)|ada-002)[\w.\-]*)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85

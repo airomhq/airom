@@ -1,0 +1,25 @@
+# rules/embeddings/bge-e5.yaml — BAAI BGE and intfloat E5 embedding families.
+pack: bge-e5
+version: 1
+rules:
+  # BAAI/bge-* (bge-small-en-v1.5, bge-large-en-v1.5, bge-m3, bge-reranker-*).
+  - id: bge-e5/bge-literal
+    kind: embedding-model
+    provider: baai
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["BAAI/bge-"]
+    pattern: '["''](?P<model>BAAI/bge-[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # intfloat/e5-* and (intfloat/)multilingual-e5-* families.
+  - id: bge-e5/e5-literal
+    kind: embedding-model
+    provider: intfloat
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["intfloat/e5-", "multilingual-e5-"]
+    pattern: '["''](?P<model>(?:intfloat/)?(?:multilingual-e5-|e5-)[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85

@@ -1,0 +1,32 @@
+# rules/models/anthropic.yaml — Anthropic Claude hosted models.
+pack: anthropic
+version: 1
+rules:
+  # Claude model IDs: claude-3*, claude-3-5-*, claude-sonnet-4*, claude-opus-4*,
+  # claude-haiku-*, dated snapshots (claude-3-5-sonnet-20241022), etc.
+  - id: anthropic/model-literal
+    kind: hosted-llm
+    provider: anthropic
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["claude-"]
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>claude-[\w.\-:]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK call shape: client.messages.create(...) — uses edge + generation-param capture.
+  - id: anthropic/messages-call
+    kind: library
+    provider: anthropic
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["messages.create"]
+    pattern: '\.messages\.create\s*\('
+    regions: [code]
+    claim: { name: "anthropic-sdk" }
+    relations:
+      - { type: uses, target: { kind: hosted-llm, from_field: model } }
+    capture_params:
+      within_lines: 12
+      names: [temperature, top_p, top_k, max_tokens, stop_sequences, stop,
+              response_format]
+    confidence: 0.7

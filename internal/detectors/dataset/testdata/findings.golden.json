@@ -1,0 +1,127 @@
+{
+  "decoy.csv": null,
+  "reviews.csv": [
+    {
+      "Claim": {
+        "Kind": "dataset",
+        "Name": "reviews.csv",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "csv",
+          "SizeBytes": 100,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "filename",
+        "confidence": 0.6
+      },
+      "Relations": null
+    }
+  ],
+  "sample.arrow": [
+    {
+      "Claim": {
+        "Kind": "dataset",
+        "Name": "sample.arrow",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "arrow",
+          "SizeBytes": 16,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.8
+      },
+      "Relations": null
+    }
+  ],
+  "sample.parquet": [
+    {
+      "Claim": {
+        "Kind": "dataset",
+        "Name": "sample.parquet",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "parquet",
+          "SizeBytes": 16,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.8
+      },
+      "Relations": null
+    }
+  ],
+  "train.jsonl": [
+    {
+      "Claim": {
+        "Kind": "dataset",
+        "Name": "train.jsonl",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "jsonl",
+          "SizeBytes": 173,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "filename",
+        "confidence": 0.6
+      },
+      "Relations": null
+    }
+  ]
+}

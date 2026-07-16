@@ -1,0 +1,73 @@
+{
+  "Dockerfile": [
+    {
+      "Claim": {
+        "Kind": "infra",
+        "Name": "ollama",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": {
+          "Endpoint": "11434",
+          "Region": "",
+          "Deployment": ""
+        },
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 1
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.75,
+        "fields": {
+          "env": "OLLAMA_HOST"
+        }
+      },
+      "Relations": null
+    }
+  ],
+  "nginx.Dockerfile": null,
+  "serve.Dockerfile": [
+    {
+      "Claim": {
+        "Kind": "infra",
+        "Name": "vllm",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": {
+          "Endpoint": "8000",
+          "Region": "",
+          "Deployment": ""
+        },
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 1
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.75,
+        "fields": {
+          "env": "MODEL_ID"
+        }
+      },
+      "Relations": null
+    }
+  ]
+}

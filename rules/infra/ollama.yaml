@@ -1,0 +1,33 @@
+# rules/infra/ollama.yaml — Ollama local serving runtime references.
+pack: ollama
+version: 1
+rules:
+  - id: ollama/import
+    kind: infra
+    provider: ollama
+    languages: [python, javascript, typescript, go]
+    keywords: ["ollama"]
+    pattern: '(?:\b(?:import|from)\s+ollama[\w.]*|["'']ollama["'']|["'']github\.com/ollama/[\w./-]+["''])'
+    regions: [code, string]
+    claim: { name: "ollama" }
+    confidence: 0.7
+
+  # Serving endpoint markers: OLLAMA_HOST env var, default port, `ollama serve`.
+  - id: ollama/serve-endpoint
+    kind: infra
+    provider: ollama
+    keywords: ["OLLAMA_HOST", "11434", "ollama serve"]
+    pattern: '(?:\bOLLAMA_HOST\b|localhost:11434|127\.0\.0\.1:11434|\bollama\s+serve\b)'
+    regions: [code, string]
+    claim: { name: "ollama" }
+    confidence: 0.7
+
+  - id: ollama/client
+    kind: infra
+    provider: ollama
+    languages: [python, javascript, typescript]
+    keywords: ["ollama.Client", "ollama.chat", "ollama.AsyncClient", "ollama.generate"]
+    pattern: '\bollama\.(?:Client|AsyncClient|chat|generate)\s*\('
+    regions: [code]
+    claim: { name: "ollama" }
+    confidence: 0.7

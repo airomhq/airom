@@ -1,0 +1,27 @@
+# rules/models/cohere.yaml — Cohere Command chat models.
+# Cohere embedding models (embed-*) live in rules/embeddings/cohere-embed.yaml.
+pack: cohere
+version: 1
+rules:
+  # command, command-light, command-nightly, command-r, command-r-plus,
+  # command-r7b, command-a-* in a model= position.
+  - id: cohere/model-literal
+    kind: hosted-llm
+    provider: cohere
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["command-r", "command-light", "command-nightly", "command-a", "command"]
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>command(?:-[\w.\-]+)?)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK surface: cohere.Client / cohere.ClientV2 / co.chat(...).
+  - id: cohere/sdk-call
+    kind: library
+    provider: cohere
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["cohere.Client", ".chat("]
+    pattern: '\bcohere\.Client(?:V2)?\s*\(|\bco\.chat\s*\('
+    regions: [code]
+    claim: { name: "cohere-sdk" }
+    confidence: 0.7

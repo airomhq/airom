@@ -1,0 +1,25 @@
+# rules/vectordb/redis-vector.yaml — Redis vector-search (RediSearch) usage.
+pack: redis-vector
+version: 1
+rules:
+  # redis-py vector field schema.
+  - id: redis-vector/vectorfield
+    kind: vector-db
+    provider: redis
+    languages: [python]
+    keywords: ["VectorField"]
+    pattern: '\bVectorField\s*\('
+    regions: [code]
+    claim: { name: "redis" }
+    confidence: 0.7
+
+  # FT.CREATE index command declaring a VECTOR field.
+  - id: redis-vector/ft-create
+    kind: vector-db
+    provider: redis
+    languages: [python, javascript, typescript, go, java]
+    keywords: ["FT.CREATE"]
+    pattern: 'FT\.CREATE\b[^\n]*\bVECTOR\b'
+    regions: [code, string]
+    claim: { name: "redis" }
+    confidence: 0.7

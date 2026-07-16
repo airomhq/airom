@@ -1,0 +1,25 @@
+# rules/embeddings/sentence-transformers.yaml — SBERT embedding models.
+pack: sentence-transformers
+version: 1
+rules:
+  # SentenceTransformer("<model>") constructor — capture the model argument.
+  - id: sentence-transformers/constructor
+    kind: embedding-model
+    provider: sentence-transformers
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["SentenceTransformer"]
+    pattern: '\bSentenceTransformer\s*\(\s*["''](?P<model>[\w.\-/]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # Well-known SBERT model names anywhere (all-MiniLM-*, all-mpnet-*, all-distilroberta-*).
+  - id: sentence-transformers/model-literal
+    kind: embedding-model
+    provider: sentence-transformers
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["all-MiniLM", "all-mpnet", "all-distilroberta", "multi-qa-MiniLM"]
+    pattern: '["''](?P<model>(?:sentence-transformers/)?(?:all-MiniLM|all-mpnet|all-distilroberta|multi-qa-MiniLM)[\w.\-/]*)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.8

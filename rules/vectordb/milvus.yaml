@@ -1,0 +1,23 @@
+# rules/vectordb/milvus.yaml — Milvus (pymilvus) vector database usage.
+pack: milvus
+version: 1
+rules:
+  - id: milvus/import
+    kind: vector-db
+    provider: milvus
+    languages: [python]
+    keywords: ["pymilvus"]
+    pattern: '\b(?:import|from)\s+pymilvus[\w.]*'
+    regions: [code]
+    claim: { name: "milvus" }
+    confidence: 0.7
+
+  - id: milvus/connect
+    kind: vector-db
+    provider: milvus
+    languages: [python]
+    keywords: ["connections.connect", "MilvusClient"]
+    pattern: '(?:\bconnections\.connect\s*\(|\bMilvusClient\s*\()'
+    regions: [code]
+    claim: { name: "milvus" }
+    confidence: 0.7

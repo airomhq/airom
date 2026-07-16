@@ -1,0 +1,26 @@
+# rules/models/gemini.yaml — Google Gemini hosted models.
+pack: gemini
+version: 1
+rules:
+  # Gemini IDs appear both as bare positional strings (GenerativeModel("gemini-1.5-pro"))
+  # and in model= positions, optionally prefixed with the "models/" resource path.
+  - id: gemini/model-literal
+    kind: hosted-llm
+    provider: google
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["gemini-"]
+    pattern: '["''](?P<model>(?:models/)?gemini-[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK surface: genai.GenerativeModel(...) / client.models.generate_content(...).
+  - id: gemini/sdk-call
+    kind: library
+    provider: google
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["GenerativeModel", "generate_content", "generateContent"]
+    pattern: '\b(?:GenerativeModel|generate_content|generateContent)\s*\('
+    regions: [code]
+    claim: { name: "google-genai" }
+    confidence: 0.7

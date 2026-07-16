@@ -1,0 +1,24 @@
+# rules/frameworks/mlflow.yaml — MLflow (LLM flavors + model logging) usage.
+pack: mlflow
+version: 1
+rules:
+  - id: mlflow/import
+    kind: library
+    provider: mlflow
+    languages: [python]
+    keywords: ["mlflow"]
+    pattern: '\b(?:import|from)\s+mlflow[\w.]*'
+    regions: [code]
+    claim: { name: "mlflow" }
+    confidence: 0.7
+
+  # Flavor-scoped model logging / autolog (mlflow.openai.log_model(...), etc.).
+  - id: mlflow/flavor-logmodel
+    kind: library
+    provider: mlflow
+    languages: [python]
+    keywords: ["log_model", "autolog"]
+    pattern: '\bmlflow\.(?:openai|langchain|transformers|pyfunc|sklearn|pytorch|onnx|xgboost)\.(?:log_model|autolog)\s*\('
+    regions: [code]
+    claim: { name: "mlflow" }
+    confidence: 0.7

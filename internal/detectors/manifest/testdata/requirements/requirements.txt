@@ -1,0 +1,19 @@
+# Core AI dependencies plus ordinary web deps (only AI ones are detected).
+openai==1.30.0
+anthropic>=0.25.0
+langchain~=0.2.0
+langchain-openai==0.1.7
+chromadb==0.5.0
+transformers>=4.40,<5.0
+torch>=2.3.0
+requests==2.31.0
+flask
+numpy>=1.26
+tiktoken
+faiss-cpu==1.8.0
+redis==5.0.4
+sentence-transformers
+-e git+https://github.com/example/pkg.git#egg=example
+uvicorn[standard]>=0.29.0
+pinecone-client==4.1.0 ; python_version >= "3.9"
+cohere==5.5.0  # trailing comment

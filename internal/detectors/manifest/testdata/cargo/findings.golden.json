@@ -1,0 +1,116 @@
+{
+  "Cargo.toml": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "async-openai",
+        "Group": "",
+        "Version": "0.23",
+        "Provider": "OpenAI",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "cargo"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "qdrant-client",
+        "Group": "",
+        "Version": "1.9",
+        "Provider": "Qdrant",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "cargo"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 9
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "tokenizers",
+        "Group": "",
+        "Version": "0.19",
+        "Provider": "Hugging Face",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "cargo"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 11
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "candle-core",
+        "Group": "",
+        "Version": "",
+        "Provider": "Hugging Face",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "cargo"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 12
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    }
+  ]
+}

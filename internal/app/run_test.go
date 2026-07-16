@@ -53,12 +53,31 @@ func TestRunFSEndToEnd(t *testing.T) {
 	}
 }
 
-func TestRunNonFSSourcesNotWired(t *testing.T) {
-	for _, src := range []SourceKind{SourceRepo, SourceImage, SourceK8s} {
-		cfg := &Config{Source: src, Target: "x"}
+// withoutEmbeddedRules isolates a test from the built-in packs so it
+// exercises only its overlay (Phase-5 acceptance semantics).
+func withoutEmbeddedRules(t *testing.T) {
+	t.Helper()
+	orig := EmbeddedRules
+	EmbeddedRules = nil
+	t.Cleanup(func() { EmbeddedRules = orig })
+}
+
+// TestRunNonFSSourcesReject: repo/image/k8s are wired (Phase 6) but must
+// fail cleanly on a bad target — never silently succeed, never
+// ErrEngineNotWired.
+func TestRunNonFSSourcesReject(t *testing.T) {
+	cases := []*Config{
+		{Source: SourceRepo, Target: filepath.Join(t.TempDir(), "no-such-repo")},
+		{Source: SourceImage, Target: filepath.Join(t.TempDir(), "no-such-image")},
+		{Source: SourceK8s}, // no --manifests: live mode unavailable
+	}
+	for _, cfg := range cases {
 		err := Run(context.Background(), cfg)
-		if !errors.Is(err, ErrEngineNotWired) {
-			t.Errorf("%s: err = %v, want ErrEngineNotWired", src, err)
+		if err == nil {
+			t.Errorf("%s: want an error for a bad target", cfg.Source)
+		}
+		if errors.Is(err, ErrEngineNotWired) {
+			t.Errorf("%s: sources are wired now; got ErrEngineNotWired", cfg.Source)
 		}
 	}
 }
@@ -85,6 +104,7 @@ func TestRunCanceledContext(t *testing.T) {
 // rule pack (--rules overlay) drives the full framework — walk → classify →
 // dispatch → rule engine → assembly — with zero built-in detectors.
 func TestRunFSWithRulesOverlayEndToEnd(t *testing.T) {
+	withoutEmbeddedRules(t)
 	root := writeTree(t, map[string]string{
 		"app.py":  "import openai\n\nresp = client.chat.completions.create(\n    model=\"gpt-4.1\",\n    temperature=0.2,\n)\n",
 		"web.ts":  "const model = \"gpt-4.1\";\n",
@@ -146,11 +166,24 @@ rules:
 	if err := os.WriteFile(pack, []byte(yaml), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	withoutEmbeddedRules(t)
 	infos, err := Detectors(&Config{Source: SourceFS, Target: ".", RulePaths: []string{pack}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(infos) != 1 || infos[0].ID != "ruleengine" || infos[0].RuleCount != 1 {
-		t.Errorf("infos = %+v, want the ruleengine with 1 rule", infos)
+	// The catalog now holds the built-in code detectors plus the rule
+	// engine (fed by the overlay). Assert the rule engine is present with
+	// exactly the overlay's one rule, alongside the built-ins.
+	if len(infos) < 2 {
+		t.Fatalf("infos = %d, want built-ins plus the rule engine", len(infos))
+	}
+	var re *DetectorInfo
+	for i := range infos {
+		if infos[i].ID == "ruleengine" {
+			re = &infos[i]
+		}
+	}
+	if re == nil || re.RuleCount != 1 {
+		t.Errorf("rule engine = %+v, want present with 1 rule", re)
 	}
 }

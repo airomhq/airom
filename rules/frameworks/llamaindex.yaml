@@ -1,0 +1,25 @@
+# rules/frameworks/llamaindex.yaml — LlamaIndex framework usage.
+pack: llamaindex
+version: 1
+rules:
+  # Python module import (llama_index.*) or JS/TS package specifier ("llamaindex").
+  - id: llamaindex/import
+    kind: framework
+    provider: llama-index
+    languages: [python, javascript, typescript]
+    keywords: ["llama_index", "llamaindex"]
+    pattern: '(?:\b(?:import|from)\s+llama_index[\w.]*|["'']llamaindex(?:/[\w.-]+)*["''])'
+    regions: [code, string]
+    claim: { name: "llama-index" }
+    confidence: 0.7
+
+  # Index / service-context construction and factory methods.
+  - id: llamaindex/index-construct
+    kind: framework
+    provider: llama-index
+    languages: [python, javascript, typescript]
+    keywords: ["VectorStoreIndex", "ServiceContext"]
+    pattern: '\b(?:VectorStoreIndex|ServiceContext)\s*[.(]'
+    regions: [code]
+    claim: { name: "llama-index" }
+    confidence: 0.7

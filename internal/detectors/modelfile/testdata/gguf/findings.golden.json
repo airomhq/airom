@@ -1,0 +1,48 @@
+{
+  "model.gguf": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.gguf",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "llama",
+          "ParamCount": 1234,
+          "Quantization": "F16",
+          "ContextLength": 0,
+          "Format": "gguf",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.95,
+        "fields": {
+          "architecture": "llama",
+          "file_type": "1",
+          "name": "tinyllama-test",
+          "parameter_count": "1234",
+          "quantization": "F16",
+          "quantization_version": "2",
+          "version": "3"
+        }
+      },
+      "Relations": null
+    }
+  ]
+}

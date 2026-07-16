@@ -1,0 +1,95 @@
+{
+  "prompts/system.txt": [
+    {
+      "Claim": {
+        "Kind": "prompt",
+        "Name": "system.txt",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "prompt",
+          "SizeBytes": 0,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.8
+      },
+      "Relations": null
+    }
+  ],
+  "summarize.prompt": [
+    {
+      "Claim": {
+        "Kind": "prompt",
+        "Name": "summarize.prompt",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "prompt-template",
+          "SizeBytes": 0,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "filename",
+        "confidence": 0.6
+      },
+      "Relations": null
+    }
+  ],
+  "templates/agent.jinja": [
+    {
+      "Claim": {
+        "Kind": "prompt",
+        "Name": "agent.jinja",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": {
+          "Format": "prompt-template",
+          "SizeBytes": 0,
+          "URL": ""
+        },
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.8
+      },
+      "Relations": null
+    }
+  ]
+}

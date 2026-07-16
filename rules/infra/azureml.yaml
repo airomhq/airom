@@ -1,0 +1,23 @@
+# rules/infra/azureml.yaml — Azure Machine Learning serving references.
+pack: azureml
+version: 1
+rules:
+  - id: azureml/import
+    kind: service
+    provider: azure-ml
+    languages: [python]
+    keywords: ["azureml", "azure.ai.ml"]
+    pattern: '(?:\b(?:import|from)\s+azureml[\w.]*|\b(?:import|from)\s+azure\.ai\.ml[\w.]*|\bfrom\s+azure\.ai\.ml\b)'
+    regions: [code]
+    claim: { name: "azure-ml" }
+    confidence: 0.7
+
+  - id: azureml/mlclient
+    kind: service
+    provider: azure-ml
+    languages: [python]
+    keywords: ["MLClient"]
+    pattern: '\bMLClient\s*\('
+    regions: [code]
+    claim: { name: "azure-ml" }
+    confidence: 0.7

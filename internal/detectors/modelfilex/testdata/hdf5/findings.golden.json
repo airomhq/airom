@@ -1,0 +1,76 @@
+{
+  "model.keras": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.keras",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "hdf5",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.85
+      },
+      "Relations": null
+    }
+  ],
+  "weights.h5": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "weights.h5",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "hdf5",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.85
+      },
+      "Relations": null
+    }
+  ]
+}

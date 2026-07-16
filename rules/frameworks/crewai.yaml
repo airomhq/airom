@@ -1,0 +1,24 @@
+# rules/frameworks/crewai.yaml — CrewAI framework usage.
+pack: crewai
+version: 1
+rules:
+  - id: crewai/import
+    kind: framework
+    provider: crewai
+    languages: [python]
+    keywords: ["crewai"]
+    pattern: '\b(?:import|from)\s+crewai[\w.]*'
+    regions: [code]
+    claim: { name: "crewai" }
+    confidence: 0.7
+
+  # Crew orchestration object construction.
+  - id: crewai/construct
+    kind: framework
+    provider: crewai
+    languages: [python]
+    keywords: ["Crew"]
+    pattern: '\bCrew\s*\('
+    regions: [code]
+    claim: { name: "crewai" }
+    confidence: 0.7

@@ -1,0 +1,23 @@
+# rules/infra/tgi.yaml — Hugging Face Text Generation Inference (TGI) serving.
+pack: tgi
+version: 1
+rules:
+  # The TGI image / package name (also matches ghcr.io/huggingface/text-generation-inference).
+  - id: tgi/reference
+    kind: infra
+    provider: huggingface
+    keywords: ["text-generation-inference"]
+    pattern: '\btext-generation-inference\b'
+    regions: [code, string]
+    claim: { name: "text-generation-inference" }
+    confidence: 0.7
+
+  # The TGI launcher binary.
+  - id: tgi/launcher
+    kind: infra
+    provider: huggingface
+    keywords: ["text-generation-launcher"]
+    pattern: '\btext-generation-launcher\b'
+    regions: [code, string]
+    claim: { name: "text-generation-inference" }
+    confidence: 0.7

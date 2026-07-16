@@ -1,0 +1,30 @@
+# rules/models/bedrock.yaml — Amazon Bedrock modelId / inference-profile strings.
+pack: bedrock
+version: 1
+rules:
+  # Bedrock modelIds are vendor-prefixed dotted strings, optionally carrying a
+  # cross-region inference prefix (us./eu./apac.): e.g.
+  # anthropic.claude-3-5-sonnet-20240620-v1:0, amazon.titan-text-express-v1,
+  # us.meta.llama3-1-70b-instruct-v1:0, mistral.mixtral-8x7b-instruct-v0:1,
+  # cohere.command-r-plus-v1:0.
+  - id: bedrock/model-literal
+    kind: hosted-llm
+    provider: aws-bedrock
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["anthropic.claude", "amazon.titan", "amazon.nova", "meta.llama",
+               "mistral.", "cohere.command", "ai21."]
+    pattern: '["''](?P<model>(?:(?:us|eu|apac)\.)?(?:anthropic|amazon|meta|mistral|cohere|ai21)\.[\w.\-:]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK surface: bedrock-runtime invoke_model / converse (boto3, aws-sdk).
+  - id: bedrock/runtime-call
+    kind: library
+    provider: aws-bedrock
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["invoke_model", "InvokeModel", "bedrock-runtime"]
+    pattern: '(?:\.invoke_model\s*\(|InvokeModelCommand|["'']bedrock-runtime["''])'
+    regions: [code, string]
+    claim: { name: "bedrock-runtime" }
+    confidence: 0.7

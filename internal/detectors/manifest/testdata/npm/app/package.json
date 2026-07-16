@@ -1,0 +1,19 @@
+{
+  "name": "demo-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "openai": "^4.52.0",
+    "@anthropic-ai/sdk": "0.24.3",
+    "langchain": "~0.2.5",
+    "@langchain/openai": "^0.2.1",
+    "express": "^4.19.2",
+    "chromadb": "1.8.1",
+    "@pinecone-database/pinecone": "^3.0.0",
+    "ai": "^3.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "groq-sdk": "^0.5.0",
+    "@qdrant/js-client-rest": "^1.9.0"
+  }
+}

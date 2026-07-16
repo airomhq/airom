@@ -5,9 +5,12 @@
 // declared versions.
 //
 // AIROM needs presence and version, not dependency resolution (decision
-// D13): the easy formats are hand-rolled (JSON/TOML/XML, golang.org/x/mod
-// for go.mod) and Trivy's yarn/pom/gradle-lock parsers are vendored under
-// their Apache-2.0 license with attribution. Manifest evidence later joins
-// lockfile evidence in the phase-2 lockjoin detector (internal/detectors/
-// project) and corroborates rule-pack usage findings in the assembler.
+// D13): every format is parsed with the standard library plus
+// golang.org/x/mod for go.mod, matched against a curated AI-package
+// knowledge table (catalog.go) so ordinary web/build dependencies are never
+// emitted. Each ecosystem has its own zero-arg constructor and stable
+// detector ID (manifest/pypi-requirements, manifest/npm, …). Manifest
+// evidence later joins lockfile evidence in the phase-2 lockjoin detector
+// (internal/detectors/project) and corroborates rule-pack usage findings in
+// the assembler.
 package manifest

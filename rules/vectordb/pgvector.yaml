@@ -1,0 +1,35 @@
+# rules/vectordb/pgvector.yaml — pgvector (PostgreSQL) usage.
+# SQL is language-agnostic (embedded in strings across host languages), so these
+# rules omit the language gate and match code+string regions.
+pack: pgvector
+version: 1
+rules:
+  # CREATE EXTENSION vector (DDL, case-insensitive).
+  - id: pgvector/create-extension
+    kind: vector-db
+    provider: pgvector
+    keywords: ["CREATE EXTENSION", "create extension"]
+    pattern: '(?i)create\s+extension\s+(?:if\s+not\s+exists\s+)?"?vector"?'
+    regions: [code, string]
+    claim: { name: "pgvector" }
+    confidence: 0.7
+
+  # vector(N) column type.
+  - id: pgvector/vector-column
+    kind: vector-db
+    provider: pgvector
+    keywords: ["vector("]
+    pattern: '\bvector\s*\(\s*\d+\s*\)'
+    regions: [code, string]
+    claim: { name: "pgvector" }
+    confidence: 0.7
+
+  # pgvector distance operators (<->, <=>, <#>).
+  - id: pgvector/distance-op
+    kind: vector-db
+    provider: pgvector
+    keywords: ["<->", "<=>", "<#>"]
+    pattern: '<(?:->|=>|#>)'
+    regions: [code, string]
+    claim: { name: "pgvector" }
+    confidence: 0.6

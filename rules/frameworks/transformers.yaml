@@ -1,0 +1,24 @@
+# rules/frameworks/transformers.yaml — Hugging Face Transformers library usage.
+pack: transformers
+version: 1
+rules:
+  - id: transformers/import
+    kind: library
+    provider: huggingface
+    languages: [python]
+    keywords: ["transformers"]
+    pattern: '\b(?:import|from)\s+transformers[\w.]*'
+    regions: [code]
+    claim: { name: "transformers" }
+    confidence: 0.7
+
+  # Auto* factory or pipeline() usage.
+  - id: transformers/auto-class
+    kind: library
+    provider: huggingface
+    languages: [python]
+    keywords: ["AutoModel", "AutoTokenizer", "pipeline"]
+    pattern: '(?:\bAuto(?:Model|Tokenizer|Config|FeatureExtractor|Processor)\w*\.from_pretrained\s*\(|\bpipeline\s*\()'
+    regions: [code]
+    claim: { name: "transformers" }
+    confidence: 0.7

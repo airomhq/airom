@@ -1,0 +1,10 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation 'dev.langchain4j:langchain4j:0.35.0'
+    implementation "org.springframework.boot:spring-boot-starter:3.3.0"
+    implementation group: 'io.milvus', name: 'milvus-sdk-java', version: '2.4.1'
+    testImplementation 'junit:junit:4.13.2'
+}

@@ -437,3 +437,70 @@ func TestLocalRefAmbiguityRefused(t *testing.T) {
 		t.Fatalf("unambiguous local_ref failed to resolve: %v", inv.Stats.Warnings)
 	}
 }
+
+// TestPackageFoldAndAlias: a manifest-declared package and a usage-detected
+// one (client-package alias) merge into one component (§9.1).
+func TestPackageFoldAndAlias(t *testing.T) {
+	// langchain declared in a manifest (pypi) + detected in usage (no ecosystem).
+	manifest := finding(airom.KindFramework, "langchain", "", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 1)
+	manifest.Claim.Version = "0.2.1"
+	manifest.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	usage := finding(airom.KindFramework, "langchain", "", "rules/langchain/import", airom.MethodSourceCode, 0.7, "app.py", 3)
+
+	// chromadb (manifest, vector-db) + chroma (usage rule) via alias.
+	cdbManifest := finding(airom.KindVectorDB, "chromadb", "", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 2)
+	cdbManifest.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	chromaUsage := finding(airom.KindVectorDB, "chroma", "", "rules/chroma/client", airom.MethodSourceCode, 0.7, "app.py", 5)
+
+	inv := Build([]detect.Finding{manifest, usage, cdbManifest, chromaUsage}, nil, airom.ScanStats{}, opts())
+
+	frameworks, vecdbs := 0, 0
+	for _, c := range inv.Components {
+		switch c.Kind {
+		case airom.KindFramework:
+			frameworks++
+			if len(c.Evidence.Occurrences) != 2 {
+				t.Errorf("langchain occurrences = %d, want 2 (manifest + usage folded)", len(c.Evidence.Occurrences))
+			}
+			if v, _ := c.Version.Value(); v != "0.2.1" {
+				t.Errorf("langchain version = %q, want 0.2.1 from the manifest", v)
+			}
+		case airom.KindVectorDB:
+			vecdbs++
+			if c.Name != "chroma" {
+				t.Errorf("vector-db name = %q, want chroma (alias)", c.Name)
+			}
+			if len(c.Evidence.Occurrences) != 2 {
+				t.Errorf("chroma occurrences = %d, want 2 (chromadb + chroma merged)", len(c.Evidence.Occurrences))
+			}
+		}
+	}
+	if frameworks != 1 {
+		t.Errorf("framework components = %d, want 1 (folded)", frameworks)
+	}
+	if vecdbs != 1 {
+		t.Errorf("vector-db components = %d, want 1 (aliased)", vecdbs)
+	}
+}
+
+// TestPackageFoldRefusesAmbiguity: same name in two ecosystems stays split.
+func TestPackageFoldRefusesAmbiguity(t *testing.T) {
+	py := finding(airom.KindLibrary, "redis", "", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 1)
+	py.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	npm := finding(airom.KindLibrary, "redis", "", "manifest/npm", airom.MethodManifest, 0.95, "package.json", 1)
+	npm.Claim.Package = &detect.PackageClaim{Ecosystem: "npm"}
+	usage := finding(airom.KindLibrary, "redis", "", "rules/redis/import", airom.MethodSourceCode, 0.7, "app.py", 1)
+
+	inv := Build([]detect.Finding{py, npm, usage}, nil, airom.ScanStats{}, opts())
+	libs := 0
+	for _, c := range inv.Components {
+		if c.Kind == airom.KindLibrary {
+			libs++
+		}
+	}
+	// pypi and npm stay distinct; the disc-less usage cannot pick a unique
+	// home, so it stays separate too (refusal over guessing).
+	if libs != 3 {
+		t.Errorf("library components = %d, want 3 (ambiguous ecosystem: no fold)", libs)
+	}
+}

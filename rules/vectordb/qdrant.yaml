@@ -1,0 +1,24 @@
+# rules/vectordb/qdrant.yaml — Qdrant vector database client usage.
+pack: qdrant
+version: 1
+rules:
+  # Python module import or JS/TS package specifier (@qdrant/js-client-rest).
+  - id: qdrant/import
+    kind: vector-db
+    provider: qdrant
+    languages: [python, javascript, typescript]
+    keywords: ["qdrant_client", "@qdrant/"]
+    pattern: '(?:\b(?:import|from)\s+qdrant_client[\w.]*|["'']@qdrant/[\w.-]+["''])'
+    regions: [code, string]
+    claim: { name: "qdrant" }
+    confidence: 0.7
+
+  - id: qdrant/client
+    kind: vector-db
+    provider: qdrant
+    languages: [python, javascript, typescript]
+    keywords: ["QdrantClient"]
+    pattern: '\bQdrantClient\s*\('
+    regions: [code]
+    claim: { name: "qdrant" }
+    confidence: 0.7

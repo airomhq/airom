@@ -1,0 +1,1 @@
+Not a .csproj — the selector must reject it (wrong extension).

@@ -1,0 +1,23 @@
+# rules/vectordb/chroma.yaml — Chroma vector database client usage.
+pack: chroma
+version: 1
+rules:
+  - id: chroma/import
+    kind: vector-db
+    provider: chroma
+    languages: [python]
+    keywords: ["chromadb"]
+    pattern: '\b(?:import|from)\s+chromadb[\w.]*'
+    regions: [code]
+    claim: { name: "chroma" }
+    confidence: 0.7
+
+  - id: chroma/client
+    kind: vector-db
+    provider: chroma
+    languages: [python]
+    keywords: ["chromadb.Client", "chromadb.PersistentClient", "chromadb.HttpClient"]
+    pattern: '\bchromadb\.(?:Client|PersistentClient|HttpClient|EphemeralClient)\s*\('
+    regions: [code]
+    claim: { name: "chroma" }
+    confidence: 0.7

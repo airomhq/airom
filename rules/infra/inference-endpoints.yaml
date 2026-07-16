@@ -1,0 +1,22 @@
+# rules/infra/inference-endpoints.yaml — Hugging Face Inference (Endpoints / API).
+pack: inference-endpoints
+version: 1
+rules:
+  - id: inference-endpoints/client
+    kind: service
+    provider: huggingface
+    languages: [python, javascript, typescript]
+    keywords: ["InferenceClient"]
+    pattern: '\bInferenceClient\s*\('
+    regions: [code]
+    claim: { name: "hf-inference-endpoints" }
+    confidence: 0.7
+
+  - id: inference-endpoints/api-host
+    kind: service
+    provider: huggingface
+    keywords: ["api-inference.huggingface.co"]
+    pattern: '\bapi-inference\.huggingface\.co\b'
+    regions: [code, string]
+    claim: { name: "hf-inference-endpoints" }
+    confidence: 0.7

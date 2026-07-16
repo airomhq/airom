@@ -1,0 +1,26 @@
+# rules/models/groq.yaml — Groq-served models (client + Groq-distinctive model ids).
+pack: groq
+version: 1
+rules:
+  # The Groq client itself: Groq(...) / AsyncGroq(...) / ChatGroq(...).
+  - id: groq/client-construct
+    kind: library
+    provider: groq
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["Groq", "ChatGroq", "AsyncGroq"]
+    pattern: '\b(?:Groq|ChatGroq|AsyncGroq)\s*\('
+    regions: [code]
+    claim: { name: "groq-sdk" }
+    confidence: 0.7
+
+  # Groq-distinctive served-model suffixes (-versatile / -instant) in a model=
+  # position — deliberately narrow so it does not tag every llama/mixtral string.
+  - id: groq/model-literal
+    kind: hosted-llm
+    provider: groq
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["-versatile", "-instant"]
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>[\w.\-]+-(?:versatile|instant))["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.8

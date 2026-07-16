@@ -1,0 +1,1 @@
+Not a pom.xml — the selector must reject it (wrong basename).

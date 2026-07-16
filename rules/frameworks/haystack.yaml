@@ -1,0 +1,23 @@
+# rules/frameworks/haystack.yaml — Haystack framework usage.
+pack: haystack
+version: 1
+rules:
+  - id: haystack/import
+    kind: framework
+    provider: haystack
+    languages: [python]
+    keywords: ["haystack"]
+    pattern: '\b(?:import|from)\s+haystack[\w.]*'
+    regions: [code]
+    claim: { name: "haystack" }
+    confidence: 0.7
+
+  - id: haystack/pipeline
+    kind: framework
+    provider: haystack
+    languages: [python]
+    keywords: ["Pipeline"]
+    pattern: '\bPipeline\s*\('
+    regions: [code]
+    claim: { name: "haystack" }
+    confidence: 0.7

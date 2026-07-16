@@ -1,0 +1,68 @@
+{
+  "compose.yaml": null,
+  "docker-compose.yml": [
+    {
+      "Claim": {
+        "Kind": "infra",
+        "Name": "ollama",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": {
+          "Endpoint": "11434",
+          "Region": "",
+          "Deployment": ""
+        },
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 3
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.75
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "infra",
+        "Name": "tgi",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": {
+          "Endpoint": "8080",
+          "Region": "",
+          "Deployment": ""
+        },
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 10
+        },
+        "detectorId": "",
+        "method": "config-analysis",
+        "confidence": 0.75,
+        "fields": {
+          "env": "HUGGING_FACE_HUB_TOKEN,MODEL_ID"
+        }
+      },
+      "Relations": null
+    }
+  ]
+}

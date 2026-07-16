@@ -1,0 +1,36 @@
+# rules/datasets/datasets.yaml — dataset references in code.
+# (File-signature dataset detection, e.g. *.parquet, is a Go detector.)
+pack: datasets
+version: 1
+rules:
+  # Hugging Face datasets.load_dataset("org/name").
+  - id: datasets/load-dataset
+    kind: dataset
+    provider: huggingface
+    languages: [python]
+    keywords: ["load_dataset"]
+    pattern: '\bload_dataset\s*\(\s*["''](?P<name>[\w./-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${name}" }
+    confidence: 0.7
+
+  # kagglehub.dataset_download("owner/dataset").
+  - id: datasets/kagglehub
+    kind: dataset
+    provider: kaggle
+    languages: [python]
+    keywords: ["kagglehub.dataset_download"]
+    pattern: '\bkagglehub\.dataset_download\s*\(\s*["''](?P<name>[\w.-]+/[\w.-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${name}" }
+    confidence: 0.7
+
+  # `kaggle datasets download -d owner/dataset` CLI reference.
+  - id: datasets/kaggle-cli
+    kind: dataset
+    provider: kaggle
+    keywords: ["kaggle datasets download"]
+    pattern: 'kaggle\s+datasets\s+download\s+(?:-d\s+)?(?P<name>[\w.-]+/[\w.-]+)'
+    regions: [code, string]
+    claim: { name: "${name}" }
+    confidence: 0.7

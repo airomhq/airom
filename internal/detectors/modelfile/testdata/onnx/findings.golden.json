@@ -1,0 +1,45 @@
+{
+  "model.onnx": [
+    {
+      "Claim": {
+        "Kind": "local-model-file",
+        "Name": "model.onnx",
+        "Group": "",
+        "Version": "",
+        "Provider": "local",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": {
+          "Task": "",
+          "Architecture": "airom-test",
+          "ParamCount": 0,
+          "Quantization": "",
+          "ContextLength": 0,
+          "Format": "onnx",
+          "BaseModel": "",
+          "PickleRisk": null,
+          "Card": null
+        },
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": ""
+        },
+        "detectorId": "",
+        "method": "binary-analysis",
+        "confidence": 0.9,
+        "fields": {
+          "graph": "true",
+          "ir_version": "7",
+          "producer_name": "airom-test",
+          "producer_version": "0.0.1"
+        }
+      },
+      "Relations": null
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# Wrong basename (not pyproject.toml) — the selector must reject it.
+[tool.something]
+openai = "^1.0.0"

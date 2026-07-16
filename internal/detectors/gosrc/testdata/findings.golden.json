@@ -1,0 +1,229 @@
+{
+  "chat.go": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "github.com/ollama/ollama",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "github.com/sashabaranov/go-openai",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "hosted-llm",
+        "Name": "gpt-4o",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 12
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.75,
+        "symbol": "chat"
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "hosted-llm",
+        "Name": "gpt-4o-mini",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 14
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.75,
+        "symbol": "chat"
+      },
+      "Relations": null
+    }
+  ],
+  "decoy.go": null,
+  "rag.go": [
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "github.com/milvus-io/milvus-sdk-go",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "github.com/pinecone-io/go-pinecone",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "github.com/qdrant/go-client",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 8
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "github.com/tmc/langchaingo",
+        "Group": "",
+        "Version": "",
+        "Provider": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "golang"
+        }
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 9
+        },
+        "detectorId": "",
+        "method": "ast-fingerprint",
+        "confidence": 0.8
+      },
+      "Relations": null
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+  tgi:
+    image: ghcr.io/huggingface/text-generation-inference:2.0
+    ports:
+      - "8080:80"
+    environment:
+      - MODEL_ID=meta-llama/Llama-3-8B
+      - HUGGING_FACE_HUB_TOKEN=hf_example
+
+volumes:
+  ollama:
