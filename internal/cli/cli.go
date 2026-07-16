@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Roro1727/airom/internal/app"
+	"github.com/Roro1727/airom/pkg/airom"
 )
 
 // BuildInfo carries the ldflags-stamped build metadata from cmd/airom.
@@ -39,6 +40,7 @@ const (
 
 // Execute runs the airom CLI and returns the process exit code.
 func Execute(ctx context.Context, bi BuildInfo) int {
+	app.Tool = airom.ToolInfo{Name: "airom", Version: bi.Version, Commit: bi.Commit}
 	if err := checkPProfForm(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "airom: invalid configuration: %v\n", err)
 		return exitFatal
@@ -90,6 +92,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newRepoCmd(),
 		newImageCmd(),
 		newK8sCmd(),
+		newDetectorsCmd(),
 		newCleanCmd(),
 		newVersionCmd(bi),
 	)

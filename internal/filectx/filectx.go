@@ -190,6 +190,13 @@ func (f *File) SHA256() (sum []byte, ok bool) {
 // Truncated reports whether Content returned a capped prefix.
 func (f *File) Truncated() bool { return f.truncated }
 
+// ContentIfLoaded returns the content buffer only when a consumer already
+// paid for the read — used by the dispatcher's snippet fill, which must
+// never force a read of its own (invariant P3).
+func (f *File) ContentIfLoaded() ([]byte, bool) {
+	return f.content, f.loaded && f.loadErr == nil
+}
+
 // BytesRead returns the number of content bytes read (for ScanStats).
 func (f *File) BytesRead() int64 { return f.bytesRead }
 

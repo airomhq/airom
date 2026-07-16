@@ -9,9 +9,9 @@ package classify
 import (
 	"bytes"
 	"io/fs"
-	"path/filepath"
-	"strings"
 	"time"
+
+	"github.com/Roro1727/airom/pkg/airom/detect"
 )
 
 // Language identifies the source language of a file for detector routing
@@ -36,34 +36,12 @@ const (
 	LangUnknown    Language = ""
 )
 
-// extLanguages maps lowercase extensions to languages.
-var extLanguages = map[string]Language{
-	".py":   LangPython,
-	".pyi":  LangPython,
-	".js":   LangJavaScript,
-	".mjs":  LangJavaScript,
-	".cjs":  LangJavaScript,
-	".jsx":  LangJavaScript,
-	".ts":   LangTypeScript,
-	".tsx":  LangTypeScript,
-	".mts":  LangTypeScript,
-	".cts":  LangTypeScript,
-	".go":   LangGo,
-	".java": LangJava,
-	".rs":   LangRust,
-	".cs":   LangCSharp,
-	".kt":   LangKotlin,
-	".kts":  LangKotlin,
-	".yaml": LangYAML,
-	".yml":  LangYAML,
-	".json": LangJSON,
-	".toml": LangTOML,
-}
-
 // LanguageOf classifies a file by its path alone (extension; cheap enough
-// for the walker). Content-based refinement is a detector concern.
+// for the walker). Delegates to the public SDK's mapping so the engine and
+// third-party tooling can never drift (detect.LanguageOf is the single
+// source of truth; the two Language types share string values).
 func LanguageOf(path string) Language {
-	return extLanguages[strings.ToLower(filepath.Ext(path))]
+	return Language(detect.LanguageOf(path))
 }
 
 // Magic is one entry in the magic-byte registry: fixed bytes at a fixed

@@ -12,11 +12,12 @@ import (
 	"github.com/Roro1727/airom/internal/source"
 )
 
-// exactArgs mirrors cobra.ExactArgs but keeps a usage hint in the error,
-// since SilenceUsage suppresses cobra's own help echo.
-func exactArgs(n int, what string) cobra.PositionalArgs {
+// exactArgs mirrors cobra.ExactArgs(1) but keeps a usage hint in the
+// error, since SilenceUsage suppresses cobra's own help echo. Every current
+// command takes at most one positional, so the count is fixed.
+func exactArgs(what string) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
-		if len(args) != n {
+		if len(args) != 1 {
 			return &app.UsageError{Err: fmt.Errorf("%s requires %s (got %d)\nRun '%s --help' for usage",
 				cmd.Name(), what, len(args), cmd.CommandPath())}
 		}
@@ -55,7 +56,7 @@ func newScanCmd() *cobra.Command {
 		Short: "Scan a target with scheme auto-detection (dir | git URL | image ref)",
 		Long: `Scan auto-detects the target scheme in order: existing local path -> git URL
 -> image reference. Explicit prefixes force interpretation: dir:, repo:, image:.`,
-		Args: exactArgs(1, "exactly one <target>"),
+		Args: exactArgs("exactly one <target>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind, target, err := source.DetectTarget(args[0])
 			if err != nil {
@@ -79,7 +80,7 @@ func newFSCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "fs <path>",
 		Short: "Scan a directory tree",
-		Args:  exactArgs(1, "exactly one <path>"),
+		Args:  exactArgs("exactly one <path>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if _, err := os.Stat(args[0]); err != nil {
 				return &app.UsageError{Err: fmt.Errorf("cannot scan %q: %w", args[0], err)}
@@ -93,7 +94,7 @@ func newRepoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "repo <url|path>",
 		Short: "Scan a git repository (remote URL: shallow clone; local path: worktree)",
-		Args:  exactArgs(1, "exactly one <url|path>"),
+		Args:  exactArgs("exactly one <url|path>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runWith(cmd, app.SourceRepo, args[0])
 		},

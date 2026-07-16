@@ -6,9 +6,10 @@
 > read-once pipeline); detectors land in Phase 5 and output writers in Phase 7, so scans
 > currently report honest counters. `repo`, `image`, and `k8s` fail fast with a clear error
 > until their sources land (Phase 6). `--cache-dir`/`--no-cache` are accepted but inert
-> until `internal/cache` lands. The `detectors`, `rules`, and `dev` command groups ship
-> with their subsystems (Phases 5–6) — no dead commands before the thing they operate on
-> exists.
+> until `internal/cache` lands. The `detectors` group is live as of Phase 5 (the framework
+> exists); user rule packs run today via `--rules`. The `rules` and `dev` command groups
+> ship with the embedded packs and scaffold templates (Phase 6) — no dead commands before
+> the thing they operate on exists.
 
 Stack: cobra (command tree) + koanf (configuration) + stdlib `slog` (logging). One static
 binary, `CGO_ENABLED=0`, no daemon, no network unless the target requires it.

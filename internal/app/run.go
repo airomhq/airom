@@ -9,9 +9,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/Roro1727/airom/internal/engine"
 	"github.com/Roro1727/airom/internal/metrics"
 	"github.com/Roro1727/airom/internal/source/dirsource"
+	"github.com/Roro1727/airom/pkg/airom"
 )
 
 // UsageError marks configuration and flag errors: the CLI maps it (like any
@@ -64,9 +64,8 @@ func Run(ctx context.Context, cfg *Config) error {
 	}
 }
 
-// runFS executes a real filesystem scan. Until the detector framework lands
-// (Phase 5) the processor is nil: the pipeline walks, classifies, and
-// reports honestly that zero detectors ran — a useful ignore-rule dry run.
+// runFS executes a real filesystem scan through the full framework
+// pipeline: dispatch (phase 1) → project detectors (phase 2) → assembly.
 func runFS(ctx context.Context, cfg *Config) error {
 	src, err := dirsource.New(cfg.Target, dirsource.Options{IgnoreGlobs: cfg.IgnoreGlobs})
 	if err != nil {
@@ -74,33 +73,48 @@ func runFS(ctx context.Context, cfg *Config) error {
 	}
 	defer func() { _ = src.Close() }()
 
-	eng := engine.New(engine.Options{
-		Parallel:    cfg.Parallel,
-		IOBudget:    cfg.IOBudget,
-		MaxFileSize: cfg.MaxFileSize,
-	})
-	out, err := eng.Scan(ctx, src, nil)
+	inv, err := runScanPipeline(ctx, cfg, src)
 	if err != nil {
-		return fmt.Errorf("scan %q: %w", cfg.Target, err)
+		return err
 	}
 
-	printSummary(out, cfg)
+	printSummary(inv, cfg)
 	return nil
 }
 
 // printSummary is the interim scan report: the table/CycloneDX/SARIF
-// writers land in Phase 7; until then the scan reports its own honesty
-// counters (never pretending components were looked for).
-func printSummary(out *engine.Outcome, cfg *Config) {
-	fmt.Fprintf(stdout, "airom: scan of %s complete\n", cfg.Target)
-	fmt.Fprintf(stdout, "  files walked:  %d\n", out.Stats.FilesWalked)
-	fmt.Fprintf(stdout, "  bytes read:    %d header, %d content\n", out.Stats.HeaderBytes, out.Stats.ContentBytes)
-	fmt.Fprintf(stdout, "  unknowns:      %d\n", len(out.Unknowns))
-	fmt.Fprintf(stdout, "  duration:      %s\n", out.Stats.Duration.Round(time.Millisecond))
-	fmt.Fprintf(stdout, "  components:    0 — no detectors registered yet (framework lands in Phase 5; writers in Phase 7)\n")
-	if cfg.Stats || len(out.Unknowns) > 0 {
-		for _, u := range out.Unknowns {
-			slog.Warn("unknown", "path", u.Path, "stage", u.Stage, "reason", u.Reason)
+// writers land in Phase 7; until then the scan reports the assembled graph
+// honestly.
+func printSummary(inv *airom.Inventory, cfg *Config) {
+	components := 0
+	for _, c := range inv.Components {
+		if c.Kind != airom.KindApplication && float64(c.Confidence) >= cfg.MinConfidence {
+			components++
 		}
+	}
+	fmt.Fprintf(stdout, "airom: scan of %s complete\n", cfg.Target)
+	fmt.Fprintf(stdout, "  files walked:  %d\n", inv.Stats.FilesWalked)
+	fmt.Fprintf(stdout, "  components:    %d (relationships: %d)\n", components, len(inv.Relationships))
+	fmt.Fprintf(stdout, "  unknowns:      %d\n", len(inv.Unknowns))
+	fmt.Fprintf(stdout, "  duration:      %s\n", inv.Stats.Duration.Round(time.Millisecond))
+	for _, c := range inv.Components {
+		if c.Kind == airom.KindApplication || float64(c.Confidence) < cfg.MinConfidence {
+			continue
+		}
+		version := ""
+		if v, ok := c.Version.Value(); ok {
+			version = "@" + v
+		}
+		fmt.Fprintf(stdout, "    %-18s %s%s  (confidence %.2f, %d occurrences)\n",
+			c.Kind, c.Name, version, c.Confidence, len(c.Evidence.Occurrences))
+	}
+	fmt.Fprintf(stdout, "  output formats (cyclonedx/sarif/json/yaml/table) land in Phase 7\n")
+	if cfg.Stats || len(inv.Unknowns) > 0 {
+		for _, u := range inv.Unknowns {
+			slog.Warn("unknown", "path", u.Path, "detector", u.DetectorID, "reason", u.Reason)
+		}
+	}
+	for _, w := range inv.Stats.Warnings {
+		slog.Warn("assembler", "warning", w)
 	}
 }
