@@ -1,11 +1,14 @@
 # AIROM CLI Reference
 
-> **Status: implemented as of Phase 3** for `scan`, `fs`, `repo`, `image`, `k8s`, `clean`,
-> and `version`, including config layering, the exit-code contract, and the `--fail-on`
-> grammar ([ARCHITECTURE.md §12](./ARCHITECTURE.md#12-cli), decisions D15/D17). Scan
-> commands fail fast with a clear error until the engine lands (Phase 4). The `detectors`,
-> `rules`, and `dev` command groups ship with their subsystems (Phases 5–6) — no dead
-> commands before the thing they operate on exists.
+> **Status: implemented as of Phase 4** — the full command surface, config layering, the
+> exit-code contract, and the `--fail-on` grammar ([ARCHITECTURE.md §12](./ARCHITECTURE.md#12-cli),
+> decisions D15/D17). `scan <dir>` and `fs` run **real scans** (walking, classification,
+> read-once pipeline); detectors land in Phase 5 and output writers in Phase 7, so scans
+> currently report honest counters. `repo`, `image`, and `k8s` fail fast with a clear error
+> until their sources land (Phase 6). `--cache-dir`/`--no-cache` are accepted but inert
+> until `internal/cache` lands. The `detectors`, `rules`, and `dev` command groups ship
+> with their subsystems (Phases 5–6) — no dead commands before the thing they operate on
+> exists.
 
 Stack: cobra (command tree) + koanf (configuration) + stdlib `slog` (logging). One static
 binary, `CGO_ENABLED=0`, no daemon, no network unless the target requires it.
@@ -104,9 +107,18 @@ addition to** `.gitignore` (both are honored on `fs`/`repo` scans; `!` re-inclus
 Use it for AIROM-specific exclusions you don't want in `.gitignore` — vendored fixtures,
 sample prompts, data directories.
 
-Always-on default skips: `.git`, `node_modules`, `vendor`, virtualenvs. Ignored files are
-never opened (they're excluded at walk time), and the effective ignore configuration
-participates in the cache namespace, so changing it never serves stale results.
+Always-on default skips: `.git`, `node_modules`, `vendor`, virtualenvs. These are enforced
+in an isolated rule layer that no `!` re-inclusion can override. Ignored files are never
+opened (they're excluded at walk time, and the phase-2 resolver enforces the same rules),
+and the effective ignore configuration participates in the cache namespace, so changing it
+never serves stale results.
+
+On macOS and Windows, ignore matching folds case (mirroring git's default
+`core.ignorecase=true` on those platforms).
+
+Limitation: POSIX character classes (e.g. `[[:digit:]]`) are not supported in ignore
+patterns — the underlying matcher treats them as literal bracket sets. Use explicit ranges
+like `[0-9]` instead.
 
 ---
 
@@ -132,8 +144,9 @@ $ airom scan image:ubuntu:24.04        # forced: don't try it as a path
 
 ### `airom fs <path>`
 
-Scan a directory tree. Ignore-aware walking, two-tier cache (a re-scan where one file
-changed re-reads one file), bounded memory on any tree size.
+Scan a directory tree. Ignore-aware walking, bounded memory on any tree size. The two-tier
+cache (a re-scan where one file changed re-reads one file) lands with `internal/cache`;
+until then every scan is cold.
 
 ```console
 $ airom fs . -o table -o cyclonedx=aibom.cdx.json

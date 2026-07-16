@@ -186,7 +186,8 @@ AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tag
 | Repository scaffolding on the §4 layout (packages and their contracts, build files, docs) | **Complete** — Phase 2 |
 | CLI ([docs/cli.md](docs/cli.md)): scan/fs/repo/image/k8s/clean/version, config layering (flags > env > file > defaults), exit-code contract, `--fail-on` grammar, pprof/trace bootstrap | **Complete** — Phase 3. Scan commands fail fast with a clear error until the engine lands (Phase 4); `detectors`/`rules`/`dev` command groups arrive with their subsystems (Phases 5–6) |
 | Public SDK types (`pkg/airom`, `pkg/airom/detect`) | Designed, land in Phase 5 |
-| Streaming engine, dispatcher, read-once file context, dir/repo sources | Designed, lands in the engine-core phases |
+| Filesystem scanner: dir source (nested `.gitignore`/`.airomignore` stack, default skips, symlink safety), classification (language/binary/magic), read-once tee-hashed file context, phase-1 streaming pipeline (bounded channels, clamped I/O budget, panic isolation, deterministic output) | **Complete** — Phase 4. `airom fs .` runs a real (detector-less) scan and reports honest counters |
+| Detector dispatcher (Phase 5); repo/image/k8s sources (Phase 6) | Designed |
 | Rule engine (compiler, Aho–Corasick, region lexers) + first rule packs | Designed, lands after the engine core |
 | Binary model-file parsers (GGUF, safetensors, ONNX, torch/pickle, …) | Designed, lands with the detector phases |
 | Writers: native JSON, CycloneDX 1.6, SARIF, YAML, table | Designed, lands with the output phases |
