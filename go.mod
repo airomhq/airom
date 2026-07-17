@@ -1,4 +1,4 @@
-// AIROM — AI Bill of Materials scanner ("Trivy for AI").
+// AIROM — open-source AI Bill of Materials (AIBOM) scanner.
 // Canonical architecture: docs/ARCHITECTURE.md.
 //
 // The module intentionally has no requirements yet: dependencies arrive with

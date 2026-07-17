@@ -59,11 +59,15 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 ### Install
 
 ```bash
-# Go (available once v0.1.0 is published)
+# From source (requires Go 1.25+). Builds the latest commit today;
+# resolves to the newest release tag once one is published.
 go install github.com/Roro1727/airom/cmd/airom@latest
+
+# The binary lands in `$(go env GOPATH)/bin` — make sure that's on your PATH:
+#   export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
-Prebuilt, cosign-signed binaries will ship on the [releases page](https://github.com/Roro1727/airom/releases) with each release; a Homebrew tap is planned. AIROM releases as a single static binary (`CGO_ENABLED=0`) — no runtime, no dependencies.
+Prebuilt, cosign-signed binaries will ship on the [releases page](https://github.com/Roro1727/airom/releases) with each tagged release (no Go toolchain required); a Homebrew tap is planned. AIROM releases as a single static binary (`CGO_ENABLED=0`) — no runtime, no dependencies.
 
 ### Scan
 
@@ -200,7 +204,7 @@ AIROM is **pre-release (v0.1.0-dev)**, feature-complete against the 10-phase pla
 | Production hardening: whole-tree adversarial review (10 dimensions, per-finding verification) that found and fixed 17 verified defects — an OCI-layout path-traversal escape, a static-pickle scan evasion via memo/GET, the unwired `--fail-on` CI gate, a P7 stack-trace leak, YAML int64 corruption, non-canonical purls, and detector/rule-prefilter gaps — each with a regression test. Confirmed the empty CycloneDX `dependencies[]` (no substantiated `depends-on` edges) and the deferred live registry/daemon/cluster modes (fail cleanly) are deliberate, not defects | **Complete** — Phase 10 |
 | SPDX 3.0.1 AI profile, attestation verification, per-layer attribution, OCI rule registry, live-cluster/registry source modes, root→dependency edge synthesis | Deferred to v2 by design (reserved slots — see [ARCHITECTURE §16](docs/ARCHITECTURE.md)) |
 
-Until v0.1.0 is tagged, the badges above may 404 and `go install` will not resolve — the module is unpublished.
+Until v0.1.0 is tagged, the release badge and prebuilt binaries are unavailable; `go install …@latest` still works, building from the latest commit.
 
 ## Comparison
 
