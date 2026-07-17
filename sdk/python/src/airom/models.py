@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import enum
+import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
@@ -197,9 +198,34 @@ class TriState(_OpenStrEnum):
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 
+# Fractional seconds in an RFC 3339 timestamp, as emitted between the seconds
+# and the offset.
+_FRACTION_RE = re.compile(r"\.(\d+)")
+
+
 def _dt_parse(s: str) -> _dt.datetime:
-    """Parse an RFC 3339 timestamp, tolerating a trailing ``Z``."""
-    return _dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    """Parse an RFC 3339 timestamp, tolerating a trailing ``Z``.
+
+    Before Python 3.11, :meth:`datetime.fromisoformat` accepts *only* 3- or
+    6-digit fractional seconds. The binary emits Go's RFC3339Nano, which prints
+    nanoseconds and strips trailing zeros — so it produces 9 digits, or 7, or 1,
+    and every one of those raised ``ValueError`` on the 3.10 this package
+    supports.
+
+    So normalize the fraction to exactly 6 digits before handing it over.
+    :class:`datetime` resolves to microseconds regardless, so truncating (never
+    rounding — a timestamp must not move) is lossless for anything it can
+    represent.
+    """
+    t = s.strip()
+    if t[-1:] in ("Z", "z"):
+        t = t[:-1] + "+00:00"
+    return _dt.datetime.fromisoformat(_FRACTION_RE.sub(_micros, t, count=1))
+
+
+def _micros(m: re.Match[str]) -> str:
+    """Pad or truncate a fractional-second group to microsecond precision."""
+    return "." + m.group(1).ljust(6, "0")[:6]
 
 
 def _list(obj: dict[str, Any], key: str, conv: Callable[[Any], T]) -> list[T]:

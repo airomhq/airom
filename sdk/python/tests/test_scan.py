@@ -151,25 +151,42 @@ def test_raw_escape_hatch(airom_binary):
     assert "ruleengine" in proc.stdout
 
 
+def build_wheel(out_dir):
+    """Build the wheel into out_dir and return its path.
+
+    check=True with captured output raises a CalledProcessError whose repr shows
+    the command and the exit status but not a byte of stderr, so a failure here
+    used to read as "returned non-zero exit status 1" and nothing else — the
+    reason (a missing build module) was sitting in the captured stream. Fail with
+    the output instead.
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    proc = subprocess.run(
+        [sys.executable, "-m", "build", "--wheel", "-o", str(out_dir)],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise AssertionError(
+            f"`python -m build --wheel` failed (exit {proc.returncode})\n"
+            f"--- stdout ---\n{proc.stdout}\n--- stderr ---\n{proc.stderr}"
+        )
+    return next(Path(out_dir).glob("*.whl"))
+
+
 def test_wheel_puts_airom_on_path(tmp_path):
     """`pip install airom` must give a real `airom` COMMAND, not just an
     importable library: the binary ships in the wheel's .data/scripts/, which
     pip copies into the environment's bin/. Regression test for shipping a
     wheel whose binary is only reachable via `import airom`."""
-    import subprocess
-    import sys
     import zipfile
-    from pathlib import Path
 
-    root = Path(__file__).resolve().parents[1]
-    out = tmp_path / "dist"
-    subprocess.run(
-        [sys.executable, "-m", "build", "--wheel", "-o", str(out)],
-        cwd=root,
-        check=True,
-        capture_output=True,
-    )
-    whl = next(out.glob("*.whl"))
+    whl = build_wheel(tmp_path / "dist")
     names = zipfile.ZipFile(whl).namelist()
 
     scripts = [
@@ -192,20 +209,11 @@ def test_bundled_binary_is_version_stamped(tmp_path):
     tool.version "dev". (hatchling gotcha: initialize()'s `version` arg is the
     build-target version, "standard"/"editable" — the package version is
     self.metadata.version.)"""
-    import subprocess
-    import sys
     import zipfile
-    from pathlib import Path
 
     import airom as _airom
 
-    root = Path(__file__).resolve().parents[1]
-    out = tmp_path / "dist"
-    subprocess.run(
-        [sys.executable, "-m", "build", "--wheel", "-o", str(out)],
-        cwd=root, check=True, capture_output=True,
-    )
-    whl = next(out.glob("*.whl"))
+    whl = build_wheel(tmp_path / "dist")
     z = zipfile.ZipFile(whl)
     script = next(n for n in z.namelist() if ".data/scripts/" in n)
 

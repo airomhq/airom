@@ -34,7 +34,12 @@ Source = "https://github.com/airomhq/airom"
 Issues = "https://github.com/airomhq/airom/issues"
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "mypy>=1.8", "ruff>=0.5"]
+# `build` is a TEST dependency, not just a release tool: test_wheel_puts_airom_on_path
+# and test_bundled_binary_is_version_stamped shell out to `python -m build` to
+# assert the packaging contract. Without it here, `pip install -e ".[dev]" &&
+# pytest` fails on a machine that happens not to have build installed — which is
+# exactly what CI is.
+dev = ["pytest>=7", "mypy>=1.8", "ruff>=0.5", "build>=1"]
 
 [tool.hatch.version]
 path = "src/airom/__init__.py"
