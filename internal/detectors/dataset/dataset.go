@@ -3,8 +3,6 @@ package dataset
 import (
 	"bytes"
 	"context"
-	"encoding/csv"
-	"encoding/json"
 	"path"
 	"strings"
 
@@ -40,10 +38,13 @@ func (*Dataset) Selector() detect.Selector {
 	}
 }
 
-// DetectFile classifies the routed file from its header sample and size.
+// DetectFile classifies the routed file from its header sample, name, and size.
+//
+// A structurally-valid CSV or JSONL is NOT enough: see signals.go. The file must
+// corroborate the dataset claim through its fields, its name/path, or a
+// self-describing columnar format — otherwise no finding is emitted at all.
 func (d *Dataset) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, error) {
-	ext := strings.ToLower(path.Ext(f.Path()))
-	format, method, conf, ok := sniff(ext, f.Header())
+	format, method, conf, ok := sniff(f.Path(), f.Header())
 	if !ok {
 		return nil, nil
 	}
@@ -60,58 +61,73 @@ func (d *Dataset) DetectFile(_ context.Context, f *detect.File) ([]detect.Findin
 	}}, nil
 }
 
-// sniff decides the format, detection method, and confidence for a header
-// under a known dataset extension. ok is false when the content contradicts
-// the extension (kept honest to avoid false positives).
-func sniff(ext string, header []byte) (format string, method airom.DetectionMethod, conf airom.Confidence, ok bool) {
+// Confidence by corroboration. Two independent signals beat one, and the
+// content-derived field signal outranks the name, which a file can carry by
+// coincidence.
+const (
+	confFields      = 0.75 // ML-shaped columns/keys: evidence about the content
+	confName        = 0.65 // named/filed as a dataset
+	confFormat      = 0.7  // magic-verified Parquet/Arrow
+	confCorroborate = 0.85 // two or more of the above
+)
+
+// sniff decides the format, method, and confidence for a routed file, or
+// reports ok=false when nothing corroborates the extension.
+func sniff(p string, header []byte) (format string, method airom.DetectionMethod, conf airom.Confidence, ok bool) {
+	ext := strings.ToLower(path.Ext(p))
+	named := nameSignal(p)
+
 	switch ext {
-	case ".parquet":
-		if bytes.HasPrefix(header, parquetMagic) {
-			return "parquet", airom.MethodBinary, 0.8, true
+	case ".parquet", ".arrow":
+		format = strings.TrimPrefix(ext, ".")
+		magic := parquetMagic
+		if ext == ".arrow" {
+			magic = arrowMagic
 		}
-		return "parquet", airom.MethodFilename, 0.6, true
-	case ".arrow":
-		if bytes.HasPrefix(header, arrowMagic) {
-			return "arrow", airom.MethodBinary, 0.8, true
+		if !bytes.HasPrefix(header, magic) {
+			// The extension lies, or the file is truncated. Only a dataset-ish
+			// name keeps it, and then only as a filename-grade claim.
+			if named {
+				return format, airom.MethodFilename, confName, true
+			}
+			return "", "", 0, false
 		}
-		return "arrow", airom.MethodFilename, 0.6, true
+		if named {
+			return format, airom.MethodBinary, confCorroborate, true
+		}
+		return format, airom.MethodBinary, confFormat, true
+
 	case ".jsonl":
-		if looksJSONL(header) {
-			return "jsonl", airom.MethodFilename, 0.6, true
+		fields := jsonlFields(header)
+		if fields == nil { // not JSON Lines at all
+			return "", "", 0, false
 		}
-		return "", "", 0, false
+		return textual("jsonl", fieldSignal(fields), named)
+
 	case ".csv":
-		if looksCSV(header) {
-			return "csv", airom.MethodFilename, 0.6, true
+		fields := csvFields(header)
+		if fields == nil { // not a delimited record
+			return "", "", 0, false
 		}
-		return "", "", 0, false
+		return textual("csv", fieldSignal(fields), named)
 	}
 	return "", "", 0, false
 }
 
-// looksJSONL reports whether the first non-empty line is a JSON object — the
-// defining shape of a JSON Lines record.
-func looksJSONL(header []byte) bool {
-	line := firstLine(header)
-	if len(line) == 0 || line[0] != '{' {
-		return false
+// textual grades a structurally-valid CSV/JSONL by its corroborating signals.
+// With neither, the file is some other program's data and we say nothing.
+func textual(format string, fields, named bool) (string, airom.DetectionMethod, airom.Confidence, bool) {
+	switch {
+	case fields && named:
+		return format, airom.MethodSourceCode, confCorroborate, true
+	case fields:
+		// Derived from the header row, not the path: a content claim.
+		return format, airom.MethodSourceCode, confFields, true
+	case named:
+		return format, airom.MethodFilename, confName, true
+	default:
+		return "", "", 0, false
 	}
-	var obj map[string]json.RawMessage
-	return json.Unmarshal(line, &obj) == nil
-}
-
-// looksCSV reports whether the first line parses as a delimited record with
-// at least two fields.
-func looksCSV(header []byte) bool {
-	line := firstLine(header)
-	if len(line) == 0 {
-		return false
-	}
-	r := csv.NewReader(bytes.NewReader(line))
-	r.FieldsPerRecord = -1
-	r.LazyQuotes = true
-	rec, err := r.Read()
-	return err == nil && len(rec) >= 2
 }
 
 // firstLine returns the first line of the sample with surrounding whitespace

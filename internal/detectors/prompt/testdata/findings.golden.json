@@ -1,4 +1,5 @@
 {
+  "prompts/autocomplete.js": null,
   "prompts/system.txt": [
     {
       "Claim": {
@@ -91,5 +92,6 @@
       },
       "Relations": null
     }
-  ]
+  ],
+  "templates/metric.go.j2": null
 }

@@ -1,0 +1,4 @@
+{% for metric in metrics %}
+// {{ metric.brief }}
+const {{ metric.name | pascal }} = "{{ metric.id }}"   // subsystem: {{ metric.system }}
+{% endfor %}

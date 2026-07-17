@@ -30,11 +30,23 @@ rules:
     claim: { name: "${param}" }
     confidence: 0.5
 
-  # Decoding controls: seed / stop / reasoning_effort / response_format.
+  # Decoding controls whose NAME is itself AI-specific.
+  #
+  # `seed` and `stop` are deliberately NOT here. Standalone, they are not
+  # evidence of anything: `seed = 42` is every RNG in every codebase and
+  # `stop: true` is every boolean flag, and this pattern matches any line
+  # opening with the word. On one real tree they produced 690 and 1,249
+  # occurrences respectively — ~2,000 findings, essentially all false, swamping
+  # the report.
+  #
+  # Nothing is lost. Both are still captured where they carry meaning: at an AI
+  # call site, by capture_params (§9.5), bound to the model they configure. That
+  # is the high-precision path; this pack is only the weak standalone-config
+  # fallback, and a fallback must not invent findings a name cannot support.
   - id: aiconfig/decoding
     kind: ai-config
-    keywords: ["reasoning_effort", "response_format", "seed", "stop"]
-    pattern: '(?m)^[ \t]*["'']?(?P<param>reasoning_effort|response_format|seed|stop)["'']?\s*[:=]\s*\S'
+    keywords: ["reasoning_effort", "response_format"]
+    pattern: '(?m)^[ \t]*["'']?(?P<param>reasoning_effort|response_format)["'']?\s*[:=]\s*\S'
     regions: [code, string]
     claim: { name: "${param}" }
     confidence: 0.5

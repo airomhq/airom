@@ -1,0 +1,3 @@
+timestamp,metric,value,unit,host
+2026-07-17T08:30:54Z,process.cpu.time,12.4,s,build-01
+2026-07-17T08:30:55Z,process.memory.usage,884736,By,build-01

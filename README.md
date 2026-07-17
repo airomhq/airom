@@ -28,7 +28,7 @@ AIROM is **evidence-first**. Every component in the output carries:
 - **Detection technique** — source-code analysis, binary header parse, manifest analysis, hash comparison, …
 - **A calibrated confidence score** — with the arithmetic behind it, not a vibe
 
-That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occurrences[]` — a spec-native home for "seen at file:line, by technique T, with confidence C" that **no other shipping AIBOM tool populates** — plus a SARIF projection so the same findings land as annotations in GitHub Code Scanning. One scan, one graph, every format a pure projection of it.
+That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occurrences[]` — a spec-native home for "seen at file:line, by technique T, with confidence C" that **AIBOM tools routinely leave empty** — plus a SARIF projection so the same findings land as annotations in GitHub Code Scanning. One scan, one graph, every format a pure projection of it.
 
 > **How it relates to SBOM tooling.** Think of AIROM as playing a role for AI assets similar to the role Trivy plays for software dependencies: where Trivy inventories software packages to produce an SBOM, AIROM inventories AI-specific assets to produce an AIBOM. AIROM is its own tool with its own problem space — the analogy is just a quick way in.
 

@@ -3,6 +3,7 @@ package prompt
 import (
 	"bytes"
 	"context"
+	"path"
 	"strings"
 
 	"github.com/airomhq/airom/pkg/airom"
@@ -52,12 +53,68 @@ var systemMarkers = []string{
 	"### instruction",
 }
 
-// roleWords corroborate a jinja template as a chat prompt (matched lowercased).
-var roleWords = []string{"system", "assistant", "role"}
+// chatShaped reports whether a template carries chat-completion structure.
+//
+// Requiring the SHAPE, not a single word, is what separates an LLM prompt from a
+// code generator's template. `{% if role == "system" %}` is a chat prompt; an
+// OpenTelemetry codegen template (metric.go.j2) may well contain the word
+// "system" on its own, and matching that alone reported it as a prompt.
+func chatShaped(lower string) bool {
+	if strings.Contains(lower, "assistant") {
+		return true
+	}
+	return strings.Contains(lower, "role") && strings.Contains(lower, "system")
+}
+
+// promptExts are the extensions a standalone prompt ASSET can carry.
+//
+// The `**/prompts/**` glob routes everything under such a directory, which drags
+// in source code: the `prompts`/`enquirer` npm package ships autocomplete.js,
+// confirm.js and input.js under exactly that path, and each was reported as a
+// prompt. But in-code prompt usage is the rule packs' job (§6.3) — this detector
+// exists only to judge whether a whole TEXT file is a prompt. So code is refused
+// here regardless of where it sits. The empty string admits extensionless files
+// (a bare `system-prompt`).
+var promptExts = map[string]bool{
+	"": true, ".prompt": true, ".txt": true, ".md": true,
+	".jinja": true, ".jinja2": true, ".j2": true,
+	".yaml": true, ".yml": true, ".tmpl": true,
+}
+
+// namedAsPrompt reports whether the PATH claims the file is a prompt: a
+// .prompt extension, a *.prompt.* name, or residence in a prompts/ directory.
+func namedAsPrompt(p string) bool {
+	lower := strings.ToLower(p)
+	ext := path.Ext(lower)
+	if ext == ".prompt" {
+		return true
+	}
+	base := path.Base(lower)
+	if strings.Contains(base, ".prompt.") || strings.Contains(base, "prompt") {
+		return true
+	}
+	for _, seg := range strings.Split(path.Dir(lower), "/") {
+		if seg == "prompt" || seg == "prompts" {
+			return true
+		}
+	}
+	return false
+}
 
 // DetectFile judges whether the routed file is a prompt and, if so, emits a
 // single whole-file KindPrompt claim.
+//
+// Being routed is not enough. A bare .j2/.jinja is a template engine's file, not
+// an LLM prompt — codegen templates (attribute_group.go.j2, metric.go.j2) were
+// being reported as prompts purely for having jinja syntax. So the file must
+// either say what it is (a prompt-defining phrase) or be filed as one; a
+// template that merely mentions "system" while sitting outside a prompts/
+// directory is neither.
 func (p *Prompt) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, error) {
+	if !promptExts[strings.ToLower(path.Ext(f.Path()))] {
+		return nil, nil // source code, whatever directory it lives in
+	}
+
 	content, err := f.Content()
 	if err != nil {
 		return nil, err
@@ -69,18 +126,29 @@ func (p *Prompt) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding
 
 	lower := strings.ToLower(string(content))
 	jinja := hasJinja(content)
-	strong := containsAny(lower, systemMarkers) || (jinja && containsAny(lower, roleWords))
+	named := namedAsPrompt(f.Path())
+
+	// Content evidence: the file says it is a prompt, either in prose or by
+	// carrying chat-completion structure. Either stands on its own, wherever
+	// the file lives — a prompt template under templates/ is still a prompt.
+	confirmed := containsAny(lower, systemMarkers) || (jinja && chatShaped(lower))
+
+	var (
+		conf   airom.Confidence
+		method airom.DetectionMethod
+	)
+	switch {
+	case confirmed:
+		conf, method = 0.8, airom.MethodConfig // content-confirmed
+	case named:
+		conf, method = 0.6, airom.MethodFilename
+	default:
+		return nil, nil // a template, or a text file, but not a prompt
+	}
 
 	format := "prompt"
 	if jinja {
 		format = "prompt-template"
-	}
-
-	conf := airom.Confidence(0.6)
-	method := airom.MethodFilename
-	if strong {
-		conf = 0.8
-		method = airom.MethodConfig // content-confirmed
 	}
 
 	return []detect.Finding{{

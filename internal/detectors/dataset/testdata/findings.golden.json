@@ -1,5 +1,10 @@
 {
+  "agent-a011eb9a45fe1d5a9.jsonl": null,
+  "colors.csv": null,
   "decoy.csv": null,
+  "grib2_table_4_2_0_0.csv": null,
+  "open-telemetry-metrics.2026-07-17.csv": null,
+  "oui.csv": null,
   "reviews.csv": [
     {
       "Claim": {
@@ -25,8 +30,8 @@
           "path": ""
         },
         "detectorId": "",
-        "method": "filename",
-        "confidence": 0.6
+        "method": "source-code-analysis",
+        "confidence": 0.75
       },
       "Relations": null
     }
@@ -57,7 +62,7 @@
         },
         "detectorId": "",
         "method": "binary-analysis",
-        "confidence": 0.8
+        "confidence": 0.7
       },
       "Relations": null
     }
@@ -88,7 +93,7 @@
         },
         "detectorId": "",
         "method": "binary-analysis",
-        "confidence": 0.8
+        "confidence": 0.7
       },
       "Relations": null
     }
@@ -118,8 +123,8 @@
           "path": ""
         },
         "detectorId": "",
-        "method": "filename",
-        "confidence": 0.6
+        "method": "source-code-analysis",
+        "confidence": 0.85
       },
       "Relations": null
     }
