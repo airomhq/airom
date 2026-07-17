@@ -1,0 +1,173 @@
+---
+title: "Installation"
+description: "Install AIROM with go install or build it from source."
+icon: "download"
+---
+
+AIROM is a single static binary — `CGO_ENABLED=0`, no runtime dependencies, no
+shared libraries to chase.
+
+<Warning>
+  **AIROM is pre-release.** The current version is `v0.1.0-dev` and no release
+  has been tagged yet. That has one practical consequence: **there are no
+  prebuilt binaries to download**, and no Homebrew tap. Install with
+  `go install` or build from source.
+
+  Cosign-signed static binaries ship on the [releases
+  page](https://github.com/Roro1727/airom/releases) with each *tagged* release.
+  None exist yet.
+</Warning>
+
+## go install
+
+Requires **Go 1.25 or newer**.
+
+```bash title="Install"
+go install github.com/Roro1727/airom/cmd/airom@latest
+```
+
+Because no release is tagged yet, `@latest` builds the latest commit on the
+default branch. Once a tag exists, `@latest` resolves to that release instead.
+
+### Put it on your PATH
+
+This is the single most common installation problem, so handle it up front.
+
+`go install` places the binary in `$(go env GOPATH)/bin`. If that directory is
+not on your `PATH`, running `airom` gives you `command not found` — the install
+succeeded, your shell just cannot see it.
+
+Check where it went:
+
+```bash title="Find the install directory"
+go env GOPATH
+```
+
+Then add `bin` under that path to your shell profile:
+
+<CodeGroup>
+```bash title="zsh"
+echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+```bash title="bash"
+echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```fish title="fish"
+fish_add_path (go env GOPATH)/bin
+```
+</CodeGroup>
+
+<Note>
+  If you have set `GOBIN`, the binary goes there instead of `$(go env
+  GOPATH)/bin`. Check with `go env GOBIN` and put that directory on your `PATH`.
+</Note>
+
+## Build from source
+
+Clone and build. The `build` target produces a static, version-stamped binary at
+`./airom` in the repo root.
+
+<Steps>
+  <Step title="Clone">
+    ```bash title="Clone"
+    git clone https://github.com/Roro1727/airom.git
+    cd airom
+    ```
+  </Step>
+
+  <Step title="Build">
+    ```bash title="Build"
+    make build
+    ```
+
+    This runs a `CGO_ENABLED=0` build with `-trimpath` and stamps the version,
+    commit, and build date into the binary. The result is `./airom` — run it in
+    place, or move it somewhere on your `PATH`.
+  </Step>
+
+  <Step title="Or install to GOBIN">
+    ```bash title="Install with the same version stamp"
+    make install
+    ```
+
+    Same static build and version stamp as `make build`, but installed into
+    `GOBIN` rather than left in the working tree.
+  </Step>
+</Steps>
+
+<Tip>
+  `make help` lists every target — the build, test, lint, and codegen entry
+  points are all self-documenting.
+</Tip>
+
+### Overriding the version stamp
+
+The version defaults to `git describe`, falling back to `v0.1.0-dev`. Override
+it from the environment when you need a specific stamp:
+
+```bash title="Custom version stamp"
+make build VERSION=v0.1.0
+```
+
+## Verify the install
+
+```bash title="Verify"
+airom version
+```
+
+What you see depends on how you installed:
+
+<Tabs>
+  <Tab title="go install">
+    ```text
+    airom dev
+      commit: none
+      built:  unknown
+      go:     go1.26.5 (darwin/arm64)
+    ```
+
+    The build metadata is injected at build time with ldflags. A plain `go
+    install` does not set it, so the binary honestly reports itself as an
+    unstamped development build. The scanner is fully functional.
+  </Tab>
+
+  <Tab title="make build">
+    ```text
+    airom 0fb8a93-dirty
+      commit: 0fb8a93
+      built:  2026-07-17T06:20:56Z
+      go:     go1.26.5 (darwin/arm64)
+    ```
+
+    `make` stamps the version from `git describe --tags --always --dirty`. With
+    no tag in the repo yet, that resolves to the short commit SHA — plus
+    `-dirty` if your working tree has uncommitted changes.
+  </Tab>
+</Tabs>
+
+Either way, if `airom version` prints at all, the install worked. This is
+exactly the `ToolInfo` block AIROM embeds in every AIBOM it writes, which is
+what lets a document be traced back to the build that produced it.
+
+<Accordion title="airom: command not found">
+  The binary built fine; your shell cannot find it. Run `go env GOPATH`, confirm
+  the binary exists at `$(go env GOPATH)/bin/airom`, and add that directory to
+  your `PATH` — see [Put it on your PATH](#put-it-on-your-path) above. If you
+  built from source with `make build`, the binary is at `./airom` in the repo
+  root and is not on your `PATH` at all until you move it.
+</Accordion>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Your first scan, and emitting CycloneDX + SARIF.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/reference/cli">
+    Every command, flag, and exit code.
+  </Card>
+</CardGroup>

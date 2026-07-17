@@ -1,0 +1,258 @@
+---
+title: "CycloneDX ML-BOM"
+description: "How AIROM projects its component graph onto a CycloneDX 1.6 or 1.7 ML-BOM."
+icon: "boxes"
+---
+
+CycloneDX is AIROM's interchange format for AI inventory. The writer emits an
+ML-BOM: machine-learning-model components carrying `modelCard`, with every claim
+backed by `evidence.occurrences[]` and `evidence.identity[]`.
+
+```bash title="Emit a CycloneDX ML-BOM"
+airom scan . -o cyclonedx=bom.json
+```
+
+## Spec version
+
+```bash title="Target CycloneDX 1.7"
+airom scan . -o cyclonedx=bom.json --cdx-version 1.7
+```
+
+| `--cdx-version` | Result |
+|---|---|
+| `1.6` (default) | `specVersion: "1.6"`, `$schema: bom-1.6.schema.json` |
+| `1.7` | `specVersion: "1.7"`, `$schema: bom-1.7.schema.json` |
+
+<Note>
+The `modelCard` shape is identical in both versions, so only the declared
+`specVersion` and `$schema` differ. The 1.6→1.7 delta is four
+`externalReference` types AIROM never emits. Pick `1.6` unless a consumer
+demands otherwise.
+</Note>
+
+## Document shape
+
+```json title="bom.json (abridged)"
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-07-16T12:00:00Z",
+    "lifecycles": [{ "phase": "pre-build" }],
+    "tools": {
+      "components": [
+        { "type": "application", "name": "airom", "version": "1.0.0" }
+      ]
+    },
+    "component": {
+      "bom-ref": "airom:0000000000000000",
+      "type": "application",
+      "name": "my-rag-app"
+    },
+    "properties": [
+      { "name": "airom:source.type", "value": "repo" },
+      { "name": "airom:unknowns", "value": "1" }
+    ]
+  },
+  "components": [ "…" ]
+}
+```
+
+The scan root is emitted once, as `metadata.component`, and never duplicated in
+`components[]`. Scan provenance travels in `metadata.properties` under the
+`airom:` prefix (`airom:source.type`, `airom:source.target`,
+`airom:source.digest`, `airom:source.git.remote`, `airom:source.git.commit`,
+`airom:source.git.dirty`, `airom:source.k8s.context`, `airom:tool.commit`).
+
+<Tip>
+`airom:unknowns` is always present, even at `0`. Honesty over silence: the count
+of files AIROM could not fully process is part of the BOM, not a log line you
+might miss.
+</Tip>
+
+## bom-ref identity
+
+Every component's `bom-ref` is its AIROM component ID (`airom:` followed by a
+stable hex digest). It is the anchor for every intra-document reference:
+`dependencies[].ref`, `modelCard.modelParameters.datasets[].ref`, and the
+`airom:rel.*` property values all point at a `bom-ref`.
+
+## Kind → component type
+
+The 13 AIROM component kinds map onto CycloneDX's coarser `component.type`. The
+exact kind always survives in the `airom:kind` property, so nothing is lost.
+
+| CycloneDX `type` | AIROM kinds |
+|---|---|
+| `machine-learning-model` | `hosted-llm`, `local-model-file`, `embedding-model` |
+| `framework` | `framework` |
+| `library` | `library` |
+| `data` | `prompt`, `dataset`, `ai-config` |
+| `application` | `vector-db`, `infra`, `service`, `rag-pipeline`, `application` |
+
+Components typed `data` also carry a `data[]` facet: `dataset` → `data[].type:
+"dataset"`, `ai-config` → `"configuration"`, `prompt` → `"other"`.
+
+## modelCard
+
+A `modelCard` is emitted for `machine-learning-model` components — but only when
+there is something to put in it. If AIROM knows no task, no architecture, no
+model card, and no `trained-on` edge, the key is absent rather than empty.
+
+```json title="A hosted model with a modelCard"
+{
+  "bom-ref": "airom:1111111111111111",
+  "type": "machine-learning-model",
+  "group": "openai",
+  "name": "gpt-4.1",
+  "properties": [
+    { "name": "airom:confidence", "value": "0.9" },
+    { "name": "airom:kind", "value": "hosted-llm" },
+    { "name": "airom:model.id", "value": "gpt-4.1-2026-01-14" },
+    { "name": "airom:model.provider", "value": "openai" },
+    { "name": "airom:param.temperature", "value": "0.2 @ src/rag.py:42" }
+  ],
+  "modelCard": {
+    "modelParameters": { "task": "text-generation" },
+    "quantitativeAnalysis": {
+      "performanceMetrics": [
+        { "type": "accuracy", "value": "0.92", "slice": "test" }
+      ]
+    }
+  }
+}
+```
+
+`trained-on` edges become `modelCard.modelParameters.datasets[].ref`, pointing at
+the dataset component's `bom-ref`.
+
+<Note>
+`airom:param.temperature` = `"0.2 @ src/rag.py:42"`. A bound generation
+parameter carries its call site inline, so the provenance of a decoding setting
+survives into the BOM. An unbound param carries just its value.
+</Note>
+
+Model facts with no native CycloneDX slot become namespaced properties:
+`airom:model.paramCount`, `airom:model.quantization`,
+`airom:model.contextLength`, `airom:model.format`, `airom:model.baseModel`, and
+`airom:pickle.risk` / `airom:pickle.imports` for static pickle-walk findings.
+
+## Evidence
+
+Every component that has evidence carries it natively.
+
+```json title="evidence on a component"
+"evidence": {
+  "identity": [
+    {
+      "field": "name",
+      "confidence": 0.9,
+      "concludedValue": "gpt-4.1",
+      "methods": [
+        { "technique": "source-code-analysis", "confidence": 0.9 }
+      ]
+    }
+  ],
+  "occurrences": [
+    {
+      "location": "src/rag.py",
+      "line": 42,
+      "symbol": "build_chain",
+      "additionalContext": "model=\"gpt-4.1\""
+    }
+  ]
+}
+```
+
+`occurrences[]` is every sighting: `location` (required), plus `line`, `symbol`
+and `additionalContext` (the snippet) when known. A whole-file sighting omits
+`line` entirely rather than claiming line 0.
+
+`identity[]` is what AIROM concluded and why. Note that identity entries can
+disagree — a low-confidence competing `concludedValue` sits alongside the
+winning one rather than being silently discarded.
+
+AIROM's 8 detection methods map to CycloneDX evidence techniques by identical
+string, with one exception: `config-analysis` has no enum value, so it degrades
+to `technique: "other"` with `value: "config-analysis"` as a recovery marker.
+
+## `dependencies[]` — what AIROM will and won't claim
+
+The writer maps `depends-on` edges to `dependencies[] {ref, dependsOn}`, and
+root edges naturally reference the `metadata.component` bom-ref.
+
+<Warning>
+In practice, **no rule pack that ships with AIROM declares a `depends-on` edge**,
+so a stock scan produces no `dependencies[]` key at all. This is deliberate, not
+an oversight: AIROM does not fabricate depends-on edges it cannot substantiate
+from evidence. An absent `dependencies[]` means "AIROM did not prove any
+dependency," never "this component has no dependencies."
+</Warning>
+
+If a custom pack supplied via `--rules` declares `depends-on` edges, the writer
+emits them. Every other relationship type is lossy in CycloneDX and travels as a
+property on the edge's source component:
+
+| Route | Relationship types |
+|---|---|
+| `dependencies[]` (native) | `depends-on` |
+| `modelCard…datasets[].ref` (native) | `trained-on` |
+| `airom:rel.<type>` (property) | `uses`, `contains`, `served-by`, `queries`, `embeds-with`, `prompted-by`, `derived-from`, `configures` |
+
+The property value is `"<to-bom-ref>@<confidence>"`, e.g. `airom:rel.uses` =
+`"airom:1a2b3c4d5e6f7788@0.9"`. Type, endpoints and confidence round-trip; the
+edge's own evidence occurrences do not survive. Use `json` or `yaml` if you need
+them.
+
+## purl and hashes
+
+Local weight files get real purls and SHA-256 hashes — their identity *is* their
+bytes:
+
+```json
+{
+  "bom-ref": "airom:2222222222222222",
+  "type": "machine-learning-model",
+  "name": "llama-3-8b.Q4_K_M.gguf",
+  "hashes": [{ "alg": "SHA-256", "content": "0123456789abcdef…" }],
+  "purl": "pkg:generic/llama-3-8b?checksum=sha256:0123456789abcdef…",
+  "externalReferences": [
+    { "url": "https://huggingface.co/meta/llama-3-8b/resolve/main/model.gguf", "type": "distribution" }
+  ]
+}
+```
+
+<Warning>
+Hosted API models get **no purl**, deliberately. Minting
+`pkg:generic/openai/gpt-4.1` would misuse the spec — `pkg:generic` is reserved
+for bare files — and would pollute purl-keyed consumers such as
+Dependency-Track. A hosted model's identity travels as `bom-ref` +
+`airom:model.provider` + `airom:model.id`. This will be revisited if purl
+standardizes an AI type.
+</Warning>
+
+Only SHA-256 digests reach the BOM. AIROM's internal XXH3 hashes are a cache
+detail and are not in the CycloneDX algorithm enum, so they are not emitted.
+
+## Determinism
+
+Components arrive sorted by ID and stay that way. Properties are sorted by name
+then value. `dependencies[]` refs and their `dependsOn` lists are sorted. Two
+scans of an unchanged tree produce byte-identical BOMs, so a checked-in
+`bom.json` diffs cleanly.
+
+## Reference
+
+<CardGroup cols={2}>
+<Card title="Full field mapping" icon="table" href="https://github.com/Roro1727/airom/blob/main/docs/mapping.md">
+  Every internal field and its route into each format is specified in
+  `docs/mapping.md` in the repository.
+</Card>
+
+<Card title="SARIF output" icon="shield-check" href="/output/sarif">
+  For code-scanning UIs rather than BOM exchange.
+</Card>
+</CardGroup>

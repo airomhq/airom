@@ -56,7 +56,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 |------|------|---------|-------------|
 | `-o, --output fmt[=path]` | string, repeatable | `table` | Output format with optional file destination. Formats: `table`, `json` (native airom-json), `cyclonedx`, `sarif`, `yaml`. No `=path` writes to stdout. Repeat for multi-output in one scan. |
 | `--format <fmt>` | string | — | Single-format alias for `-o` (Trivy-familiar spelling). |
-| `--select <expr>` | string | per-source defaults | Detector selection expression (Syft-style tags + include/exclude): `"python,+modelfile/gguf,-dataset"`. Which expression enabled which detector is recorded in the output `Stats`. |
+| `--select <expr>` | string | per-source defaults | Detector selection expression (Syft-style tags + include/exclude): `"rules,+modelfile/gguf,-dataset/file"`. Which expression enabled which detector is recorded in the output `Stats`. |
 | `--rules <file>` | string, repeatable | — | Overlay rule pack(s), merged by rule ID (add/override/disable — see [rule-schema.md](./rule-schema.md#the-three-rule-layers-and-merge-semantics)). Changes the effective ruleset hash and therefore the cache namespace. |
 | `--parallel N` | int | `GOMAXPROCS` | Worker count. Output is byte-identical at any value (invariant P7 — CI diffs `--parallel 1` vs `16`). |
 | `--io-budget <size>` | size | `256m` | Byte-weighted I/O semaphore budget, independent of CPU parallelism (§8). Peak memory is a function of this and the caps below — never of input size. |
@@ -93,7 +93,7 @@ flags  >  AIROM_* environment variables  >  .airom.yaml  >  built-in defaults
 output:
   - table
   - cyclonedx=aibom.cdx.json
-select: "python,typescript,+modelfile/gguf"
+select: "rules,+modelfile/gguf"
 parallel: 8
 io-budget: 256m
 min-confidence: 0.6
@@ -211,7 +211,7 @@ the scanner is self-documenting. `list` shows the effective set for a hypothetic
 (honors `--select`); `explain` prints one detector's full selector, needs, and claims.
 
 ```console
-$ airom detectors list --select "python,-dataset"
+$ airom detectors list --select "rules,+modelfile/gguf"
 $ airom detectors explain modelfile/gguf
 ```
 

@@ -1,0 +1,187 @@
+---
+title: "Evidence"
+description: "Every component in an AIROM AIBOM is anchored to the file, line, and detector that found it."
+icon: "fingerprint"
+---
+
+An AIBOM you cannot audit is a list of guesses. AIROM's answer is the **occurrence**: every
+component in the inventory carries the sightings that put it there, each anchored to a path, a
+line, a snippet, and the detector responsible.
+
+The rule is simple. If AIROM cannot point at the thing, AIROM does not claim the thing.
+
+## The Occurrence
+
+An `Occurrence` is one sighting of a component by one detector — the answer to "why is this in
+my AIBOM?".
+
+<ParamField path="location" type="Location">
+  Where the evidence physically sits. `path` is always set, source-root-relative with forward
+  slashes. `line` / `endLine` are 1-based (0 means whole-file). `column` / `endColumn` are
+  1-based UTF-16 code units. `layer` carries the OCI layer digest when the sighting is
+  attributable to one.
+</ParamField>
+
+<ParamField path="detectorId" type="string">
+  Stable detector identifier, e.g. `rules/openai/model-literal`. This is the SARIF `ruleId`.
+</ParamField>
+
+<ParamField path="method" type="DetectionMethod">
+  How this sighting was made — one of the eight methods below. The method is a property of the
+  sighting, not of the detector: one detector can report different methods for different files.
+  `dataset/file` reports `binary-analysis` for a Parquet file it confirmed by magic bytes, and
+  `filename` for a `.csv` it recognized by extension alone.
+</ParamField>
+
+<ParamField path="confidence" type="number">
+  Belief in [0,1] for **this sighting alone**. Not the component's confidence — see
+  [confidence](/concepts/confidence) for how the engine combines them.
+</ParamField>
+
+<ParamField path="snippet" type="string">
+  The matched text. Capped at 200 bytes and sanitized.
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  The enclosing function or class, when known.
+</ParamField>
+
+<ParamField path="fields" type="map[string]string">
+  Extracted bindings from the match, e.g. `{"model": "gpt-4.1", "temperature": "0.2"}`.
+</ParamField>
+
+A component with twelve occurrences was seen twelve times. The table output reports that count
+directly:
+
+```text title="Occurrence counts in table output"
+AI Bill of Materials — /home/you/my-ai-app
+7 component(s), 3 relationship(s)
+
+KIND              NAME                    VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                 -         openai     0.87   12 occ
+framework         langchain               0.3.14    -          0.95   2 occ
+```
+
+## Contested identity is kept
+
+Two detectors can disagree. A version read from a lockfile and a version read from a code
+comment are both real observations of the codebase — and the losing one is the interesting one,
+because a mismatch between a lockfile and a comment is exactly what you want to see.
+
+AIROM never silently drops the loser. Each contested field is preserved as an `IdentityClaim`:
+
+<ParamField path="field" type="string">
+  One of `name`, `version`, `purl`, `hash`. These are a strict subset of the CycloneDX identity
+  field enum.
+</ParamField>
+
+<ParamField path="value" type="string">
+  The claimed value.
+</ParamField>
+
+<ParamField path="confidence" type="number">
+  Belief in this specific claim.
+</ParamField>
+
+<ParamField path="methods" type="DetectionMethod[]">
+  The methods that support the claim.
+</ParamField>
+
+The highest-confidence version claim becomes the component's `version`. Every claim — winner
+included — is retained in `evidence.identity[]`.
+
+<Note>
+A version from a lockfile (0.95) beats one from a code comment (0.3). The comment's claim stays
+in the AIBOM as a competing identity entry. Nothing is discarded to make the output look tidy.
+</Note>
+
+## The 8 detection methods
+
+Methods are named to align with the CycloneDX evidence technique enum by design: seven of the
+eight are the identical string, so the CycloneDX writer is nearly a cast rather than a
+translation table. `config-analysis` is the sole exception.
+
+| Method | What it does | CycloneDX technique |
+|---|---|---|
+| `source-code-analysis` | Pattern-matches source text. | `source-code-analysis` |
+| `ast-fingerprint` | Matches parsed syntax structure, not text. | `ast-fingerprint` |
+| `manifest-analysis` | Reads package manifests and lockfiles. | `manifest-analysis` |
+| `binary-analysis` | Magic bytes plus header parse (GGUF, safetensors, ONNX). | `binary-analysis` |
+| `hash-comparison` | Digest match against known weights. | `hash-comparison` |
+| `config-analysis` | Reads YAML, TOML, env files, Dockerfiles. | `other` |
+| `filename` | Identifies by path or extension alone. | `filename` |
+| `attestation` | Reserved for v2 — Sigstore / in-toto verification. | `attestation` |
+
+<Info>
+`config-analysis` is the one method with no same-named CycloneDX enum value, so it maps to
+`other` and sets a recovery marker (`methods[].value: "config-analysis"`) — the exact method is
+always recoverable from the emitted document. The CycloneDX values `instrumentation` and
+`dynamic-analysis` are reserved for a future runtime-probing mode and are never emitted today.
+</Info>
+
+`hash-comparison` is the only v1 method that can assert certainty; `attestation` is the v2 path
+to the same. Every other method is capped. See [confidence](/concepts/confidence).
+
+## How evidence projects into each format
+
+<Tabs>
+  <Tab title="Native (json / yaml)">
+    Lossless. `evidence.occurrences[]` and `evidence.identity[]` in full, plus relationship
+    evidence — the call sites proving each edge. The native formats are the only place edge
+    evidence survives.
+
+    ```bash title="Full-fidelity output"
+    airom fs . -o json=airom.json
+    ```
+  </Tab>
+  <Tab title="CycloneDX">
+    Occurrences map to `evidence.occurrences[]`: `location` → `location`, `line` → `line`,
+    `snippet` → `additionalContext`, `symbol` → `symbol`. Identity claims map to
+    `evidence.identity[]` with `value` → `concludedValue` and the supporting methods and their
+    techniques attached.
+
+    Two known losses: the per-occurrence detector ID does not survive at occurrence granularity
+    (method-level attribution survives through `evidence.identity[].methods[]`), and CycloneDX
+    occurrences carry no end line.
+
+    ```bash title="CycloneDX with evidence blocks"
+    airom fs . -o cyclonedx=airom.cdx.json
+    ```
+  </Tab>
+  <Tab title="SARIF">
+    The entire SARIF `results[]` view is a projection of evidence: **one result per occurrence**.
+    Each result gets `ruleId` from the detector ID, `region.startLine` from the line,
+    `region.snippet.text` from the snippet, and `logicalLocations[].name` from the symbol.
+    Whole-file sightings omit `region` entirely.
+
+    Findings are informational — an AIBOM entry is an inventory fact, not a defect — so results
+    carry `level: "note"` by default. `--sarif-strict-kinds` emits spec-pure
+    `kind: "informational"` with `level` omitted instead.
+
+    ```bash title="SARIF for a code-scanning UI"
+    airom fs . -o sarif=airom.sarif --sarif-strict-kinds
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+These three are the only projections there are: `table` reports a per-component occurrence count
+and nothing more. SPDX is not an output format today — the SPDX 3.0.1 AI profile is reserved for
+v2, and it has no model for evidence, so evidence will remain a native / CycloneDX / SARIF
+property when it lands.
+</Note>
+
+## Reading the evidence
+
+The fastest way to audit a surprising component is SARIF: every occurrence becomes a result
+pinned at `file:line`, which most editors and code-scanning UIs will jump to directly. For
+scripted inspection, the native JSON keeps everything, including the detector ID per occurrence.
+
+<CardGroup cols={2}>
+  <Card title="Confidence" icon="gauge" href="/concepts/confidence">
+    How occurrences combine into a component-level score.
+  </Card>
+  <Card title="What is an AIBOM" icon="list-tree" href="/concepts/aibom">
+    The 13 component kinds and what each one carries.
+  </Card>
+</CardGroup>

@@ -1,0 +1,302 @@
+---
+title: "SARIF"
+description: "AIROM's SARIF 2.1.0 output, and how to upload it to GitHub Code Scanning."
+icon: "shield-check"
+---
+
+SARIF puts AI inventory where engineers already look: the code-scanning tab, the
+PR annotation, the IDE problems pane. AIROM emits SARIF 2.1.0 — one rule per
+detector, one result per occurrence.
+
+```bash title="Emit SARIF"
+airom scan . -o sarif=scan.sarif
+```
+
+<Note>
+AIROM's SARIF results are **inventory, not alerts**. A `hosted-llm` result says
+"this file references gpt-4.1," not "this is a vulnerability." That is why the
+default level is `note` — see [Levels](#levels-note-vs-informational).
+</Note>
+
+## Document shape
+
+```json title="scan.sarif (abridged)"
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "airom",
+          "semanticVersion": "1.2.3",
+          "informationUri": "https://github.com/Roro1727/airom",
+          "rules": [ "…" ],
+          "properties": { "airom:tool.commit": "deadbeef" }
+        }
+      },
+      "columnKind": "utf16CodeUnits",
+      "invocations": [ "…" ],
+      "results": [ "…" ]
+    }
+  ]
+}
+```
+
+One run per scan. `tool.driver.semanticVersion` and `airom:tool.commit` are the
+same `ToolInfo` that `airom version` prints and that every AIBOM carries.
+
+## Rules: one per detector
+
+Each distinct detector that produced an occurrence becomes one rule. The
+`ruleId` is the detector ID itself — stable, so a rule keeps its identity across
+runs and releases.
+
+```json title="a rule"
+{
+  "id": "rules/openai/model-literal",
+  "name": "RulesOpenaiModelLiteral",
+  "shortDescription": {
+    "text": "Components identified by the rules/openai/model-literal detector."
+  },
+  "defaultConfiguration": { "level": "note" },
+  "helpUri": "https://github.com/Roro1727/airom/blob/main/docs/",
+  "properties": { "airom:method": "source-code-analysis" }
+}
+```
+
+`name` is the detector ID in UpperCamelCase — every non-alphanumeric character is
+a word boundary, so `rules/openai/model-literal` becomes
+`RulesOpenaiModelLiteral`. `airom:method` carries the detection method
+(`source-code-analysis`, `binary-analysis`, `manifest-analysis`, …).
+
+Rules are sorted by ID. Only detectors that actually fired appear — the rule list
+describes the run, not the catalog. Use `airom detectors list` for the catalog.
+
+## Results: one per occurrence
+
+A component seen at twelve call sites produces twelve results, each anchored to
+its own location. The component is the unit of inventory; the occurrence is the
+unit of a SARIF result.
+
+```json title="a result"
+{
+  "ruleId": "rules/openai/model-literal",
+  "ruleIndex": 1,
+  "level": "note",
+  "message": {
+    "text": "hosted-llm 'openai/gpt-4.1' detected (confidence 0.9)"
+  },
+  "locations": [
+    {
+      "physicalLocation": {
+        "artifactLocation": { "uri": "src/rag.py", "uriBaseId": "SRCROOT" },
+        "region": {
+          "startLine": 42,
+          "snippet": { "text": "model=\"gpt-4.1\"" }
+        }
+      },
+      "logicalLocations": [{ "name": "build_chain" }]
+    }
+  ],
+  "partialFingerprints": {
+    "airomComponentIdentity/v1": "…"
+  },
+  "properties": {
+    "airom:componentId": "airom:1111111111111111",
+    "airom:kind": "hosted-llm",
+    "airom:confidence": 0.9,
+    "airom:occurrence.confidence": 0.9
+  }
+}
+```
+
+The property bag carries `airom:componentId` (the graph anchor, shared by every
+result for one component), `airom:kind`, `airom:confidence` and
+`airom:occurrence.confidence` as JSON numbers, plus `airom:provider`,
+`airom:purl` and `airom:pickle.risk` when known.
+
+The scan-root application component produces no results — it is metadata, not a
+finding. A whole-file sighting emits a `physicalLocation` with no `region`
+rather than claiming line 0.
+
+Results are ordered by component ID, then path, then line, then detector, so the
+file is deterministic across runs.
+
+## Levels: `note` vs `informational`
+
+<Tabs>
+<Tab title="Default">
+```bash
+airom scan . -o sarif=scan.sarif
+```
+```json
+{ "level": "note" }
+```
+GitHub Code Scanning ignores `kind: "informational"` results — they never appear
+in the UI. `level: "note"` renders. The default is chosen so the output is
+useful where it is actually consumed.
+</Tab>
+
+<Tab title="Strict">
+```bash
+airom scan . -o sarif=scan.sarif --sarif-strict-kinds
+```
+```json
+{ "kind": "informational" }
+```
+`--sarif-strict-kinds` emits what the specification says an inventory result is:
+`kind: "informational"`, with `level` omitted. Correct by the spec, invisible in
+GitHub.
+</Tab>
+</Tabs>
+
+The two are exclusive per result: the default sets `level` and omits `kind`; the
+strict flag sets `kind` and omits `level`.
+
+<Note>
+`defaultConfiguration.level` on each **rule** stays `"note"` in both modes.
+`--sarif-strict-kinds` changes the encoding of results only.
+</Note>
+
+## partialFingerprints
+
+```json
+"partialFingerprints": {
+  "airomComponentIdentity/v1": "<sha256 hex>"
+}
+```
+
+The fingerprint is `sha256(detectorID | componentID | path)`, lowercase hex.
+
+<Tip>
+The line number is deliberately **not** in the recipe. Insert twenty lines above
+a `model="gpt-4.1"` literal and the fingerprint is unchanged, so GitHub tracks
+it as the same finding instead of closing one alert and opening another. Code
+motion does not churn your alert history. Moving the reference to a different
+file *does* produce a new fingerprint — that is a genuinely different sighting.
+</Tip>
+
+## Roots and provenance
+
+`originalUriBaseIds.SRCROOT` anchors artifact URIs to a filesystem root. It is
+emitted only when the target is a real path: always for a directory scan, and for
+a repo scan only when the target is a local worktree.
+
+For a remote repo there is no local root to anchor to, so `SRCROOT` is omitted.
+Independently of that, whenever the scan knows a git remote — a local worktree
+with a remote configured, or a remote URL — provenance travels as:
+
+```json
+"versionControlProvenance": [
+  {
+    "repositoryUri": "https://github.com/example/rag-app",
+    "revisionId": "abc123def456"
+  }
+]
+```
+
+## Unknowns are not results
+
+A file AIROM could not fully process is not a finding — it is a gap in the scan,
+and it surfaces as a notification rather than being silently dropped or
+misfiled as a result.
+
+```json
+"invocations": [
+  {
+    "executionSuccessful": true,
+    "endTimeUtc": "2026-07-16T12:00:00Z",
+    "toolExecutionNotifications": [
+      {
+        "message": { "text": "truncated GGUF header" },
+        "level": "note",
+        "locations": [
+          {
+            "physicalLocation": {
+              "artifactLocation": { "uri": "data/weird.bin" }
+            }
+          }
+        ],
+        "properties": { "airom:detectorId": "rules/gguf/header" }
+      }
+    ]
+  }
+]
+```
+
+`executionSuccessful` is `true` for any completed scan, unknowns included. A scan
+that finished is a scan that succeeded.
+
+## Upload to GitHub Code Scanning
+
+<Steps>
+<Step title="Grant the workflow permission">
+`security-events: write` is required to upload SARIF.
+</Step>
+
+<Step title="Scan and emit SARIF">
+Findings are not failures — `airom scan` exits `0` no matter how much it finds,
+so the upload step always runs.
+</Step>
+
+<Step title="Upload the file">
+Use `github/codeql-action/upload-sarif`.
+</Step>
+</Steps>
+
+```yaml title=".github/workflows/aibom.yml"
+name: AIBOM
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  airom:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - run: go install github.com/Roro1727/airom/cmd/airom@latest
+
+      - run: airom scan . -o sarif=airom.sarif --min-confidence 0.8
+
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: airom.sarif
+          category: airom
+```
+
+<Note>
+`--min-confidence 0.8` is worth setting for Code Scanning. Extension-only dataset
+detection and keyword-only `ai-config` detection emit low-confidence (0.5–0.6)
+results on general-purpose repositories; without the filter, that noise lands in
+your security tab. See [/concepts/confidence](/concepts/confidence).
+</Note>
+
+<Tip>
+`category: airom` keeps AIROM's results in their own namespace, so uploading them
+never disturbs alerts from other scanners in the same repository.
+</Tip>
+
+### Adding a gate
+
+Uploading SARIF does not fail a build. To make a build fail on a policy, use
+`--fail-on` in the same run:
+
+```yaml
+- run: airom scan . -o sarif=airom.sarif --fail-on "hosted-llm&confidence>=0.9"
+```
+
+The SARIF file is still written before the non-zero exit, so put the upload step
+under `if: always()` if you want the results even on a failing gate. See
+[/reference/cli](/reference/cli) for the `--fail-on` grammar and exit codes.

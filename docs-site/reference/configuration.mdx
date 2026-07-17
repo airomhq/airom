@@ -1,0 +1,203 @@
+---
+title: "Configuration"
+description: "How AIROM layers flags, environment variables, and .airom.yaml."
+icon: "sliders"
+---
+
+Every global flag can also be supplied as an environment variable or a key in
+`.airom.yaml`. The three spellings resolve through one layering rule.
+
+## Precedence
+
+Highest wins.
+
+```text title="Precedence, highest first"
+flags  >  AIROM_* environment variables  >  .airom.yaml  >  built-in defaults
+```
+
+<Steps>
+  <Step title="Flags">
+    An explicitly-set flag always wins. A flag you did not pass does not shadow a
+    lower layer — its default only fills a key nothing else provided.
+  </Step>
+  <Step title="AIROM_* environment variables">
+    Beat the config file. This is the CI layer: set once in the job environment.
+  </Step>
+  <Step title=".airom.yaml">
+    Discovered in the working directory. This is the repo layer: commit it so
+    every developer and every CI run scans the same way.
+  </Step>
+  <Step title="Built-in defaults">
+    The flag defaults documented in the [CLI reference](/reference/cli).
+  </Step>
+</Steps>
+
+## Environment variables
+
+The rule: `AIROM_` + the flag name, upper-snake-cased. Dashes become underscores.
+
+| Flag              | Environment variable   | Example                          |
+| ----------------- | ---------------------- | -------------------------------- |
+| `--parallel`      | `AIROM_PARALLEL`       | `AIROM_PARALLEL=4`               |
+| `--io-budget`     | `AIROM_IO_BUDGET`      | `AIROM_IO_BUDGET=512m`           |
+| `--no-cache`      | `AIROM_NO_CACHE`       | `AIROM_NO_CACHE=true`            |
+| `--cache-dir`     | `AIROM_CACHE_DIR`      | `AIROM_CACHE_DIR=/var/cache/airom` |
+| `--min-confidence`| `AIROM_MIN_CONFIDENCE` | `AIROM_MIN_CONFIDENCE=0.8`       |
+| `--fail-on`       | `AIROM_FAIL_ON`        | `AIROM_FAIL_ON=hosted-llm`       |
+
+List-valued keys are comma-separated:
+
+```bash title="List-valued environment variables"
+AIROM_OUTPUT="table,sarif=airom.sarif"
+AIROM_RULES="./packs/internal.yaml,./packs/vendor.yaml"
+AIROM_IGNORE="**/fixtures/**,**/*.example.py"
+```
+
+<Note>
+  The list-valued keys are `output`, `rules`, and `ignore` — the three repeatable
+  `stringArray` flags. Every other key takes a single scalar.
+</Note>
+
+## .airom.yaml
+
+Discovered in the working directory. Keys mirror flag names exactly — the flag
+`--min-confidence` is the key `min-confidence`.
+
+```yaml title=".airom.yaml"
+# Output: repeatable -o becomes a list. fmt[=path]; a bare fmt goes to stdout.
+output:
+  - table
+  - cyclonedx=aibom.cdx.json
+
+# Detector selection: bare names, +include, -exclude.
+select: "rules,+modelfile/gguf"
+
+# Overlay rule packs, merged into the embedded set by rule ID.
+rules:
+  - ./packs/internal-models.yaml
+
+# Concurrency and I/O.
+parallel: 8              # default: GOMAXPROCS
+io-budget: 256m          # byte-weighted I/O semaphore budget
+max-file-size: 1m        # full-content read cap for text detectors
+
+# Presentation-layer confidence filter, 0-1.
+# 0.8 is the practical floor on general-purpose repos.
+min-confidence: 0.8
+
+# Extra ignore globs, on top of .gitignore and .airomignore.
+ignore:
+  - "**/test-fixtures/**"
+  - "**/*.example.py"
+
+# Cache.
+cache-dir: /var/cache/airom
+no-cache: false
+
+# Format details.
+cdx-version: "1.6"       # 1.6 or 1.7
+sarif-strict-kinds: false
+
+# CI gate. Without fail-on, a successful scan always exits 0.
+fail-on: "hosted-llm&confidence>=0.9"
+exit-code: 1
+
+# Run posture and diagnostics.
+offline: true
+stats: false
+verbose: 0
+quiet: false
+```
+
+A bare scalar is accepted where a list is expected, and becomes a one-element
+list:
+
+```yaml title="Scalar shorthand for a list key"
+ignore: "**/fixtures/**"
+```
+
+### Command-specific keys
+
+The `image` and `k8s` flags participate in the same layering, under their flag
+names:
+
+```yaml title="Command-specific keys"
+input: ./my-app.tar        # image --input
+platform: linux/arm64      # image --platform
+namespace: inference       # k8s --namespace
+all-namespaces: false      # k8s -A
+manifests: ./deploy/k8s    # k8s --manifests
+parallel-images: false     # k8s --parallel-images
+```
+
+<Warning>
+  These keys are global in the configuration file — they are not scoped per
+  command. An `input:` key in `.airom.yaml` applies to `airom image` in that
+  directory, and `airom image my-ref:latest` will then fail, because a reference
+  and `--input` are mutually exclusive regardless of which layer supplied the
+  input.
+</Warning>
+
+## Unknown keys fail loudly
+
+An unrecognized key in `.airom.yaml`, or an unrecognized `AIROM_*` variable, is a
+fatal configuration error (exit `2`). It is never a silent no-op.
+
+```yaml title="A typo — this is an error, not a no-op"
+parallels: 8    # not "parallel"
+```
+
+```text title="Result"
+airom: invalid configuration: /repo/.airom.yaml: unknown configuration key(s): parallels
+```
+
+The same applies to `AIROM_PARALLELS=8`. The reasoning is the one property that
+matters most for a CI gate: a typo that silently disabled `--fail-on` would be
+worse than no gate at all, because you would believe you had one.
+
+<Tip>
+  Values are strictly typed too. `AIROM_EXIT_CODE=one` or `min-confidence: high`
+  fails with a precise error rather than coercing to zero — which would quietly
+  delete your gate.
+</Tip>
+
+## Cross-key interactions
+
+<AccordionGroup>
+  <Accordion title="--format and -o/--output">
+    `--format` is a single-format alias for `-o`. Passing both **explicitly on
+    the command line** is an error. Across layers, the higher layer wins: a
+    `format` from the environment beats an `output` list from `.airom.yaml`.
+    Within one layer, an `output` list beats the `format` alias.
+  </Accordion>
+
+  <Accordion title="verbose and quiet">
+    `-q` and `-v` are mutually exclusive when both are passed on the command
+    line. An explicit `-v` overrides a `quiet` from the environment or the file,
+    and an explicit `-q` overrides a `verbose` from the environment or the file.
+    If both come from the environment or the file, `quiet` wins — less noise is
+    the safe default.
+  </Accordion>
+
+  <Accordion title="fail-on and exit-code">
+    | Configuration                | Behavior |
+    | ---------------------------- | -------- |
+    | Neither                      | No gate. A successful scan exits `0`. |
+    | `fail-on` alone              | Policy active, exit code `1` on a match. |
+    | `fail-on` + `exit-code: N`   | Policy active, exit code `N`. `N=0` reports matches without failing. |
+    | `exit-code: N` alone (N > 0) | Fail on **any** component, with code `N`. |
+    | `exit-code: 0` alone         | No gate — same as unset. |
+
+    `exit-code` must be in `[0,255]`.
+  </Accordion>
+</AccordionGroup>
+
+## Ignore files
+
+`--ignore` globs are applied **on top of** `.gitignore` and `.airomignore`, not
+instead of them. Both ignore files are honored on `fs` and `repo` scans, with
+gitignore syntax and the same nested per-directory semantics.
+
+<Card title="CLI reference" icon="terminal" href="/reference/cli">
+  Every command, argument, and flag.
+</Card>

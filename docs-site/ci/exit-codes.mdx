@@ -1,0 +1,175 @@
+---
+title: "Exit Codes"
+description: "The AIROM exit-code contract: findings are not failures, and the --fail-on gate is opt-in."
+icon: "circle-check"
+---
+
+AIROM's exit status answers one question: **did the scan run?** It does not tell you
+whether the scan found anything. Failing the build on a finding is an explicit,
+opt-in decision you make with `--fail-on` and `--exit-code`.
+
+## The contract
+
+| Code | Meaning |
+|------|---------|
+| `0` | The scan completed. **Findings are not failures.** A scan that discovers 40 AI components still exits `0`. |
+| `<n>` | The opt-in CI gate matched. `<n>` is the `--exit-code` value — `1` by default when a policy is active. |
+| `2` | Fatal error: invalid flags or configuration, or source acquisition failed (unreadable path, clone failure, image acquisition failure). |
+
+<Note>
+Everything downstream of source acquisition **degrades instead of failing**. Detector
+errors, unreadable files, and corrupt headers become `Unknown` records in the output —
+they never change the exit code. A partial inventory is still a successful scan.
+</Note>
+
+<Warning>
+Exit `0` on findings is deliberate, not an oversight. If you want "fail the build when a
+hosted LLM shows up," you must say so with `--fail-on`. Nothing else will fail your
+build for you.
+</Warning>
+
+## Turning on the gate
+
+<Steps>
+  <Step title="Scan and report (no gate)">
+    ```bash title="Report only — always exits 0"
+    airom fs . -o table
+    ```
+  </Step>
+  <Step title="Add a policy">
+    `--fail-on` compiles an expression and evaluates it against the assembled
+    inventory *after* all output has been written. A match exits `1`.
+
+    ```bash title="Fail when a high-confidence hosted LLM is present"
+    airom fs . --fail-on "hosted-llm&confidence>=0.9"
+    ```
+  </Step>
+  <Step title="Choose the exit status">
+    ```bash title="Match exits 3 instead of 1"
+    airom fs . --fail-on "pickle-risk" --exit-code 3
+    ```
+  </Step>
+</Steps>
+
+### `--exit-code` and `--fail-on` interact
+
+| Flags | Behavior |
+|-------|----------|
+| neither | No gate. A successful scan always exits `0`. |
+| `--fail-on <expr>` | Policy active; a match exits `1`. |
+| `--fail-on <expr> --exit-code N` (N > 0) | Policy active; a match exits `N`. |
+| `--fail-on <expr> --exit-code 0` | Policy is evaluated, all output is still written, and the run exits `0` on a match. |
+| `--exit-code N` alone (N > 0) | **Fail on any component.** Equivalent to a policy that matches every discovered component. |
+| `--exit-code 0` alone | No gate — identical to leaving it unset. |
+
+`--exit-code` must be in `[0,255]`; anything else is a configuration error (exit `2`).
+
+<Tip>
+`--min-confidence` is a **presentation** filter. It trims what the writers emit; it does
+not change what `--fail-on` evaluates. Put your confidence threshold in the policy
+expression (`confidence>=0.8`) if you want it to affect the gate.
+</Tip>
+
+## The `--fail-on` grammar
+
+```text title="Grammar"
+expr       = clause *( "|" clause )     ; OR
+clause     = term   *( "&" term )       ; AND
+term       = ident | comparison
+ident      = a ComponentKind ("hosted-llm") or the "pickle-risk" signal
+comparison = "confidence" OP number     ; OP: >= <= > < =
+```
+
+`&` binds tighter than `|`, so `a|b&c` reads as `a | (b & c)`. Whitespace around tokens
+is ignored. A dangling `&` or `|` is a configuration error (exit `2`). A `--fail-on` that
+is empty or all whitespace sets no policy at all — it is not an error, and it does not
+gate.
+
+### Each clause must be satisfied by a single component
+
+This is the rule that surprises people. `hosted-llm&confidence>=0.9` means *"some one
+component is a hosted LLM **and** that same component has confidence ≥ 0.9."* It does
+**not** mean "a hosted LLM exists somewhere and, separately, something else is
+high-confidence."
+
+<Info>
+The `application` root component — the scan target itself — is never eligible to match a
+policy. It is the thing you scanned, not a finding.
+</Info>
+
+### Terms
+
+<ParamField path="ident" type="ComponentKind | pickle-risk">
+  A [component kind](/concepts/aibom) — `hosted-llm`, `local-model-file`,
+  `embedding-model`, `framework`, `library`, `vector-db`, `prompt`, `dataset`,
+  `ai-config`, `infra`, `service`, `rag-pipeline`, `application` — or the `pickle-risk`
+  signal, which matches a component whose static pickle scan flagged a dangerous global.
+</ParamField>
+
+<ParamField path="confidence OP number" type="comparison">
+  Compares the component's confidence against a bound in `[0,1]`. Operators: `>=`, `<=`,
+  `>`, `<`, `=`. A bound outside `[0,1]` is a configuration error. Bare `confidence`
+  with no operator is rejected — it is almost always a typo.
+</ParamField>
+
+## Worked examples
+
+| Command | Gate semantics | Exit code |
+|---------|----------------|-----------|
+| `airom fs .` | No gate. | `0` always (unless fatal) |
+| `airom fs . --fail-on "hosted-llm"` | Any hosted-LLM reference. | `1` on match, else `0` |
+| `airom fs . --fail-on "pickle-risk"` | Any model file with a dangerous pickle global. | `1` on match, else `0` |
+| `airom fs . --fail-on "hosted-llm&confidence>=0.9"` | One component that is a hosted LLM **and** has confidence ≥ 0.9. | `1` on match, else `0` |
+| `airom fs . --fail-on "local-model-file\|hosted-llm&confidence>=0.8"` | Any local model file, **or** a hosted LLM with confidence ≥ 0.8. | `1` on match, else `0` |
+| `airom fs . --fail-on "dataset" --exit-code 7` | Any dataset component. | `7` on match, else `0` |
+| `airom fs . --fail-on "hosted-llm" --exit-code 0` | Evaluated; output still written; never fails. | `0` always |
+| `airom fs . --exit-code 1` | **Any** discovered component (root excluded). | `1` if anything was found |
+| `airom fs . --fail-on "not a term"` | Rejected at parse time. | `2` |
+| `airom repo https://example.invalid/x.git` | Source acquisition fails. | `2` |
+
+<Warning>
+`--exit-code 1` with no `--fail-on` fails on *any* component, including low-confidence
+noise. Extension-only dataset detection and keyword-only `ai-config` detection emit
+components at confidence 0.5–0.6 on general-purpose directories. Prefer an explicit
+`--fail-on` expression with a confidence bound. See [confidence](/concepts/confidence).
+</Warning>
+
+## Shell notes
+
+Quote the expression. Both `&` and `|` are shell metacharacters:
+
+```bash title="Always quote --fail-on"
+airom fs . --fail-on "local-model-file|hosted-llm&confidence>=0.8"
+```
+
+You can also set the policy through the config layers — flags beat env vars beat
+`.airom.yaml`:
+
+<CodeGroup>
+```bash title="Environment"
+export AIROM_FAIL_ON="hosted-llm&confidence>=0.9"
+export AIROM_EXIT_CODE=1
+airom fs .
+```
+
+```yaml title=".airom.yaml"
+fail-on: "hosted-llm&confidence>=0.9"
+exit-code: 1
+```
+</CodeGroup>
+
+<Note>
+Unknown keys and unknown `AIROM_*` variables fail loudly with exit `2`. A typo never
+silently disables your gate.
+</Note>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="GitHub Actions" icon="github" href="/ci/github-actions">
+    A copy-pasteable workflow: scan, upload SARIF, gate.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/reference/cli">
+    Every command and global flag.
+  </Card>
+</CardGroup>

@@ -1,0 +1,140 @@
+---
+title: "What Is an AIBOM"
+description: "An AI Bill of Materials inventories the AI assets in a codebase — models, datasets, prompts, and the infrastructure serving them."
+icon: "list-tree"
+---
+
+An **AI Bill of Materials (AIBOM)** is an inventory of the AI assets a system depends on:
+the models it calls, the weights it ships, the datasets it reads, the prompts it sends, and
+the infrastructure serving them.
+
+AIROM produces one by scanning a filesystem, a git repository, a container image, or a set of
+Kubernetes manifests, and emitting the components it can prove are there — each with the
+evidence that put it in the list.
+
+## Why an SBOM is not enough
+
+A traditional SBOM answers "what packages are installed?". It is built from package manifests:
+`requirements.txt`, `package-lock.json`, `go.sum`. That model breaks down for AI systems,
+because the most important assets are not packages.
+
+| An SBOM sees | An AIBOM needs to see |
+|---|---|
+| `openai==1.40.0` in a lockfile | the string `gpt-4.1` in the call site that uses it |
+| a `.bin` file of some size | a 7B-parameter GGUF, `Q4_K_M`-quantized, SHA-256 `a3f…` |
+| nothing | `temperature=0.2` bound at one call site, unbound at another |
+| nothing | a `.jsonl` training set sitting in `data/` |
+| nothing | a prompt template checked into source |
+
+`gpt-4.1` has no version in any lockfile. A model file has no `package.json`. A prompt is just
+a string. None of these have a purl, a registry, or a manifest entry — so a package scanner
+walks straight past them.
+
+<Note>
+AIROM plays a role for AI assets roughly analogous to what Trivy plays for software
+dependencies: a single scanner you point at a target to get a machine-readable inventory. The
+inputs are entirely different — AI assets are found in code, headers, and configs, not in
+manifests.
+</Note>
+
+## The 13 component kinds
+
+Every component AIROM emits has exactly one kind. The kinds are deliberately AI-native: a
+hosted model reference and a local weights file are different things, with different identity
+rules and different data attached.
+
+| Kind | What it means | Example |
+|---|---|---|
+| `hosted-llm` | A reference to a model served over an API. No weights on disk. | `gpt-4.1`, `claude-sonnet-4-5` |
+| `local-model-file` | Model weights present on disk or inside an image. | `llama-3-8b-Q4_K_M.gguf` |
+| `embedding-model` | An embedding-task model, hosted or local. | `text-embedding-3-small` |
+| `framework` | An AI framework the code is built on. | `langchain`, `transformers`, `vllm` |
+| `library` | A provider SDK used to reach a model. | `openai`, `anthropic`, `google-genai` |
+| `vector-db` | A vector store the system reads or writes. | `pgvector`, `qdrant` |
+| `prompt` | A prompt or prompt template in the source tree. | `prompts/system.txt` |
+| `dataset` | Structured data used for training, eval, or retrieval. | `data/train.jsonl`, a Parquet shard |
+| `ai-config` | Unbound generation parameters — settings not attached to a resolved model. | a stray `temperature: 0.7` in a YAML config |
+| `infra` | Serving infrastructure. | `ollama`, `vllm`, `tgi` |
+| `service` | A remote inference endpoint. | an Azure OpenAI deployment, a Bedrock endpoint |
+| `rag-pipeline` | A retrieval-augmented generation flow assembled from the above. | a retriever + vector store + model chain |
+| `application` | The scan root itself. Always present. | the directory, repo, or image you scanned |
+
+<Tip>
+`hosted-llm` and `local-model-file` are the two kinds people expect. `ai-config` is the one
+worth understanding early — it exists so that a generation parameter AIROM cannot bind to a
+specific model is still reported rather than dropped. See [confidence](/concepts/confidence)
+for why those tend to be low-confidence.
+</Tip>
+
+## What a component carries
+
+Beyond kind and name, a component carries whatever AIROM could substantiate:
+
+<AccordionGroup>
+  <Accordion title="Identity">
+    Canonical name, optional group (`openai`, `meta-llama`), version, provider, and a purl when
+    — and only when — the package URL spec defines a type for it. Hosted API models get **no**
+    purl: minting `pkg:generic/openai/gpt-4.1` would misuse the spec and pollute purl-keyed
+    consumers. Their identity travels as properties instead.
+  </Accordion>
+  <Accordion title="Provenance and integrity">
+    Hashes, download location, release time, and a human-readable source trail. A local model
+    file gets a SHA-256 whenever the whole file was read — AIROM never lets a truncated prefix
+    hash masquerade as a file hash, so weights larger than `--max-file-size` (default `1m`) are
+    identified from their header without one.
+  </Accordion>
+  <Accordion title="A facet">
+    Exactly one kind-family facet. Model components carry architecture, parameter count,
+    quantization, context length, format, and base model. Dataset and prompt components carry
+    format, size, and URL. Infra and service components carry endpoint, region, and deployment.
+    Framework and library components carry an ecosystem.
+  </Accordion>
+  <Accordion title="Confidence and evidence">
+    An assembled confidence in [0,1] and every occurrence behind it. This is the part no
+    package scanner has an analogue for. See [evidence](/concepts/evidence).
+  </Accordion>
+</AccordionGroup>
+
+## Relationships
+
+AIROM emits typed, evidenced edges between components — each backed by the call site that
+proves it.
+
+<Warning>
+In CycloneDX output, the `dependencies[]` array comes out **empty** today. The writer maps
+`depends-on` edges into it, but no shipped detector or rule pack emits a `depends-on` edge —
+AIROM does not fabricate one it cannot substantiate. Other edge types survive as documented
+`airom:rel.*` properties, and relationships survive in full in the native `json` and `yaml`
+outputs.
+</Warning>
+
+## Output formats
+
+The same inventory projects into five formats. Select them with `-o` (repeatable) or `--format`.
+
+| Format | Use it for |
+|---|---|
+| `table` | reading in a terminal (default) |
+| `json` | the native model — lossless, everything above |
+| `yaml` | the native model, human-readable |
+| `cyclonedx` | feeding an SBOM consumer; spec 1.6 or 1.7 |
+| `sarif` | code-scanning UIs — one result per occurrence, anchored at `file:line` |
+
+```bash title="Emit several formats at once"
+airom fs . -o table -o cyclonedx=airom.cdx.json -o sarif=airom.sarif
+```
+
+## Standards status
+
+CycloneDX is the supported SBOM projection today, including its `evidence` blocks — the part
+of the spec that most tools leave empty. SPDX 3.0.1's AI profile and attestation verification
+are reserved for v2.
+
+<CardGroup cols={2}>
+  <Card title="Evidence model" icon="fingerprint" href="/concepts/evidence">
+    How every claim is anchored to a file, a line, and a detector.
+  </Card>
+  <Card title="Confidence" icon="gauge" href="/concepts/confidence">
+    How the engine assembles a score, and how to filter the noise.
+  </Card>
+</CardGroup>

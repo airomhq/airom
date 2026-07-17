@@ -1,0 +1,179 @@
+---
+title: "Output Formats"
+description: "The five AIROM output formats, and how to emit several of them from one scan."
+icon: "file-output"
+---
+
+AIROM assembles one graph per scan, then renders it. Every format is a pure
+projection of that same graph — a writer never re-derives a fact, never reaches
+back into the engine, and never adds information the graph does not already
+carry. One scan, every format, no drift between them.
+
+## The five formats
+
+| Format | Flag value | Lossless | Use it for |
+|---|---|---|---|
+| Table | `table` | No | Human review in a terminal. The default. |
+| Native JSON | `json` | Yes | The reference serialization. Round-trips the full graph. |
+| CycloneDX | `cyclonedx` | No | ML-BOM exchange. See [/output/cyclonedx](/output/cyclonedx). |
+| SARIF | `sarif` | No | Code scanning UIs. See [/output/sarif](/output/sarif). |
+| YAML | `yaml` | Yes | The same content as `json`, shaped for human review and diffs. |
+
+<Note>
+`json` and `yaml` are the two lossless formats — they carry the whole
+`Inventory`, including relationship evidence that CycloneDX and SARIF have no
+place to put. If you need to keep everything, keep one of those.
+</Note>
+
+## The default: table
+
+With no output flag, AIROM writes a table to stdout.
+
+```bash title="Scan the working directory"
+airom scan .
+```
+
+```text
+AI Bill of Materials — /home/you/my-ai-app
+7 component(s), 3 relationship(s)
+
+KIND              NAME                    VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                 -         openai     0.87   12 occ
+framework         langchain               0.3.14    -          0.95   2 occ
+```
+
+The columns are exactly `KIND`, `NAME`, `VERSION`, `PROVIDER`, `CONF`,
+`EVIDENCE`. Empty scalars render as `-`. Evidence renders as an occurrence count
+(`12 occ`), not a file list. The scan-root application component is omitted from
+the table — it is metadata, not a finding — so the component count covers
+findings only.
+
+If nothing matches, the table degrades to a single line:
+
+```text
+No AI components found in .
+```
+
+When files could not be fully processed, a trailing line reports the count and
+points at `--stats` or the JSON output for the detail.
+
+<Warning>
+`-v/--verbose` raises **log** verbosity only. It does not expand the table, add
+columns, or change any writer's output. Nothing on the CLI changes the table's
+shape.
+</Warning>
+
+## Multi-output: one scan, several files
+
+`-o/--output` takes `fmt[=path]` and is repeatable. Omit `=path` and the format
+goes to stdout.
+
+```bash title="Emit CycloneDX and SARIF in one pass"
+airom scan . -o cyclonedx=bom.json -o sarif=scan.sarif
+```
+
+That is a single scan. `bom.json` and `scan.sarif` are two projections of one
+graph, so they can never disagree about what was found — no second traversal, no
+re-detection, no skew.
+
+```bash title="A file plus a table on stdout"
+airom scan . -o table -o cyclonedx=bom.json
+```
+
+<Warning>
+At most one output may write to stdout. Two path-less `-o` values fail with
+`-o: multiple outputs write to stdout; give all but one a path (-o fmt=path)`.
+</Warning>
+
+## `--format`, the single-format alias
+
+`--format` is a convenience spelling for a single format on stdout. These are
+equivalent:
+
+<CodeGroup>
+```bash title="--format"
+airom scan . --format json
+```
+
+```bash title="-o"
+airom scan . -o json
+```
+</CodeGroup>
+
+Passing both **on the command line** is an error:
+
+```text
+--format and -o/--output are mutually exclusive; use repeated -o for multi-output
+```
+
+<Tip>
+`--format` cannot express multi-output — it is one format, stdout only. Reach for
+`-o` as soon as you want a file or a second format.
+</Tip>
+
+Because the two spellings are mutually exclusive only when both are passed
+explicitly, they can still coexist across configuration layers: the higher layer
+wins (`flags > AIROM_* env > .airom.yaml`), and within one layer an output list
+beats the single-format alias.
+
+```bash title="Both spellings work as env vars"
+AIROM_FORMAT=json airom scan .
+AIROM_OUTPUT="table,sarif=airom.sarif" airom scan .
+```
+
+## Writers are pure projections
+
+This is an architectural invariant, not a stylistic claim, and it has
+consequences worth relying on:
+
+<CardGroup cols={2}>
+<Card title="Deterministic" icon="repeat">
+  The assembler sorts everything before a writer runs. Two scans of an unchanged
+  tree produce byte-identical output. YAML and JSON diff cleanly in review.
+  (`--stats` is the exception: timings are volatile by nature.)
+</Card>
+
+<Card title="No format-only facts" icon="scale-balanced">
+  A writer renders nothing the graph lacks. If a field is missing from
+  CycloneDX, it is missing from the graph — not dropped by the writer.
+</Card>
+
+<Card title="Consistent across formats" icon="layers">
+  The same component, confidence, and evidence appear in every format you ask
+  for, because they are read from one assembled inventory.
+</Card>
+
+<Card title="Cheap to add formats" icon="plus">
+  A format is a function from inventory to bytes. Adding one cannot change what
+  a scan finds.
+</Card>
+</CardGroup>
+
+## Format-specific flags
+
+| Flag | Applies to | Effect |
+|---|---|---|
+| `--cdx-version` | `cyclonedx` | Spec version: `1.6` (default) or `1.7`. |
+| `--sarif-strict-kinds` | `sarif` | Emit `kind:"informational"` instead of `level:"note"`. |
+| `--min-confidence` | all | Presentation-layer confidence filter, `0`–`1`. |
+| `--stats` | `json`, `yaml` | Keep the full `ScanStats` block (timings, per-detector counts). |
+
+<Note>
+`--stats` only shows up in `json` and `yaml` — they are the formats that
+serialize `ScanStats`. Without it, the stats block is trimmed to
+`filesWalked`, `filesProcessed` and `filesFailed`; the volatile timing and
+per-detector numbers are dropped so the output stays reproducible. The table,
+CycloneDX and SARIF writers never render the stats block either way.
+</Note>
+
+<Note>
+`--min-confidence` filters at the presentation layer. On general-purpose
+directories, `--min-confidence 0.8` is the practical setting — see
+[/concepts/confidence](/concepts/confidence).
+</Note>
+
+## Findings are not failures
+
+Every format exits `0` on a completed scan, however many components it found.
+Output selection has no bearing on exit status; only `--fail-on` (and
+`--exit-code`) create a gate. See [/reference/cli](/reference/cli).

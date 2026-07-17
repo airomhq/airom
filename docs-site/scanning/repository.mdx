@@ -1,0 +1,93 @@
+---
+title: "Repositories"
+description: "Scan a git repository with airom repo."
+icon: "git-branch"
+---
+
+`airom repo <url|path>` scans a git repository. The target is interpreted by what it is:
+
+| Target | Behavior |
+| --- | --- |
+| An existing local path | Scanned in place as a worktree. Nothing is cloned or copied. |
+| A remote URL | Shallow-cloned into a temp directory, scanned, then removed. |
+
+```bash title="Local worktree"
+airom repo ./my-ai-app
+```
+
+```bash title="Remote URL"
+airom repo https://github.com/acme/ai-app.git
+```
+
+An existing local path always wins: if `./foo` exists on disk, it is scanned as a worktree even if a remote of the same name exists. Anything that is neither an existing path nor a recognized remote URL is a usage error.
+
+<Note>
+  `airom scan <target>` reaches `repo` automatically when the target is not an existing local path but does look like a git URL. Use the `repo:` prefix to force it.
+</Note>
+
+## Recognized remote URLs
+
+`https://`, `http://`, `ssh://`, `git://`, and scp-like `git@host:path`.
+
+## Remote clones need git on PATH
+
+Remote URLs are cloned by invoking the `git` binary. There is no in-process clone fallback: if no `git` is on `PATH`, AIROM fails with a clear error rather than silently doing something else.
+
+```bash
+git source "https://github.com/acme/ai-app.git": git binary not found on PATH: install git or scan a local worktree path
+```
+
+The clone is deliberately minimal:
+
+```bash title="What AIROM runs"
+git clone --depth=1 --single-branch --no-tags -- <url> <tmpdir>
+```
+
+<Warning>
+  Clones never prompt for credentials — AIROM sets `GIT_TERMINAL_PROMPT=0`, so a private repo fails fast instead of hanging on an interactive password prompt. Clone a private repo yourself and scan the local worktree.
+</Warning>
+
+The temp checkout is removed when the scan finishes.
+
+## Git provenance
+
+The repo source captures provenance for the worktree it scans, best-effort:
+
+| Field | How it is obtained |
+| --- | --- |
+| `commit` | Resolved `HEAD` commit hash. |
+| `remote` | For a local path: `remote.origin.url`. For a remote clone: the URL you passed, which is authoritative. |
+| `dirty` | Whether the worktree has uncommitted changes. Local worktrees only, and it requires a `git` binary — there is no file-parsing equivalent. |
+
+When a `git` binary is present it is authoritative. When it is not, `HEAD` and the origin URL are still recovered by reading `.git/HEAD`, its target ref (loose or packed), and `.git/config` directly. Every step is best-effort: pointing `repo` at a directory that is not a git worktree yields empty provenance and the scan proceeds normally.
+
+The resolved commit becomes the scan's content identity (`git:<commit>`), falling back to the target string when no commit can be resolved.
+
+<Warning>
+  The AIBOM's source block currently records the source kind and target only. Populating the git provenance block in the emitted document is not wired up yet — do not expect `commit` or `dirty` to appear in the output today.
+</Warning>
+
+## Everything from `fs` applies
+
+A repo scan *is* a directory scan of the worktree. Ignore handling (`.gitignore` + `.airomignore` stacks, non-overridable default skips, `--ignore` globs), `--max-file-size`, `--io-budget`, `--parallel`, and `--select` all behave exactly as documented in [/scanning/filesystem](/scanning/filesystem).
+
+```bash title="Repo scan with the usual knobs"
+airom repo https://github.com/acme/ai-app.git \
+  --ignore '**/testdata/**' \
+  --min-confidence 0.8 \
+  -o json=aibom.json
+```
+
+Note that `.git/` itself is a non-overridable default skip, so repository internals are never walked as scan content.
+
+## Working without a network
+
+<Warning>
+  The global `--offline` flag is accepted and parsed, but it is not yet enforced: it does not currently block a remote clone. Do not rely on it as a network guarantee.
+</Warning>
+
+To scan a repository with no network access, clone it yourself and point `repo` at the local worktree — a local path is never fetched over the network.
+
+```bash title="No network: local worktree only"
+airom repo ./my-ai-app
+```

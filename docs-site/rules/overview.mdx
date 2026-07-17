@@ -1,0 +1,267 @@
+---
+title: "Rules Overview"
+description: "AIROM's detection vocabulary is declarative YAML rule packs, with Go detectors for what a pattern cannot express."
+icon: "scroll-text"
+---
+
+Most of what AIROM detects is **data, not code**. Detection lives in declarative rule
+packs: YAML files that pair keyword literals with a regex over classified text regions
+and a templated claim. The binary ships 98 rules across 47 packs, and you can add,
+override, or disable any of them without recompiling.
+
+## The bright line
+
+A rule pack expresses exactly one shape: *keywords + regex over code/string regions + a
+templated claim*. Anything that needs more is a Go detector.
+
+| A rule pack can | A Go detector is required for |
+|---|---|
+| Match literals and regexes in one file | Reading a second file, cross-file correlation |
+| Template a component claim from named groups | Parsing a structured or binary format |
+| Claim relationship edges | Computing a hash, looping |
+| Capture same-call-site generation params | Minting an ID or setting a purl |
+| Assert confidence up to 0.99 | Asserting confidence 1.0 |
+
+Three component kinds are structurally reserved for Go and the assembler, and a rule can
+never emit them: `local-model-file` (binary header parsers own it), `rag-pipeline`
+(synthesized downstream), and `application` (the scan root).
+
+<Note>
+The split is enforced, not advisory. The rule compiler rejects a pack that reaches past
+this envelope at startup — before any file is scanned.
+</Note>
+
+## The embedded ruleset
+
+Packs live under `rules/<category>/`, one file per provider, and are compiled into the
+binary with `go:embed`. That makes the default detection vocabulary offline by
+construction and versioned with each release.
+
+| Category | Packs | Rules |
+|---|---|---|
+| `models` | 10 | 20 |
+| `vectordb` | 10 | 21 |
+| `frameworks` | 10 | 20 |
+| `infra` | 8 | 18 |
+| `embeddings` | 6 | 10 |
+| `datasets` | 1 | 3 |
+| `params` | 1 | 3 |
+| `prompts` | 1 | 3 |
+| **Total** | **47** | **98** |
+
+## Inspecting the effective ruleset
+
+`airom rules list` prints the ruleset AIROM will actually run — embedded packs plus any
+`--rules` overlays, post-merge — with each rule's originating layer.
+
+```bash title="List the effective ruleset"
+airom rules list
+```
+
+```
+RULE ID                                  KIND             CONFIDENCE   LAYER
+aiconfig/decoding                        ai-config        0.50         embedded
+aiconfig/sampling                        ai-config        0.50         embedded
+aiconfig/token-limits                    ai-config        0.50         embedded
+anthropic/messages-call                  library          0.70         embedded
+anthropic/model-literal                  hosted-llm       0.85         embedded
+autogen/agent                            framework        0.70         embedded
+autogen/import                           framework        0.70         embedded
+
+98 rule(s)
+```
+
+The `LAYER` column reads `embedded` for a built-in rule, or the overlay's file path for a
+rule an overlay added or overrode. It is the fastest way to answer "which pack is
+actually producing this finding?"
+
+## Overlays: `--rules`
+
+`--rules` loads an additional pack file. It is repeatable, and files apply in flag order.
+
+```bash title="Layer two overlays on top of the embedded set"
+airom scan . --rules mycorp.yaml --rules team-overrides.yaml
+```
+
+Merging is **by rule ID**, with three operations:
+
+<AccordionGroup>
+  <Accordion title="Add — a rule ID that does not exist yet">
+    New IDs in an overlay must be namespaced by the overlay's own `pack` name. A pack
+    declaring `pack: mycorp` can add `mycorp/internal-gateway`, not `openai/something`.
+  </Accordion>
+  <Accordion title="Override — a rule ID that matches an existing rule">
+    The overlay rule **replaces the existing rule wholly**. There is no field-level
+    merging: your rule must be complete and passes the same validation.
+  </Accordion>
+  <Accordion title="Disable — an entry of just the ID plus disable: true">
+    ```yaml
+    pack: mycorp-overrides
+    version: 1
+    rules:
+      - id: openai/model-literal
+        disable: true
+    ```
+    The rule leaves the effective set entirely. `disable` is overlay-only, and the target
+    must exist — disabling a rule that isn't there is an error, never a silent no-op.
+  </Accordion>
+</AccordionGroup>
+
+Later layers win, and within the `--rules` list, later files win. A third layer — an
+OCI-distributed remote registry — is a reserved slot for v2 and pairs with the
+signing/trust-policy work; it is not implemented.
+
+<Tip>
+Verify an overlay landed before trusting a scan: `airom rules list --rules mycorp.yaml`
+shows the merged result, and the rule's `LAYER` will be your file's path.
+</Tip>
+
+## Validating a pack: `lint` and `test`
+
+Both commands take exactly one pack file and need no Go toolchain — which is the point.
+Rule authors are not expected to be Go programmers.
+
+<Tabs>
+  <Tab title="airom rules lint">
+    Validates a pack against the lint contract **and** its fixture coverage: every rule
+    needs at least one positive and one negative fixture case.
+
+    ```bash title="Lint a pack"
+    airom rules lint rules/models/openai.yaml
+    ```
+
+    ```
+    rules/models/openai.yaml: OK (10 expectation(s) checked)
+    ```
+  </Tab>
+  <Tab title="airom rules test">
+    Compiles the pack and runs it against the fixtures in its testdata directory,
+    checking every annotation.
+
+    ```bash title="Test a pack against its fixtures"
+    airom rules test rules/models/openai.yaml
+    ```
+
+    ```
+    rules/models/openai.yaml: OK (10 expectation(s) checked)
+    ```
+  </Tab>
+</Tabs>
+
+Fixtures are discovered by convention: a pack at `rules/models/openai.yaml` uses
+`rules/models/testdata/openai/`. Failures print with file, line, rule ID, and reason, and
+the command exits non-zero.
+
+Validation is strict by design. An unknown field is a parse error, not a shrug:
+
+```
+--rules bad.yaml: parse: yaml: unmarshal errors:
+  line 10: field bogus_field not found in type ruleengine.Rule
+```
+
+And a rule without keywords cannot ship at all:
+
+```
+rule "nokw/x" (bad.yaml): keywords is mandatory and non-empty (un-prefiltered regexes cannot ship)
+```
+
+See [Writing Rules](/rules/writing-rules) for why that rejection exists.
+
+## Selecting the rule engine: `--select`
+
+All rule packs execute inside a single detector whose ID is `ruleengine`. `--select`
+takes a detector selection expression, so you can run only the declarative layer:
+
+```bash title="Run only the rule engine"
+airom scan . --select ruleengine
+```
+
+`airom detectors explain ruleengine` shows the compiled selector, and the rule count it
+carries:
+
+```bash title="Explain the rule-engine detector"
+airom detectors explain ruleengine
+```
+
+```
+id:        ruleengine
+version:   1
+phase:     file
+selects:   lang:csharp|go|java|javascript|kotlin|python|rust|typescript · rules:98
+need:      content
+selected:  selected by "default"
+```
+
+That `rules:98` reflects the *effective* set. Add an overlay with two new rules and
+`airom detectors list --rules mycorp.yaml` reports `rules:100` — a quick confirmation
+that your pack was actually loaded.
+
+<Note>
+`airom detectors list` and `airom detectors explain` honor `--select` and `--rules`, so
+what they print is what a scan with those same flags will run.
+</Note>
+
+## How a rule runs
+
+Compilation happens **once at process startup**: every layer is parsed and merged, the
+whole lint contract is validated (any violation aborts startup with the offending pack,
+rule, and reason), every regex is compiled, and one Aho–Corasick trie is built over
+*every* pack's keywords.
+
+Then, per file:
+
+<Steps>
+  <Step title="Selector gate">
+    Language and size are checked from compiled rule metadata — before any content is
+    read.
+  </Step>
+  <Step title="Region classification">
+    A per-language lexer splits the file into code, comment, and string regions.
+  </Step>
+  <Step title="Keyword prefilter">
+    The trie runs over code + string regions only. No keyword hit means the file is done,
+    at roughly memcpy speed. This eliminates the overwhelming majority of files.
+  </Step>
+  <Step title="Regex execution">
+    Only rules whose keywords hit run their regex, and only within their declared regions.
+  </Step>
+  <Step title="Templating">
+    Matches template into findings: claim, occurrence (with fields from named groups and
+    captured params), and relation claims. The detection method is always
+    `source-code-analysis`.
+  </Step>
+</Steps>
+
+Rule findings then flow through the same assembler as every Go detector's output —
+identity, dedup, and grouped noisy-OR confidence are the assembler's job, never the
+rule's.
+
+## Rules are self-invalidating
+
+The SHA-256 of the effective compiled ruleset participates in the cache namespace:
+
+```
+namespace = sha256(detectorVersions ‖ effectiveRulesetSHA256 ‖ sizeCaps ‖ ignoreConfig)
+```
+
+Any change to any rule — embedded or overlay, add, override, or disable — produces a new
+namespace, and every previously cached finding becomes structurally invisible to the new
+configuration. This is why a pack's `version:` field is informational: rules-as-data
+invalidate on **content**, which eliminates the forgotten-version-bump stale-cache bug.
+
+<Warning>
+The flip side is real: editing any rule invalidates the whole cache namespace. That is a
+deliberate choice of correctness over cache warmth. `airom clean` removes the scan cache
+directory outright.
+</Warning>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Writing Rules" icon="pencil-ruler" href="/rules/writing-rules">
+    The full YAML schema, why keywords are mandatory, and the fixture-driven test loop.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/reference/cli">
+    Every command and global flag, including `--rules` and `--select`.
+  </Card>
+</CardGroup>

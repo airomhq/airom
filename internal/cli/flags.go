@@ -19,7 +19,7 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 		fmt.Sprintf("output as fmt[=path]; repeatable; formats: %s (default table to stdout)",
 			strings.Join(app.Formats(), ", ")))
 	fs.String("format", "", "single-format alias for -o (mutually exclusive with -o)")
-	fs.String("select", "", `detector selection expression, e.g. "python,+modelfile/gguf,-dataset"`)
+	fs.String("select", "", `detector selection expression, e.g. "rules,+modelfile/gguf,-dataset/file"`)
 	fs.StringArray("rules", nil, "overlay rule pack file; repeatable; merged by rule ID")
 	fs.Int("parallel", 0, "worker count (default: GOMAXPROCS)")
 	fs.String("io-budget", formatSize(app.DefaultIOBudget), "byte-weighted I/O semaphore budget (k/m/g suffixes)")

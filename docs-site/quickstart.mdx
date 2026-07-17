@@ -1,0 +1,199 @@
+---
+title: "Quickstart"
+description: "Install AIROM and produce your first AIBOM in under two minutes."
+icon: "rocket"
+---
+
+<Steps>
+  <Step title="Install">
+    AIROM is a single static binary. Install it with the Go toolchain (Go 1.25+):
+
+    ```bash title="Install"
+    go install github.com/Roro1727/airom/cmd/airom@latest
+    ```
+
+    <Warning>
+      The binary lands in `$(go env GOPATH)/bin`. If that directory is not on
+      your `PATH`, the next step fails with `command not found`. See
+      [Installation](/installation) for the fix and for building from source.
+    </Warning>
+  </Step>
+
+  <Step title="Verify">
+    ```bash title="Verify"
+    airom version
+    ```
+
+    ```text
+    airom dev
+      commit: none
+      built:  unknown
+      go:     go1.26.5 (darwin/arm64)
+    ```
+
+    <Note>
+      `dev` / `none` / `unknown` is expected here. The version, commit, and date
+      are stamped in at build time via ldflags; a plain `go install` does not set
+      them. [Building from source](/installation#build-from-source) produces a
+      stamped binary.
+    </Note>
+
+    This is the same `ToolInfo` that gets embedded in every AIBOM AIROM writes,
+    so a document can always be traced back to the build that produced it.
+  </Step>
+
+  <Step title="Scan">
+    Point it at your project. `scan` auto-detects what the target is: an
+    existing local path, then a git URL, then an image reference.
+
+    ```bash title="Scan the current directory"
+    airom scan .
+    ```
+
+    The default output is a table on stdout:
+
+    ```text
+    AI Bill of Materials — /home/you/myapp
+    12 component(s), 2 relationship(s)
+
+    KIND              NAME                    VERSION  PROVIDER      CONF   EVIDENCE
+    ai-config         max_tokens              -        -             0.5    1 occ
+    ai-config         temperature             -        -             0.5    1 occ
+    embedding-model   text-embedding-3-large  -        openai        0.85   1 occ
+    framework         langchain               0.2.16   langchain     0.95   1 occ
+    hosted-llm        gpt-4.1                 -        openai        0.85   1 occ
+    library           openai                  1.51.0   openai        0.95   1 occ
+    library           openai-sdk              -        openai        0.7    1 occ
+    library           sentence-transformers   3.1.1    hugging face  0.95   1 occ
+    local-model-file  tiny.gguf               -        local         0.95   1 occ
+    prompt            system.txt              -        -             0.8    1 occ
+    rag-pipeline      rag-pipeline            -        -             0.6    1 occ
+    vector-db         chroma                  0.5.5    chroma        0.985  3 occ
+    ```
+
+    <Note>
+      The scan exited `0`. Findings are not failures — AIROM inventories, it
+      does not judge. To make CI fail, you opt in with `--fail-on`.
+    </Note>
+  </Step>
+
+  <Step title="Cut the noise">
+    Extension-only dataset detection and keyword-only `ai-config` matching emit
+    low-confidence rows (the `0.5` `ai-config` entries above). Filter them at
+    the presentation layer:
+
+    ```bash title="Only high-confidence components"
+    airom scan . --min-confidence 0.8
+    ```
+
+    `0.8` is the practical threshold on a general-purpose directory. See
+    [Confidence](/concepts/confidence) for how the scores are calibrated.
+  </Step>
+
+  <Step title="Emit real documents">
+    The table is for humans. `-o` takes `fmt[=path]` and is repeatable, so one
+    scan can produce every artifact you need:
+
+    ```bash title="CycloneDX + SARIF in one pass"
+    airom scan . \
+      -o cyclonedx=aibom.json \
+      -o sarif=airom.sarif \
+      -o table
+    ```
+
+    That writes a CycloneDX 1.6 ML-BOM with `evidence.occurrences[]` intact, a
+    SARIF file for code-review annotations, and still prints the table.
+
+    <Tip>
+      Need CycloneDX 1.7? `--cdx-version 1.7`. The default is `1.6`.
+    </Tip>
+  </Step>
+</Steps>
+
+## Where the evidence lives
+
+The table's `EVIDENCE` column tells you *how many* sightings back a component.
+The actual `file:line` provenance — plus the matched snippet, the enclosing
+symbol, the detector that fired, and a per-occurrence confidence — is carried in
+the structured outputs.
+
+```bash title="Inspect the occurrences"
+airom scan . -o json=aibom.json
+```
+
+<Accordion title="The gpt-4.1 component, as emitted">
+```json
+{
+  "id": "airom:cfc27e587216febe",
+  "kind": "hosted-llm",
+  "name": "gpt-4.1",
+  "provider": "openai",
+  "confidence": 0.85,
+  "evidence": {
+    "occurrences": [
+      {
+        "location": {
+          "path": "src/rag.py",
+          "line": 15,
+          "endLine": 15,
+          "column": 9,
+          "endColumn": 24
+        },
+        "detectorId": "rules/openai/model-literal",
+        "method": "source-code-analysis",
+        "confidence": 0.85,
+        "snippet": "model=\"gpt-4.1\",",
+        "fields": { "model": "gpt-4.1" }
+      }
+    ]
+  },
+  "props": [
+    { "name": "airom:model.provider", "value": "openai" },
+    { "name": "airom:model.id", "value": "gpt-4.1" }
+  ]
+}
+```
+
+That is the whole point: the `gpt-4.1` row in the table is not an assertion, it
+is `src/rag.py:15`, column 9–24, matched by `rules/openai/model-literal` via
+source-code analysis, with the literal text that triggered it.
+</Accordion>
+
+## Wire it into CI
+
+Use a `--fail-on` policy expression. `&` (AND) binds tighter than `|` (OR), and
+all terms in a clause must hold for a *single* component.
+
+```bash title="Fail the build on high-confidence hosted models"
+airom scan . \
+  --fail-on "hosted-llm&confidence>=0.9" \
+  -o sarif=airom.sarif
+```
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Scan completed. Findings are not failures. |
+| `1` | The `--fail-on` policy matched. Override the value with `--exit-code`. |
+| `2` | Fatal error — bad flags/config, or source acquisition failed. |
+
+<Tip>
+  Want to report matches without failing? `--exit-code 0` alongside your
+  `--fail-on` policy.
+</Tip>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    PATH setup, building from source, and the pre-release caveats.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/reference/cli">
+    Every command, flag, and exit code.
+  </Card>
+  <Card title="Evidence model" icon="fingerprint" href="/concepts/evidence">
+    Occurrences, detection methods, and identity claims.
+  </Card>
+  <Card title="Scan a container image" icon="box" href="/scanning/container-images">
+    Tarballs and OCI layouts, offline.
+  </Card>
+</CardGroup>

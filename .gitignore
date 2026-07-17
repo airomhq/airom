@@ -37,3 +37,8 @@ go.work.sum
 
 # ── OS noise ─────────────────────────────────────────────────────────────────
 .DS_Store
+
+# ── Documentation site (Mintlify) ────────────────────────────────────────────
+# `mint dev` local preview cache/build output; the .mdx sources ARE tracked.
+/docs-site/.mintlify/
+/docs-site/node_modules/

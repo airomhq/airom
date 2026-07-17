@@ -1,0 +1,109 @@
+---
+title: "AIROM"
+description: "Open-source AI Bill of Materials (AIBOM) scanner."
+icon: "scan-search"
+---
+
+AIROM is an open-source AI Bill of Materials (AIBOM) scanner. Point it at a
+directory, a git repo, a container image, or a set of Kubernetes manifests, and
+it produces an inventory of the AI assets in there: the models you call, the
+weights on disk, the frameworks and SDKs you import, the vector databases, the
+prompts, the datasets, the serving infrastructure.
+
+It is a single static Go binary. No agent, no runtime hooks, no telemetry.
+
+## Evidence first
+
+Most inventory tools hand you a list and ask you to trust it. Your AIBOM says
+`gpt-4.1` — why? Where exactly? Said who?
+
+AIROM answers that for every component it emits. Each one carries:
+
+| Field | What it holds |
+| --- | --- |
+| **Occurrences** | Every sighting: `file:line`, the matched snippet, and the enclosing function or class when known |
+| **Detection method** | Which technique found it — one of `source-code-analysis`, `ast-fingerprint`, `manifest-analysis`, `binary-analysis`, `hash-comparison`, `config-analysis`, `filename`. An eighth method, `attestation`, is a reserved slot for v2 |
+| **Confidence** | A calibrated 0–1 score, on the component and on each individual occurrence |
+| **Detector ID** | The stable rule that fired, e.g. `rules/openai/model-literal` |
+
+That means every row in the table is a claim you can walk back to a line of
+source. A finding you cannot audit is a finding you cannot act on.
+
+<Note>
+  AIROM plays a role for AI assets roughly similar to what Trivy plays for
+  software dependencies — but the output is an AIBOM, and the unit of trust is
+  the evidence attached to each component.
+</Note>
+
+## What it emits
+
+AIROM writes **CycloneDX 1.6 or 1.7 ML-BOM** with the evidence carried through
+into `evidence.occurrences[]` — the file/line provenance survives into the
+document itself, rather than being discarded at serialization time. It also
+emits **SARIF**, so the same findings render as annotations in a code-review UI.
+
+`json`, `yaml`, and a human `table` round out the formats. Any of them can be
+combined in a single pass with a repeatable `-o`.
+
+```bash title="One scan, two documents"
+airom scan . -o cyclonedx=aibom.json -o sarif=airom.sarif
+```
+
+## What it inventories
+
+Thirteen component kinds, each modelled explicitly rather than lumped into a
+generic "dependency":
+
+<CardGroup cols={2}>
+  <Card title="Models" icon="brain">
+    `hosted-llm` (API model refs), `local-model-file` (weights on disk or in an
+    image), `embedding-model`
+  </Card>
+  <Card title="Code" icon="package">
+    `framework` (langchain, transformers, vllm), `library` (openai, anthropic
+    SDKs), `application` (the scan root)
+  </Card>
+  <Card title="Data" icon="database">
+    `vector-db`, `dataset`, `prompt`, `rag-pipeline`
+  </Card>
+  <Card title="Runtime" icon="server">
+    `infra` (ollama, vllm, tgi), `service` (remote endpoints), `ai-config`
+    (unbound generation params)
+  </Card>
+</CardGroup>
+
+## Findings are not failures
+
+A scan that finds 40 AI components exits `0`. AIROM reports; it does not
+editorialize about what belongs in your codebase.
+
+When you want CI to fail, say so explicitly with `--fail-on` and a policy
+expression:
+
+```bash title="Fail only on high-confidence hosted models"
+airom scan . --fail-on "hosted-llm&confidence>=0.9"
+```
+
+<Warning>
+  AIROM is pre-release (`v0.1.0-dev`, untagged). There are no prebuilt binaries
+  yet — install with `go install` or build from source. Live registry/daemon
+  image pulls and Kubernetes live-cluster mode are not wired up yet; use
+  `image --input <tarball>` and `k8s --manifests <dir>` instead.
+</Warning>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install and run your first scan in under two minutes.
+  </Card>
+  <Card title="What an AIBOM is" icon="file-text" href="/concepts/aibom">
+    The document model, and why AI assets need their own bill of materials.
+  </Card>
+  <Card title="Scan a filesystem" icon="folder-open" href="/scanning/filesystem">
+    Directory trees, ignore rules, and size budgets.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/reference/cli">
+    Every command, every flag, every exit code.
+  </Card>
+</CardGroup>

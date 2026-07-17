@@ -1,0 +1,168 @@
+---
+title: "Confidence"
+description: "How AIROM scores a component, why it clamps at 0.99, and how to filter the low-confidence noise."
+icon: "gauge"
+---
+
+Every component carries a **confidence**: a calibrated belief in [0,1] that the component is
+really there and really identified as claimed.
+
+Two rules govern it:
+
+1. **Detectors never set component confidence.** A detector scores its own sighting. The engine
+   assembles the component-level number from every sighting.
+2. **Filtering is presentation, never assembly.** `--min-confidence` trims what you see. It
+   never changes what was merged, what evidence was recorded, or what any component scored.
+
+## How the engine assembles it
+
+Confidence is a **grouped noisy-OR** over the occurrences behind a component. Three steps:
+
+<Steps>
+  <Step title="Group per detector and method">
+    For each (detector, method) pair, take its highest sighting confidence, then add a small
+    bonus for repeat sightings by that same pair:
+
+    ```text
+    g_d = max(c_i) + (1 − max(c_i)) · min(0.05 · (n_d − 1), 0.15)
+    ```
+
+    The bonus is capped at 0.15. Seeing the same thing twenty times with one detector is only
+    marginally better evidence than seeing it twice — the sightings are not independent.
+  </Step>
+  <Step title="Noisy-OR across methods">
+    Reduce the groups to a per-method maximum, then combine across **methods**:
+
+    ```text
+    C = 1 − Π(1 − m_j)
+    ```
+
+    This is where confidence really rises. Independent methods reinforce each other: a model
+    named in a lockfile *and* fingerprinted in an AST *and* matched by a file header is strong
+    evidence in a way that three source-code regex hits are not.
+  </Step>
+  <Step title="Clamp at 0.99">
+    The result is capped at **0.99**, unless the evidence includes a `hash-comparison` sighting
+    (or, in v2, a verified `attestation`).
+  </Step>
+</Steps>
+
+<Note>
+The 0.99 clamp is a statement of epistemics, not a fudge factor. Static analysis reads what the
+code *says*, not what it *does*. Only a digest matched against known weights lets AIROM assert
+certainty — that is the one v1 path to 1.0.
+</Note>
+
+The multiplication runs in sorted method order deliberately. Float multiplication is not
+associative, so map-iteration order would make the last bits of the score vary between runs.
+AIROM's output is reproducible.
+
+## Bands
+
+The SDK type `airom.Confidence` offers a `Band()` helper that buckets a score into three names:
+
+| Band | Range |
+|---|---|
+| high | ≥ 0.9 |
+| medium | ≥ 0.6 |
+| low | < 0.6 |
+
+<Warning>
+Bands are a convenience for consumers of the Go SDK. No AIROM output emits them: they are not
+stored, not a field in any format, not shown in the table (which prints the float — `0.87`), and
+not usable in a `--fail-on` expression. The float is the real value — compare against it, not
+against a band name.
+</Warning>
+
+## Filtering with `--min-confidence`
+
+`--min-confidence` takes a float in [0,1] and drops components scoring below it.
+
+```bash title="High-signal view"
+airom fs . --min-confidence 0.8
+```
+
+What it does:
+
+- Keeps every component at or above the threshold.
+- **Always keeps the `application` root**, so the output still identifies what was scanned.
+- Drops relationships whose endpoints did not both survive — no dangling edges.
+- Leaves assembly untouched. Re-run without the flag and everything is back.
+
+<Warning>
+`--min-confidence` is a per-run setting, not a per-output one. It applies to **every** output of
+that run — a `-o table -o json=airom.json` run writes the same filtered set to both. If you want
+a quiet table and a complete archival document, run the export a second time without the flag.
+</Warning>
+
+## Be honest about the noise
+
+<Warning>
+On general-purpose directories, AIROM's default output contains low-confidence noise. This is a
+real limitation, not a tuning preference.
+</Warning>
+
+Two detection paths are responsible:
+
+| Path | Confidence | Why it fires falsely |
+|---|---|---|
+| Extension-only dataset detection | 0.6 | A `.csv` or `.jsonl` that looks structurally right becomes a `dataset` component — whether or not it has anything to do with AI. Any repo with exported data will light up. |
+| Keyword-only `ai-config` | 0.5 | A `temperature` or `top_p` key in any YAML or TOML becomes an `ai-config` component. Plenty of non-AI configs use those words. |
+
+These sightings are honest about themselves: they carry the `filename` and `config-analysis`
+methods, and they score accordingly. AIROM reports them rather than hiding them, because a
+silently dropped dataset is worse than a noisy one. But on a repo that is not AI-focused, they
+will dominate the component count.
+
+**The practical filter is `--min-confidence 0.8`.** It clears both classes while keeping
+anything corroborated by an independent method — a `.parquet` file confirmed by its magic bytes
+scores 0.8 on binary analysis alone and survives; a `.csv` matched only by its extension does
+not.
+
+```bash title="Recommended for a first look at an unfamiliar repo"
+airom fs . --min-confidence 0.8
+```
+
+If you want a stricter view still, narrow what runs rather than what prints. `--select` takes an
+include/exclude expression whose tokens are **detector IDs** — so you can drop the dataset
+detector outright:
+
+```bash title="Scan without the dataset detector"
+airom fs . --select "-dataset/file"
+```
+
+<Note>
+Selection is per detector, not per rule pack. The low-confidence `ai-config` rules live inside
+the `ruleengine` detector alongside every other rule, so there is no `--select` token that drops
+just those — `--min-confidence` is the tool for that class of noise.
+</Note>
+
+Every token must match a registered detector ID or tag, or the run fails with a usage error
+rather than silently doing nothing. Check a selection before you scan:
+
+```bash title="Check what a selection actually enables"
+airom detectors list --select "-dataset/file"
+```
+
+## Confidence in CI
+
+`--fail-on` compares against the assembled float directly:
+
+```bash title="Fail only on high-confidence hosted model references"
+airom fs . --fail-on "hosted-llm&confidence>=0.9"
+```
+
+`--min-confidence` and `--fail-on` are fully independent. `--min-confidence` shapes the
+document; `--fail-on` decides the exit status, and it evaluates against the **complete,
+unfiltered** inventory. Raising `--min-confidence` to quiet the table will not weaken your CI
+gate — put the confidence threshold in the `--fail-on` expression itself if that is what you
+want to gate on.
+
+<CardGroup cols={2}>
+  <Card title="Evidence model" icon="fingerprint" href="/concepts/evidence">
+    The occurrences and methods that feed the score.
+  </Card>
+  <Card title="What is an AIBOM" icon="list-tree" href="/concepts/aibom">
+    The 13 component kinds.
+  </Card>
+</CardGroup>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="AIROM">
+  <rect width="32" height="32" rx="7" fill="#4F46E5"/>
+  <!-- Stylized "A" over a bill-of-materials baseline: the evidence line under every claim. -->
+  <path d="M16 7 L23 22 H19.6 L18.3 19.1 H13.7 L12.4 22 H9 L16 7 Z M14.9 16.4 H17.1 L16 13.6 Z"
+        fill="#FFFFFF"/>
+  <rect x="9" y="24" width="14" height="1.8" rx="0.9" fill="#FFFFFF" opacity="0.75"/>
+</svg>

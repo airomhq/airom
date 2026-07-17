@@ -48,7 +48,7 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 | **Serving infrastructure** | Ollama, vLLM, TGI, Ray Serve, SageMaker, Vertex AI, Azure ML — including Dockerfile/compose/k8s manifests |
 | **RAG pipelines** | Retriever + vector store + embedder + LLM stitched into a synthesized `rag-pipeline` composite with typed, evidenced edges |
 
-**Scan targets:** filesystem · git repository (local or URL) · container image (remote, daemon, tarball, OCI layout) · Kubernetes workloads (live cluster or offline manifests)
+**Scan targets:** filesystem · git repository (local or URL) · container image (`--input` tarball or OCI layout today; remote/daemon pull is a follow-up) · Kubernetes workloads (offline `--manifests` today; live-cluster is a follow-up)
 
 **Languages:** Python, JavaScript, TypeScript, Go, Java, Rust, C#, Kotlin
 
@@ -78,15 +78,15 @@ airom scan .
 # Explicit nouns — one subcommand per target type
 airom fs ./my-service
 airom repo https://github.com/org/rag-app
-airom image nginx:latest
-airom k8s --namespace ml-serving
+airom image --input img.tar          # docker save -o img.tar nginx:latest
+airom k8s --manifests ./deploy       # offline: enumerate workload images
 
 # Multiple outputs from one scan: table to the terminal,
 # CycloneDX and SARIF to files
 airom scan . -o table -o cyclonedx=bom.json -o sarif=scan.sarif
 
 # Narrow the detector set; add your own rules
-airom scan . --select "python,+modelfile/gguf,-dataset" --rules extra.yaml
+airom scan . --select "rules,+modelfile/gguf,-dataset/file" --rules extra.yaml
 ```
 
 **Exit codes:** `airom` exits **0 when the scan succeeds — findings are not failures**. Gating is opt-in CI policy:
@@ -100,7 +100,7 @@ airom scan . --exit-code 1 --fail-on "local-model-file&confidence>=0.9"
 ```
 $ airom scan .
 
-AI Bill of Materials — .
+AI Bill of Materials — /home/you/my-ai-app
 7 component(s), 3 relationship(s)
 
 KIND              NAME                         VERSION   PROVIDER   CONF   EVIDENCE

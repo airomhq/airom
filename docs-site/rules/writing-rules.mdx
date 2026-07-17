@@ -1,0 +1,433 @@
+---
+title: "Writing Rules"
+description: "Author a declarative rule pack: the YAML schema, the mandatory keyword prefilter, and the fixture-driven test loop."
+icon: "pencil-ruler"
+---
+
+A rule pack is a YAML file declaring pattern-based detections. You need no Go toolchain
+to write, lint, or test one. This page is the authoring guide; for how packs are layered,
+merged, and executed, see [Rules Overview](/rules/overview).
+
+## The loop
+
+<Steps>
+  <Step title="Scaffold">
+    ```bash title="Scaffold a pack plus fixtures"
+    airom dev new-rulepack acme --category models
+    ```
+
+    ```
+    created rules/models/acme.yaml
+    created rules/models/testdata/acme/sample.py
+
+    Edit the rule, then: airom rules lint rules/models/acme.yaml
+    ```
+
+    `--category` selects the directory and defaults to `models`. Valid values:
+    `models`, `embeddings`, `frameworks`, `vectordb`, `infra`, `params`, `prompts`,
+    `datasets`. The pack name must match `[a-z0-9-]+`.
+  </Step>
+  <Step title="Edit the rule and its fixtures">
+    Write the pattern, then annotate fixture lines with the cases it must and must not
+    match.
+  </Step>
+  <Step title="Test">
+    ```bash title="Run the pack against its fixtures"
+    airom rules test rules/models/acme.yaml
+    ```
+
+    ```
+    rules/models/acme.yaml: OK (4 expectation(s) checked)
+    ```
+  </Step>
+  <Step title="Lint">
+    ```bash title="Validate the full contract plus fixture coverage"
+    airom rules lint rules/models/acme.yaml
+    ```
+  </Step>
+</Steps>
+
+## File layout
+
+- Packs live under `rules/<category>/`.
+- **One pack file per provider.** `rules/models/openai.yaml`, never
+  `rules/models/all-providers.yaml` — monoliths are merge-conflict hotspots and defeat
+  CODEOWNERS routing.
+- The `pack:` field must equal the filename stem: `openai.yaml` implies `pack: openai`.
+- Fixtures live in `rules/<category>/testdata/<pack>/`.
+
+## Top-level fields
+
+<ParamField path="pack" type="string" required>
+  Must match `[a-z0-9-]+` and equal the filename stem.
+</ParamField>
+
+<ParamField path="version" type="integer" required>
+  Must be ≥ 1. **Informational only** — cache invalidation is driven by the content hash
+  of the effective compiled ruleset, never by this number. Bump it as a human-readable
+  change marker.
+</ParamField>
+
+<ParamField path="rules" type="list" required>
+  At least one rule.
+</ParamField>
+
+<Warning>
+Parsing is strict: an unknown field anywhere in a pack is a hard parse error, not a
+silently ignored key. A typo never quietly does nothing.
+</Warning>
+
+## Rule fields
+
+| Field | Type | Required | Summary |
+|---|---|---|---|
+| `id` | string | yes | Globally unique across all packs and layers |
+| `kind` | string | yes | The component kind the claim produces |
+| `provider` | string | no | Normalized provider slug |
+| `languages` | list of strings | no | Language gate; default: all supported |
+| `keywords` | list of strings | **yes** | Prefilter literals; rejected if missing or empty |
+| `pattern` | string | yes | Go RE2 regex; named groups become template variables |
+| `regions` | list of strings | no | Subset of `code`, `string`; default both |
+| `claim` | map | yes | Templated component claim |
+| `relations` | list | no | Templated relationship claims |
+| `capture_params` | map | no | Same-call-site generation-parameter capture |
+| `confidence` | float | yes | Per-sighting confidence, `0 < c ≤ 0.99` |
+| `disable` | bool | overlay only | Removes an existing rule by ID |
+
+### `id`
+
+Format `<pack>/<slug>`, e.g. `openai/model-literal`, matching `[a-z0-9-]+/[a-z0-9/-]+`.
+The prefix before `/` must equal the pack name.
+
+<Warning>
+Rule IDs are a public API surface. The ID becomes the occurrence detector ID
+(`rules/openai/model-literal`), which is the SARIF `ruleId` and part of SARIF
+`partialFingerprints`. Renaming one breaks downstream suppressions. Duplicates are
+rejected at startup — a duplicate never silently shadows.
+</Warning>
+
+### `kind`
+
+One of the ten rule-expressible kinds:
+
+```
+hosted-llm · embedding-model · framework · library · vector-db ·
+prompt · dataset · ai-config · infra · service
+```
+
+`local-model-file`, `rag-pipeline`, and `application` are **not** rule-expressible by
+design and are rejected by the compiler.
+
+### `languages`
+
+Subset of the supported set; omitted means the rule runs on all of them.
+
+```
+python · javascript · typescript · go · java · rust · csharp · kotlin
+```
+
+This is part of the compiled selector, evaluated before any content work.
+
+### `keywords` — mandatory
+
+Literal substrings, matched against the file's code and string regions by a single
+Aho–Corasick trie built over *all* packs' keywords at startup. A rule's regex executes
+**only if at least one of its keywords hits**.
+
+Both the keyword and the scanned buffer are folded before the trie runs: ASCII letters are
+lowercased, and runs of whitespace collapse to a single space. The gate is therefore
+case- and whitespace-insensitive. That only *widens* the candidate set — the rule's regex
+still runs over the original, position-preserving bytes and enforces the exact semantics.
+
+This is the load-bearing performance invariant, so it is enforced rather than
+recommended:
+
+```
+rule "nokw/x" (mycorp.yaml): keywords is mandatory and non-empty (un-prefiltered regexes cannot ship)
+```
+
+An un-prefiltered regex would run against every byte of every file. With hundreds of
+rules across 100k files, that is the difference between a scan and a hang. The trie
+eliminates the overwhelming majority of files at roughly memcpy speed, and only survivors
+pay for regex execution.
+
+<Note>
+Practical consequences:
+- Casing does not have to match: `"ChatOpenAI"` gates a file containing `chatopenai`. Fold
+  the rest of the distinction into the `pattern`, which is case-sensitive unless you write
+  `(?i)`.
+- Prefer selective literals: at least 4 characters, provider-distinctive. Short or common
+  keywords defeat the prefilter.
+- **Comments are never scanned.** A keyword that appears only in a comment cannot
+  activate the rule.
+</Note>
+
+### `pattern`
+
+A Go [RE2](https://github.com/google/re2/wiki/Syntax) regex — no backtracking, no
+lookaround, linear-time by construction. Compiled once at startup; a non-compiling
+pattern fails lint.
+
+Named groups `(?P<name>…)` are the data channel. Each named group's match is recorded on
+the occurrence and is referenceable as `${name}` in any template.
+
+Two cross-referencing rules are enforced in both directions:
+
+- **Every named group must be referenced** — by a claim template, by a relation's
+  `from_field`, or by being `model`, which the assembler consumes semantically. An
+  unreferenced group is a lint error: it is either dead weight or a typo.
+- **Every `${var}` must name an existing named group.**
+
+<Tip>
+YAML tip: use single-quoted scalars for patterns and double a literal single quote
+(`''`). That keeps backslashes intact without escaping them twice.
+</Tip>
+
+### `regions`
+
+Which classified regions the pattern may match: any subset of `code` and `string`
+(default: both). There is deliberately **no `comment` value** — comment regions are never
+scanned, not even by the keyword prefilter.
+
+| Matching | Use |
+|---|---|
+| Model-ID literals | `[code, string]` or `[string]` — the ID is a quoted literal |
+| Import/call shapes | `[code]` |
+| JS/TS module specifiers | `[code, string]` — `from "openai"` is a *string* region |
+
+### `claim`
+
+The templated component claim. The assembler — never the rule — normalizes names, mints
+identity, dedups, merges, and computes final confidence.
+
+| Subfield | Required | Notes |
+|---|---|---|
+| `name` | yes | Template; usually `"${model}"` or a fixed SDK/package name |
+| `group` | no | Org/namespace (`"meta-llama"`), templated |
+| `version` | no | Raw version claim, templated |
+
+`kind` and `provider` come from the rule fields. A purl is *derived* by the assembler;
+hashes do not apply to pattern matches.
+
+### `relations`
+
+Edges are first-class rule output — no Go needed to claim a relationship.
+
+```yaml
+relations:
+  - { type: uses, target: { kind: hosted-llm, from_field: model } }
+```
+
+`type` is one of: `uses`, `depends-on`, `served-by`, `queries`, `embeds-with`,
+`prompted-by`, `trained-on`, `derived-from`, `configures`, `contains`.
+
+`target` must set **exactly one** of three hint forms:
+
+| Form | Meaning |
+|---|---|
+| `{ kind: <kind>, name: "<template>" }` | A concrete, possibly templated, target name |
+| `{ kind: <kind>, from_field: <field> }` | The target's name is whatever `<field>` matched here |
+| `{ local_ref: <rule-id> }` | Links to a claim another rule of the same pack made **in the same file** |
+
+The `name` and `from_field` forms require a `kind`. `from_field` must reference a named
+group or a `capture_params` name.
+
+<Note>
+Resolution happens in the assembler *after* all components exist. A hint that matches no
+component becomes a warning in the scan stats — **never a phantom node, never a guessed
+edge**. This is the same refusal that keeps CycloneDX `dependencies[]` empty rather than
+fabricated.
+</Note>
+
+### `capture_params`
+
+Same-call-site generation-parameter capture — the highest-precision layer of the
+AI-config binding story.
+
+```yaml
+capture_params:
+  within_lines: 12
+  names: [temperature, top_p, top_k, max_tokens, max_output_tokens, seed,
+          stop, reasoning_effort, response_format]
+```
+
+| Subfield | Required | Constraints |
+|---|---|---|
+| `within_lines` | yes | Integer, 1–64. Window in lines from the match |
+| `names` | yes | Non-empty list of parameter names to capture |
+
+Captured bindings land on the occurrence. The assembler promotes them into
+provenance-carrying bound params on a model's facet **only when the same occurrence also
+carries a `model` binding**. Two call sites with different temperatures stay two separate
+bound params — nothing is averaged or guessed.
+
+### `confidence`
+
+Float in `(0, 0.99]` — the confidence of **one sighting by this rule alone**.
+
+| Range | Use |
+|---|---|
+| `0.85–0.9` | A provider-distinctive model-ID literal in a `model=` / `model:` position |
+| `0.6–0.75` | An SDK import or call-site shape — tells you the library is present, not which model |
+| `≤ 0.5` | Weak contextual hints |
+
+<Warning>
+Rules cannot assert `1.0`. Certainty is reserved for hash-comparison against known
+weights. Corroboration is the assembler's job — grouped noisy-OR across detection methods
+— so calibrate the single sighting honestly. Repetition cannot launder into certainty:
+twelve sightings of one 0.85 rule assemble to roughly 0.87, not 0.999.
+</Warning>
+
+## A complete pack
+
+This is a full, working pack — it passes `airom rules lint` and `airom rules test` as
+written. Rule one claims the model from a literal; rule two claims the SDK, links it to
+the model with a `uses` edge, and captures generation params at the call site.
+
+```yaml title="rules/models/acme.yaml"
+# rules/models/acme.yaml — Acme hosted models (one provider per file).
+pack: acme
+version: 1
+rules:
+  # Acme model IDs in a model= / model: / "model": position.
+  - id: acme/model-literal
+    kind: hosted-llm
+    provider: acme
+    languages: [python, javascript, typescript]
+    keywords: ["acme-"]                     # Aho-Corasick prefilter — MANDATORY
+    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>acme-[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85
+
+  # SDK call shape: acme.generate(...) — claims the library and the uses edge.
+  - id: acme/generate-call
+    kind: library
+    provider: acme
+    languages: [python]
+    keywords: ["acme.generate", "acme_client.generate"]
+    pattern: '\bacme(?:_client)?\.generate\s*\('
+    regions: [code]
+    claim: { name: "acme-sdk" }
+    relations:
+      - { type: uses, target: { kind: hosted-llm, from_field: model } }
+    capture_params:
+      within_lines: 12
+      names: [temperature, top_p, max_tokens, seed]
+    confidence: 0.7
+```
+
+Note how the pieces interlock: `keywords: ["acme-"]` gates the regex; the regex's
+`(?P<model>…)` group feeds `claim: { name: "${model}" }`; and `from_field: model` in rule
+two reaches the same field name so the assembler can resolve the edge once both
+components exist.
+
+## Fixtures
+
+Every rule ships **at least one positive and at least one negative case** — lint-enforced.
+Annotations use the host language's comment syntax (`#` or `//`):
+
+```
+# airom: acme/model-literal        ← the annotated line MUST produce this finding
+# airom-ok: acme/model-literal     ← the annotated line MUST NOT produce it
+```
+
+A standalone annotation binds to the **next** line; stacked annotations all bind to the
+one code line below them. A trailing annotation (code first, comment after) binds to
+**that** line.
+
+```python title="rules/models/testdata/acme/usage.py"
+"""Acme usage fixture — positive and negative cases."""
+import acme
+
+# airom: acme/generate-call
+resp = acme.generate(
+    # airom: acme/model-literal
+    model="acme-large-1",
+    temperature=0.2,
+    max_tokens=512,
+)
+
+# airom-ok: acme/model-literal
+model = "some-other-model"
+
+# airom-ok: acme/generate-call
+resp = other.generate(model="acme-large-1")
+```
+
+```bash title="Run it"
+airom rules test rules/models/acme.yaml
+```
+
+```
+rules/models/acme.yaml: OK (4 expectation(s) checked)
+```
+
+Fixtures are found by convention — a pack at `rules/models/acme.yaml` uses
+`rules/models/testdata/acme/`. Failures print with file, line, rule ID, and reason, and
+the command exits non-zero.
+
+<Tip>
+Negative fixtures are where the value is. A positive case proves the rule fires; a
+negative case pins the boundary and is what stops a future "small" pattern widening from
+flooding every scan with false positives.
+</Tip>
+
+For packs in the repository, `go test ./rules/...` runs the same check over every embedded
+pack: the whole set must load and compile, and every pack's fixtures must pass.
+
+## The lint contract
+
+`airom rules lint` enforces items 2–10:
+
+<AccordionGroup>
+  <Accordion title="Structure and identity">
+    1. `pack` matches the filename stem; one provider per file. **Checked for the embedded
+       packs only** — at startup and by `go test ./rules/...`. An overlay you pass to
+       `--rules` or `airom rules lint` may be named anything; the naming rule is a
+       repository convention there, not a machine check.
+    2. Every rule `id` is well-formed and globally unique across all packs and layers.
+  </Accordion>
+  <Accordion title="Pattern and prefilter">
+    3. Every `pattern` compiles as RE2.
+    4. **`keywords` is non-empty** for every rule.
+    5. Every named group is referenced; every `${var}` is backed by a named group.
+  </Accordion>
+  <Accordion title="Vocabulary and bounds">
+    6. `regions` is a subset of code/string; `languages` is within the supported set;
+       `kind` is rule-expressible.
+    7. `relations[].target` has exactly one hint form; `from_field` references an existing
+       field source.
+    8. `capture_params.within_lines` is in [1, 64]; `names` is non-empty.
+    9. `confidence` is in (0, 0.99].
+  </Accordion>
+  <Accordion title="Coverage">
+    10. At least one positive and one negative fixture annotation per rule, and every
+        annotation holds.
+  </Accordion>
+</AccordionGroup>
+
+Items 2–9 are also validated at **startup**, for every layer, on every run. A violation
+aborts before scanning with the offending pack, rule, and reason — a broken rule fails
+loudly at launch rather than silently under-reporting mid-scan.
+
+## When a rule isn't enough
+
+A rule cannot read a second file, parse a structured format, loop, compute a hash, mint
+an ID, set a purl, assert confidence 1.0, or emit `local-model-file`, `rag-pipeline`, or
+`application`. If your detection needs any of those, write a Go detector:
+
+```bash title="Scaffold a Go detector"
+airom dev new-detector my-detector
+```
+
+That creates `internal/detectors/<name>/` with an implementation stub and a contract test.
+
+<CardGroup cols={2}>
+  <Card title="Rules Overview" icon="scroll-text" href="/rules/overview">
+    Layering, merge semantics, and how the engine executes a rule.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/reference/cli">
+    Every command and global flag.
+  </Card>
+</CardGroup>

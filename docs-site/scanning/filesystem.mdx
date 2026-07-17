@@ -1,0 +1,130 @@
+---
+title: "Filesystem"
+description: "Scan a directory tree with airom fs."
+icon: "folder-tree"
+---
+
+`airom fs <path>` walks a directory tree, runs the detectors over it, and emits an AIBOM.
+
+```bash title="Scan a directory"
+airom fs ./my-ai-app
+```
+
+The path must be a directory. Single-file scanning is not supported — point AIROM at the containing directory. A path that cannot be read at all is a fatal error (exit code 2); unreadable files *below* the root degrade to `Unknown` records and the scan continues.
+
+<Note>
+  `airom scan ./my-ai-app` resolves to the same thing: `scan` tries an existing local path first. Use `dir:` to force it.
+</Note>
+
+## What gets walked
+
+| Entry | Behavior |
+| --- | --- |
+| Regular files | Walked and offered to the detectors. |
+| Directories | Descended, unless an ignore rule prunes them. |
+| Symlinks | Never followed — which also forecloses traversal cycles. |
+| Sockets, devices, other non-regular files | Skipped, never read. |
+
+Paths in the output are root-relative and slash-separated, regardless of platform.
+
+## Ignore handling
+
+Four layers decide whether a path is walked. They are evaluated in this order:
+
+<Steps>
+  <Step title="Default skips (non-overridable)">
+    VCS and dependency internals are always skipped: `.git/`, `node_modules/`, `vendor/`, `.venv/`, `venv/`, `__pycache__/`, `.tox/`, `.mypy_cache/`.
+
+    These live in an isolated matcher consulted *before* your ignore stack, so no `!` re-inclusion rule can bring them back. "Always-on" is enforced, not aspirational.
+  </Step>
+  <Step title=".gitignore">
+    Standard gitignore syntax with the usual nested, per-directory semantics. A `.gitignore` in a subdirectory scopes its patterns to that subtree.
+  </Step>
+  <Step title=".airomignore">
+    Same syntax, same nested semantics, read *after* `.gitignore` in each directory — so it is applied on top and can re-include (`!`) what `.gitignore` excluded. Use it for AIROM-specific exclusions you don't want in `.gitignore`.
+  </Step>
+  <Step title="--ignore globs">
+    Repeatable doublestar globs matched against root-relative paths, applied on top of the ignore-file stack. An invalid glob is a startup error, not a silent no-op.
+  </Step>
+</Steps>
+
+```bash title="Prune fixtures and test data"
+airom fs . --ignore '**/fixtures/**' --ignore 'testdata/**'
+```
+
+A glob that targets a directory prunes the directory itself, not just its contents — `**/fixtures/**` will not descend into `fixtures/`.
+
+<AccordionGroup>
+  <Accordion title="Case folding on macOS and Windows">
+    On macOS and Windows, ignore matching folds case, mirroring git's default `core.ignorecase=true` on those platforms. AIROM skips what your git skips.
+  </Accordion>
+  <Accordion title="Known limitation: POSIX character classes">
+    POSIX character classes (e.g. `[[:digit:]]`) are not supported in ignore patterns by the underlying matcher. Use plain gitignore globs instead.
+  </Accordion>
+  <Accordion title="Ignored files are never read">
+    An ignored path is excluded from both walk phases. A detector that queries files by glob during the project phase sees exactly what the walk saw — it can never reach behind an ignore rule.
+  </Accordion>
+</AccordionGroup>
+
+## Bounding the scan
+
+Peak memory is a function of these caps, never of the size of the tree.
+
+<ParamField path="--max-file-size" type="string" default="1m">
+  Full-content read cap for text detectors. Accepts `k`/`m`/`g` suffixes. Header-only binary parsers (GGUF, safetensors, …) are exempt — a 40 GB model file still costs only a header read.
+</ParamField>
+
+<ParamField path="--io-budget" type="string" default="256m">
+  Byte-weighted I/O semaphore budget, independent of CPU parallelism. Accepts `k`/`m`/`g` suffixes.
+</ParamField>
+
+<ParamField path="--parallel" type="int" default="GOMAXPROCS">
+  Detector worker count.
+</ParamField>
+
+```bash title="Tune for a large monorepo"
+airom fs . --parallel 8 --io-budget 512m --max-file-size 2m
+```
+
+## Narrowing the detectors
+
+`--select` takes a detector selection expression. Bare names set the base set; `+` adds and `-` removes.
+
+```bash title="Python detectors, plus GGUF, minus dataset"
+airom fs . --select 'python,+modelfile/gguf,-dataset'
+```
+
+Check what a selection resolves to before you commit to it:
+
+```bash title="See the effective selection"
+airom detectors list --select 'python,-dataset'
+```
+
+## Filtering the results
+
+Extension-only dataset detection and keyword-only `ai-config` detection are deliberately shallow, and on a general-purpose directory they emit low-confidence (0.5–0.6) noise. `--min-confidence 0.8` is the practical filter.
+
+```bash title="Scan, filter, write JSON"
+airom fs . --min-confidence 0.8 -o json=aibom.json
+```
+
+`--min-confidence` is a presentation-layer filter — it changes what is emitted, not what was detected. See [/concepts/confidence](/concepts/confidence).
+
+## Example
+
+```bash title="Default table output"
+airom fs ./my-ai-app
+```
+
+```
+AI Bill of Materials — /home/you/my-ai-app
+7 component(s), 3 relationship(s)
+
+KIND              NAME                    VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                 -         openai     0.87   12 occ
+framework         langchain               0.3.14    -          0.95   2 occ
+```
+
+<Tip>
+  Findings are not failures. `airom fs` exits 0 whether it finds seven components or none. To fail a build on what it finds, use `--fail-on` — see [/reference/cli](/reference/cli).
+</Tip>

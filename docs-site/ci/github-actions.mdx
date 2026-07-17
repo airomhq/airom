@@ -1,0 +1,254 @@
+---
+title: "GitHub Actions"
+description: "Run AIROM in CI: emit SARIF to Code Scanning, archive the AIBOM, and gate the build."
+icon: "github"
+---
+
+A complete GitHub Actions setup for AIROM: install it, scan the checkout, publish SARIF
+to GitHub Code Scanning, upload the AIBOM as a build artifact, and — optionally — fail
+the build on a policy.
+
+<Note>
+AIROM is pre-release (`v0.1.0-dev`, untagged). There are no prebuilt binaries yet, so CI
+installs from source with `go install`. This resolves to a release tag once one exists.
+</Note>
+
+## The workflow
+
+```yaml title=".github/workflows/airom.yml"
+name: AIBOM
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  aibom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install AIROM
+        run: go install github.com/Roro1727/airom/cmd/airom@latest
+
+      - name: Scan
+        run: |
+          airom fs . \
+            -o sarif=airom.sarif \
+            -o cyclonedx=airom.cdx.json \
+            -o table
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: airom.sarif
+          category: airom
+
+      - name: Archive the AIBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: aibom
+          path: |
+            airom.sarif
+            airom.cdx.json
+```
+
+That workflow never fails on findings — it reports. AIROM exits `0` whether it finds
+nothing or forty components. See [exit codes](/ci/exit-codes).
+
+<Warning>
+`go install` places the binary in `$(go env GOPATH)/bin`. `actions/setup-go` already
+puts that on `PATH`; without it you get `airom: command not found`.
+</Warning>
+
+## What each piece does
+
+<AccordionGroup>
+  <Accordion title="permissions: security-events: write" icon="lock">
+    Required by `github/codeql-action/upload-sarif` to write results into the repository's
+    Code Scanning alerts. `contents: read` is enough for `actions/checkout`. Grant nothing
+    else.
+  </Accordion>
+  <Accordion title="-o sarif=airom.sarif" icon="file-code">
+    `-o` is repeatable and takes `format[=path]`. Formats: `cyclonedx`, `json`, `sarif`,
+    `table`, `yaml`. Omitting `=path` sends that format to stdout — which is why `-o table`
+    above still prints a human-readable summary to the job log while the machine formats go
+    to files.
+
+    AIROM's SARIF defaults to `level: "note"`, which is what GitHub Code Scanning renders.
+    `--sarif-strict-kinds` switches to spec-pure `kind: "informational"` — correct per the
+    SARIF spec, but GitHub displays those differently. Leave it off for this workflow.
+  </Accordion>
+  <Accordion title="category: airom" icon="tag">
+    Keeps AIROM's results in their own Code Scanning category so they do not collide with
+    CodeQL or another SARIF producer uploading to the same commit.
+  </Accordion>
+  <Accordion title="-o cyclonedx=airom.cdx.json" icon="box">
+    The CycloneDX AIBOM, archived as a build artifact so you can diff it release over
+    release. `--cdx-version` selects `1.6` (default) or `1.7`.
+
+    The CycloneDX `dependencies[]` array is intentionally empty: AIROM does not fabricate
+    `depends-on` edges it cannot substantiate.
+  </Accordion>
+</AccordionGroup>
+
+## Gating the build
+
+Add `--fail-on` when you want a policy violation to fail the job. Keep it on its own
+step so the SARIF upload runs first — a gated scan still writes all of its output before
+the gate is evaluated.
+
+```yaml title="Report first, then gate"
+      - name: Scan
+        run: airom fs . -o sarif=airom.sarif -o table
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: airom.sarif
+          category: airom
+
+      - name: Gate
+        run: airom fs . --fail-on "hosted-llm&confidence>=0.9" -q
+```
+
+<Tip>
+Prefer a single scan? Put `--fail-on` on the scan step and add `if: always()` to the
+upload step, so results still reach Code Scanning when the gate trips.
+
+```yaml
+      - name: Scan
+        run: airom fs . --fail-on "pickle-risk" -o sarif=airom.sarif -o table
+
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: airom.sarif
+          category: airom
+```
+</Tip>
+
+### Report on a PR, fail on main
+
+`--exit-code 0` evaluates the policy and still writes every output, but never fails the
+build — so a pull request gets the SARIF results without a red check, while `main` gates.
+
+```yaml title="Policy from the workflow context"
+      - name: Scan
+        run: |
+          airom fs . \
+            --fail-on "hosted-llm&confidence>=0.9" \
+            --exit-code ${{ github.event_name == 'pull_request' && '0' || '1' }} \
+            -o sarif=airom.sarif -o table
+```
+
+<Warning>
+Do not gate with `--exit-code 1` alone. Without `--fail-on` that means "fail on **any**
+component," which includes low-confidence noise. Write the policy explicitly.
+</Warning>
+
+## Configuration via environment
+
+Every flag has an `AIROM_*` equivalent, so you can hoist shared settings to the job. List
+values are comma-separated.
+
+```yaml title="Env instead of flags"
+    env:
+      AIROM_OUTPUT: "table,sarif=airom.sarif"
+      AIROM_MIN_CONFIDENCE: "0.8"
+      AIROM_PARALLEL: "4"
+```
+
+Precedence is flags > `AIROM_*` > `.airom.yaml` > defaults. Unknown keys and unknown
+`AIROM_*` variables fail loudly — a typo never silently does nothing. Committing an
+`.airom.yaml` at the repo root keeps CI and local runs identical.
+
+## Scanning other targets
+
+<Tabs>
+  <Tab title="Repository">
+    Scanning the checkout with `fs` is usually what you want in CI — the working tree is
+    already there. Use `repo` when you need git provenance, or to scan a different
+    repository.
+
+    ```yaml
+      - name: Scan a remote repo
+        run: airom repo https://github.com/Roro1727/airom -o table
+    ```
+  </Tab>
+  <Tab title="Container image">
+    Live registry and daemon pulls are **not wired yet** — they fail with a clear error.
+    Scan an image you built in the same job by saving it to a tarball first.
+
+    ```yaml
+      - name: Build and save
+        run: |
+          docker build -t app:ci .
+          docker save app:ci -o app.tar
+
+      - name: Scan the image tarball
+        run: airom image --input app.tar --offline -o sarif=airom.sarif -o table
+    ```
+
+    `--platform <os/arch>` selects one image from a multi-arch index.
+  </Tab>
+  <Tab title="Kubernetes manifests">
+    Live-cluster mode is **not wired yet**. `--manifests` extracts the workload image
+    references from rendered YAML offline and lists them with the workloads that use them.
+
+    ```yaml
+      - name: List workload images
+        run: airom k8s --manifests ./deploy --offline
+    ```
+
+    Each referenced image is then scanned — but because live registry and daemon pulls are
+    not wired yet, images that are not available locally are reported as unscannable
+    warnings rather than inventoried. To get an AIBOM for one, save it to a tarball and run
+    `airom image --input`.
+  </Tab>
+</Tabs>
+
+<Note>
+`--offline` asserts that the run touches no network. `fs`, a local `repo` path, and
+`image --input` perform no network access regardless — the flag states the intent
+explicitly in the job, which is worth doing in an air-gapped or egress-restricted runner.
+</Note>
+
+## Reproducible, pinnable installs
+
+`@latest` builds the newest commit today. Pin the module version once a tag exists, or
+pin a commit now:
+
+```bash title="Pin the install"
+go install github.com/Roro1727/airom/cmd/airom@<commit-or-tag>
+```
+
+`airom version` prints the version, commit, and build date — the same `ToolInfo` recorded
+in every AIBOM AIROM produces. Print it in CI so an artifact is always traceable to a
+build.
+
+```yaml title="Record what produced the AIBOM"
+      - name: Record tool version
+        run: airom version
+```
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Exit codes" icon="circle-check" href="/ci/exit-codes">
+    The full contract and the `--fail-on` grammar.
+  </Card>
+  <Card title="Output formats" icon="file-export" href="/output/formats">
+    SARIF, CycloneDX, JSON, YAML, table.
+  </Card>
+</CardGroup>

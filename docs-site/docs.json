@@ -1,0 +1,71 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "AIROM",
+  "description": "Open-source AI Bill of Materials (AIBOM) scanner — discover and inventory AI assets across code, containers, and Kubernetes.",
+  "colors": {
+    "primary": "#4F46E5",
+    "light": "#818CF8",
+    "dark": "#4338CA"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": ["index", "quickstart", "installation"]
+          },
+          {
+            "group": "Concepts",
+            "pages": ["concepts/aibom", "concepts/evidence", "concepts/confidence"]
+          },
+          {
+            "group": "Scanning",
+            "pages": [
+              "scanning/filesystem",
+              "scanning/repository",
+              "scanning/container-images",
+              "scanning/kubernetes"
+            ]
+          },
+          {
+            "group": "Output",
+            "pages": ["output/formats", "output/cyclonedx", "output/sarif"]
+          },
+          {
+            "group": "CI/CD",
+            "pages": ["ci/exit-codes", "ci/github-actions"]
+          },
+          {
+            "group": "Rules",
+            "pages": ["rules/overview", "rules/writing-rules"]
+          },
+          {
+            "group": "Reference",
+            "pages": ["reference/cli", "reference/configuration"]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Architecture",
+        "href": "https://github.com/Roro1727/airom/blob/main/docs/ARCHITECTURE.md"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/Roro1727/airom"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Roro1727/airom"
+    }
+  }
+}

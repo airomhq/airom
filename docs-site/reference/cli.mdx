@@ -1,0 +1,388 @@
+---
+title: "CLI Reference"
+description: "Every airom command, its arguments, and its flags."
+icon: "terminal"
+---
+
+`airom` is a single static binary. Every command below is real and current; every
+flag listed is the complete set for that command. Cobra also supplies `help` and
+`completion`, which behave as they do in any Cobra tool.
+
+```bash title="Shape of an airom invocation"
+airom <command> [args] [flags]
+```
+
+<Note>
+  The [global flags](#global-flags) are persistent — every command accepts them —
+  but only the scan-family commands (`scan`, `fs`, `repo`, `image`, `k8s`) use the
+  full set. Elsewhere: `detectors list`, `detectors explain`, and `rules list`
+  resolve the same configuration and so honor `--select` and `--rules`; `clean`
+  honors `--cache-dir`. `rules lint`, `rules test`, and the `dev` scaffolds ignore
+  configuration entirely and act only on the file or name you give them. `-v`/`-q`
+  set log verbosity on every command.
+</Note>
+
+## Scan commands
+
+### airom scan
+
+Scan a target, auto-detecting the scheme.
+
+```bash title="airom scan"
+airom scan <target>
+```
+
+Detection order: an existing local path, then a git URL, then an image reference.
+Explicit prefixes force the interpretation.
+
+| Prefix   | Forces          |
+| -------- | --------------- |
+| `dir:`   | directory tree  |
+| `repo:`  | git repository  |
+| `image:` | container image |
+
+```bash title="Auto-detect vs. explicit"
+airom scan .
+airom scan https://github.com/Roro1727/airom
+airom scan image:my-app:latest
+airom scan dir:./services/inference
+```
+
+Exactly one `<target>` is required. No command-specific flags.
+
+### airom fs
+
+Scan a directory tree.
+
+```bash title="airom fs"
+airom fs <path>
+```
+
+Exactly one `<path>` is required; it must exist. No command-specific flags.
+
+### airom repo
+
+Scan a git repository.
+
+```bash title="airom repo"
+airom repo <url|path>
+```
+
+A remote URL is shallow-cloned. A local path is scanned as a worktree. Exactly one
+argument is required. No command-specific flags.
+
+### airom image
+
+Scan a container image.
+
+```bash title="airom image"
+airom image [ref]
+airom image --input <tarball>
+```
+
+<ParamField path="--input" type="string">
+  Scan a saved image tarball (`docker save` output or an OCI archive). No network.
+</ParamField>
+
+<ParamField path="--platform" type="string">
+  Platform to select from a multi-arch index, e.g. `linux/arm64`.
+</ParamField>
+
+A reference and `--input` are mutually exclusive, and at least one of the two is
+required.
+
+<Warning>
+  Live registry and Docker-daemon pulls are **not wired yet** — they fail with a
+  clear error. Today, scan an image from a tarball (`--input`) or an OCI layout on
+  disk.
+</Warning>
+
+```bash title="Offline image scan"
+docker save my-app:latest -o my-app.tar
+airom image --input my-app.tar --offline
+```
+
+### airom k8s
+
+Scan the images of Kubernetes workloads.
+
+```bash title="airom k8s"
+airom k8s [context]
+airom k8s --manifests <dir>
+```
+
+<ParamField path="--manifests" type="string">
+  Offline mode: extract image references from manifest YAML in this directory.
+</ParamField>
+
+<ParamField path="--namespace" type="string">
+  Restrict to one namespace.
+</ParamField>
+
+<ParamField path="-A, --all-namespaces" type="bool" default="false">
+  All namespaces.
+</ParamField>
+
+<ParamField path="--parallel-images" type="bool" default="false">
+  Scan the discovered images concurrently. Serial by default.
+</ParamField>
+
+At most one positional `[context]` (a kubeconfig context name).
+
+<Warning>
+  Live-cluster mode is **not wired yet** — it fails with a clear error. Use
+  `--manifests <dir>` to extract image refs from YAML offline.
+</Warning>
+
+```bash title="Offline manifest scan"
+airom k8s --manifests ./deploy/k8s --offline
+```
+
+## Inspection commands
+
+### airom detectors list
+
+List every detector with its selection status. Honors `--select` and `--rules`, so
+the listing reflects the configuration you would actually scan with.
+
+```bash title="airom detectors list"
+airom detectors list
+airom detectors list --select "rules,+modelfile/gguf"
+```
+
+Columns: `ID`, `VERSION`, `PHASE`, `SELECTED`, `SELECTS`. No arguments, no
+command-specific flags.
+
+### airom detectors explain
+
+Print one detector's full selector, its need, and its rule count.
+
+```bash title="airom detectors explain"
+airom detectors explain <id>
+```
+
+Exactly one `<id>` is required. Output fields: `id`, `version`, `phase`, `selects`,
+`need`, `selected`. An unknown id is a configuration error.
+
+### airom rules list
+
+Show the effective ruleset — embedded packs plus `--rules` overlays — with each
+rule's layer.
+
+```bash title="airom rules list"
+airom rules list
+airom rules list --rules ./my-pack.yaml
+```
+
+Columns: `RULE ID`, `KIND`, `CONFIDENCE`, `LAYER`, followed by a rule count. No
+arguments, no command-specific flags.
+
+### airom rules lint
+
+Validate a rule pack against the full lint contract and its fixture coverage.
+
+```bash title="airom rules lint"
+airom rules lint <file>
+```
+
+Exactly one `<file>`. Reports failures, rules missing a positive fixture, and rules
+missing a negative fixture. A failing pack exits non-zero.
+
+### airom rules test
+
+Run a rule pack against its fixtures. No Go toolchain required.
+
+```bash title="airom rules test"
+airom rules test <file>
+```
+
+Exactly one `<file>`. Prints `<file>: OK (n expectation(s) checked)` on success;
+failures exit non-zero.
+
+## Contributor commands
+
+### airom dev new-rulepack
+
+Scaffold a rule pack plus fixtures.
+
+```bash title="airom dev new-rulepack"
+airom dev new-rulepack <name>
+```
+
+<ParamField path="--category" type="string" default="models">
+  Rule category directory. One of: `models`, `embeddings`, `frameworks`,
+  `vectordb`, `infra`, `params`, `prompts`, `datasets`.
+</ParamField>
+
+`<name>` must match `[a-z0-9-]+`. Writes `rules/<category>/<name>.yaml` and a
+fixture under `rules/<category>/testdata/<name>/`. Refuses to overwrite an
+existing pack.
+
+### airom dev new-detector
+
+Scaffold a Go code detector plus a contract test.
+
+```bash title="airom dev new-detector"
+airom dev new-detector <name>
+```
+
+`<name>` must match `[a-z0-9-]+`. Writes `internal/detectors/<pkg>/` containing
+`<pkg>.go`, `<pkg>_test.go`, and a `testdata/` directory, where `<pkg>` is `<name>`
+with the dashes removed (`new-detector safetensors-header` scaffolds
+`internal/detectors/safetensorsheader/`) — a Go package name cannot contain a
+dash. Refuses to overwrite an existing directory. No command-specific flags.
+
+It then prints the two follow-up steps: `go test ./internal/detectors/<pkg>/ -update`
+to write goldens, and `go generate ./internal/detectors/all` to register the
+detector.
+
+## Utility commands
+
+### airom clean
+
+Remove the scan cache.
+
+```bash title="airom clean"
+airom clean
+airom clean --cache-dir /var/cache/airom
+```
+
+Resolves the cache directory through the normal configuration layering and removes
+it. No arguments, no command-specific flags. The removal is guarded: `airom clean`
+refuses any directory whose basename is not `airom` or `airom-cache`, and refuses
+your home directory or a filesystem root.
+
+### airom version
+
+Print the version, commit, and build date — the same `ToolInfo` embedded in every
+AIBOM.
+
+```bash title="airom version"
+airom version
+```
+
+No arguments, no command-specific flags.
+
+## Global flags
+
+This table is the complete global flag set, on top of the two Cobra built-ins
+every command carries: `-h`/`--help`, and `--version` on the root.
+
+| Flag | Type | Default | Meaning |
+| ---- | ---- | ------- | ------- |
+| `--cache-dir` | string | `<user cache dir>/airom` | Scan cache location. |
+| `--cdx-version` | string | `1.6` | CycloneDX spec version: `1.6` or `1.7`. |
+| `--exit-code` | int | `1` when a policy is active | Exit status when `--fail-on` matches. `0` reports matches without failing. |
+| `--fail-on` | string | — | CI policy expression, e.g. `"hosted-llm&confidence>=0.9"`. |
+| `--format` | string | — | Single-format alias for `-o`. Mutually exclusive with `-o`. |
+| `--ignore` | stringArray | — | Additional ignore glob. Repeatable. Applied on top of `.gitignore`/`.airomignore`. |
+| `--io-budget` | string | `256m` | Byte-weighted I/O semaphore budget (`k`/`m`/`g` suffixes). |
+| `--max-file-size` | string | `1m` | Full-content read cap for text detectors (`k`/`m`/`g` suffixes). |
+| `--min-confidence` | float | `0` | Presentation-layer confidence filter, `0`–`1`. |
+| `--no-cache` | bool | `false` | Disable cache reads and writes for this run. |
+| `--offline` | bool | `false` | Assert no network access for the entire run. |
+| `-o, --output` | stringArray | `table` to stdout | Output as `fmt[=path]`. Repeatable. Formats: `cyclonedx`, `json`, `sarif`, `table`, `yaml`. |
+| `--parallel` | int | `GOMAXPROCS` | Worker count. |
+| `--pprof` | string | — | Serve `net/http/pprof`. Bare flag = `localhost:6060`. |
+| `-q, --quiet` | bool | `false` | Errors only. |
+| `--rules` | stringArray | — | Overlay rule pack file. Repeatable. Merged by rule ID. |
+| `--sarif-strict-kinds` | bool | `false` | Emit spec-pure `kind:"informational"` instead of `level:"note"`. |
+| `--select` | string | — | Detector selection expression, e.g. `"rules,+modelfile/gguf,-dataset/file"`. |
+| `--stats` | bool | `false` | Emit the full `ScanStats` block in the output. |
+| `--trace` | string | — | Write a Go execution trace to file. |
+| `-v, --verbose` | count | `0` | Increase log verbosity. Repeatable; `-vv` adds source locations. |
+
+### Flag notes
+
+<AccordionGroup>
+  <Accordion title="--pprof: a custom address must be attached with '='">
+    `--pprof` is a bare-flag-with-value flag. Given alone it binds
+    `localhost:6060`. A custom address **must** be attached with `=`:
+
+    ```bash title="--pprof forms"
+    airom fs .  --pprof                   # localhost:6060
+    airom fs .  --pprof=0.0.0.0:7070      # custom address — note the '='
+    ```
+
+    The space-separated spelling `--pprof 0.0.0.0:7070` is rejected up front with
+    a precise error. It has to be: the address would otherwise be parsed as a
+    positional argument (on `airom k8s` it would silently become the kubeconfig
+    context, while pprof quietly bound the default port).
+  </Accordion>
+
+  <Accordion title="-v is logging-only">
+    `-v`/`--verbose` changes **log verbosity and nothing else**. Default level is
+    info; `-v` enables debug; `-vv` adds source locations. It does not change the
+    table output, add columns, or reveal more components. To see more components,
+    lower `--min-confidence`; to see more detail in the document, use `--stats` or
+    a structured format via `-o`.
+
+    `-q` and `-v` are mutually exclusive when both are passed on the command line.
+  </Accordion>
+
+  <Accordion title="--format vs. -o/--output">
+    `--format` is a convenience alias for a single `-o`. Passing both explicitly
+    on the command line is an error. Use repeated `-o` for multi-output:
+
+    ```bash title="Multi-output"
+    airom fs . -o table -o cyclonedx=aibom.cdx.json -o sarif=airom.sarif
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Exit codes
+
+| Code  | Meaning |
+| ----- | ------- |
+| `0`   | Scan completed successfully. **Findings are not failures.** |
+| `<n>` | The `--exit-code` value, when `--fail-on` matches. Defaults to `1` when a policy is active. |
+| `2`   | Fatal error: bad configuration or flags, source acquisition failure. |
+
+`--exit-code` alone, with no `--fail-on`, means "fail on any component".
+`--exit-code 0` with an active `--fail-on` reports matches without failing the
+build — useful for a soft rollout of a new gate.
+
+## The --fail-on grammar
+
+```text title="Grammar"
+expr       = clause *( "|" clause )      ; OR
+clause     = term   *( "&" term )        ; AND — all terms must hold for ONE component
+term       = ident | comparison
+ident      = a ComponentKind ("hosted-llm") or the "pickle-risk" signal
+comparison = "confidence" OP number      ; OP: >= <= > < =
+```
+
+`&` binds tighter than `|`. Every term in a clause must hold for the **same**
+component — a clause is a per-component predicate, not a whole-document one.
+
+```bash title="Policy examples"
+airom fs . --fail-on "hosted-llm"
+airom fs . --fail-on "pickle-risk"
+airom fs . --fail-on "hosted-llm&confidence>=0.9"
+airom fs . --fail-on "local-model-file|hosted-llm&confidence>=0.8"
+```
+
+Any of the 13 component kinds may be used as an `ident`: `hosted-llm`,
+`local-model-file`, `embedding-model`, `framework`, `library`, `vector-db`,
+`prompt`, `dataset`, `ai-config`, `infra`, `service`, `rag-pipeline`,
+`application`. The `pickle-risk` signal is also valid.
+
+## Table output
+
+The default output is a table on stdout.
+
+```text title="airom fs ."
+AI Bill of Materials — /home/you/my-ai-app
+7 component(s), 3 relationship(s)
+
+KIND              NAME                    VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                 -         openai     0.87   12 occ
+framework         langchain               0.3.14    -          0.95   2 occ
+```
+
+The columns are exactly `KIND`, `NAME`, `VERSION`, `PROVIDER`, `CONF`, `EVIDENCE`.
+Evidence renders as `n occ` — the number of occurrences backing the component.
+
+<Card title="Configuration reference" icon="sliders" href="/reference/configuration">
+  Every flag here can also come from `AIROM_*` env vars or `.airom.yaml`.
+</Card>

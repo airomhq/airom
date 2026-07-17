@@ -1,0 +1,110 @@
+---
+title: "Kubernetes"
+description: "Enumerate workload images from Kubernetes manifests with airom k8s."
+icon: "ship-wheel"
+---
+
+`airom k8s` enumerates the container images referenced by Kubernetes workloads, then scans each unique image.
+
+<Warning>
+  **Live-cluster mode is not wired up.** `airom k8s` without `--manifests` does not talk to a cluster — it fails immediately with a clear error. Offline manifest mode (`--manifests <dir>`) is what works today, and it is what this page documents.
+</Warning>
+
+```
+live-cluster scanning requires client-go (deferred to a follow-up); use --manifests <dir> for offline manifest scanning
+```
+
+## Offline manifest mode
+
+```bash title="Enumerate images from rendered manifests"
+airom k8s --manifests ./k8s
+```
+
+AIROM walks the directory, parses every `.yaml`/`.yml` file (multi-document streams included), extracts the container images from workload specs, dedupes them, and sorts them. Rendered YAML and `helm template` output both work.
+
+<Steps>
+  <Step title="Render your manifests">
+    ```bash title="Helm, for example"
+    helm template my-release ./chart > ./k8s/rendered.yaml
+    ```
+  </Step>
+  <Step title="Enumerate and scan">
+    ```bash
+    airom k8s --manifests ./k8s
+    ```
+  </Step>
+</Steps>
+
+### Which workloads are read
+
+`Pod`, `Deployment`, `StatefulSet`, `DaemonSet`, `ReplicaSet`, `Job`, `CronJob`. Any other kind is skipped.
+
+Within a workload, every container position is read: `containers`, `initContainers`, and `ephemeralContainers`. `CronJob`'s nested job template is handled.
+
+### Enumeration output
+
+```
+airom: k8s scan of ./k8s
+  workload images: 2
+    my-registry.example.com/rag-api:1.4.2  (3 workload(s))
+    ollama/ollama:latest  (1 workload(s))
+```
+
+Each image is reported once, sorted by reference, with the number of distinct workloads that reference it. AIROM then scans each image in turn and emits an AIBOM per image, prefixed with an `=== image <ref> ===` header.
+
+A file that cannot be read, or a document that fails to parse, degrades to an `Unknown` and the walk continues — one bad manifest never kills the run.
+
+## The catch: image refs must be resolvable locally
+
+Manifest enumeration gives you image *references* (`ollama/ollama:latest`). Scanning those references requires resolving the image — and, as documented in [/scanning/container-images](/scanning/container-images), live registry and daemon pulls are not wired up in this build.
+
+<Warning>
+  A registry reference pulled out of a manifest cannot be fetched today. AIROM logs a warning for each image it could not scan and moves on. In practice the enumeration is the reliable part of `k8s --manifests`; scanning succeeds only for references that resolve to a local image archive or OCI layout path.
+</Warning>
+
+The dependable workflow today is two steps:
+
+```bash title="1. Enumerate what your cluster runs"
+airom k8s --manifests ./k8s
+```
+
+```bash title="2. Scan each image from a saved archive"
+docker save -o rag-api.tar my-registry.example.com/rag-api:1.4.2
+airom image --input rag-api.tar -o cyclonedx=rag-api.cdx.json
+```
+
+## Flags
+
+<ParamField path="--manifests" type="string">
+  Directory of manifest YAML to enumerate workload images from. Required today — without it, `k8s` reports that live-cluster scanning is unavailable.
+</ParamField>
+
+<ParamField path="--namespace" type="string">
+  Restrict to one namespace. Accepted and parsed, but it applies to live-cluster enumeration, which is not wired up. **In manifest mode it does not filter** — every workload document in the directory is read regardless of its namespace.
+</ParamField>
+
+<ParamField path="-A, --all-namespaces" type="bool" default="false">
+  All namespaces. Same status as `--namespace`: accepted, but with no effect in manifest mode, which already reads every document in the directory.
+</ParamField>
+
+<ParamField path="--parallel-images" type="bool" default="false">
+  Scan images concurrently. Accepted and parsed, but **not yet honored** — images are scanned serially today, whether or not you pass it.
+</ParamField>
+
+The optional `[context]` positional selects a kube context. It is accepted, but it only means something in live-cluster mode, which is not wired up.
+
+<Note>
+  `--parallel` (the global worker-count flag) is unaffected by any of this. It controls detector workers *within* a single image scan and works normally.
+</Note>
+
+## CI gating across images
+
+`--fail-on` is evaluated per image. The gate trips if **any** scanned image matches the policy, and the run then exits with `--exit-code` (default 1).
+
+```bash title="Fail if any workload image ships a hosted LLM reference"
+airom k8s --manifests ./k8s --fail-on 'hosted-llm&confidence>=0.9'
+```
+
+Images that could not be scanned are reported as warnings — they do not trip the gate. Given the resolution limitation above, do not treat a green `k8s --manifests` gate as evidence that your workload images are clean.
+
+See [/reference/cli](/reference/cli) for the full `--fail-on` grammar and exit-code contract.

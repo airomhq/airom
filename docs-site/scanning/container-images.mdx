@@ -1,0 +1,123 @@
+---
+title: "Container images"
+description: "Scan a container image with airom image."
+icon: "container"
+---
+
+`airom image` scans a container image: it resolves the image's squashed root filesystem and streams its files through the same detector pipeline as a directory scan.
+
+<Warning>
+  **Live registry and docker-daemon pulls are not wired up in this build.** `airom image ubuntu:24.04` does not reach out to a registry — it fails with a clear error. Today, supply a local image archive with `--input`, or point at an OCI layout directory. This page documents only what works.
+</Warning>
+
+```
+image source "ubuntu:24.04": live registry/daemon pulls are not available in this build; supply a local image archive (docker save -o img.tar ...) or an OCI layout path
+```
+
+## What works today
+
+| Input | How |
+| --- | --- |
+| docker-save archive | `airom image --input img.tar` |
+| OCI image-layout archive | `airom image --input img.tar` |
+| OCI image-layout directory | `airom image ./oci-layout` |
+
+A positional reference is accepted only when it is a path to one of those on disk. A reference and `--input` are mutually exclusive; supplying neither is a usage error.
+
+## The docker save workflow
+
+<Steps>
+  <Step title="Export the image to a tarball">
+    ```bash title="docker save"
+    docker save -o img.tar my-ai-app:latest
+    ```
+  </Step>
+  <Step title="Scan the tarball">
+    ```bash title="Scan it — no network"
+    airom image --input img.tar
+    ```
+  </Step>
+  <Step title="Write the AIBOM">
+    ```bash title="CycloneDX out"
+    airom image --input img.tar -o cyclonedx=aibom.cdx.json
+    ```
+  </Step>
+</Steps>
+
+`--input` reads a saved archive and touches no network. It is the supported path for CI, air-gapped builds, and anywhere a registry pull is not on the table.
+
+## Layers are squashed
+
+AIROM applies the image's layers top→base with whiteout and opaque-directory resolution, exactly once, and scans the resulting effective filesystem. A file deleted by a later layer is gone; a file overwritten by a later layer is seen only in its final form.
+
+<Note>
+  The AIBOM answers "what's in the final image", not "what did each layer contribute". There is no per-layer attribution in the output.
+</Note>
+
+## Bounded memory on any image size
+
+Layer tar streams are consume-once, so each effective file's bytes are captured during the single squash pass. That capture is strictly bounded:
+
+| Tier | Bound |
+| --- | --- |
+| In memory | Files up to 4 MiB, within a 256 MiB global budget. |
+| Spilled to a temp file | Larger files, up to 64 MiB each, within a 2 GiB global budget. |
+| Header-only | Files beyond those caps expose just their first 64 KiB — enough for magic/header detectors. Content-based detectors see a truncated read, and the truncation is recorded as an `Unknown`. |
+
+Memory and disk stay bounded regardless of image size. Temp files are removed when the scan finishes.
+
+## `--platform`
+
+<Warning>
+  `--platform <os/arch>` is accepted, but it is **not yet honored**. A multi-arch index today resolves to the first image manifest in the index, whatever its platform. Do not rely on this flag to select an architecture.
+</Warning>
+
+To scan a specific architecture reliably, export that architecture yourself and scan the resulting archive:
+
+```bash title="Export one platform, then scan it"
+docker save -o img-arm64.tar my-ai-app:latest-arm64
+airom image --input img-arm64.tar
+```
+
+## Ignore globs
+
+`--ignore` works on image scans and matches against image-root paths. The `.gitignore`/`.airomignore` stacks do **not** apply here — an image has no ignore files to read. Only your `--ignore` globs filter an image walk.
+
+```bash title="Skip a vendored directory inside the image"
+airom image --input img.tar --ignore '**/site-packages/tests/**'
+```
+
+## Known limitations
+
+<AccordionGroup>
+  <Accordion title="zstd-compressed layers are unsupported">
+    Gzip and uncompressed layers are read. A zstd-compressed layer is recorded as an `Unknown` and its contents do not reach the detectors.
+  </Accordion>
+  <Accordion title="Image entries are not seekable">
+    Files are served from a consume-once spool, so detectors that need random access get `ErrNotSeekable`. Streaming and header reads are unaffected.
+  </Accordion>
+  <Accordion title="Live pull and image digest">
+    Registry and daemon resolution is deferred. The `imageDigest` field of the AIBOM source block is not populated by the current pipeline.
+  </Accordion>
+</AccordionGroup>
+
+## Example
+
+```bash title="Image scan, filtered, two outputs"
+airom image --input img.tar \
+  --min-confidence 0.8 \
+  -o table -o cyclonedx=aibom.cdx.json
+```
+
+```
+AI Bill of Materials — img.tar
+7 component(s), 3 relationship(s)
+
+KIND              NAME                    VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                 -         openai     0.87   12 occ
+framework         langchain               0.3.14    -          0.95   2 occ
+```
+
+<Tip>
+  `--parallel`, `--io-budget`, `--max-file-size`, and `--select` behave the same as on a filesystem scan. See [/scanning/filesystem](/scanning/filesystem).
+</Tip>
