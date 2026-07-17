@@ -1,0 +1,185 @@
+name: Publish (PyPI)
+
+# Publishes the Python SDK (sdk/python) to PyPI.
+#
+# Trigger: a push to main that changes the SDK, a v* tag, or a manual run.
+#
+# Idempotency: PyPI permanently refuses to re-upload a version — even one that
+# was deleted. So this workflow publishes ONLY when the version in
+# sdk/python/src/airom/__init__.py is not already on the index; any other push
+# skips cleanly instead of failing. Bumping __version__ is therefore the
+# deliberate act that ships a release.
+#
+# Auth: PyPI Trusted Publishing (OIDC). GitHub Actions proves its identity to
+# PyPI directly — there is NO API token stored, leaked, or rotated. One-time
+# setup is in sdk/python/README.md.
+#
+# The wheels carry a compiled Go binary but no C extension, so they are
+# ABI-independent: one py3-none-<platform> wheel per OS/arch serves every
+# supported CPython. CGO_ENABLED=0 (invariant P8) lets a single Linux runner
+# cross-compile every target.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sdk/python/**"
+      - "cmd/**"
+      - "internal/**"
+      - "pkg/**"
+      - "rules/**"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/release-pypi.yml"
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Index to publish to
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.26"
+
+jobs:
+  decide:
+    name: Version check
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      publish: ${{ steps.v.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: v
+        name: Is this version already on the index?
+        env:
+          INDEX: ${{ github.event.inputs.repository || 'pypi' }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, re, urllib.error, urllib.request
+
+          src = open("sdk/python/src/airom/__init__.py").read()
+          version = re.search(r'__version__ = "([^"]+)"', src).group(1)
+          print(f"version={version}")
+
+          host = "test.pypi.org" if os.environ["INDEX"] == "testpypi" else "pypi.org"
+          url = f"https://{host}/pypi/airom/json"
+          try:
+              with urllib.request.urlopen(url, timeout=30) as r:
+                  released = set(json.load(r).get("releases", {}))
+          except urllib.error.HTTPError as e:
+              if e.code != 404:
+                  raise
+              released = set()  # project does not exist yet — first publish
+
+          publish = version not in released
+          print(f"publish={str(publish).lower()}")
+          note = "will publish" if publish else "already on the index — skipping"
+          print(f"::notice::airom {version} on {host}: {note}")
+          PY
+
+  wheels:
+    name: Wheel (${{ matrix.goos }}/${{ matrix.goarch }} ${{ matrix.libc }})
+    needs: decide
+    if: needs.decide.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: linux, goarch: amd64, libc: manylinux, tag: py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64 }
+          - { goos: linux, goarch: arm64, libc: manylinux, tag: py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64 }
+          # A CGO-free Go binary is static, so the same build also runs on musl.
+          - { goos: linux, goarch: amd64, libc: musllinux, tag: py3-none-musllinux_1_2_x86_64 }
+          - { goos: linux, goarch: arm64, libc: musllinux, tag: py3-none-musllinux_1_2_aarch64 }
+          - { goos: darwin, goarch: amd64, libc: "", tag: py3-none-macosx_10_9_x86_64 }
+          - { goos: darwin, goarch: arm64, libc: "", tag: py3-none-macosx_11_0_arm64 }
+          - { goos: windows, goarch: amd64, libc: "", tag: py3-none-win_amd64 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the wheel
+        working-directory: sdk/python
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          AIROM_WHEEL_TAG: ${{ matrix.tag }}
+        run: |
+          pip install build
+          python -m build --wheel
+
+      - name: Verify it bundles the binary
+        working-directory: sdk/python
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          whl = glob.glob("dist/*.whl")[0]
+          binaries = [n for n in zipfile.ZipFile(whl).namelist() if "/_bin/airom" in n]
+          if not binaries:
+              sys.exit(f"{whl} bundles no airom binary")
+          print(f"ok: {whl} -> {binaries}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.libc }}
+          path: sdk/python/dist/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: sdist
+    needs: decide
+    if: needs.decide.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The sdist deliberately carries no binary: installing from it falls back
+      # to $AIROM_BINARY or `airom` on PATH.
+      - name: Build the sdist
+        working-directory: sdk/python
+        run: |
+          pip install build
+          python -m build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: sdk/python/dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Publish ${{ needs.decide.outputs.version }}
+    needs: [decide, wheels, sdist]
+    if: needs.decide.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Trusted Publishing mints the OIDC token. No secrets.
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: What is being published
+        run: ls -l dist
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          repository-url: ${{ (github.event.inputs.repository == 'testpypi') && 'https://test.pypi.org/legacy/' || '' }}
+          print-hash: true

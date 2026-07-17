@@ -153,6 +153,50 @@ proves nothing about the contract it wraps.
 Building a wheel needs the Go toolchain (the build hook compiles the binary with
 `CGO_ENABLED=0`). Set `AIROM_SKIP_BUNDLE=1` for a pure-Python wheel.
 
+## Publishing
+
+Releases are published by [`.github/workflows/release-pypi.yml`](../../.github/workflows/release-pypi.yml)
+using **PyPI Trusted Publishing** (OIDC): GitHub Actions authenticates to PyPI directly,
+so there is no API token stored as a secret, and none to leak or rotate.
+
+### One-time setup
+
+On [pypi.org/manage/account/publishing](https://pypi.org/manage/account/publishing/), add a
+**pending publisher**:
+
+| Field | Value |
+|---|---|
+| PyPI project name | `airom` |
+| Owner | `Roro1727` |
+| Repository name | `airom` |
+| Workflow name | `release-pypi.yml` |
+| Environment | *(leave blank)* |
+
+That is all — no secret is added to GitHub.
+
+### Cutting a release
+
+The workflow runs on every push to `main` that touches the SDK or the scanner, but
+**publishes only when the version is new**: PyPI permanently refuses to re-upload a
+version (even a deleted one), so the workflow compares `__version__` against the index and
+skips cleanly if it is already there.
+
+So a release is exactly one deliberate act:
+
+```bash
+# sdk/python/src/airom/__init__.py
+__version__ = "0.1.0"     # bump, commit, merge to main -> published
+```
+
+<!-- Version note: a PEP 440 pre-release suffix (.dev0, rc1, …) is NOT installed by
+     `pip install airom` unless the user passes --pre. Use a plain version for a
+     release people are meant to get by default. -->
+
+Publishing is **irreversible**: a version number is burned forever once used, and yanking
+does not free it. Test the whole path first with the manual `workflow_dispatch` run against
+**TestPyPI** (which needs its own pending publisher at
+[test.pypi.org](https://test.pypi.org/manage/account/publishing/)).
+
 ## License
 
 Apache-2.0, same as AIROM.
