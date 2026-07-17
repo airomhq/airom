@@ -1,0 +1,12 @@
+AIROM — AI Bill of Materials (AIBOM) scanner
+Copyright 2026 AIROM Authors
+
+This product is licensed under the Apache License, Version 2.0 (the "License").
+You may not use this product except in compliance with the License. A copy of
+the License is distributed with this product in the LICENSE file and is also
+available at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Third-party dependencies are retrieved via Go modules and retain their own
+copyright notices and licenses; refer to each module's source for details.
