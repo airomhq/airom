@@ -98,6 +98,49 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: go build -o /dev/null ./cmd/airom
 
+  sdk-python:
+    name: Python SDK
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install the SDK
+        working-directory: sdk/python
+        run: pip install -e ".[dev]"
+      # The suite builds the real binary and scans with it: a wrapper tested
+      # only against mocks proves nothing about the contract it wraps.
+      - name: Test
+        working-directory: sdk/python
+        run: pytest -q
+      - name: Lint & type-check
+        working-directory: sdk/python
+        run: |
+          ruff check .
+          mypy
+      - name: Build a wheel (bundles the CGO-free binary)
+        working-directory: sdk/python
+        run: |
+          pip install build
+          python -m build --wheel
+          python - <<'PY'
+          import glob, zipfile, sys
+          whl = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(whl).namelist()
+          if not [n for n in names if "_bin/airom" in n]:
+              sys.exit(f"{whl} did not bundle the airom binary")
+          print(f"ok: {whl} bundles the binary")
+          PY
+
   fuzz:
     name: Fuzz smoke
     runs-on: ubuntu-latest

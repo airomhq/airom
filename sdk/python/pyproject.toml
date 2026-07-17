@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "airom"
+dynamic = ["version"]
+description = "Python SDK for AIROM — the open-source AI Bill of Materials (AIBOM) scanner"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "AIROM Authors" }]
+keywords = ["aibom", "sbom", "ai", "security", "cyclonedx", "sarif", "supply-chain"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+  "Typing :: Typed",
+]
+# Deliberately dependency-free: the SDK is a typed wrapper over a static binary.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Roro1727/airom"
+Documentation = "https://github.com/Roro1727/airom/tree/main/docs-site"
+Source = "https://github.com/Roro1727/airom"
+Issues = "https://github.com/Roro1727/airom/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "mypy>=1.8", "ruff>=0.5"]
+
+[tool.hatch.version]
+path = "src/airom/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/airom"]
+# The bundled binary is produced by hatch_build.py; ship it if it is there.
+artifacts = ["src/airom/_bin/*"]
+
+[tool.hatch.build.targets.sdist]
+# The sdist carries no binary — installing from it falls back to $AIROM_BINARY
+# or `airom` on PATH.
+exclude = ["src/airom/_bin"]
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["airom"]
+mypy_path = "src"
+strict = true
+warn_unused_ignores = false
