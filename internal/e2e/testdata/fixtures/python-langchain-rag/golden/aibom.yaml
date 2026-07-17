@@ -4,6 +4,30 @@ components:
     id: airom:0f9a0955ae2b259c
     kind: application
     name: python-langchain-rag
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 3.1.1
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 5
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: sentence-transformers==3.1.1
+    id: airom:113e832148731168
+    kind: library
+    name: sentence-transformers
+    package:
+      ecosystem: pypi
+    provider: huggingface
+    purl: pkg:pypi/sentence-transformers@3.1.1
+    version: 3.1.1
   - confidence: 0.6
     evidence:
       occurrences:
@@ -164,7 +188,7 @@ components:
     id: airom:737f185ea7c9f67f
     kind: ai-config
     name: max_tokens
-  - confidence: 0.95
+  - confidence: 0.985
     evidence:
       identity:
         - confidence: 0.95
@@ -180,44 +204,10 @@ components:
             path: requirements.txt
           method: manifest-analysis
           snippet: openai==1.51.0
-    id: airom:a6ccf893ff130124
-    kind: library
-    name: openai
-    package:
-      ecosystem: pypi
-    provider: openai
-    purl: pkg:pypi/openai@1.51.0
-    version: 1.51.0
-  - confidence: 0.95
-    evidence:
-      identity:
-        - confidence: 0.95
-          field: version
-          methods:
-            - manifest-analysis
-          value: 3.1.1
-      occurrences:
-        - confidence: 0.95
-          detectorId: manifest/pypi-requirements
-          location:
-            line: 5
-            path: requirements.txt
-          method: manifest-analysis
-          snippet: sentence-transformers==3.1.1
-    id: airom:b9cc121d3e5cdbf0
-    kind: library
-    name: sentence-transformers
-    package:
-      ecosystem: pypi
-    provider: hugging face
-    purl: pkg:pypi/sentence-transformers@3.1.1
-    version: 3.1.1
-  - confidence: 0.7
-    evidence:
-      occurrences:
         - confidence: 0.7
           detectorId: rules/openai/chat-call
           fields:
+            model: gpt-4.1
             param.max_tokens: "800"
             param.temperature: "0.2"
           location:
@@ -228,10 +218,14 @@ components:
             path: src/rag.py
           method: source-code-analysis
           snippet: response = client.chat.completions.create(
-    id: airom:bd6fd4f86f30fa53
+    id: airom:a6ccf893ff130124
     kind: library
-    name: openai-sdk
+    name: openai
+    package:
+      ecosystem: pypi
     provider: openai
+    purl: pkg:pypi/openai@1.51.0
+    version: 1.51.0
   - confidence: 0.85
     evidence:
       occurrences:
@@ -249,6 +243,42 @@ components:
           snippet: model="gpt-4.1",
     id: airom:cfc27e587216febe
     kind: hosted-llm
+    model:
+      generationParams:
+        - name: max_tokens
+          occurrence:
+            confidence: 0.7
+            detectorId: rules/openai/chat-call
+            fields:
+              model: gpt-4.1
+              param.max_tokens: "800"
+              param.temperature: "0.2"
+            location:
+              column: 22
+              endColumn: 47
+              endLine: 14
+              line: 14
+              path: src/rag.py
+            method: source-code-analysis
+            snippet: response = client.chat.completions.create(
+          value: "800"
+        - name: temperature
+          occurrence:
+            confidence: 0.7
+            detectorId: rules/openai/chat-call
+            fields:
+              model: gpt-4.1
+              param.max_tokens: "800"
+              param.temperature: "0.2"
+            location:
+              column: 22
+              endColumn: 47
+              endLine: 14
+              line: 14
+              path: src/rag.py
+            method: source-code-analysis
+            snippet: response = client.chat.completions.create(
+          value: "0.2"
     name: gpt-4.1
     props:
       - name: airom:model.provider
@@ -306,6 +336,25 @@ relationships:
     from: airom:1d7789e0b7e68c35
     to: airom:3c77e68ca5b2bf87
     type: embeds-with
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4.1
+          param.max_tokens: "800"
+          param.temperature: "0.2"
+        location:
+          column: 22
+          endColumn: 47
+          endLine: 14
+          line: 14
+          path: src/rag.py
+        method: source-code-analysis
+        snippet: response = client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:cfc27e587216febe
+    type: uses
 root: airom:0f9a0955ae2b259c
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
@@ -451,8 +500,6 @@ stats:
     - 'project/raglink: selected by "default"'
     - 'prompt/file: selected by "default"'
     - 'ruleengine: selected by "default"'
-  warnings:
-    - 'unresolved uses relation from "openai-sdk" at src/rag.py: occurrence has no "model" field'
 timestamp: "2026-07-17T12:00:00Z"
 tool:
   name: airom

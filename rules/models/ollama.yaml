@@ -10,7 +10,7 @@ rules:
     keywords: ["ollama.chat", "ollama.generate", "ollama.embeddings", "ollama.pull"]
     pattern: '\bollama\.(?:chat|generate|embeddings|pull|show|list)\s*\('
     regions: [code]
-    claim: { name: "ollama-sdk" }
+    claim: { name: "ollama" }
     relations:
       - { type: uses, target: { kind: hosted-llm, from_field: model } }
     capture_params:

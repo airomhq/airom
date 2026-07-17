@@ -180,6 +180,41 @@
       ],
       "results": [
         {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'sentence-transformers' [3.1.1] detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 5,
+                  "snippet": {
+                    "text": "sentence-transformers==3.1.1"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "dfcd2592112ada00ca67fd278380f6e287a4a8c2dab2692ecc409b8649e9b96d"
+          },
+          "properties": {
+            "airom:componentId": "airom:113e832148731168",
+            "airom:confidence": 0.95,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "huggingface",
+            "airom:purl": "pkg:pypi/sentence-transformers@3.1.1"
+          }
+        },
+        {
           "ruleId": "project/raglink",
           "ruleIndex": 2,
           "level": "note",
@@ -496,7 +531,7 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "library 'openai' [1.51.0] detected (confidence 0.95)"
+            "text": "library 'openai' [1.51.0] detected (confidence 0.985)"
           },
           "locations": [
             {
@@ -519,7 +554,7 @@
           },
           "properties": {
             "airom:componentId": "airom:a6ccf893ff130124",
-            "airom:confidence": 0.95,
+            "airom:confidence": 0.985,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
             "airom:provider": "openai",
@@ -527,46 +562,11 @@
           }
         },
         {
-          "ruleId": "manifest/pypi-requirements",
-          "ruleIndex": 0,
-          "level": "note",
-          "message": {
-            "text": "library 'sentence-transformers' [3.1.1] detected (confidence 0.95)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "requirements.txt",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 5,
-                  "snippet": {
-                    "text": "sentence-transformers==3.1.1"
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "0dbc818eb80a7d4316a24561ece88820d782a3142cc55bbb1d27108a2ef59a11"
-          },
-          "properties": {
-            "airom:componentId": "airom:b9cc121d3e5cdbf0",
-            "airom:confidence": 0.95,
-            "airom:kind": "library",
-            "airom:occurrence.confidence": 0.95,
-            "airom:provider": "hugging face",
-            "airom:purl": "pkg:pypi/sentence-transformers@3.1.1"
-          }
-        },
-        {
           "ruleId": "rules/openai/chat-call",
           "ruleIndex": 8,
           "level": "note",
           "message": {
-            "text": "library 'openai-sdk' detected (confidence 0.7)"
+            "text": "library 'openai' [1.51.0] detected (confidence 0.985)"
           },
           "locations": [
             {
@@ -588,14 +588,15 @@
             }
           ],
           "partialFingerprints": {
-            "airomComponentIdentity/v1": "360c7c471f1efc1c51b22195ee902df219bade679bee14a581219b38d15a861e"
+            "airomComponentIdentity/v1": "853791627f6e8d3ed9b5ff922ed5437e50a3cfe663d6bc0d2148ae97c12d9082"
           },
           "properties": {
-            "airom:componentId": "airom:bd6fd4f86f30fa53",
-            "airom:confidence": 0.7,
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.985,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.7,
-            "airom:provider": "openai"
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.51.0"
           }
         },
         {

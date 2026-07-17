@@ -75,6 +75,10 @@
         {
           "name": "airom:model.provider",
           "value": "anthropic"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "512 @ src/agent.ts:6"
         }
       ],
       "evidence": {
@@ -83,49 +87,6 @@
             "location": "src/agent.ts",
             "line": 7,
             "additionalContext": "model: \"claude-sonnet-4-5\","
-          }
-        ]
-      }
-    },
-    {
-      "bom-ref": "airom:3da8474d2f151a8b",
-      "type": "library",
-      "name": "@anthropic-ai/sdk",
-      "version": "0.27.3",
-      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.95"
-        },
-        {
-          "name": "airom:kind",
-          "value": "library"
-        },
-        {
-          "name": "airom:provider",
-          "value": "anthropic"
-        }
-      ],
-      "evidence": {
-        "identity": [
-          {
-            "field": "version",
-            "confidence": 0.95,
-            "concludedValue": "0.27.3",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
-        "occurrences": [
-          {
-            "location": "package.json",
-            "line": 7,
-            "additionalContext": "\"@anthropic-ai/sdk\": \"^0.27.3\","
           }
         ]
       }
@@ -204,34 +165,6 @@
       }
     },
     {
-      "bom-ref": "airom:bd6fd4f86f30fa53",
-      "type": "library",
-      "name": "openai-sdk",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.7"
-        },
-        {
-          "name": "airom:kind",
-          "value": "library"
-        },
-        {
-          "name": "airom:provider",
-          "value": "openai"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "src/agent.ts",
-            "line": 6,
-            "additionalContext": "const completion = await client.chat.completions.create({"
-          }
-        ]
-      }
-    },
-    {
       "bom-ref": "airom:f16d02e10b6caf23",
       "type": "library",
       "name": "openai",
@@ -240,7 +173,7 @@
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.95"
+          "value": "0.985"
         },
         {
           "name": "airom:kind",
@@ -249,6 +182,10 @@
         {
           "name": "airom:provider",
           "value": "openai"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:14ac8720c7a8d1ef@0.7"
         }
       ],
       "evidence": {
@@ -270,6 +207,65 @@
             "location": "package.json",
             "line": 6,
             "additionalContext": "\"openai\": \"^4.67.1\","
+          },
+          {
+            "location": "src/agent.ts",
+            "line": 6,
+            "additionalContext": "const completion = await client.chat.completions.create({"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:f9aed661fdbdcef2",
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.27.3",
+      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.95"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "anthropic"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.95,
+            "concludedValue": "0.27.3",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          },
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "concludedValue": "@anthropic-ai/sdk",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "package.json",
+            "line": 7,
+            "additionalContext": "\"@anthropic-ai/sdk\": \"^0.27.3\","
           }
         ]
       }

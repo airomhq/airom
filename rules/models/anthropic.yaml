@@ -9,7 +9,7 @@ rules:
     provider: anthropic
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["claude-"]
-    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>claude-[\w.\-:]+)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>claude-[\w.\-:]+)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
@@ -22,7 +22,7 @@ rules:
     keywords: ["messages.create"]
     pattern: '\.messages\.create\s*\('
     regions: [code]
-    claim: { name: "anthropic-sdk" }
+    claim: { name: "anthropic" }
     relations:
       - { type: uses, target: { kind: hosted-llm, from_field: model } }
     capture_params:

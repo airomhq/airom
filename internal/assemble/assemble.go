@@ -155,6 +155,31 @@ var nameAliases = map[string]string{
 	"haystack-ai": "haystack",
 	"dspy-ai":     "dspy",
 	"pyautogen":   "autogen",
+	// vendor SDKs: usage-rule / distribution name -> the installed package.
+	// "openai declared in requirements.txt; chat.completions.create in code"
+	// is ONE library, not two. azure-openai-sdk is deliberately absent: it
+	// names the Azure service binding, which has no manifest counterpart.
+	"openai-sdk":           "openai",
+	"anthropic-sdk":        "anthropic",
+	"@anthropic-ai/sdk":    "anthropic",
+	"cohere-sdk":           "cohere",
+	"cohere-ai":            "cohere",
+	"mistralai-sdk":        "mistralai",
+	"@mistralai/mistralai": "mistralai",
+	"groq-sdk":             "groq",
+	"ollama-sdk":           "ollama",
+	"voyageai-sdk":         "voyageai",
+}
+
+// providerAliases canonicalize one vendor seen under different spellings —
+// typically the manifest catalog's display label ("Hugging Face") versus a
+// usage rule's slug ("huggingface"). Applied after lowercasing; same
+// conservatism as nameAliases.
+var providerAliases = map[string]string{
+	"hugging face": "huggingface",
+	"mistral ai":   "mistral",
+	"voyage ai":    "voyage",
+	"llama-index":  "llamaindex",
 }
 
 // normalizeKey derives the canonical key for one claim (§9.1 normalizer
@@ -163,6 +188,9 @@ var nameAliases = map[string]string{
 func normalizeKey(c detect.ComponentClaim) (key CanonicalKey, extraVersion string) {
 	name := strings.TrimSpace(c.Name)
 	provider := strings.ToLower(strings.TrimSpace(c.Provider))
+	if canon, ok := providerAliases[provider]; ok {
+		provider = canon
+	}
 	class := classOf(c.Kind)
 
 	switch class {
@@ -268,6 +296,13 @@ type draft struct {
 	pkg   *airom.PackageFacet
 	occs  []airom.Occurrence
 
+	// pkgName is the ecosystem-DECLARED distribution name ("@anthropic-ai/sdk",
+	// "chromadb") — the name the purl must carry even when the display name
+	// canonicalizes through nameAliases; pkg:npm/anthropic names an artifact
+	// that does not exist and pkg:npm/groq names somebody else's. Deterministic
+	// under shuffle: the lexicographically smallest declared name wins.
+	pkgName string
+
 	facetWarnings []string
 }
 
@@ -275,6 +310,20 @@ type assembly struct {
 	byID     map[airom.ID]*draft
 	edges    map[string]*airom.Relationship // key: from|type|to
 	warnings []string
+
+	// redirects maps a draft ID deleted by foldPackages to its survivor, so
+	// relation endpoints minted from raw claims land on a component that
+	// still exists. One hop suffices: only disc-less drafts fold, and their
+	// disc-bearing targets are never themselves folded.
+	redirects map[airom.ID]airom.ID
+}
+
+// canonicalID follows a fold redirect, if any.
+func (a *assembly) canonicalID(id airom.ID) airom.ID {
+	if to, ok := a.redirects[id]; ok {
+		return to
+	}
+	return id
 }
 
 func (a *assembly) absorb(f detect.Finding) {
@@ -294,6 +343,14 @@ func (a *assembly) absorb(f detect.Finding) {
 
 	if f.Claim.Group != "" && d.group == "" {
 		d.group = f.Claim.Group
+	}
+
+	// Remember the ecosystem-declared distribution name for the purl
+	// (smallest-wins for shuffle determinism).
+	if f.Claim.Package != nil && f.Claim.Package.Ecosystem != "" {
+		if raw := strings.TrimSpace(f.Claim.Name); raw != "" && (d.pkgName == "" || raw < d.pkgName) {
+			d.pkgName = raw
+		}
 	}
 
 	occ := f.Occurrence
@@ -364,6 +421,10 @@ func (a *assembly) foldPackages() {
 		for _, d := range discless {
 			a.mergeDraft(into, d)
 			delete(a.byID, d.id)
+			if a.redirects == nil {
+				a.redirects = map[airom.ID]airom.ID{}
+			}
+			a.redirects[d.id] = into.id
 		}
 	}
 }
@@ -391,6 +452,9 @@ func (a *assembly) mergeDraft(dst, src *draft) {
 		} else if dst.pkg.Ecosystem == "" {
 			dst.pkg.Ecosystem = src.pkg.Ecosystem
 		}
+	}
+	if src.pkgName != "" && (dst.pkgName == "" || src.pkgName < dst.pkgName) {
+		dst.pkgName = src.pkgName
 	}
 }
 
@@ -589,7 +653,14 @@ func (d *draft) finish() airom.Component {
 	case "package":
 		if d.pkg != nil && d.pkg.Ecosystem != "" {
 			if v, ok := c.Version.Value(); ok {
-				if p, err := purl.Package(d.pkg.Ecosystem, d.group, d.name, v); err == nil {
+				// The purl names the DECLARED distribution, not the aliased
+				// display name: pkg:npm/anthropic does not exist and
+				// pkg:npm/groq is somebody else's package.
+				purlName := d.name
+				if d.pkgName != "" {
+					purlName = d.pkgName
+				}
+				if p, err := purl.Package(d.pkg.Ecosystem, d.group, purlName, v); err == nil {
 					c.PURL = p
 				}
 			}
@@ -734,7 +805,7 @@ func (a *assembly) resolveRelations(findings []detect.Finding) {
 	for _, f := range findings {
 		key, _ := normalizeKey(f.Claim)
 		k := f.Occurrence.Location.Path + "\x00" + f.Occurrence.DetectorID
-		id := key.ID()
+		id := a.canonicalID(key.ID()) // a folded claim's component is its fold survivor
 		dup := false
 		for _, existing := range byPathDetector[k] {
 			if existing == id {
@@ -752,7 +823,7 @@ func (a *assembly) resolveRelations(findings []detect.Finding) {
 			continue
 		}
 		key, _ := normalizeKey(f.Claim)
-		from := key.ID()
+		from := a.canonicalID(key.ID()) // never mint an edge from a fold-deleted draft
 
 		for _, rel := range f.Relations {
 			to, why := a.resolveHint(rel.Target, f, byClassName, byPathDetector)

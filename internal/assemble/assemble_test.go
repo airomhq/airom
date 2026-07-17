@@ -225,7 +225,7 @@ func TestRelationResolution(t *testing.T) {
 	if rel.Type != airom.RelUses {
 		t.Errorf("rel type = %s", rel.Type)
 	}
-	from := componentByName(t, inv, "openai-sdk")
+	from := componentByName(t, inv, "openai") // "openai-sdk" claim canonicalizes to the package name
 	to := componentByName(t, inv, "gpt-4.1")
 	if rel.From != from.ID || rel.To != to.ID {
 		t.Errorf("edge %s→%s, want sdk→model", rel.From, rel.To)
@@ -480,6 +480,106 @@ func TestPackageFoldAndAlias(t *testing.T) {
 	}
 	if vecdbs != 1 {
 		t.Errorf("vector-db components = %d, want 1 (aliased)", vecdbs)
+	}
+}
+
+// TestSDKUsageFoldsIntoManifestPackage: the Cisco-comparison double-count.
+// A vendor package declared in a manifest and its SDK usage detected in code
+// ("openai" + "openai-sdk", "anthropic" + "@anthropic-ai/sdk") are ONE
+// library; provider spelling variants ("Hugging Face" vs "huggingface") and
+// kind variants (framework vs library) must not split transformers.
+func TestSDKUsageFoldsIntoManifestPackage(t *testing.T) {
+	oaiManifest := finding(airom.KindLibrary, "openai", "OpenAI", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 1)
+	oaiManifest.Claim.Version = "1.51.0"
+	oaiManifest.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	oaiUsage := finding(airom.KindLibrary, "openai-sdk", "openai", "rules/openai/chat-call", airom.MethodSourceCode, 0.7, "app.py", 12)
+
+	antManifest := finding(airom.KindLibrary, "@anthropic-ai/sdk", "Anthropic", "manifest/npm", airom.MethodManifest, 0.95, "package.json", 4)
+	antManifest.Claim.Version = "0.27.3"
+	antManifest.Claim.Package = &detect.PackageClaim{Ecosystem: "npm"}
+	antUsage := finding(airom.KindLibrary, "anthropic-sdk", "anthropic", "rules/anthropic/messages-call", airom.MethodSourceCode, 0.7, "app.js", 8)
+
+	tfManifest := finding(airom.KindFramework, "transformers", "Hugging Face", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 3)
+	tfManifest.Claim.Version = "4.44.0"
+	tfManifest.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	tfUsage := finding(airom.KindLibrary, "transformers", "huggingface", "rules/transformers/import", airom.MethodSourceCode, 0.7, "train.py", 2)
+
+	inv := Build([]detect.Finding{oaiManifest, oaiUsage, antManifest, antUsage, tfManifest, tfUsage}, nil, airom.ScanStats{}, opts())
+
+	pkgs := 0
+	var got []string
+	for _, c := range inv.Components {
+		if c.Kind == airom.KindLibrary || c.Kind == airom.KindFramework {
+			pkgs++
+			got = append(got, string(c.Kind)+":"+c.Name)
+		}
+	}
+	if pkgs != 3 {
+		t.Fatalf("package components = %d, want 3 (each manifest+usage pair folds): %v", pkgs, got)
+	}
+	oai := componentByName(t, inv, "openai")
+	if len(oai.Evidence.Occurrences) != 2 {
+		t.Errorf("openai occurrences = %d, want 2", len(oai.Evidence.Occurrences))
+	}
+	if v, _ := oai.Version.Value(); v != "1.51.0" {
+		t.Errorf("openai version = %q, want 1.51.0 from the manifest", v)
+	}
+	if oai.PURL != "pkg:pypi/openai@1.51.0" {
+		t.Errorf("openai purl = %q, want pkg:pypi/openai@1.51.0", oai.PURL)
+	}
+	ant := componentByName(t, inv, "anthropic")
+	if len(ant.Evidence.Occurrences) != 2 {
+		t.Errorf("anthropic occurrences = %d, want 2", len(ant.Evidence.Occurrences))
+	}
+	// The purl must name the DECLARED npm distribution — pkg:npm/anthropic
+	// does not exist (adversarial review finding).
+	if ant.PURL != "pkg:npm/%40anthropic-ai/sdk@0.27.3" {
+		t.Errorf("anthropic purl = %q, want pkg:npm/%%40anthropic-ai/sdk@0.27.3 (declared distribution)", ant.PURL)
+	}
+	tf := componentByName(t, inv, "transformers")
+	if tf.Kind != airom.KindFramework {
+		t.Errorf("transformers kind = %s, want framework (precedence over library)", tf.Kind)
+	}
+	if len(tf.Evidence.Occurrences) != 2 {
+		t.Errorf("transformers occurrences = %d, want 2", len(tf.Evidence.Occurrences))
+	}
+}
+
+// TestFoldedUsageKeepsEdgeEndpoints: a uses edge claimed by a usage finding
+// whose draft folds into the manifest component must depart from the SURVIVOR,
+// not from the fold-deleted draft's ID. (Adversarial review HIGH: both e2e
+// goldens carried a dangling From, and the CDX writer silently dropped the
+// edge — the exact edge the dedup work exists to keep.)
+func TestFoldedUsageKeepsEdgeEndpoints(t *testing.T) {
+	model := finding(airom.KindHostedLLM, "gpt-4.1", "openai", "rules/openai/model-literal", airom.MethodSourceCode, 0.85, "app.py", 10)
+	manifest := finding(airom.KindLibrary, "openai", "OpenAI", "manifest/pypi", airom.MethodManifest, 0.95, "requirements.txt", 1)
+	manifest.Claim.Version = "1.51.0"
+	manifest.Claim.Package = &detect.PackageClaim{Ecosystem: "pypi"}
+	usage := finding(airom.KindLibrary, "openai", "openai", "rules/openai/chat-call", airom.MethodSourceCode, 0.7, "app.py", 12)
+	usage.Occurrence.Fields = map[string]string{"model": "gpt-4.1"}
+	usage.Relations = []detect.RelationClaim{
+		{Type: airom.RelUses, Target: detect.TargetHint{Kind: airom.KindHostedLLM, FromField: "model"}},
+	}
+
+	inv := Build([]detect.Finding{model, manifest, usage}, nil, airom.ScanStats{}, opts())
+
+	if len(inv.Relationships) != 1 {
+		t.Fatalf("relationships = %d, want 1", len(inv.Relationships))
+	}
+	rel := inv.Relationships[0]
+	byID := map[airom.ID]airom.Component{}
+	for _, c := range inv.Components {
+		byID[c.ID] = c
+	}
+	from, ok := byID[rel.From]
+	if !ok {
+		t.Fatalf("edge From %s is not any component ID (dangling after fold)", rel.From)
+	}
+	if from.Name != "openai" || len(from.Evidence.Occurrences) != 2 {
+		t.Errorf("edge departs from %q with %d occurrences, want the folded openai with 2", from.Name, len(from.Evidence.Occurrences))
+	}
+	if to, ok := byID[rel.To]; !ok || to.Name != "gpt-4.1" {
+		t.Errorf("edge To = %v (ok=%v), want the gpt-4.1 component", rel.To, ok)
 	}
 }
 

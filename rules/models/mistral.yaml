@@ -11,7 +11,7 @@ rules:
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["mistral-", "mixtral-", "codestral-", "ministral-", "magistral-",
                "pixtral-", "devstral-"]
-    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>(?:open-mistral-|open-mixtral-|mistral-|mixtral-|codestral-|ministral-|magistral-|pixtral-|devstral-)[\w.\-]+)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>(?:open-mistral-|open-mixtral-|mistral-|mixtral-|codestral-|ministral-|magistral-|pixtral-|devstral-)[\w.\-]+)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
@@ -24,5 +24,5 @@ rules:
     keywords: ["chat.complete", "mistralai"]
     pattern: '\.chat\.complete(?:_async|_stream)?\s*\(|["'']mistralai["'']'
     regions: [code, string]
-    claim: { name: "mistralai-sdk" }
+    claim: { name: "mistralai" }
     confidence: 0.7

@@ -9,7 +9,7 @@ rules:
     provider: openai
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["gpt-", "chatgpt-", "o1", "o3", "o4"]
-    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>(?:gpt-|chatgpt-)[\w.\-]+|o[134][\w.\-]*)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>(?:gpt-|chatgpt-)[\w.\-]+|o[134](?:[.-][\w.\-]+)?)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
@@ -23,7 +23,7 @@ rules:
     keywords: ["chat.completions.create", "responses.create"]
     pattern: '\.(?:chat\.completions|responses)\.create\s*\('
     regions: [code]
-    claim: { name: "openai-sdk" }
+    claim: { name: "openai" }
     relations:
       - { type: uses, target: { kind: hosted-llm, from_field: model } }
     capture_params:

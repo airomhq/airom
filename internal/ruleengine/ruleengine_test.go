@@ -8,6 +8,7 @@ import (
 
 	"github.com/airomhq/airom/pkg/airom"
 	"github.com/airomhq/airom/pkg/airom/detect"
+	"github.com/airomhq/airom/rules"
 )
 
 // openaiPack is the canonical worked example from docs/rule-schema.md.
@@ -20,7 +21,7 @@ rules:
     provider: openai
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["gpt-", "o3", "o4-", "chatgpt-"]
-    pattern: '\bmodel\s*[:=]\s*["''](?P<model>gpt-[\w.\-]+|o[34][\w.\-]*)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)\s*[:=]\s*["''](?P<model>gpt-[\w.\-]+|o[34][\w.\-]*)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
@@ -30,7 +31,8 @@ rules:
     provider: openai
     keywords: ["chat.completions.create", "responses.create"]
     pattern: '\.(chat\.completions|responses)\.create\s*\('
-    claim: { name: "openai-sdk" }
+    regions: [code]
+    claim: { name: "openai" }
     relations:
       - { type: uses, target: { kind: hosted-llm, from_field: model } }
     capture_params:
@@ -352,6 +354,241 @@ b = client.chat.completions.create(
 	}
 	if b.Occurrence.Fields["model"] != "o3" || b.Occurrence.Fields["param.temperature"] != "0.9" {
 		t.Errorf("call B fields = %v, want its own model/temperature (not call A's)", b.Occurrence.Fields)
+	}
+}
+
+// TestVariableBoundModelResolution: a model id bound through a module-level
+// variable (the shape of every fine-tuning script) must still yield the
+// hosted-llm claim, and the call site's bareword model= reference must
+// resolve to the literal so the uses edge and params can attach downstream.
+// (Cisco-comparison gap: AIROM missed BASE_MODEL entirely.)
+func TestVariableBoundModelResolution(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	src := `import openai
+
+BASE_MODEL = "gpt-4o-mini-2024-07-18"
+TEMP = 0.35
+
+client = openai.OpenAI()
+
+def launch(q):
+    return client.chat.completions.create(
+        model=BASE_MODEL,
+        temperature=TEMP,
+        messages=[{"role": "user", "content": q}],
+    )
+`
+	findings := detectOn(t, m, "finetune.py", src)
+
+	var model, call *detect.Finding
+	for i := range findings {
+		switch findings[i].Occurrence.DetectorID {
+		case "rules/openai/model-literal":
+			model = &findings[i]
+		case "rules/openai/chat-call":
+			call = &findings[i]
+		}
+	}
+
+	if model == nil {
+		t.Fatalf("model-literal did not fire on the BASE_MODEL assignment; findings: %+v", findings)
+	}
+	if model.Claim.Name != "gpt-4o-mini-2024-07-18" {
+		t.Errorf("claim name = %q, want the assigned literal", model.Claim.Name)
+	}
+	if model.Occurrence.Location.Line != 3 {
+		t.Errorf("model line = %d, want 3 (the assignment)", model.Occurrence.Location.Line)
+	}
+
+	if call == nil {
+		t.Fatal("chat-call did not fire")
+	}
+	if got := call.Occurrence.Fields["model"]; got != "gpt-4o-mini-2024-07-18" {
+		t.Errorf("model field = %q, want the resolved literal (bareword resolution)", got)
+	}
+	if got := call.Occurrence.Fields["param.temperature"]; got != "0.35" {
+		t.Errorf("param.temperature = %q, want 0.35 (numeric bareword resolution)", got)
+	}
+}
+
+// TestCodeRegionCallSiteCapturesQuotedModel: production call-shape rules run
+// with regions [code]; the param window must still see string literals, or
+// model="gpt-4.1" never reaches the occurrence fields (the pre-fix goldens
+// carried the resulting `occurrence has no "model" field` warning).
+func TestCodeRegionCallSiteCapturesQuotedModel(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	findings := detectOn(t, m, "app.py", pythonFixture)
+	for _, f := range findings {
+		if f.Occurrence.DetectorID != "rules/openai/chat-call" {
+			continue
+		}
+		if got := f.Occurrence.Fields["model"]; got != "gpt-4.1" {
+			t.Errorf("model field = %q, want gpt-4.1 (window must include string regions)", got)
+		}
+		return
+	}
+	t.Fatal("chat-call did not fire")
+}
+
+// TestAssignResolverRefusesAmbiguity: an identifier assigned two different
+// literals never resolves — the bareword is kept verbatim (refusal over
+// guessing), and no hosted-llm claim is fabricated from either value.
+func TestAssignResolverRefusesAmbiguity(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	src := `import openai
+
+CHAT_MODEL = "gpt-4.1"
+if fast:
+    CHAT_MODEL = "gpt-4.1-mini"
+
+client = openai.OpenAI()
+r = client.chat.completions.create(
+    model=CHAT_MODEL,
+)
+`
+	findings := detectOn(t, m, "pick.py", src)
+	for _, f := range findings {
+		if f.Occurrence.DetectorID != "rules/openai/chat-call" {
+			continue
+		}
+		if got := f.Occurrence.Fields["model"]; got != "CHAT_MODEL" {
+			t.Errorf("model field = %q, want the unresolved bareword CHAT_MODEL", got)
+		}
+		return
+	}
+	t.Fatal("chat-call did not fire")
+}
+
+// TestKwargsAreNotAssignments: call-site kwargs, default args, and tuple RHS
+// elements must never enter the assignment map — resolving a bareword from an
+// UNRELATED call site fabricates a same-call-site binding (D12). (Adversarial
+// review findings: `deploy="canary"` in another call resolved `model=deploy`;
+// `provider, model_name = "openai-prov", "gpt-4o"` bound model_name to the
+// FIRST tuple element.)
+func TestKwargsAreNotAssignments(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	src := `import openai
+telemetry.configure(deploy="canary")
+provider, model_name = "openai-prov", "gpt-4o"
+
+def ask(q, deploy):
+    return client.chat.completions.create(
+        model=deploy,
+    )
+
+def ask2(q):
+    return client.chat.completions.create(
+        model=model_name,
+    )
+`
+	findings := detectOn(t, m, "svc.py", src)
+	var calls []detect.Finding
+	for _, f := range findings {
+		if f.Occurrence.DetectorID == "rules/openai/chat-call" {
+			calls = append(calls, f)
+		}
+	}
+	if len(calls) != 2 {
+		t.Fatalf("chat-call findings = %d, want 2", len(calls))
+	}
+	if got := calls[0].Occurrence.Fields["model"]; got != "deploy" {
+		t.Errorf("call 1 model = %q, want unresolved bareword deploy (kwargs are not assignments)", got)
+	}
+	if got := calls[1].Occurrence.Fields["model"]; got != "model_name" {
+		t.Errorf("call 2 model = %q, want unresolved bareword model_name (tuple RHS is positional)", got)
+	}
+}
+
+// TestCRLFAssignmentsResolve: Windows-authored files must resolve too.
+func TestCRLFAssignmentsResolve(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	src := strings.ReplaceAll(`import openai
+BASE_MODEL = "gpt-4o-mini-2024-07-18"
+def go(q):
+    return client.chat.completions.create(
+        model=BASE_MODEL,
+    )
+`, "\n", "\r\n")
+	findings := detectOn(t, m, "win.py", src)
+	for _, f := range findings {
+		if f.Occurrence.DetectorID != "rules/openai/chat-call" {
+			continue
+		}
+		if got := f.Occurrence.Fields["model"]; got != "gpt-4o-mini-2024-07-18" {
+			t.Errorf("model = %q, want resolution to survive CRLF line endings", got)
+		}
+		return
+	}
+	t.Fatal("chat-call did not fire")
+}
+
+// TestStringProseDoesNotFeedParamWindow: a [code]-region rule's param window
+// may read kwarg VALUES out of string literals, but a binding whose KEY lives
+// inside a string (prose, JSON blobs, docstrings) is not a kwarg of the call.
+func TestStringProseDoesNotFeedParamWindow(t *testing.T) {
+	m := loadTestPack(t, openaiPack)
+	src := `import openai
+STYLE = "answer with temperature: 1.5 vibes, model: gpt-nope"
+DOC = 'defaults... model = "gpt-3.5-turbo" ...'
+
+def ask(cfg):
+    return client.chat.completions.create(**cfg)
+`
+	findings := detectOn(t, m, "prose.py", src)
+	for _, f := range findings {
+		if f.Occurrence.DetectorID != "rules/openai/chat-call" {
+			continue
+		}
+		if got, has := f.Occurrence.Fields["model"]; has {
+			t.Errorf("model = %q captured from string prose; want absent", got)
+		}
+		if got, has := f.Occurrence.Fields["param.temperature"]; has {
+			t.Errorf("param.temperature = %q captured from string prose; want absent", got)
+		}
+		return
+	}
+	t.Fatal("chat-call did not fire")
+}
+
+// TestWidenedModelKeyRejectsNonModelValues: the identifier widening must be
+// paid for with tight value alternations — a model-shaped KEY with a
+// non-model VALUE claims nothing. (Adversarial review: "command-line",
+// "o365", and "buy-instant" all minted hosted-llm components.)
+func TestWidenedModelKeyRejectsNonModelValues(t *testing.T) {
+	rs, err := Load(rules.FS(), nil, nil)
+	if err != nil {
+		t.Fatalf("Load embedded packs: %v", err)
+	}
+	m, err := Compile(rs)
+	if err != nil {
+		t.Fatalf("Compile: %v", err)
+	}
+
+	src := `import cohere, openai, groq
+data_model = "command-line"
+MODEL = 'o365'
+PRICING_MODEL = "buy-instant"
+
+GOOD_OAI_MODEL = "o3-mini"
+COHERE_MODEL = "command-r-plus-04-2024"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+`
+	findings := detectOn(t, m, "fp.py", src)
+	got := map[string]bool{}
+	for _, f := range findings {
+		if f.Claim.Kind == airom.KindHostedLLM {
+			got[f.Claim.Name] = true
+		}
+	}
+	for _, fp := range []string{"command-line", "o365", "buy-instant"} {
+		if got[fp] {
+			t.Errorf("hosted-llm %q fabricated from a non-model value", fp)
+		}
+	}
+	for _, tp := range []string{"o3-mini", "command-r-plus-04-2024", "llama-3.3-70b-versatile"} {
+		if !got[tp] {
+			t.Errorf("hosted-llm %q missed: variable-bound real model ids must still match", tp)
+		}
 	}
 }
 

@@ -21,6 +21,42 @@
       "evidence": {}
     },
     {
+      "id": "airom:113e832148731168",
+      "kind": "library",
+      "name": "sentence-transformers",
+      "version": "3.1.1",
+      "provider": "huggingface",
+      "purl": "pkg:pypi/sentence-transformers@3.1.1",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.95,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 5
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "sentence-transformers==3.1.1"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "3.1.1",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "airom:1d7789e0b7e68c35",
       "kind": "rag-pipeline",
       "name": "rag-pipeline",
@@ -267,7 +303,7 @@
       "package": {
         "ecosystem": "pypi"
       },
-      "confidence": 0.95,
+      "confidence": 0.985,
       "evidence": {
         "occurrences": [
           {
@@ -279,6 +315,24 @@
             "method": "manifest-analysis",
             "confidence": 0.95,
             "snippet": "openai==1.51.0"
+          },
+          {
+            "location": {
+              "path": "src/rag.py",
+              "line": 14,
+              "endLine": 14,
+              "column": 22,
+              "endColumn": 47
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "response = client.chat.completions.create(",
+            "fields": {
+              "model": "gpt-4.1",
+              "param.max_tokens": "800",
+              "param.temperature": "0.2"
+            }
           }
         ],
         "identity": [
@@ -294,74 +348,58 @@
       }
     },
     {
-      "id": "airom:b9cc121d3e5cdbf0",
-      "kind": "library",
-      "name": "sentence-transformers",
-      "version": "3.1.1",
-      "provider": "hugging face",
-      "purl": "pkg:pypi/sentence-transformers@3.1.1",
-      "package": {
-        "ecosystem": "pypi"
-      },
-      "confidence": 0.95,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "requirements.txt",
-              "line": 5
-            },
-            "detectorId": "manifest/pypi-requirements",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "sentence-transformers==3.1.1"
-          }
-        ],
-        "identity": [
-          {
-            "field": "version",
-            "value": "3.1.1",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "airom:bd6fd4f86f30fa53",
-      "kind": "library",
-      "name": "openai-sdk",
-      "provider": "openai",
-      "confidence": 0.7,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "src/rag.py",
-              "line": 14,
-              "endLine": 14,
-              "column": 22,
-              "endColumn": 47
-            },
-            "detectorId": "rules/openai/chat-call",
-            "method": "source-code-analysis",
-            "confidence": 0.7,
-            "snippet": "response = client.chat.completions.create(",
-            "fields": {
-              "param.max_tokens": "800",
-              "param.temperature": "0.2"
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:cfc27e587216febe",
       "kind": "hosted-llm",
       "name": "gpt-4.1",
       "provider": "openai",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "800",
+            "occurrence": {
+              "location": {
+                "path": "src/rag.py",
+                "line": 14,
+                "endLine": 14,
+                "column": 22,
+                "endColumn": 47
+              },
+              "detectorId": "rules/openai/chat-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "response = client.chat.completions.create(",
+              "fields": {
+                "model": "gpt-4.1",
+                "param.max_tokens": "800",
+                "param.temperature": "0.2"
+              }
+            }
+          },
+          {
+            "name": "temperature",
+            "value": "0.2",
+            "occurrence": {
+              "location": {
+                "path": "src/rag.py",
+                "line": 14,
+                "endLine": 14,
+                "column": 22,
+                "endColumn": 47
+              },
+              "detectorId": "rules/openai/chat-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "response = client.chat.completions.create(",
+              "fields": {
+                "model": "gpt-4.1",
+                "param.max_tokens": "800",
+                "param.temperature": "0.2"
+              }
+            }
+          }
+        ]
+      },
       "confidence": 0.85,
       "evidence": {
         "occurrences": [
@@ -465,6 +503,32 @@
           "detectorId": "project/raglink",
           "method": "source-code-analysis",
           "confidence": 0.6
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:cfc27e587216febe",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "src/rag.py",
+            "line": 14,
+            "endLine": 14,
+            "column": 22,
+            "endColumn": 47
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "response = client.chat.completions.create(",
+          "fields": {
+            "model": "gpt-4.1",
+            "param.max_tokens": "800",
+            "param.temperature": "0.2"
+          }
         }
       ]
     }
@@ -661,9 +725,6 @@
         "findings": 7,
         "ns": 0
       }
-    ],
-    "warnings": [
-      "unresolved uses relation from \"openai-sdk\" at src/rag.py: occurrence has no \"model\" field"
     ]
   }
 }

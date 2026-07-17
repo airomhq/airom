@@ -10,7 +10,7 @@ rules:
     keywords: ["Groq", "ChatGroq", "AsyncGroq"]
     pattern: '\b(?:Groq|ChatGroq|AsyncGroq)\s*\('
     regions: [code]
-    claim: { name: "groq-sdk" }
+    claim: { name: "groq" }
     confidence: 0.7
 
   # Groq-distinctive served-model suffixes (-versatile / -instant) in a model=
@@ -20,7 +20,7 @@ rules:
     provider: groq
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["-versatile", "-instant"]
-    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>[\w.\-]+-(?:versatile|instant))["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>(?:llama|gemma|mixtral|qwen|deepseek)[\w.\-]*-(?:versatile|instant))["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.8

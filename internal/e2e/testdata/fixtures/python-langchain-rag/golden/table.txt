@@ -1,16 +1,15 @@
 AI Bill of Materials — python-langchain-rag
-12 component(s), 2 relationship(s)
+11 component(s), 3 relationship(s)
 
-KIND              NAME                    VERSION  PROVIDER      CONF   EVIDENCE
-ai-config         max_tokens              -        -             0.5    1 occ
-ai-config         temperature             -        -             0.5    1 occ
-embedding-model   text-embedding-3-large  -        openai        0.85   1 occ
-framework         langchain               0.2.16   langchain     0.95   1 occ
-hosted-llm        gpt-4.1                 -        openai        0.85   1 occ
-library           openai                  1.51.0   openai        0.95   1 occ
-library           openai-sdk              -        openai        0.7    1 occ
-library           sentence-transformers   3.1.1    hugging face  0.95   1 occ
-local-model-file  tiny.gguf               -        local         0.95   1 occ
-prompt            system.txt              -        -             0.8    1 occ
-rag-pipeline      rag-pipeline            -        -             0.6    1 occ
-vector-db         chroma                  0.5.5    chroma        0.985  3 occ
+KIND              NAME                    VERSION  PROVIDER     CONF   EVIDENCE
+ai-config         max_tokens              -        -            0.5    1 occ
+ai-config         temperature             -        -            0.5    1 occ
+embedding-model   text-embedding-3-large  -        openai       0.85   1 occ
+framework         langchain               0.2.16   langchain    0.95   1 occ
+hosted-llm        gpt-4.1                 -        openai       0.85   1 occ
+library           openai                  1.51.0   openai       0.985  2 occ
+library           sentence-transformers   3.1.1    huggingface  0.95   1 occ
+local-model-file  tiny.gguf               -        local        0.95   1 occ
+prompt            system.txt              -        -            0.8    1 occ
+rag-pipeline      rag-pipeline            -        -            0.6    1 occ
+vector-db         chroma                  0.5.5    chroma       0.985  3 occ

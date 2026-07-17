@@ -18,6 +18,31 @@
       "kind": "hosted-llm",
       "name": "claude-sonnet-4-5",
       "provider": "anthropic",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "512",
+            "occurrence": {
+              "location": {
+                "path": "src/agent.ts",
+                "line": 6,
+                "endLine": 6,
+                "column": 34,
+                "endColumn": 59
+              },
+              "detectorId": "rules/openai/chat-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "const completion = await client.chat.completions.create({",
+              "fields": {
+                "model": "claude-sonnet-4-5",
+                "param.max_tokens": "512"
+              }
+            }
+          }
+        ]
+      },
       "confidence": 0.85,
       "evidence": {
         "occurrences": [
@@ -49,42 +74,6 @@
           "value": "claude-sonnet-4-5"
         }
       ]
-    },
-    {
-      "id": "airom:3da8474d2f151a8b",
-      "kind": "library",
-      "name": "@anthropic-ai/sdk",
-      "version": "0.27.3",
-      "provider": "anthropic",
-      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
-      "package": {
-        "ecosystem": "npm"
-      },
-      "confidence": 0.95,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "package.json",
-              "line": 7
-            },
-            "detectorId": "manifest/npm",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "\"@anthropic-ai/sdk\": \"^0.27.3\","
-          }
-        ],
-        "identity": [
-          {
-            "field": "version",
-            "value": "0.27.3",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
-          }
-        ]
-      }
     },
     {
       "id": "airom:737f185ea7c9f67f",
@@ -149,33 +138,6 @@
       }
     },
     {
-      "id": "airom:bd6fd4f86f30fa53",
-      "kind": "library",
-      "name": "openai-sdk",
-      "provider": "openai",
-      "confidence": 0.7,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "src/agent.ts",
-              "line": 6,
-              "endLine": 6,
-              "column": 34,
-              "endColumn": 59
-            },
-            "detectorId": "rules/openai/chat-call",
-            "method": "source-code-analysis",
-            "confidence": 0.7,
-            "snippet": "const completion = await client.chat.completions.create({",
-            "fields": {
-              "param.max_tokens": "512"
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:bfa221b1fd6ea0d5",
       "kind": "application",
       "name": "node-openai",
@@ -192,7 +154,7 @@
       "package": {
         "ecosystem": "npm"
       },
-      "confidence": 0.95,
+      "confidence": 0.985,
       "evidence": {
         "occurrences": [
           {
@@ -204,6 +166,23 @@
             "method": "manifest-analysis",
             "confidence": 0.95,
             "snippet": "\"openai\": \"^4.67.1\","
+          },
+          {
+            "location": {
+              "path": "src/agent.ts",
+              "line": 6,
+              "endLine": 6,
+              "column": 34,
+              "endColumn": 59
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "const completion = await client.chat.completions.create({",
+            "fields": {
+              "model": "claude-sonnet-4-5",
+              "param.max_tokens": "512"
+            }
           }
         ],
         "identity": [
@@ -217,6 +196,77 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:f9aed661fdbdcef2",
+      "kind": "library",
+      "name": "anthropic",
+      "version": "0.27.3",
+      "provider": "anthropic",
+      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
+      "package": {
+        "ecosystem": "npm"
+      },
+      "confidence": 0.95,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "package.json",
+              "line": 7
+            },
+            "detectorId": "manifest/npm",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "\"@anthropic-ai/sdk\": \"^0.27.3\","
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "0.27.3",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          },
+          {
+            "field": "name",
+            "value": "@anthropic-ai/sdk",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "from": "airom:f16d02e10b6caf23",
+      "to": "airom:14ac8720c7a8d1ef",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "src/agent.ts",
+            "line": 6,
+            "endLine": 6,
+            "column": 34,
+            "endColumn": 59
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "const completion = await client.chat.completions.create({",
+          "fields": {
+            "model": "claude-sonnet-4-5",
+            "param.max_tokens": "512"
+          }
+        }
+      ]
     }
   ],
   "stats": {
@@ -411,9 +461,6 @@
         "findings": 3,
         "ns": 0
       }
-    ],
-    "warnings": [
-      "unresolved uses relation from \"openai-sdk\" at src/agent.ts: occurrence has no \"model\" field"
     ]
   }
 }

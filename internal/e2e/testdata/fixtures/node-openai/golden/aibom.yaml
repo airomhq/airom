@@ -16,6 +16,24 @@ components:
           snippet: 'model: "claude-sonnet-4-5",'
     id: airom:14ac8720c7a8d1ef
     kind: hosted-llm
+    model:
+      generationParams:
+        - name: max_tokens
+          occurrence:
+            confidence: 0.7
+            detectorId: rules/openai/chat-call
+            fields:
+              model: claude-sonnet-4-5
+              param.max_tokens: "512"
+            location:
+              column: 34
+              endColumn: 59
+              endLine: 6
+              line: 6
+              path: src/agent.ts
+            method: source-code-analysis
+            snippet: const completion = await client.chat.completions.create({
+          value: "512"
     name: claude-sonnet-4-5
     props:
       - name: airom:model.provider
@@ -23,30 +41,6 @@ components:
       - name: airom:model.id
         value: claude-sonnet-4-5
     provider: anthropic
-  - confidence: 0.95
-    evidence:
-      identity:
-        - confidence: 0.95
-          field: version
-          methods:
-            - manifest-analysis
-          value: 0.27.3
-      occurrences:
-        - confidence: 0.95
-          detectorId: manifest/npm
-          location:
-            line: 7
-            path: package.json
-          method: manifest-analysis
-          snippet: '"@anthropic-ai/sdk": "^0.27.3",'
-    id: airom:3da8474d2f151a8b
-    kind: library
-    name: '@anthropic-ai/sdk'
-    package:
-      ecosystem: npm
-    provider: anthropic
-    purl: pkg:npm/%40anthropic-ai/sdk@0.27.3
-    version: 0.27.3
   - confidence: 0.5
     evidence:
       occurrences:
@@ -89,31 +83,12 @@ components:
     provider: langchain
     purl: pkg:npm/langchain@0.3.2
     version: 0.3.2
-  - confidence: 0.7
-    evidence:
-      occurrences:
-        - confidence: 0.7
-          detectorId: rules/openai/chat-call
-          fields:
-            param.max_tokens: "512"
-          location:
-            column: 34
-            endColumn: 59
-            endLine: 6
-            line: 6
-            path: src/agent.ts
-          method: source-code-analysis
-          snippet: const completion = await client.chat.completions.create({
-    id: airom:bd6fd4f86f30fa53
-    kind: library
-    name: openai-sdk
-    provider: openai
   - confidence: 0
     evidence: {}
     id: airom:bfa221b1fd6ea0d5
     kind: application
     name: node-openai
-  - confidence: 0.95
+  - confidence: 0.985
     evidence:
       identity:
         - confidence: 0.95
@@ -129,6 +104,19 @@ components:
             path: package.json
           method: manifest-analysis
           snippet: '"openai": "^4.67.1",'
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: claude-sonnet-4-5
+            param.max_tokens: "512"
+          location:
+            column: 34
+            endColumn: 59
+            endLine: 6
+            line: 6
+            path: src/agent.ts
+          method: source-code-analysis
+          snippet: const completion = await client.chat.completions.create({
     id: airom:f16d02e10b6caf23
     kind: library
     name: openai
@@ -137,7 +125,55 @@ components:
     provider: openai
     purl: pkg:npm/openai@4.67.1
     version: 4.67.1
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 0.27.3
+        - confidence: 0.95
+          field: name
+          methods:
+            - manifest-analysis
+          value: '@anthropic-ai/sdk'
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/npm
+          location:
+            line: 7
+            path: package.json
+          method: manifest-analysis
+          snippet: '"@anthropic-ai/sdk": "^0.27.3",'
+    id: airom:f9aed661fdbdcef2
+    kind: library
+    name: anthropic
+    package:
+      ecosystem: npm
+    provider: anthropic
+    purl: pkg:npm/%40anthropic-ai/sdk@0.27.3
+    version: 0.27.3
 lifecycle: pre-build
+relationships:
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: claude-sonnet-4-5
+          param.max_tokens: "512"
+        location:
+          column: 34
+          endColumn: 59
+          endLine: 6
+          line: 6
+          path: src/agent.ts
+        method: source-code-analysis
+        snippet: const completion = await client.chat.completions.create({
+    from: airom:f16d02e10b6caf23
+    to: airom:14ac8720c7a8d1ef
+    type: uses
 root: airom:bfa221b1fd6ea0d5
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
@@ -283,8 +319,6 @@ stats:
     - 'project/raglink: selected by "default"'
     - 'prompt/file: selected by "default"'
     - 'ruleengine: selected by "default"'
-  warnings:
-    - 'unresolved uses relation from "openai-sdk" at src/agent.ts: occurrence has no "model" field'
 timestamp: "2026-07-17T12:00:00Z"
 tool:
   name: airom

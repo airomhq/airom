@@ -119,41 +119,6 @@
           }
         },
         {
-          "ruleId": "manifest/npm",
-          "ruleIndex": 0,
-          "level": "note",
-          "message": {
-            "text": "library '@anthropic-ai/sdk' [0.27.3] detected (confidence 0.95)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "package.json",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 7,
-                  "snippet": {
-                    "text": "\"@anthropic-ai/sdk\": \"^0.27.3\","
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "0f293c518e152524ff7ba6f7418ff1d9f70c37a786fc1b1685ab6f79ed77b323"
-          },
-          "properties": {
-            "airom:componentId": "airom:3da8474d2f151a8b",
-            "airom:confidence": 0.95,
-            "airom:kind": "library",
-            "airom:occurrence.confidence": 0.95,
-            "airom:provider": "anthropic",
-            "airom:purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3"
-          }
-        },
-        {
           "ruleId": "rules/aiconfig/token-limits",
           "ruleIndex": 1,
           "level": "note",
@@ -225,48 +190,11 @@
           }
         },
         {
-          "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 3,
-          "level": "note",
-          "message": {
-            "text": "library 'openai-sdk' detected (confidence 0.7)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/agent.ts",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 6,
-                  "startColumn": 34,
-                  "endLine": 6,
-                  "endColumn": 59,
-                  "snippet": {
-                    "text": "const completion = await client.chat.completions.create({"
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "f1e08c3e5d69fac4ec8e5e80b6aff5b806fee60be096ee5697bd6afa63c3be86"
-          },
-          "properties": {
-            "airom:componentId": "airom:bd6fd4f86f30fa53",
-            "airom:confidence": 0.7,
-            "airom:kind": "library",
-            "airom:occurrence.confidence": 0.7,
-            "airom:provider": "openai"
-          }
-        },
-        {
           "ruleId": "manifest/npm",
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "library 'openai' [4.67.1] detected (confidence 0.95)"
+            "text": "library 'openai' [4.67.1] detected (confidence 0.985)"
           },
           "locations": [
             {
@@ -289,11 +217,84 @@
           },
           "properties": {
             "airom:componentId": "airom:f16d02e10b6caf23",
-            "airom:confidence": 0.95,
+            "airom:confidence": 0.985,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
             "airom:provider": "openai",
             "airom:purl": "pkg:npm/openai@4.67.1"
+          }
+        },
+        {
+          "ruleId": "rules/openai/chat-call",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [4.67.1] detected (confidence 0.985)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/agent.ts",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 34,
+                  "endLine": 6,
+                  "endColumn": 59,
+                  "snippet": {
+                    "text": "const completion = await client.chat.completions.create({"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "f1aa1160fc437d04b1044fffd927eb7051393cdd55cd1984bffeb25cfbc4c6b1"
+          },
+          "properties": {
+            "airom:componentId": "airom:f16d02e10b6caf23",
+            "airom:confidence": 0.985,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:npm/openai@4.67.1"
+          }
+        },
+        {
+          "ruleId": "manifest/npm",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.27.3] detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 7,
+                  "snippet": {
+                    "text": "\"@anthropic-ai/sdk\": \"^0.27.3\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "a7e330de3ab16b5ca27ada7c3f7cacddfb532e1a02b3c0735fed1e53466581f1"
+          },
+          "properties": {
+            "airom:componentId": "airom:f9aed661fdbdcef2",
+            "airom:confidence": 0.95,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3"
           }
         }
       ]

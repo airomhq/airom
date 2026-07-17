@@ -201,6 +201,15 @@ carries a `model` binding** — call-site capture beats every weaker proximity h
 call sites with different temperatures stay two `BoundParam`s, and nothing is ever averaged
 or guessed.
 
+Binding **values** may live in string literals regardless of the rule's own `regions`
+(`model="gpt-4.1"` at a `[code]` call site), but the binding **key** must lie in a region
+the rule declares — `temperature:` inside a prose string is not a kwarg. When a captured
+value is a bareword identifier rather than a literal (`model=BASE_MODEL`), it is resolved
+against the file's single-literal assignment *statements* (`BASE_MODEL = "gpt-4o-mini-2024-07-18"`,
+anchored at statement position — call-site kwargs, default args, and tuple elements never
+bind); an identifier assigned two different literals is ambiguous and stays verbatim —
+refusal over guessing.
+
 ### `confidence`
 
 Float, `0 < c ≤ 0.99` — the confidence of **one sighting by this rule alone**. Rules cannot
@@ -339,7 +348,8 @@ rules:
     provider: openai
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["gpt-", "o3", "o4-", "chatgpt-"]   # Aho–Corasick prefilter — MANDATORY
-    pattern: '\bmodel\s*[:=]\s*["''](?P<model>gpt-[\w.\-]+|o[34][\w.\-]*)["'']'
+    # The key matches any model-naming identifier: model=, "model":, BASE_MODEL =, model_id =.
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)\s*[:=]\s*["''](?P<model>gpt-[\w.\-]+|o[34][\w.\-]*)["'']'
     regions: [code, string]                        # never match inside comments
     claim: { name: "${model}" }
     confidence: 0.85
@@ -349,7 +359,8 @@ rules:
     provider: openai
     keywords: ["chat.completions.create", "responses.create"]
     pattern: '\.(chat\.completions|responses)\.create\s*\('
-    claim: { name: "openai-sdk" }
+    regions: [code]                                # the param window still sees strings
+    claim: { name: "openai" }
     relations:                                     # edges from YAML — no Go needed
       - { type: uses, target: { kind: hosted-llm, from_field: model } }
     capture_params:                                # same-call-site binding (§9.5)

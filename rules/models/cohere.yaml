@@ -10,7 +10,7 @@ rules:
     provider: cohere
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["command-r", "command-light", "command-nightly", "command-a", "command"]
-    pattern: '\bmodel["'']?\s*[:=]\s*["''](?P<model>command(?:-[\w.\-]+)?)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>command(?:-(?:r(?:-plus)?|r7b|a|light|nightly)(?:-[\w.\-]+)?)?)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
@@ -23,5 +23,5 @@ rules:
     keywords: ["cohere.Client", ".chat("]
     pattern: '\bcohere\.Client(?:V2)?\s*\(|\bco\.chat\s*\('
     regions: [code]
-    claim: { name: "cohere-sdk" }
+    claim: { name: "cohere" }
     confidence: 0.7
