@@ -62,12 +62,15 @@ jobs:
         env:
           INDEX: ${{ github.event.inputs.repository || 'pypi' }}
         run: |
-          python - <<'PY' >> "$GITHUB_OUTPUT"
+          # Outputs are written to $GITHUB_OUTPUT explicitly; stdout stays free
+          # for ::notice:: workflow commands. (Redirecting the whole script into
+          # $GITHUB_OUTPUT puts the notice in the outputs file, which only
+          # accepts key=value, and the step fails with "Invalid format".)
+          python - <<'PY'
           import json, os, re, urllib.error, urllib.request
 
           src = open("sdk/python/src/airom/__init__.py").read()
           version = re.search(r'__version__ = "([^"]+)"', src).group(1)
-          print(f"version={version}")
 
           host = "test.pypi.org" if os.environ["INDEX"] == "testpypi" else "pypi.org"
           url = f"https://{host}/pypi/airom/json"
@@ -80,7 +83,10 @@ jobs:
               released = set()  # project does not exist yet — first publish
 
           publish = version not in released
-          print(f"publish={str(publish).lower()}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"version={version}\n")
+              fh.write(f"publish={str(publish).lower()}\n")
+
           note = "will publish" if publish else "already on the index — skipping"
           print(f"::notice::airom {version} on {host}: {note}")
           PY
