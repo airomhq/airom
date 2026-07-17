@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Roro1727/airom/pkg/airom"
 )
 
 // Policy is a compiled --fail-on expression: the opt-in CI gate from the
@@ -110,3 +112,74 @@ func parseTerm(raw string) (term, error) {
 
 // String returns the original, trimmed expression.
 func (p *Policy) String() string { return p.raw }
+
+// Matches reports whether the assembled inventory trips the gate. The
+// expression is an OR of conjunctions; a conjunction matches iff a SINGLE
+// component satisfies all of its terms — so "hosted-llm&confidence>=0.9" means
+// "some hosted-llm component has confidence >= 0.9", not "some hosted-llm
+// exists AND some (other) high-confidence component exists". The empty
+// conjunction (MatchAny, from --exit-code without --fail-on) matches iff the
+// inventory has at least one discovered component (the application root does
+// not count — it is the scan target, not a finding).
+//
+// Identifier terms match a ComponentKind ("hosted-llm") or the "pickle-risk"
+// signal (a component whose static pickle scan flagged a dangerous global). An
+// identifier matching no kind and no known signal simply never matches.
+func (p *Policy) Matches(inv *airom.Inventory) bool {
+	if p == nil || inv == nil {
+		return false
+	}
+	for _, conj := range p.anyOf {
+		for i := range inv.Components {
+			c := &inv.Components[i]
+			if c.Kind == airom.KindApplication {
+				continue
+			}
+			if conjunctionMatches(conj, c) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// conjunctionMatches reports whether one component satisfies every term. An
+// empty term list (MatchAny) is vacuously true, so any non-root component
+// trips it.
+func conjunctionMatches(conj conjunction, c *airom.Component) bool {
+	for _, t := range conj.terms {
+		if !termMatches(t, c) {
+			return false
+		}
+	}
+	return true
+}
+
+func termMatches(t term, c *airom.Component) bool {
+	if t.Cmp != nil {
+		return compareConfidence(float64(c.Confidence), t.Cmp)
+	}
+	if t.Ident == string(c.Kind) {
+		return true
+	}
+	if t.Ident == "pickle-risk" {
+		return c.Model != nil && c.Model.PickleRisk != nil && len(c.Model.PickleRisk.Globals) > 0
+	}
+	return false
+}
+
+func compareConfidence(v float64, cmp *confidenceCmp) bool {
+	switch cmp.Op {
+	case ">=":
+		return v >= cmp.Value
+	case "<=":
+		return v <= cmp.Value
+	case ">":
+		return v > cmp.Value
+	case "<":
+		return v < cmp.Value
+	case "=":
+		return v == cmp.Value
+	}
+	return false
+}

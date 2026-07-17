@@ -56,7 +56,7 @@
       "name": "@anthropic-ai/sdk",
       "version": "0.27.3",
       "provider": "anthropic",
-      "purl": "pkg:npm/@anthropic-ai/sdk@0.27.3",
+      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
       "package": {
         "ecosystem": "npm"
       },

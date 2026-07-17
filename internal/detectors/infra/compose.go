@@ -51,6 +51,11 @@ func (c *Compose) DetectFile(_ context.Context, f *detect.File) ([]detect.Findin
 			continue
 		}
 		if ref, ok := composeImage(line); ok {
+			// Any image line opens a new service: stop attributing ports/env to
+			// the prior service, whether or not this image is a recognized AI
+			// one. Otherwise an unrelated later service's port/env leaks onto an
+			// earlier AI hit. (Phase 10 review, detectors finding.)
+			cur = nil
 			if tool, ok := matchImage(ref); ok && !seen[tool] {
 				seen[tool] = true
 				cur = newHit(tool, i+1, 0.75)

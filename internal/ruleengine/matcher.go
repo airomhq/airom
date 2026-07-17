@@ -96,11 +96,17 @@ func Compile(rs *Ruleset) (*Matcher, error) {
 		m.rules = append(m.rules, cr)
 
 		for _, kw := range er.Keywords {
-			idx, ok := kwIndex[kw]
+			// Fold the keyword the same way the scan buffer is folded, so the
+			// prefilter gate is case- and whitespace-insensitive: a (?i) or
+			// \s+ pattern is no longer defeated by a literal single-cased,
+			// single-spaced keyword. The gate only widens candidates; the
+			// regex still enforces exact semantics. (Phase 10 review.)
+			nk := string(foldForPrefilter([]byte(kw)))
+			idx, ok := kwIndex[nk]
 			if !ok {
 				idx = len(keywords)
-				kwIndex[kw] = idx
-				keywords = append(keywords, kw)
+				kwIndex[nk] = idx
+				keywords = append(keywords, nk)
 				m.kwOwners = append(m.kwOwners, nil)
 			}
 			m.kwOwners[idx] = append(m.kwOwners[idx], ruleIdx)
@@ -217,10 +223,12 @@ func (d *Detector) DetectFile(ctx context.Context, f *detect.File) ([]detect.Fin
 		return b
 	}
 
-	kwBuf := maskFor(regionCode | regionString)
 	if d.m.trie == nil {
 		return nil, nil
 	}
+	// Fold the keyword buffer (case + whitespace) for the prefilter gate only;
+	// the regex still runs over the un-folded, position-preserving buf below.
+	kwBuf := foldForPrefilter(maskFor(regionCode | regionString))
 	hits := d.m.trie.MatchThreadSafe(kwBuf)
 	if len(hits) == 0 {
 		return nil, nil
@@ -256,6 +264,36 @@ func (d *Detector) DetectFile(ctx context.Context, f *detect.File) ([]detect.Fin
 		}
 	}
 	return findings, nil
+}
+
+// foldForPrefilter normalizes a keyword or scan buffer for the Aho–Corasick
+// prefilter gate: ASCII-lowercase, with runs of ASCII whitespace collapsed to
+// a single space. Applied identically to keywords (at Compile) and to the scan
+// buffer (per file), it makes the gate case- and whitespace-insensitive so a
+// (?i) or \s+ pattern is not silently defeated by a single-cased,
+// single-spaced literal keyword. The gate only decides which regexes run — it
+// returns matched keyword indices, not positions — so folding (which changes
+// length) never affects the authoritative regex. (Phase 10 review, ruleengine.)
+func foldForPrefilter(b []byte) []byte {
+	out := make([]byte, 0, len(b))
+	inSpace := false
+	for i := 0; i < len(b); i++ {
+		c := b[i]
+		switch c {
+		case ' ', '\t', '\n', '\r', '\f', '\v':
+			if !inSpace {
+				out = append(out, ' ')
+				inSpace = true
+			}
+			continue
+		}
+		inSpace = false
+		if c >= 'A' && c <= 'Z' {
+			c += 'a' - 'A'
+		}
+		out = append(out, c)
+	}
+	return out
 }
 
 // finding builds one Finding from one regex match.

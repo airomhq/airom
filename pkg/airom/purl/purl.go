@@ -116,15 +116,22 @@ func normalizePyPI(name string) string {
 	return b.String()
 }
 
-// encodeSegment percent-encodes one purl path segment, preserving '/' in
-// pre-joined names never (callers pass single segments; golang namespaces
-// pass slashes intentionally via namespace which we split-encode).
+// encodeSegment percent-encodes one purl path segment, splitting on '/' so
+// namespaces like github.com/acme survive as path structure.
 func encodeSegment(s string) string {
-	// Encode each '/'-separated part separately so namespaces like
-	// github.com/acme survive as path structure.
 	parts := strings.Split(s, "/")
 	for i, p := range parts {
-		parts[i] = url.PathEscape(p)
+		// url.PathEscape matches the purl spec's separator handling (it leaves
+		// ':' ',' ';' literal, as OCI digests and the spec require), but the
+		// spec additionally requires '@' -> %40 and '+' -> %2B, which
+		// PathEscape leaves literal. Without this an npm scope (@anthropic-ai)
+		// or a semver build version (1.0.0+build) yields a non-canonical purl
+		// that a strict consumer (Dependency-Track) re-canonicalizes, so the
+		// component fails to dedup by purl. (Phase 10 review, api-cli-config.)
+		e := url.PathEscape(p)
+		e = strings.ReplaceAll(e, "@", "%40")
+		e = strings.ReplaceAll(e, "+", "%2B")
+		parts[i] = e
 	}
 	return strings.Join(parts, "/")
 }

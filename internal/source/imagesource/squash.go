@@ -587,12 +587,21 @@ func (s *Source) parseOCILayoutDir(dir string) ([]layerSrc, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	blobsRoot := filepath.Join(dir, "blobs")
 	blobPath := func(digest string) (string, error) {
 		alg, hexv, ok := splitDigest(digest)
 		if !ok {
 			return "", fmt.Errorf("bad digest %q", digest)
 		}
-		return filepath.Join(dir, "blobs", alg, hexv), nil
+		p := filepath.Join(blobsRoot, alg, hexv)
+		// Defense-in-depth: splitDigest already rejects path separators in the
+		// digest components, but assert the joined path stays under blobs/
+		// before any filesystem read — the digest is attacker-controlled JSON
+		// from the layout's own index.json (security boundary).
+		if p != blobsRoot && !strings.HasPrefix(p, blobsRoot+string(filepath.Separator)) {
+			return "", fmt.Errorf("blob digest %q escapes the layout", digest)
+		}
+		return p, nil
 	}
 	manPath, err := blobPath(manDesc.Digest)
 	if err != nil {
@@ -652,5 +661,39 @@ func splitDigest(digest string) (alg, hexv string, ok bool) {
 	if !ok || alg == "" || hexv == "" {
 		return "", "", false
 	}
+	// The algorithm and encoded parts of an OCI digest are strictly bounded by
+	// the image spec: the algorithm is [a-z0-9]+ (with optional separators we
+	// don't need) and, for the registered sha256/sha512 algorithms, the encoded
+	// value is lowercase hex. Enforcing this is a security boundary — these
+	// components are joined onto the filesystem in parseOCILayoutDir, so any
+	// '/', '\', or '.' would enable directory traversal out of blobs/.
+	if !isDigestAlg(alg) || !isHex(hexv) {
+		return "", "", false
+	}
 	return alg, hexv, true
+}
+
+// isDigestAlg reports whether s is a valid OCI digest algorithm component
+// ([a-z0-9]+) — notably free of any path separator.
+func isDigestAlg(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// isHex reports whether s is non-empty and all hexadecimal digits.
+func isHex(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') {
+			continue
+		}
+		return false
+	}
+	return true
 }

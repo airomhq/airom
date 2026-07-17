@@ -2,6 +2,7 @@ package modelfilex
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -62,6 +63,47 @@ func TestPickleGlobalsMemoizeBetweenOperands(t *testing.T) {
 	}
 	if risky := suspiciousGlobals(got); len(risky) != 1 || risky[0] != "subprocess.Popen" {
 		t.Fatalf("suspicious = %v, want [subprocess.Popen]", risky)
+	}
+}
+
+func TestPickleGlobalsMemoGetRestore(t *testing.T) {
+	// The GET family (BINGET/LONG_BINGET/GET) restores a memoized value to the
+	// top of stack. A checkpoint can memoize its module/name strings, push
+	// decoys, then restore the real operands via GET immediately before
+	// STACK_GLOBAL — evading two-slot tracking unless the memo table is
+	// modeled. All three GET spellings must resolve subprocess.Popen.
+	// (Phase 10 review, modelfile-parsers finding.)
+	cases := []struct {
+		name string
+		get  func(idx byte) []byte
+	}{
+		{"BINGET", func(idx byte) []byte { return []byte{0x68, idx} }},
+		{"LONG_BINGET", func(idx byte) []byte { return []byte{0x6a, idx, 0, 0, 0} }},
+		{"GET", func(idx byte) []byte { return append([]byte{'g'}, append([]byte(strconv.Itoa(int(idx))), '\n')...) }},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf []byte
+			buf = append(buf, 0x80, 0x04)
+			buf = append(buf, shortStr("subprocess")...)
+			buf = append(buf, 0x94) // MEMOIZE -> memo[0]
+			buf = append(buf, shortStr("Popen")...)
+			buf = append(buf, 0x94) // MEMOIZE -> memo[1]
+			buf = append(buf, shortStr("x")...)
+			buf = append(buf, shortStr("y")...)
+			buf = append(buf, tc.get(0)...) // restore memo[0] = subprocess
+			buf = append(buf, tc.get(1)...) // restore memo[1] = Popen
+			buf = append(buf, 0x93, '.')    // STACK_GLOBAL, STOP
+
+			got := pickleGlobals(buf)
+			want := [][2]string{{"subprocess", "Popen"}}
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("globals = %v, want %v", got, want)
+			}
+			if risky := suspiciousGlobals(got); len(risky) != 1 || risky[0] != "subprocess.Popen" {
+				t.Fatalf("suspicious = %v, want [subprocess.Popen]", risky)
+			}
+		})
 	}
 }
 

@@ -435,3 +435,40 @@ func TestGolden(t *testing.T) {
 		t.Errorf("output differs from golden; run: go test ./internal/writer/sarifw/ -update")
 	}
 }
+
+// TestRemoteRepoOmitsSRCROOT: a remote-URL repo scan must not emit a bogus
+// file:///https://… SRCROOT base; its provenance travels via
+// versionControlProvenance instead. (Phase 10 review, writers-conformance.)
+func TestRemoteRepoOmitsSRCROOT(t *testing.T) {
+	inv := sample()
+	inv.Source = airom.SourceInfo{
+		Kind:   "repo",
+		Target: "https://github.com/foo/bar",
+		Git:    &airom.GitInfo{Remote: "https://github.com/foo/bar", Commit: "abc123"},
+	}
+	var buf bytes.Buffer
+	if err := sarifw.New(writer.Options{}).Write(&buf, inv); err != nil {
+		t.Fatal(err)
+	}
+	// No file:// URI must appear anywhere for a URL target.
+	if bytes.Contains(buf.Bytes(), []byte("file:///https")) {
+		t.Fatalf("emitted a malformed file:// SRCROOT for a URL target:\n%s", buf.String())
+	}
+	run := parse(t, buf.Bytes()).Runs[0]
+	if len(run.OriginalURIBaseIDs) != 0 {
+		t.Errorf("originalUriBaseIds should be omitted for a remote repo, got %+v", run.OriginalURIBaseIDs)
+	}
+	if len(run.VersionControlProvenance) != 1 || run.VersionControlProvenance[0].RepositoryURI != "https://github.com/foo/bar" {
+		t.Errorf("remote provenance missing: %+v", run.VersionControlProvenance)
+	}
+
+	// A LOCAL repo worktree still gets SRCROOT.
+	inv.Source = airom.SourceInfo{Kind: "repo", Target: "/home/user/checkout"}
+	buf.Reset()
+	if err := sarifw.New(writer.Options{}).Write(&buf, inv); err != nil {
+		t.Fatal(err)
+	}
+	if got := parse(t, buf.Bytes()).Runs[0].OriginalURIBaseIDs["SRCROOT"].URI; got != "file:///home/user/checkout/" {
+		t.Errorf("local repo SRCROOT = %q, want file:///home/user/checkout/", got)
+	}
+}

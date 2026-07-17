@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -219,14 +220,17 @@ func (e *Engine) processEntry(ctx context.Context, en source.Entry, proc Process
 
 	defer func() {
 		if p := recover(); p != nil {
-			stack := debug.Stack()
-			if len(stack) > 2048 {
-				stack = stack[:2048]
-			}
+			// The full stack (goroutine IDs, return-PC offsets, heap pointers)
+			// varies run-to-run and with --parallel, so it goes ONLY to the
+			// debug log. The emitted Reason stays deterministic — identical
+			// inputs must produce byte-identical output (P7).
+			slog.Debug("recovered detector panic",
+				"path", en.Ref.Path, "stage", "process",
+				"panic", fmt.Sprintf("%v", p), "stack", string(debug.Stack()))
 			res.unknowns = append(res.unknowns, source.Unknown{
 				Path:   en.Ref.Path,
 				Stage:  "process",
-				Reason: fmt.Sprintf("panic: %v\n%s", p, stack),
+				Reason: fmt.Sprintf("panic: %v", p),
 			})
 		}
 	}()

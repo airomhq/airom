@@ -150,7 +150,7 @@
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
             "airom:provider": "anthropic",
-            "airom:purl": "pkg:npm/@anthropic-ai/sdk@0.27.3"
+            "airom:purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3"
           }
         },
         {

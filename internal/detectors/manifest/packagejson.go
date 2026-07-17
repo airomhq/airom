@@ -29,68 +29,117 @@ func (PackageJSON) Selector() detect.Selector {
 	}
 }
 
-// DetectFile locates the dependency objects by brace tracking (so lines are
-// exact) and matches each declared package against the npm catalog.
+// DetectFile scans each dependency object as a flat token stream and matches
+// every declared package against the npm catalog. Scanning the object's brace
+// span (rather than one dependency per line) means the pretty-printed, inline,
+// and fully minified layouts all resolve identically. (Phase 10 review.)
 func (d PackageJSON) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, error) {
 	content, err := f.Content()
 	if err != nil {
 		return nil, err
 	}
-	lines := splitLines(content)
 
 	var out []detect.Finding
 	for _, section := range []string{"dependencies", "devDependencies"} {
-		start, end := objectRange(lines, section)
-		if start == 0 {
-			continue
-		}
-		for i := start; i < end; i++ { // exclude the "…": { opener; include inner lines
-			qs := quotedStrings(lines[i])
-			if len(qs) < 2 || qs[0] == section {
-				continue
-			}
-			name, spec := qs[0], qs[1]
-			p, ok := npmCatalog.lookup(strings.ToLower(name))
+		for _, dep := range npmDeps(content, section) {
+			p, ok := npmCatalog.lookup(strings.ToLower(dep.name))
 			if !ok {
 				continue
 			}
-			out = append(out, mkFinding(p, p.emitName(name), "", "npm", cleanVersion(spec), i+1))
+			out = append(out, mkFinding(p, p.emitName(dep.name), "", "npm", cleanVersion(dep.spec), dep.line))
 		}
 	}
 	return out, nil
 }
 
-// objectRange returns the 1-based line span [start, end] of the JSON object
-// value of the given top-level key: start is the key's line, end is the line
-// of its matching closing brace. Returns 0,0 when the key is absent.
-func objectRange(lines []string, key string) (start, end int) {
-	target := `"` + key + `"`
-	for i := 0; i < len(lines); i++ {
-		idx := strings.Index(lines[i], target)
-		if idx < 0 {
-			continue
+// npmDep is one declared dependency with its 1-based line for evidence.
+type npmDep struct {
+	name, spec string
+	line       int
+}
+
+// npmDeps extracts every (name, spec) pair from the top-level object value of
+// the given key, independent of formatting. Within a JSON dependency object
+// the quoted strings strictly alternate key, value, so the object's brace span
+// is scanned as a flat token stream. The line is derived from the name's byte
+// offset so single-line and minified objects still report a real line.
+func npmDeps(content []byte, section string) []npmDep {
+	s := string(content)
+	key := `"` + section + `"`
+
+	// Find the occurrence of the key that is actually followed by ": {" — a
+	// decoy inside some earlier value (e.g. a script string) is skipped.
+	open := -1
+	for from := 0; ; {
+		ki := strings.Index(s[from:], key)
+		if ki < 0 {
+			return nil
 		}
-		if !strings.HasPrefix(strings.TrimSpace(lines[i][idx+len(target):]), ":") {
-			continue
-		}
-		depth := 0
-		started := false
-		for j := i; j < len(lines); j++ {
-			code := stripQuoted(lines[j])
-			for k := 0; k < len(code); k++ {
-				switch code[k] {
-				case '{':
-					depth++
-					started = true
-				case '}':
-					depth--
-				}
+		ki += from
+		p := skipJSONSpace(s, ki+len(key))
+		if p < len(s) && s[p] == ':' {
+			if p = skipJSONSpace(s, p+1); p < len(s) && s[p] == '{' {
+				open = p
+				break
 			}
-			if started && depth == 0 {
-				return i + 1, j + 1
-			}
 		}
-		return i + 1, len(lines)
+		from = ki + len(key)
 	}
-	return 0, 0
+
+	// Find the matching close brace, ignoring braces inside quoted strings.
+	depth, end := 0, -1
+	for i := open; i < len(s) && end < 0; i++ {
+		switch s[i] {
+		case '"':
+			if j := strings.IndexByte(s[i+1:], '"'); j >= 0 {
+				i += j + 1
+			} else {
+				i = len(s)
+			}
+		case '{':
+			depth++
+		case '}':
+			if depth--; depth == 0 {
+				end = i
+			}
+		}
+	}
+	if end < 0 {
+		end = len(s)
+	}
+
+	// Collect quoted tokens (with offsets) within the object, then pair them.
+	type tok struct {
+		val string
+		off int
+	}
+	var toks []tok
+	for i := open + 1; i < end; i++ {
+		if s[i] != '"' {
+			continue
+		}
+		j := strings.IndexByte(s[i+1:], '"')
+		if j < 0 {
+			break
+		}
+		toks = append(toks, tok{s[i+1 : i+1+j], i})
+		i += j + 1
+	}
+	out := make([]npmDep, 0, len(toks)/2)
+	for i := 0; i+1 < len(toks); i += 2 {
+		out = append(out, npmDep{
+			name: toks[i].val,
+			spec: toks[i+1].val,
+			line: 1 + strings.Count(s[:toks[i].off], "\n"),
+		})
+	}
+	return out
+}
+
+// skipJSONSpace advances past JSON insignificant whitespace.
+func skipJSONSpace(s string, i int) int {
+	for i < len(s) && (s[i] == ' ' || s[i] == '\t' || s[i] == '\n' || s[i] == '\r') {
+		i++
+	}
+	return i
 }

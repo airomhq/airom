@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"runtime/debug"
 	"sort"
 	"strings"
@@ -104,12 +105,12 @@ func (d *Dispatcher) runOne(ctx context.Context, fd detect.FileDetector, df *det
 	defer func() {
 		c.ns.Add(time.Since(start).Nanoseconds())
 		if p := recover(); p != nil {
-			stack := debug.Stack()
-			if len(stack) > 2048 {
-				stack = stack[:2048]
-			}
+			// Stack to the debug log only; the returned error (which becomes an
+			// Unknown.Reason) stays deterministic for byte-identical output (P7).
+			slog.Debug("recovered detector panic",
+				"detector", fd.ID(), "panic", fmt.Sprintf("%v", p), "stack", string(debug.Stack()))
 			findings = nil
-			err = fmt.Errorf("panic: %v\n%s", p, stack)
+			err = fmt.Errorf("panic: %v", p)
 		}
 	}()
 
@@ -289,12 +290,12 @@ func RunProject(ctx context.Context, dets []detect.ProjectDetector, r detect.Res
 func runProjectOne(ctx context.Context, det detect.ProjectDetector, r detect.Resolver, prior *detect.FindingsView) (findings []detect.Finding, err error) {
 	defer func() {
 		if p := recover(); p != nil {
-			stack := debug.Stack()
-			if len(stack) > 2048 {
-				stack = stack[:2048]
-			}
+			// Stack to the debug log only; the returned error (which becomes an
+			// Unknown.Reason) stays deterministic for byte-identical output (P7).
+			slog.Debug("recovered project-detector panic",
+				"detector", det.ID(), "panic", fmt.Sprintf("%v", p), "stack", string(debug.Stack()))
 			findings = nil
-			err = fmt.Errorf("panic: %v\n%s", p, stack)
+			err = fmt.Errorf("panic: %v", p)
 		}
 	}()
 	findings, err = det.DetectProject(ctx, r, prior)

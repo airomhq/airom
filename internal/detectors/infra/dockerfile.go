@@ -49,6 +49,11 @@ func (d *Dockerfile) DetectFile(_ context.Context, f *detect.File) ([]detect.Fin
 		keyword, arg, _ := strings.Cut(line, " ")
 		switch strings.ToUpper(keyword) {
 		case "FROM":
+			// A new FROM opens a new build stage: stop attributing EXPOSE/ENV to
+			// the previous stage's base image. Otherwise a later non-AI stage's
+			// port/env leaks onto an earlier recognized AI base image. (Phase 10
+			// review, detectors finding.)
+			cur = nil
 			if tool, ok := matchImage(arg); ok && !seen[tool] {
 				seen[tool] = true
 				cur = newHit(tool, i+1, 0.75)

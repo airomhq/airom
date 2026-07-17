@@ -78,6 +78,14 @@ func TestPanicIsolationAndAttribution(t *testing.T) {
 		!strings.Contains(res.Unknowns[0].Reason, "panic: detector bug") {
 		t.Errorf("unknowns = %+v, want attributed panic", res.Unknowns)
 	}
+	// P7: the Reason must be deterministic — the raw stack (goroutine IDs,
+	// return-PC offsets) must not leak into scan output. (Phase 10 review.)
+	if got := res.Unknowns[0].Reason; got != "panic: detector bug" {
+		t.Errorf("Reason = %q, want the stack-free deterministic form %q", got, "panic: detector bug")
+	}
+	if strings.Contains(res.Unknowns[0].Reason, "goroutine") {
+		t.Errorf("Reason leaks a stack trace into output: %q", res.Unknowns[0].Reason)
+	}
 }
 
 // TestSnippetNeverForcesRead: a finding with Line>0 from a detector that

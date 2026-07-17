@@ -818,8 +818,9 @@ SARIF to file in one scan).
   `partialFingerprints["airomComponentIdentity/v1"] = sha256(detectorID|componentID|path)` —
   line-free, survives code motion.
 - **yaml** — native model through yaml.v3, stable key order.
-- **table** — `KIND | NAME | VERSION | PROVIDER | CONF | EVIDENCE (n) | FIRST SEEN`;
-  TTY-aware; `-v` expands file:line lists.
+- **table** — `KIND | NAME | VERSION | PROVIDER | CONF | EVIDENCE` (evidence rendered as
+  `n occ`); TTY-aware; a wide mode (`writer.Options.TableWide`) expands per-component
+  file:line lists.
 - **spdx-3.0.1 AI profile** — reserved v2 slot. The model already carries the graph,
   tri-states, and `ai_*` field homes; the writer lands as one package with zero core
   changes — that asymmetry is the acceptance test for this architecture.

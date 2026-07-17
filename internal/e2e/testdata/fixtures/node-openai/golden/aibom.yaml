@@ -45,7 +45,7 @@ components:
     package:
       ecosystem: npm
     provider: anthropic
-    purl: pkg:npm/@anthropic-ai/sdk@0.27.3
+    purl: pkg:npm/%40anthropic-ai/sdk@0.27.3
     version: 0.27.3
   - confidence: 0.5
     evidence:

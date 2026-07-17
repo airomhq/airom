@@ -354,3 +354,45 @@ b = client.chat.completions.create(
 		t.Errorf("call B fields = %v, want its own model/temperature (not call A's)", b.Occurrence.Fields)
 	}
 }
+
+// TestPrefilterFoldsCaseAndWhitespace: a (?i) or \s+ pattern must fire across
+// casing and whitespace variants; the Aho–Corasick prefilter is folded so a
+// single-cased, single-spaced literal keyword no longer defeats it. (Phase 10
+// review, ruleengine findings.)
+func TestPrefilterFoldsCaseAndWhitespace(t *testing.T) {
+	pack := `pack: fold
+version: 1
+rules:
+  - id: fold/vllm
+    kind: infra
+    languages: [python]
+    keywords: ["vllm serve"]
+    pattern: '\bvllm\s+serve\b'
+    claim: { name: "vllm" }
+    confidence: 0.7
+  - id: fold/pgvector
+    kind: vector-db
+    languages: [python]
+    keywords: ["CREATE EXTENSION"]
+    pattern: '(?i)create\s+extension\s+vector'
+    claim: { name: "pgvector" }
+    confidence: 0.7
+`
+	m := loadTestPack(t, pack)
+	cases := []struct {
+		name    string
+		content string
+	}{
+		{"vllm single space", `cmd = "vllm serve model"`},
+		{"vllm double space", `cmd = "vllm  serve model"`},
+		{"vllm tab", "cmd = \"vllm\tserve model\""},
+		{"pgvector upper", `q = "CREATE EXTENSION vector"`},
+		{"pgvector title", `q = "Create Extension vector"`},
+		{"pgvector mixed", `q = "CREATE extension vector"`},
+	}
+	for _, tc := range cases {
+		if got := detectOn(t, m, "a.py", tc.content); len(got) != 1 {
+			t.Errorf("%s: got %d findings, want 1", tc.name, len(got))
+		}
+	}
+}

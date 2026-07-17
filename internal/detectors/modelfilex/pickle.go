@@ -3,6 +3,8 @@ package modelfilex
 import (
 	"encoding/binary"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 // This file implements a STATIC pickle opcode reader. It walks the opcode
@@ -29,6 +31,10 @@ const (
 	maxPickleBytes = 16 << 20 // 16 MiB
 	// maxPickleOps bounds the opcode loop independently of the byte length.
 	maxPickleOps = 1 << 20
+	// maxMemoEntries caps the memo table so a stream of PUT/MEMOIZE opcodes
+	// cannot grow memory without bound (P2). The op loop is already capped, so
+	// this is a belt-and-suspenders ceiling.
+	maxMemoEntries = 1 << 20
 )
 
 // Recognized pickle opcodes. Names and values follow CPython's pickle module.
@@ -103,10 +109,14 @@ const (
 // executes the pickle. The returned slice preserves encounter order.
 //
 // STACK_GLOBAL resolution: in protocol 2+ a global is encoded as two string
-// pushes (module, then name) immediately followed by STACK_GLOBAL, so we only
-// track the two most recently pushed strings rather than a full VM stack —
-// O(1) memory, and correct because memo/put opcodes that may appear between
-// the strings do not push a value.
+// pushes (module, then name) immediately followed by STACK_GLOBAL, so we track
+// the two most recently pushed strings rather than a full VM stack. But the
+// memo table is load-bearing: a checkpoint can memoize its module/name strings
+// (MEMOIZE/PUT) and restore them to the top of stack via the GET family
+// immediately before STACK_GLOBAL. We therefore track a bounded memo map and
+// replay a memoized string through push() on GET, so the two-slot operand
+// tracking reflects what a real unpickler would see. Without this, GET
+// indirection silently evades the scan (Phase 10 review, modelfile-parsers).
 func pickleGlobals(buf []byte) [][2]string {
 	if len(buf) > maxPickleBytes {
 		buf = buf[:maxPickleBytes]
@@ -115,6 +125,18 @@ func pickleGlobals(buf []byte) [][2]string {
 	var globals [][2]string
 	var prev1, prev2 string // two most recently pushed string operands
 	push := func(s string) { prev2, prev1 = prev1, s }
+
+	// memo maps a pickle memo index to the string pushed there. MEMOIZE stores
+	// the current top of stack at the next sequential index; BINPUT/LONG_BINPUT/
+	// PUT store at an explicit index; the GET family restores by index.
+	memo := make(map[int]string)
+	memoNext := 0
+	memoStore := func(idx int, s string) {
+		if idx < 0 || len(memo) >= maxMemoEntries {
+			return
+		}
+		memo[idx] = s
+	}
 
 	i := 0
 	for ops := 0; i < len(buf) && ops < maxPickleOps; ops++ {
@@ -125,11 +147,27 @@ func pickleGlobals(buf []byte) [][2]string {
 		case opStop:
 			return globals
 
-		case opProto, opBinGet, opBinPut, opExt1:
-			// 1-byte operand, no string pushed we need to track.
+		case opProto, opExt1:
+			// 1-byte operand; no memo interaction.
 			if i >= len(buf) {
 				return globals
 			}
+			i++
+
+		case opBinGet:
+			// 1-byte memo index; restores the memoized string to the stack.
+			if i >= len(buf) {
+				return globals
+			}
+			push(memo[int(buf[i])])
+			i++
+
+		case opBinPut:
+			// 1-byte memo index; memoizes the current top of stack.
+			if i >= len(buf) {
+				return globals
+			}
+			memoStore(int(buf[i]), prev1)
 			i++
 
 		case opBinInt2, opExt2:
@@ -138,10 +176,26 @@ func pickleGlobals(buf []byte) [][2]string {
 			}
 			i += 2
 
-		case opBinInt, opLongBinGet, opLongBinPut, opExt4:
+		case opBinInt, opExt4:
 			if i+4 > len(buf) {
 				return globals
 			}
+			i += 4
+
+		case opLongBinGet:
+			// 4-byte memo index; restores the memoized string to the stack.
+			if i+4 > len(buf) {
+				return globals
+			}
+			push(memo[int(binary.LittleEndian.Uint32(buf[i:]))])
+			i += 4
+
+		case opLongBinPut:
+			// 4-byte memo index; memoizes the current top of stack.
+			if i+4 > len(buf) {
+				return globals
+			}
+			memoStore(int(binary.LittleEndian.Uint32(buf[i:])), prev1)
 			i += 4
 
 		case opBinFloat:
@@ -206,12 +260,34 @@ func pickleGlobals(buf []byte) [][2]string {
 			i = ni
 			push(s)
 
-		case opGet, opPut:
-			_, ni, ok := readLine(buf, i)
+		case opGet:
+			// Newline-terminated decimal memo index; restores to the stack.
+			line, ni, ok := readLine(buf, i)
 			if !ok {
 				return globals
 			}
 			i = ni
+			if idx, err := strconv.Atoi(strings.TrimSpace(line)); err == nil {
+				push(memo[idx])
+			} else {
+				push("") // matches unpickler semantics: a value is pushed
+			}
+
+		case opPut:
+			// Newline-terminated decimal memo index; memoizes the stack top.
+			line, ni, ok := readLine(buf, i)
+			if !ok {
+				return globals
+			}
+			i = ni
+			if idx, err := strconv.Atoi(strings.TrimSpace(line)); err == nil {
+				memoStore(idx, prev1)
+			}
+
+		case opMemoize:
+			// Memoizes the current top of stack at the next sequential index.
+			memoStore(memoNext, prev1)
+			memoNext++
 
 		// Operand-free opcodes we simply step over. They never sit between a
 		// global's two string operands and its STACK_GLOBAL, so leaving prev1
@@ -220,7 +296,7 @@ func pickleGlobals(buf []byte) [][2]string {
 			opNewTrue, opNewFalse, opEmptyList, opEmptyDict, opEmptyTuple,
 			opEmptySet, opAppend, opAppends, opSetItem, opSetItems, opList,
 			opDict, opTuple, opTuple1, opTuple2, opTuple3, opNewObj,
-			opNewObjEx, opObj, opAddItems, opFrozenSet, opMemoize,
+			opNewObjEx, opObj, opAddItems, opFrozenSet,
 			opBinPersid:
 			// no operand
 

@@ -29,9 +29,12 @@ type Options struct {
 	Timestamp time.Time // injectable clock
 }
 
-// Build assembles findings into the Inventory. Deterministic: identical
-// findings in any order produce a byte-identical graph (P7;
-// property-tested).
+// Build assembles findings into the Inventory. Deterministic (P7): identical
+// inputs produce a byte-identical graph at any parallelism, because the
+// pipeline feeds findings in a fixed order (phase-1 sorted by path, phase-2 by
+// detector-registration slot) and the assembler sorts every accumulated
+// collection it keys on. Ordering-independent identity/merge/confidence is
+// property-tested (TestOrderIndependence).
 func Build(findings []detect.Finding, unknowns []airom.Unknown, stats airom.ScanStats, opts Options) *airom.Inventory {
 	a := &assembly{
 		byID:     map[airom.ID]*draft{},

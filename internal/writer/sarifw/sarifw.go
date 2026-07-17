@@ -66,7 +66,12 @@ func (wr Writer) build(inv *airom.Inventory) sarifReport {
 		Results:     wr.buildResults(comps, ruleIndex),
 	}
 
-	if inv.Source.Kind == "dir" || inv.Source.Kind == "repo" {
+	// SRCROOT anchors artifact URIs to a filesystem root, so it is emitted only
+	// for a real path target: always for a dir scan, and for a repo scan only
+	// when the target is a local worktree (not a remote URL). A remote repo's
+	// provenance travels via versionControlProvenance below instead. (Phase 10
+	// review, writers-conformance.)
+	if inv.Source.Kind == "dir" || (inv.Source.Kind == "repo" && !isRemoteGitTarget(inv.Source.Target)) {
 		run.OriginalURIBaseIDs = map[string]sarifArtifactLocation{
 			srcRootID: {URI: srcRootURI(inv.Source.Target)},
 		}
@@ -287,6 +292,21 @@ func fingerprint(detectorID, componentID, path string) string {
 }
 
 // srcRootURI renders a scanned path target as a file:///…/ base URI (§3.1).
+// isRemoteGitTarget reports whether a repo target is a remote address (URL or
+// scp-style) rather than a local worktree path.
+func isRemoteGitTarget(target string) bool {
+	if strings.Contains(target, "://") { // https://, git://, ssh://, …
+		return true
+	}
+	// scp-style "git@github.com:org/repo.git": '@' and ':' before any '/'.
+	if i := strings.IndexByte(target, ':'); i > 0 {
+		if !strings.ContainsRune(target[:i], '/') && strings.ContainsRune(target[:i], '@') {
+			return true
+		}
+	}
+	return false
+}
+
 func srcRootURI(target string) string {
 	p := filepath.ToSlash(target)
 	if !strings.HasPrefix(p, "/") {

@@ -24,6 +24,29 @@ type UsageError struct{ Err error }
 func (e *UsageError) Error() string { return e.Err.Error() }
 func (e *UsageError) Unwrap() error { return e.Err }
 
+// PolicyExit signals that the scan completed successfully AND the opt-in
+// --fail-on/--exit-code gate matched the assembled inventory. It is NOT a
+// fatal error — the scan and all output finished normally; the CLI unwraps it
+// and returns Code as the process exit status (docs/cli.md exit-code
+// contract). Fatal errors map to exit 2; this carries the user's chosen gate
+// code (default 1).
+type PolicyExit struct{ Code int }
+
+func (e *PolicyExit) Error() string { return fmt.Sprintf("policy matched; exit %d", e.Code) }
+
+// gate evaluates the configured CI policy against the assembled inventory,
+// after all output has been emitted. A nil policy (no --fail-on/--exit-code)
+// never gates. A match surfaces cfg.ExitCode via the PolicyExit sentinel.
+func gate(inv *airom.Inventory, cfg *Config) error {
+	if cfg.Policy == nil {
+		return nil
+	}
+	if cfg.Policy.Matches(inv) {
+		return &PolicyExit{Code: cfg.ExitCode}
+	}
+	return nil
+}
+
 // ErrEngineNotWired reports that a source behind the CLI surface is not yet
 // assembled: fs scans run for real as of Phase 4; the repo, image, and k8s
 // sources land in Phase 6 per docs/ROADMAP.md. Until then those commands
@@ -82,7 +105,10 @@ func runFS(ctx context.Context, cfg *Config) error {
 		return err
 	}
 
-	return emit(ctx, inv, cfg)
+	if err := emit(ctx, inv, cfg); err != nil {
+		return err
+	}
+	return gate(inv, cfg)
 }
 
 // runRepo scans a git repository: a remote URL is shallow-cloned (exec-git),
@@ -98,7 +124,10 @@ func runRepo(ctx context.Context, cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	return emit(ctx, inv, cfg)
+	if err := emit(ctx, inv, cfg); err != nil {
+		return err
+	}
+	return gate(inv, cfg)
 }
 
 // runImage scans a container image: a saved archive (--input) or an OCI
@@ -123,7 +152,10 @@ func runImage(ctx context.Context, cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	return emit(ctx, inv, cfg)
+	if err := emit(ctx, inv, cfg); err != nil {
+		return err
+	}
+	return gate(inv, cfg)
 }
 
 // runK8s scans Kubernetes workloads. Offline manifest mode (--manifests)
@@ -146,6 +178,7 @@ func runK8s(ctx context.Context, cfg *Config) error {
 
 	imgOpts := imagesource.Options{IgnoreGlobs: cfg.IgnoreGlobs}
 	var scanErrs []string
+	var gateErr error // the gate trips if ANY scanned image matches the policy
 	for _, ref := range images {
 		isrc, ierr := imagesource.New(ref, imgOpts)
 		if ierr != nil {
@@ -162,6 +195,9 @@ func runK8s(ctx context.Context, cfg *Config) error {
 		if err := emit(ctx, inv, cfg); err != nil {
 			return err
 		}
+		if gerr := gate(inv, cfg); gerr != nil {
+			gateErr = gerr
+		}
 	}
 	if len(scanErrs) > 0 {
 		slog.Warn("k8s: some images could not be scanned", "count", len(scanErrs))
@@ -169,7 +205,7 @@ func runK8s(ctx context.Context, cfg *Config) error {
 			slog.Warn("k8s image", "error", e)
 		}
 	}
-	return nil
+	return gateErr
 }
 
 // logDiagnostics surfaces assembler warnings and, under --stats or when

@@ -31,8 +31,9 @@ type BuildInfo struct {
 var runScan = app.Run
 
 // Exit codes per the docs/cli.md contract. Scan success is always 0 —
-// findings are not failures. The policy exit code (--exit-code, default 1
-// when --fail-on is active) is returned by the engine path once it lands.
+// findings are not failures. The opt-in policy exit code (--exit-code, default
+// 1 when --fail-on is active) is carried out of the run path by app.PolicyExit
+// and surfaced below; fatal errors map to 2.
 const (
 	exitOK    = 0
 	exitFatal = 2
@@ -47,6 +48,12 @@ func Execute(ctx context.Context, bi BuildInfo) int {
 	}
 	root := newRootCmd(bi)
 	if err := root.ExecuteContext(ctx); err != nil {
+		// A matched CI gate is not an error: the scan and all output completed;
+		// surface the user's chosen exit code, distinct from fatal=2.
+		var pe *app.PolicyExit
+		if errors.As(err, &pe) {
+			return pe.Code
+		}
 		var uerr *app.UsageError
 		if errors.As(err, &uerr) {
 			fmt.Fprintf(os.Stderr, "airom: invalid configuration: %v\n", uerr.Err)

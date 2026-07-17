@@ -92,16 +92,17 @@ airom scan . --exit-code 1 --fail-on "local-model-file&confidence>=0.9"
 ```
 $ airom scan .
 
-AIROM v0.1.0  ·  fs:.  ·  1,284 files walked, 212 read, 38ms
+AI Bill of Materials — .
+7 component(s), 3 relationship(s)
 
-KIND              NAME                         VERSION   PROVIDER   CONF   EVIDENCE   FIRST SEEN
-hosted-llm        gpt-4.1                      -         openai     0.87   12         src/rag.py:88
-embedding-model   text-embedding-3-large       -         openai     0.85   3          src/embed.py:17
-local-model-file  llama-3-8b-instruct.Q4_K_M   -         local      0.97   2          models/llama-3-8b.gguf
-framework         langchain                    0.3.14    -          0.95   2          requirements.txt:12
-vector-db         chromadb                     0.6.3     -          0.92   4          requirements.txt:18
-prompt            system-prompt.md             -         local      0.80   1          prompts/system-prompt.md
-rag-pipeline      rag-pipeline#1               -         -          0.78   -          (synthesized)
+KIND              NAME                         VERSION   PROVIDER   CONF   EVIDENCE
+hosted-llm        gpt-4.1                      -         openai     0.87   12 occ
+embedding-model   text-embedding-3-large       -         openai     0.85   3 occ
+local-model-file  llama-3-8b-instruct.Q4_K_M   -         local      0.97   2 occ
+framework         langchain                    0.3.14    -          0.95   2 occ
+vector-db         chromadb                     0.6.3     -          0.92   4 occ
+prompt            system-prompt.md             -         local      0.80   1 occ
+rag-pipeline      rag-pipeline#1               -         -          0.78   0 occ
 ```
 
 And the answer to the auditor's question, in the CycloneDX BOM (abridged):
@@ -178,7 +179,7 @@ Rules can even declare relationships and capture generation parameters at the ca
 
 ## Project status
 
-AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tagged release. Phases 1–8 of the 10-phase plan — architecture through the full test matrix — are complete; Phase 9 (release automation) is current, and Phase 10 (production review) closes it out. Honest ledger:
+AIROM is **pre-release (v0.1.0-dev)**, feature-complete against the 10-phase plan — architecture through a multi-agent production review — and building toward its first tagged release. Honest ledger:
 
 | Area | Status |
 |---|---|
@@ -192,8 +193,8 @@ AIROM is **pre-release (v0.1.0-dev)**, building out in phases toward a first tag
 | Writers: native JSON (versioned, lossless superset — round-trip tested), CycloneDX 1.6/1.7 ML-BOM (modelCard + `evidence.occurrences[]`, validated against the official schemas), SARIF 2.1.0 (one rule per detector, one result per occurrence, line-free fingerprints), YAML, table; multi-output `-o fmt=path` | **Complete** — Phase 7. `airom scan . -o cyclonedx=bom.json -o sarif=scan.sarif` emits both from one pass |
 | Test suite: golden end-to-end fixture repos through the whole pipeline into all five formats, official CycloneDX/SARIF schema conformance, `docs/mapping.md` round-trip enforcement, full-scan determinism (`--parallel 1` vs `16`), chaos degradation, and a P2 RSS-ceiling regression harness — everything under `-race`, ~74% coverage | **Complete** — Phase 8 |
 | Release automation: CI (lint/vet/gofmt, `-race` tests on Linux+macOS, `CGO_ENABLED=0` cross-compile matrix for all six targets, generated-code drift check, fuzz smoke, CodeQL), goreleaser (static matrix builds, checksums, keyless cosign signing, per-release SBOM + self-scanned AIBOM), Dependabot, issue/PR templates, `SECURITY.md`/`CODE_OF_CONDUCT.md`/`CONTRIBUTING.md` | **Complete** — Phase 9 |
-| Production hardening: whole-tree review, root→dependency edges in the CDX `dependencies[]` graph, remaining source follow-ups (live registry/daemon/cluster) | In progress — Phase 10 |
-| SPDX 3.0.1 AI profile, attestation verification, per-layer attribution, OCI rule registry | Deferred to v2 by design (reserved slots — see [ARCHITECTURE §16](docs/ARCHITECTURE.md)) |
+| Production hardening: whole-tree adversarial review (10 dimensions, per-finding verification) that found and fixed 17 verified defects — an OCI-layout path-traversal escape, a static-pickle scan evasion via memo/GET, the unwired `--fail-on` CI gate, a P7 stack-trace leak, YAML int64 corruption, non-canonical purls, and detector/rule-prefilter gaps — each with a regression test. Confirmed the empty CycloneDX `dependencies[]` (no substantiated `depends-on` edges) and the deferred live registry/daemon/cluster modes (fail cleanly) are deliberate, not defects | **Complete** — Phase 10 |
+| SPDX 3.0.1 AI profile, attestation verification, per-layer attribution, OCI rule registry, live-cluster/registry source modes, root→dependency edge synthesis | Deferred to v2 by design (reserved slots — see [ARCHITECTURE §16](docs/ARCHITECTURE.md)) |
 
 Until v0.1.0 is tagged, the badges above may 404 and `go install` will not resolve — the module is unpublished.
 

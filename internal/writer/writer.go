@@ -12,7 +12,6 @@ import (
 	"io"
 	"math"
 	"os"
-	"sort"
 	"strconv"
 
 	"github.com/Roro1727/airom/pkg/airom"
@@ -48,16 +47,6 @@ func New(format string, opts Options) (Writer, error) {
 		return nil, fmt.Errorf("unknown output format %q", format)
 	}
 	return f(opts), nil
-}
-
-// Formats returns the registered format names, sorted.
-func Formats() []string {
-	out := make([]string, 0, len(registry))
-	for k := range registry {
-		out = append(out, k)
-	}
-	sort.Strings(out)
-	return out
 }
 
 // Output is one resolved destination: a format plus a file path ("" =

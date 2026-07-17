@@ -6,7 +6,7 @@
 > read-once pipeline); detectors land in Phase 5 and output writers in Phase 7, so scans
 > currently report honest counters. `repo`, `image`, and `k8s` fail fast with a clear error
 > until their sources land (Phase 6). `--cache-dir`/`--no-cache` are accepted but inert
-> until `internal/cache` lands. As of Phase 6 the full detector set, 98 embedded rule packs,
+> until `internal/cache` lands. As of Phase 6 the full detector set, 47 embedded rule packs (98 rules),
 > and the `detectors`/`rules`/`dev` command groups are live. Source coverage: `fs` and
 > `repo` (local worktrees; remote clone via an installed `git`) are complete; `image` scans
 > docker-save/OCI archives and OCI layouts (live registry/daemon pull is a follow-up); `k8s
@@ -73,7 +73,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 | `--pprof[=addr]` | string | disabled | Serve `net/http/pprof`; bare flag binds `localhost:6060`. A custom address must be attached with `=` (`--pprof=localhost:7070`) — the space-separated form is rejected with a pointer to this rule. |
 | `--trace <file>` | path | — | Write a Go execution trace with per-phase regions (walk / detect / phase-2 / assemble / write). |
 | `--stats` | bool | `false` | Emit the full `ScanStats` block (files walked/skipped, bytes read vs bytes in tree, cache hit rates, per-detector timings, selection explanation). Always collected; this controls emission. |
-| `-v` / `-q` | count / bool | — | Verbose (repeatable; also expands file:line evidence lists in `table` output) / quiet (errors only). |
+| `-v` / `-q` | count / bool | — | Verbose (repeatable; raises log detail — `-vv` adds source locations) / quiet (errors only). |
 
 ## Configuration
 

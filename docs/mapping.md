@@ -350,8 +350,10 @@ exclusively as the `config-analysis` carrier so the mapping stays injective.
   trailing zeros — `0.9`, `0.975`, `0.8738`, `1`. CDX `confidence` fields carry that value as
   a JSON number; `airom:*` properties and SARIF property bags carry the identical textual
   form (properties are strings in CDX; numbers in SARIF bags).
-- Band mapping (`high ≥ 0.9 / medium ≥ 0.6 / low`) is **presentation-only** (table writer,
-  `--fail-on` expressions); bands are never serialized in any interchange format.
+- Band mapping (`high ≥ 0.9 / medium ≥ 0.6 / low`) is **presentation-only** — a UX
+  convenience exposed as `Confidence.Band()` on the SDK; the table writer prints the numeric
+  confidence and `--fail-on` compares it as a number, so bands are never serialized in any
+  interchange format.
 
 ### 6.3 purl policy (§9.4, D9)
 
