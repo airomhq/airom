@@ -26,7 +26,7 @@ binary, `CGO_ENABLED=0`, no daemon, no network unless the target requires it.
 ```
 airom
 ├── scan <target>          # scheme auto-detect: dir | git URL | image ref (Syft-style)
-├── fs <path>              # explicit nouns (Trivy-style)
+├── fs <path>              # explicit nouns (scanner-style)
 ├── repo <url|path>
 ├── image <ref>            # --input tar, --platform; remote→daemon→tarball→layout chain
 ├── k8s [context]          # --namespace | -A; --manifests <dir> (offline mode)
@@ -51,7 +51,7 @@ airom
 > P6): detector errors, panics, unreadable files, and corrupt headers become first-class
 > `Unknown` records in the output and never change the exit code. If you want "fail the
 > build when an AI model shows up," that is exactly what `--exit-code`/`--fail-on` are for
-> — say it explicitly. (Trivy and Grype both field recurring confusion here; AIROM
+> — say it explicitly. (SBOM scanners commonly field recurring confusion here; AIROM
 > documents it loudly instead.)
 
 ## Global flags
@@ -61,7 +61,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `-o, --output fmt[=path]` | string, repeatable | `table` | Output format with optional file destination. Formats: `table`, `json` (native airom-json), `cyclonedx`, `sarif`, `yaml`. No `=path` writes to stdout. Repeat for multi-output in one scan. |
-| `--format <fmt>` | string | — | Single-format alias for `-o` (Trivy-familiar spelling). |
+| `--format <fmt>` | string | — | Single-format alias for `-o` (familiar scanner spelling). |
 | `--select <expr>` | string | per-source defaults | Detector selection expression (Syft-style tags + include/exclude): `"rules,+modelfile/gguf,-dataset/file"`. Which expression enabled which detector is recorded in the output `Stats`. |
 | `--rules <file>` | string, repeatable | — | Overlay rule pack(s), merged by rule ID (add/override/disable — see [rule-schema.md](./rule-schema.md#the-three-rule-layers-and-merge-semantics)). Changes the effective ruleset hash and therefore the cache namespace. |
 | `--parallel N` | int | `GOMAXPROCS` | Worker count. Output is byte-identical at any value (invariant P7 — CI diffs `--parallel 1` vs `16`). |

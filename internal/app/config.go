@@ -165,7 +165,7 @@ func DefaultCacheDir() string {
 // silently normalized. ExitCode is NOT defaulted here — the CLI resolves
 // the documented "1 when a policy is active" default explicitly, so that an
 // explicit --exit-code 0 with an active policy means "evaluate and report,
-// but never fail the build" (the Trivy idiom).
+// but never fail the build" (the standard scanner idiom).
 func (c *Config) ApplyDefaults() {
 	if c.Parallel == 0 {
 		c.Parallel = runtime.GOMAXPROCS(0)

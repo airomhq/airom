@@ -2,12 +2,12 @@
 
 > **Status:** Accepted (v1 design baseline) · **Phase:** 1 of 10 · **License:** Apache-2.0
 >
-> AIROM is to AI systems what Trivy is to SBOMs: a single static Go binary that discovers AI
+> AIROM is a single static Go binary that discovers AI
 > assets in a filesystem, source repository, container image, or Kubernetes workload and emits
 > an AI Bill of Materials (AIBOM) — with file:line evidence, detection technique, and a
 > calibrated confidence score behind every entry.
 >
-> This document is the canonical architecture. It was produced by researching Trivy, Syft,
+> This document is the canonical architecture. It was produced by researching Syft,
 > gitleaks, and semgrep internals; verifying the CycloneDX 1.6/1.7 ML-BOM, SPDX 3.0.1 AI
 > profile, and SARIF 2.1.0 schemas against their published specs; and adversarially reviewing
 > three competing designs (extensibility-first, performance-first, data-model-first) through
@@ -32,7 +32,7 @@ AIROM's differentiators, in priority order:
    Mistral, Groq, Ollama…), local weights (GGUF, safetensors, ONNX, Torch, SavedModel,
    TensorRT…), embedding models, frameworks, vector databases, prompts, datasets, AI
    generation parameters, serving infrastructure, and assembled RAG pipelines.
-3. **Trivy-grade operability.** One static binary (`CGO_ENABLED=0`), Trivy-style CLI,
+3. **First-class operability.** One static binary (`CGO_ENABLED=0`), a familiar scanner-style CLI,
    bounded memory on any input size, incremental caching, honest degradation (a corrupt file
    becomes an `Unknown` record, never a dead scan).
 4. **Contributor-first extensibility.** The fast-moving detection surface (model-ID
@@ -111,8 +111,8 @@ These are enforceable properties, not aspirations. Several are CI-tested (§14).
  └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The two-phase split is first-class from day one. Trivy shipped streaming-only analysis and had
-to retrofit PostAnalyzers when cross-file logic appeared; AIROM's core detections
+The two-phase split is first-class from day one. Streaming-only scanners have had to retrofit
+post-analysis passes when cross-file logic appeared; AIROM's core detections
 (`config.json` naming a model next to `model.safetensors`, PEFT adapters referencing base
 models, RAG assembly) are cross-file-shaped, so phase 2 exists from the first commit. The
 phase-2 set is deliberately **flat**: one barrier, every project detector sees the same
@@ -121,7 +121,7 @@ anything needing multi-stage reasoning belongs in the assembler.
 
 ## 4. Repository layout
 
-One Go module (Trivy's premature-repo-split lesson: split nothing until external demand
+One Go module (the premature-repo-split lesson: split nothing until external demand
 exists). Module path: `github.com/airomhq/airom`.
 
 The `pkg/` vs `internal/` line **is** the extensibility contract: `pkg/airom/...` is the
@@ -545,7 +545,7 @@ Three rule layers: **embedded defaults** (`go:embed`, offline, versioned with th
 **user overlay** (`--rules extra.yaml`; merge by ID: add/override/disable) → **remote
 registry** (v2, OCI-distributed, pairs with signing work). The SHA-256 of the *effective
 compiled ruleset* participates in every cache key — rules-as-data is self-invalidating,
-which structurally eliminates Trivy's forgotten-`Version()`-bump stale-cache bug for the
+which structurally eliminates the forgotten-`Version()`-bump stale-cache bug for the
 entire fast-moving surface.
 
 Every rule ships **≥1 positive and ≥1 negative fixture**, enforced by `airom rules lint`
@@ -834,7 +834,7 @@ against the official schemas in CI. Spec compliance is a test, not a hope.
 ```
 airom
 ├── scan <target>          # scheme auto-detect: dir | git URL | image ref (Syft-style)
-├── fs <path>              # explicit nouns (Trivy-style)
+├── fs <path>              # explicit nouns (scanner-style)
 ├── repo <url|path>
 ├── image <ref>            # --input tar, --platform; remote→daemon→tarball→layout chain
 ├── k8s [context]          # --namespace | -A; --manifests <dir> (offline mode)
@@ -852,7 +852,7 @@ Flags: -o/--output fmt[=path] (repeatable) · --format (alias) · --select <expr
 Config: .airom.yaml + AIROM_* env via koanf (flags > env > file > defaults) · .airomignore
 ```
 
-**Exit-code contract** (documented loudly — Trivy and Grype both field recurring confusion):
+**Exit-code contract** (documented loudly — SBOM scanners commonly field recurring confusion):
 exit 0 = scan succeeded, findings are NOT failures; `--exit-code/--fail-on` is opt-in CI
 policy.
 
@@ -915,13 +915,13 @@ ns + invocations) into the Inventory — maintainers triage detector #217 with d
 | D8 | Confidence | max / flat noisy-OR / grouped noisy-OR | **Per-detector max + capped repetition term → per-method noisy-OR → 0.99 clamp (1.0 = hash/attestation only)** | Flat noisy-OR launders 50 identical hits into fake certainty; max ignores corroboration. |
 | D9 | purl for hosted models | mint `pkg:generic/openai/gpt-4.1` / no purl | **No purl; bom-ref + `airom:model.*` properties** | `pkg:generic` is spec-reserved for bare files; fabricated purls pollute Dependency-Track. |
 | D10 | Cache | none / blob-only / two-tier + blob | **Two-tier per-file (stat-key, content-key) + per-layer blob, under a self-invalidating namespace hash; findings only, never inventories; try-lock or degrade** | Everyday CI hot path is "one file changed"; namespace hash structurally eliminates forgotten-version-bump staleness; never hang on bbolt's lock. |
-| D11 | Image semantics | per-layer walk + merge (Trivy) / squashed stream | **Squashed stream v1; `Location.Layer` recorded when free; stereoscope attribution = v2** | AIBOM answers "what's in the final image"; squashing enables pure streaming. |
+| D11 | Image semantics | per-layer walk + merge / squashed stream | **Squashed stream v1; `Location.Layer` recorded when free; stereoscope attribution = v2** | AIBOM answers "what's in the final image"; squashing enables pure streaming. |
 | D12 | AI-config attachment | standalone components / global props / bound | **Rule-local `capture_params` (call-site precision) layered over phase-2 proximity binder; refusal over guessing; BoundParam carries provenance** | "temperature=0.2 at src/rag.py:88 on the same call as model=gpt-4.1" survives every writer; ambiguous bindings never fabricate edges. |
-| D13 | Manifest parsers | import Trivy module / vendor / hand-roll | **Hand-roll easy (JSON/TOML/XML, `x/mod` for go.mod); vendor Trivy's yarn/pom/gradle-lock (Apache-2.0, attributed)** | Full trivy import drags its MVS graph; AIROM needs presence+version, not resolution. |
-| D14 | Git strategy | go-git always / exec always | **exec-git fast path, go-git v6 fallback** | go-git shallow-clone inefficiency is documented; Trivy shells out too. |
-| D15 | CLI stack | cobra+viper / cobra+koanf / urfave | **cobra + koanf + slog** | Trivy-adjacent UX; viper's globals rejected. |
+| D13 | Manifest parsers | import a parser library / vendor / hand-roll | **Hand-roll easy (JSON/TOML/XML, `x/mod` for go.mod); vendor established yarn/pom/gradle-lock parsers (Apache-2.0, attributed)** | A full parser-library import drags its MVS graph; AIROM needs presence+version, not resolution. |
+| D14 | Git strategy | go-git always / exec always | **exec-git fast path, go-git v6 fallback** | go-git shallow-clone inefficiency is documented; established scanners shell out too. |
+| D15 | CLI stack | cobra+viper / cobra+koanf / urfave | **cobra + koanf + slog** | Familiar scanner-CLI UX; viper's globals rejected. |
 | D16 | Output libs | hand-rolled / libraries | **cyclonedx-go (1.6 ML types confirmed) + go-sarif/v3** | Hand-rolling a conformant modelCard is wasted risk. |
-| D17 | Exit codes | findings ⇒ nonzero / always 0 | **0 on successful scan; `--exit-code`/`--fail-on` opt-in** | The single most important CI ergonomic in Trivy/Grype. |
+| D17 | Exit codes | findings ⇒ nonzero / always 0 | **0 on successful scan; `--exit-code`/`--fail-on` opt-in** | The single most important CI ergonomic in SBOM scanners. |
 | D18 | Lines/columns | 0-based / 1-based | **1-based lines, UTF-16 columns (SARIF rules); 0 = unknown/whole-file** | SARIF is the strictest consumer; one convention, documented translations. |
 
 ## 16. Explicitly deferred to v2 (reserved slots, zero model changes required)
