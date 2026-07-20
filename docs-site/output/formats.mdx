@@ -9,15 +9,16 @@ projection of that same graph — a writer never re-derives a fact, never reache
 back into the engine, and never adds information the graph does not already
 carry. One scan, every format, no drift between them.
 
-## The five formats
+## The formats
 
 | Format | Flag value | Lossless | Use it for |
 |---|---|---|---|
 | Table | `table` | No | Human review in a terminal. The default. |
 | Native JSON | `json` | Yes | The reference serialization. Round-trips the full graph. |
-| CycloneDX | `cyclonedx` | No | ML-BOM exchange. See [/output/cyclonedx](/output/cyclonedx). |
+| CycloneDX | `cyclonedx` | No | ML-BOM exchange — with `vulnerabilities[]` for risks and `definitions`/`declarations` for compliance. See [/output/cyclonedx](/output/cyclonedx). |
 | SARIF | `sarif` | No | Code scanning UIs. See [/output/sarif](/output/sarif). |
 | YAML | `yaml` | Yes | The same content as `json`, shaped for human review and diffs. |
+| Compliance report | `compliance` | No | A Markdown report of `--compliance` results. See [/concepts/compliance](/concepts/compliance). |
 
 <Note>
 `json` and `yaml` are the two lossless formats — they carry the whole

@@ -75,9 +75,11 @@ expression (`confidence>=0.8`) if you want it to affect the gate.
 ```text title="Grammar"
 expr       = clause *( "|" clause )     ; OR
 clause     = term   *( "&" term )       ; AND
-term       = ident | risk | comparison
+term       = ident | risk | compliance | comparison
 ident      = a ComponentKind ("hosted-llm")
 risk       = "risk" | "risk:" severity | "risk:" slug   ; severity: high | medium | low
+compliance = "compliance" | "compliance:gap"
+           | "compliance:" framework [ ":" control ]     ; inventory-level; not &-combinable
 comparison = "confidence" OP number     ; OP: >= <= > < =
 ```
 
@@ -113,6 +115,16 @@ policy. It is the thing you scanned, not a finding.
   `unsafe-load`). `pickle-risk` remains as a deprecated alias for `risk:pickle-import`.
 </ParamField>
 
+<ParamField path="compliance" type="compliance | compliance:framework[:control]">
+  Fires on a [compliance](/concepts/compliance) **gap** (a manual control is not a failure;
+  a met is a pass). `compliance:gap` — any gap; `compliance:<framework>` — a gap in that
+  framework; `compliance:<framework>:<control>` — that control is a gap. It is
+  inventory-level, so it cannot be `&`-combined with a component term (use `|`), and it
+  requires `--compliance` to have been given — gating on a framework you never evaluated is
+  a configuration error, not a silent pass. Like every selector it evaluates the full
+  assembly, so `--min-confidence` never relaxes it.
+</ParamField>
+
 <ParamField path="confidence OP number" type="comparison">
   Compares the component's confidence against a bound in `[0,1]`. Operators: `>=`, `<=`,
   `>`, `<`, `=`. A bound outside `[0,1]` is a configuration error. Bare `confidence`
@@ -128,6 +140,7 @@ policy. It is the thing you scanned, not a finding.
 | `airom fs . --fail-on "pickle-risk"` | Any model file with a dangerous pickle global. | `1` on match, else `0` |
 | `airom fs . --fail-on "risk:high"` | Any component carrying a high-severity [artifact risk](/concepts/risks). | `1` on match, else `0` |
 | `airom fs . --fail-on "risk:unsafe-load"` | Any component with the `unsafe-load` risk. | `1` on match, else `0` |
+| `airom fs . --compliance nist-ai-rmf --fail-on "compliance:gap"` | Any [compliance](/concepts/compliance) gap in an evaluated framework. | `1` on match, else `0` |
 | `airom fs . --fail-on "hosted-llm&confidence>=0.9"` | One component that is a hosted LLM **and** has confidence ≥ 0.9. | `1` on match, else `0` |
 | `airom fs . --fail-on "local-model-file\|hosted-llm&confidence>=0.8"` | Any local model file, **or** a hosted LLM with confidence ≥ 0.8. | `1` on match, else `0` |
 | `airom fs . --fail-on "dataset" --exit-code 7` | Any dataset component. | `7` on match, else `0` |
