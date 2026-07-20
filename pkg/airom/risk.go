@@ -22,8 +22,17 @@ type RiskID string
 const (
 	// RiskPickleImport is raised when a pickle GLOBAL resolves to a dangerous
 	// callable (os.system, builtins.eval, subprocess.*), so unpickling the
-	// checkpoint executes code. The catalog's v1 entry.
+	// checkpoint executes code.
 	RiskPickleImport RiskID = "AIROM-RISK-PICKLE-IMPORT"
+	// RiskKerasLambda is raised when a Keras model config declares a Lambda
+	// layer, which marshals arbitrary Python executed at load time.
+	RiskKerasLambda RiskID = "AIROM-RISK-KERAS-LAMBDA"
+	// RiskGGUFTemplate is raised when a GGUF tokenizer.chat_template contains
+	// Jinja sandbox-escape gadgets — a template-injection surface.
+	RiskGGUFTemplate RiskID = "AIROM-RISK-GGUF-TEMPLATE"
+	// RiskSavedModelPyFunc is raised when a TensorFlow SavedModel graph
+	// contains a PyFunc-family op, which invokes arbitrary Python.
+	RiskSavedModelPyFunc RiskID = "AIROM-RISK-SAVEDMODEL-PYFUNC"
 )
 
 // RiskSeverity is the deterministic severity bucket for a risk.
@@ -54,6 +63,27 @@ var RiskCatalog = map[RiskID]RiskMeta{
 		Title:    "Unsafe pickle import",
 		Description: "A pickle GLOBAL resolves to a code-execution callable; " +
 			"loading this artifact runs code before any model is produced.",
+	},
+	RiskKerasLambda: {
+		Severity: RiskHigh,
+		Slug:     "keras-lambda",
+		Title:    "Keras Lambda layer",
+		Description: "A Keras model config declares a Lambda layer, which " +
+			"marshals arbitrary Python that executes when the model is loaded.",
+	},
+	RiskGGUFTemplate: {
+		Severity: RiskMedium,
+		Slug:     "gguf-template",
+		Title:    "Unsafe GGUF chat template",
+		Description: "The GGUF tokenizer.chat_template contains Jinja " +
+			"sandbox-escape gadgets; rendering a prompt with it can execute code.",
+	},
+	RiskSavedModelPyFunc: {
+		Severity: RiskMedium,
+		Slug:     "savedmodel-pyfunc",
+		Title:    "SavedModel Python-callback op",
+		Description: "The SavedModel graph contains a PyFunc-family op, which " +
+			"invokes arbitrary Python during inference.",
 	},
 }
 

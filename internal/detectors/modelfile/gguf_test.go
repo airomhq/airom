@@ -146,7 +146,7 @@ func TestGGUFAllValueTypes(t *testing.T) {
 		{"a.arr_str", ggufTypeArray, append(append(le32(ggufTypeString), le64(1)...), ggufStr("x")...)},
 		{"general.file_type", ggufTypeUint32, le32(7)}, // Q8_0
 	}
-	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(3, kvs))
+	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(kvs))
 	if len(findings) != 1 {
 		t.Fatalf("want 1 finding, got %d", len(findings))
 	}
@@ -170,7 +170,7 @@ func TestGGUFStopsOnBadValueType(t *testing.T) {
 		{"broken", 99, []byte{0x00}}, // unknown type -> parse stops here
 		{"general.name", ggufTypeString, ggufStr("never-read")},
 	}
-	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(3, kvs))
+	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(kvs))
 	if len(findings) != 1 {
 		t.Fatalf("want 1 finding, got %d", len(findings))
 	}
@@ -189,7 +189,7 @@ func TestGGUFRejectsNestedArray(t *testing.T) {
 		{"general.architecture", ggufTypeString, ggufStr("llama")},
 		{"a.nested", ggufTypeArray, nested},
 	}
-	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(3, kvs))
+	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(kvs))
 	if len(findings) != 1 {
 		t.Fatalf("want 1 finding, got %d", len(findings))
 	}
@@ -199,15 +199,58 @@ func TestGGUFRejectsNestedArray(t *testing.T) {
 	}
 }
 
+// TestGGUFChatTemplateRisk: a chat_template carrying Jinja sandbox-escape
+// gadgets flags AIROM-RISK-GGUF-TEMPLATE with the matched tokens; a normal
+// template flags nothing.
+func TestGGUFChatTemplateRisk(t *testing.T) {
+	evil := `{% for m in messages %}{{ cycler.__init__.__globals__.os.popen('id').read() }}{% endfor %}`
+	kvs := []ggufKV{
+		{"general.architecture", ggufTypeString, ggufStr("llama")},
+		{"tokenizer.chat_template", ggufTypeString, ggufStr(evil)},
+	}
+	findings := detectBytes(t, NewGGUF(), "x.gguf", buildGGUF(kvs))
+	if len(findings) != 1 {
+		t.Fatalf("want 1 finding, got %d", len(findings))
+	}
+	risks := findings[0].Claim.Risks
+	if len(risks) != 1 || risks[0].ID != airom.RiskGGUFTemplate {
+		t.Fatalf("Risks = %+v, want one gguf-template", risks)
+	}
+	// Detail names the dunder + os call the escape routes through (the `cycler`
+	// pivot object is intentionally not a gadget), sorted & deduped.
+	want := map[string]bool{"__globals__": true, "os.popen": true}
+	if len(risks[0].Detail) != len(want) {
+		t.Fatalf("detail = %v, want the two gadgets", risks[0].Detail)
+	}
+	for _, d := range risks[0].Detail {
+		if !want[d] {
+			t.Errorf("unexpected gadget %q in detail %v", d, risks[0].Detail)
+		}
+	}
+
+	// Benign templates — including one using Jinja namespace() for loop state,
+	// exactly as real Llama/Mistral templates do — must flag nothing.
+	for _, benign := range []string{
+		`{% for m in messages %}{{ m.role }}: {{ m.content }}{% endfor %}{{ eos_token }}`,
+		`{% set ns = namespace(found=false) %}{% for m in messages %}{{ m.content | trim }}{% endfor %}`,
+	} {
+		kvs[1] = ggufKV{"tokenizer.chat_template", ggufTypeString, ggufStr(benign)}
+		findings = detectBytes(t, NewGGUF(), "ok.gguf", buildGGUF(kvs))
+		if len(findings) != 1 || len(findings[0].Claim.Risks) != 0 {
+			t.Errorf("benign chat_template flagged a risk: %+v\n  template: %s", findings, benign)
+		}
+	}
+}
+
 type ggufKV struct {
 	key     string
 	vtype   uint32
 	payload []byte
 }
 
-func buildGGUF(version uint32, kvs []ggufKV) []byte {
+func buildGGUF(kvs []ggufKV) []byte {
 	b := []byte("GGUF")
-	b = append(b, le32(version)...)
+	b = append(b, le32(3)...) // v3 layout (v2 shares it; the detector accepts both)
 	b = append(b, le64(0)...) // tensor_count
 	b = append(b, le64(uint64(len(kvs)))...)
 	for _, kv := range kvs {

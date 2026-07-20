@@ -21,7 +21,7 @@ func NewSavedModel() *SavedModel { return &SavedModel{} }
 func (SavedModel) ID() string { return "modelfilex/savedmodel" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (SavedModel) Version() int { return 1 }
+func (SavedModel) Version() int { return 2 }
 
 // Selector anchors on the exact basename. NeedContent because we sniff the
 // protobuf body to avoid claiming any unrelated file that happens to be named
@@ -49,6 +49,7 @@ func (SavedModel) DetectFile(_ context.Context, f *detect.File) ([]detect.Findin
 			Name:     savedModelName(f.Path()),
 			Provider: "local",
 			Model:    &detect.ModelClaim{Format: "tensorflow-savedmodel"},
+			Risks:    savedModelPyFuncRisk(content),
 		},
 		Occurrence: airom.Occurrence{
 			Method:     airom.MethodBinary,

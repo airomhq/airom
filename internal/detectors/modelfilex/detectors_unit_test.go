@@ -48,6 +48,91 @@ func TestSavedModelSniff(t *testing.T) {
 	}
 }
 
+// TestSavedModelPyFuncRisk: a graph containing a PyFunc-family op flags the
+// risk, naming the specific op; a clean graph flags nothing.
+func TestSavedModelPyFuncRisk(t *testing.T) {
+	// Valid SavedModel proto (field1 varint, field2 LEN) whose meta_graph body
+	// carries the op name bytes.
+	withOp := func(op string) []byte {
+		body := append([]byte{0x0a, byte(len(op))}, op...) // nested string
+		return append([]byte{0x08, 0x01, 0x12, byte(len(body))}, body...)
+	}
+	f := fileFrom("evil/saved_model.pb", withOp("PyFuncStateless"))
+	got, err := SavedModel{}.DetectFile(context.Background(), f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("got %d findings, want 1", len(got))
+	}
+	risks := got[0].Claim.Risks
+	if len(risks) != 1 || risks[0].ID != airom.RiskSavedModelPyFunc ||
+		len(risks[0].Detail) != 1 || risks[0].Detail[0] != "PyFuncStateless" {
+		t.Fatalf("Risks = %+v, want one savedmodel-pyfunc [PyFuncStateless]", risks)
+	}
+
+	clean := fileFrom("ok/saved_model.pb", []byte{0x08, 0x01, 0x12, 0x02, 0x0a, 0x00})
+	got, _ = SavedModel{}.DetectFile(context.Background(), clean)
+	if len(got) != 1 || len(got[0].Claim.Risks) != 0 {
+		t.Errorf("clean SavedModel flagged a risk: %+v", got)
+	}
+}
+
+// TestSavedModelPyFuncAnchoring: op names are matched on their protobuf
+// length-prefix, so a benign identifier that merely embeds the letters does
+// NOT fire, and two genuinely-distinct ops are both reported.
+func TestSavedModelPyFuncAnchoring(t *testing.T) {
+	framed := func(op string) []byte { return append([]byte{byte(len(op))}, op...) }
+
+	// A length-11 framed EagerPyFunc reports only EagerPyFunc (the embedded
+	// "PyFunc" is preceded by 'r', not the 0x06 length byte).
+	if got := savedModelPyFuncRisk(framed("EagerPyFunc")); len(got) != 1 ||
+		len(got[0].Detail) != 1 || got[0].Detail[0] != "EagerPyFunc" {
+		t.Errorf("EagerPyFunc detail = %+v, want [EagerPyFunc] only", got)
+	}
+
+	// Both a standalone PyFunc and an EagerPyFunc, each framed, are reported.
+	both := append(framed("EagerPyFunc"), framed("PyFunc")...)
+	if got := savedModelPyFuncRisk(both); len(got) != 1 || len(got[0].Detail) != 2 ||
+		got[0].Detail[0] != "EagerPyFunc" || got[0].Detail[1] != "PyFunc" {
+		t.Errorf("distinct ops detail = %+v, want [EagerPyFunc PyFunc]", got)
+	}
+
+	// Benign identifier embedding the letters — no length-6 frame — does NOT fire.
+	if got := savedModelPyFuncRisk([]byte("\x13MyPyFunctionalLayerXX")); got != nil {
+		t.Errorf("benign MyPyFunctionalLayer flagged: %+v", got)
+	}
+	if got := savedModelPyFuncRisk([]byte("no callbacks here")); got != nil {
+		t.Errorf("clean content flagged: %+v", got)
+	}
+}
+
+// TestHDF5KerasLambdaRisk: an .h5 whose config declares a Lambda layer flags
+// the risk; a plain HDF5 does not.
+func TestHDF5KerasLambdaRisk(t *testing.T) {
+	evil := append(append([]byte(nil), hdf5Magic...),
+		[]byte(`...model_config...{"class_name": "Lambda", "config": {"function": [...]}}...`)...)
+	f := fileFrom("model.h5", evil)
+	got, err := HDF5{}.DetectFile(context.Background(), f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("got %d findings, want 1", len(got))
+	}
+	risks := got[0].Claim.Risks
+	if len(risks) != 1 || risks[0].ID != airom.RiskKerasLambda {
+		t.Fatalf("Risks = %+v, want one keras-lambda", risks)
+	}
+
+	benign := append(append([]byte(nil), hdf5Magic...),
+		[]byte(`{"class_name": "Dense", "config": {"units": 64}}`)...)
+	got, _ = HDF5{}.DetectFile(context.Background(), fileFrom("ok.h5", benign))
+	if len(got) != 1 || len(got[0].Claim.Risks) != 0 {
+		t.Errorf("benign HDF5 flagged a Lambda risk: %+v", got)
+	}
+}
+
 func TestSavedModelName(t *testing.T) {
 	cases := map[string]string{
 		"my_model/saved_model.pb":   "my_model",

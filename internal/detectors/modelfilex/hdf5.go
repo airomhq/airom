@@ -23,23 +23,31 @@ func NewHDF5() *HDF5 { return &HDF5{} }
 func (HDF5) ID() string { return "modelfilex/hdf5" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (HDF5) Version() int { return 1 }
+func (HDF5) Version() int { return 2 }
 
 // Selector gates on the weight-store extensions AND the HDF5 superblock magic.
 // A Keras 3 .keras file is actually a zip and will not carry this magic, so it
-// is correctly not routed here.
+// is correctly not routed here. NeedContent (bounded by --max-file-size) lets
+// the Lambda-layer scan see the model_config, which HDF5 stores near the file
+// start but not always within the 32 KB header sample.
 func (HDF5) Selector() detect.Selector {
 	return detect.Selector{
 		Extensions: []string{".h5", ".hdf5", ".keras"},
 		Magic:      []detect.Magic{{Offset: 0, Bytes: hdf5Magic}},
-		Need:       detect.NeedHeader,
+		Need:       detect.NeedContent,
 	}
 }
 
-// DetectFile emits a whole-file finding, re-verifying the magic defensively.
+// DetectFile emits a whole-file finding, re-verifying the magic defensively,
+// and flags a Keras Lambda layer (arbitrary Python marshaled into the config)
+// when the model_config declares one.
 func (HDF5) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, error) {
 	if !hasMagic(f.Header(), 0, hdf5Magic) {
 		return nil, nil
 	}
-	return []detect.Finding{modelFileFinding(f.Base(), "hdf5", 0.85)}, nil
+	finding := modelFileFinding(f.Base(), "hdf5", 0.85)
+	if content, err := f.Content(); err == nil {
+		finding.Claim.Risks = kerasLambdaRisk(content)
+	}
+	return []detect.Finding{finding}, nil
 }

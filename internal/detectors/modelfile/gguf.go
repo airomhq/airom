@@ -44,7 +44,7 @@ func NewGGUF() *GGUF { return &GGUF{} }
 func (*GGUF) ID() string { return "modelfile/gguf" }
 
 // Version is the detector's behavior version.
-func (*GGUF) Version() int { return 1 }
+func (*GGUF) Version() int { return 2 }
 
 // Selector routes .gguf files whose header carries the GGUF magic.
 func (*GGUF) Selector() detect.Selector {
@@ -66,6 +66,7 @@ type ggufInfo struct {
 	paramCount   int64
 	haveParam    bool
 	quantization string
+	chatTemplate string
 }
 
 // DetectFile parses the GGUF header and emits one whole-file finding. It
@@ -118,6 +119,7 @@ func (d *GGUF) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, 
 			Name:     f.Base(),
 			Provider: "local",
 			Model:    model,
+			Risks:    chatTemplateRisk(info.chatTemplate),
 		},
 		Occurrence: airom.Occurrence{
 			Location:   airom.Location{}, // whole file; engine fills Path and SHA-256
@@ -363,6 +365,10 @@ func applyGGUFKV(info *ggufInfo, key string, v ggufValue) {
 		if n, ok := ggufAsInt(v); ok {
 			info.paramCount = n
 			info.haveParam = true
+		}
+	case "tokenizer.chat_template":
+		if v.kind == ggufTypeString {
+			info.chatTemplate = v.str
 		}
 	}
 }
