@@ -160,6 +160,30 @@ affected component's `bom-ref`.
 ]
 ```
 
+## `definitions` / `declarations` — the compliance overlay
+
+When you pass `--compliance`, the [framework mapping](/concepts/compliance) projects into
+CycloneDX's native attestation model: `definitions.standards[]` declares the framework and
+its `requirements[]` (controls), and `declarations` records AIROM as a first-party
+`assessor` with one `claim` + `attestation.map[]` entry per control.
+
+```json title="a control's verdict in declarations"
+"declarations": {
+  "assessors": [{ "bom-ref": "airom:assessor", "organization": { "name": "AIROM" } }],
+  "attestations": [{
+    "assessor": "airom:assessor",
+    "map": [{
+      "requirement": "airom:req:nist-ai-rmf:MAP-2.1",
+      "claims": ["airom:claim:nist-ai-rmf:MAP-2.1"],
+      "conformance": { "score": 1.0, "rationale": "2 component(s) provide supporting evidence" }
+    }]
+  }]
+}
+```
+
+A **manual** control emits its `claim` and `attestation.map` entry with **no
+`conformance.score`** — AIROM never asserts a figure it cannot back with evidence.
+
 ## Evidence
 
 Every component that has evidence carries it natively.

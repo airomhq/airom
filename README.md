@@ -52,7 +52,7 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 
 **Languages:** Python, JavaScript, TypeScript, Go, Java, Rust, C#, Kotlin
 
-**Output formats:** native AIBOM JSON (versioned schema) · CycloneDX 1.6 ML-BOM (with `vulnerabilities[]` for risks) · SARIF 2.1.0 · YAML · table — any combination in one scan. SPDX 3.0.1 AI profile is a reserved v2 slot.
+**Output formats:** native AIBOM JSON (versioned schema) · CycloneDX 1.6 ML-BOM (with `vulnerabilities[]` for risks and `definitions`/`declarations` for compliance) · SARIF 2.1.0 · YAML · a Markdown compliance report · table — any combination in one scan. SPDX 3.0.1 AI profile is a reserved v2 slot.
 
 ## Risk detection
 
@@ -74,6 +74,24 @@ airom scan . --exit-code 1 --fail-on "risk:unsafe-load"   # or one specific risk
 ```
 
 It stays deterministic and offline — no LLM, no vulnerability database. And it extends without Go: any rule pack can attach a catalog risk to a match via a `risk:` field. The full catalog and the model behind it are in **[docs/risks.md](docs/risks.md)**.
+
+## Compliance mapping
+
+`--compliance <framework>` maps the AIBOM onto an AI-governance framework's controls and decides **met / gap / manual** for each — with the `file:line` evidence behind every verdict.
+
+```bash
+airom scan . --compliance nist-ai-rmf -o compliance=report.md -o cyclonedx=bom.json
+```
+
+It's a **mapping, never a certification.** Most of these frameworks are organizational *process* a static scan can't verify; those controls are marked `manual` and carry **no score** — AIROM never asserts conformance it can't back. An `evidence_of` "met" points at the concrete components that satisfy it. Frameworks today: **`nist-ai-rmf`** (NIST AI RMF 1.0) and **`owasp-agentic`** (OWASP Agentic AI — mostly manual, honestly, since agentic threats are runtime; its RCE threat maps to the risk overlay).
+
+It projects into CycloneDX's **native attestation model** — `definitions.standards[]` (the framework + its requirements) and `declarations` (AIROM as a first-party assessor; a claim + graded `conformance.score` per control) — plus a Markdown report (`-o compliance`) and a CI gate:
+
+```bash
+airom scan . --compliance nist-ai-rmf --exit-code 1 --fail-on "compliance:gap"
+```
+
+That evidence-linked conformance is something a tool that drops evidence on export structurally cannot produce. Details and the honest-mapping contract are in **[docs/compliance.md](docs/compliance.md)**.
 
 ## Quick start
 
@@ -234,7 +252,8 @@ AIROM is at **v0.1.0**, its first tagged release: feature-complete against the 1
 | Plugin framework: public SDK (`pkg/airom` domain graph with tri-state fields, `pkg/airom/detect` contracts + dispatch index, `purl` discipline, `detectortest` harness), dispatcher with per-detector isolation and accounting, explicit catalog + Syft-style `--select`, assembler (CanonicalKey identity, keep-and-relate merge, grouped noisy-OR confidence, refusal-first relations), rule-engine compiler (full [rule-schema.md](docs/rule-schema.md) lint contract, three-layer merge, self-invalidating ruleset hash, Aho–Corasick prefilter, region lexers for all 8 languages), `detectors-gen`, `airom detectors list/explain` | **Complete** — Phase 5. `airom fs . --rules pack.yaml` runs user rule packs end-to-end today |
 | Detectors & rule packs: binary model-file parsers (GGUF, safetensors, ONNX, Torch, SavedModel, TFLite, HDF5, TensorRT — fuzzed) with an artifact-risk overlay (pickle imports, Keras Lambda, GGUF template gadgets, SavedModel PyFunc → CycloneDX `vulnerabilities[]`/SARIF), 8-ecosystem manifest detectors, Go AST detector, prompt/dataset/infra detectors, phase-2 project detectors (HF-dir assembly, adapter lineage, config binding, RAG synthesis), 49 embedded rule packs / 101 rules across 9 categories (incl. a `security` category and a rule-level `risk:` field), `rules list/lint/test` + `dev` scaffolding | **Complete** — Phase 6. Scans a real AI project into a rich AIBOM (models, embeddings, vector DBs, frameworks, weights, prompts, infra, RAG pipelines) |
 | Sources: `repo` (exec-git shallow clone + local worktrees), `image` (docker-save/OCI archive + OCI layout — live registry/daemon pull is a follow-up), `k8s` (offline `--manifests` image enumeration — live cluster is a follow-up) | **Complete** — Phase 6 (with the noted follow-ups) |
-| Writers: native JSON (versioned, lossless superset — round-trip tested), CycloneDX 1.6/1.7 ML-BOM (modelCard + `evidence.occurrences[]`, validated against the official schemas), SARIF 2.1.0 (one rule per detector, one result per occurrence, line-free fingerprints), YAML, table; multi-output `-o fmt=path` | **Complete** — Phase 7. `airom scan . -o cyclonedx=bom.json -o sarif=scan.sarif` emits both from one pass |
+| Writers: native JSON (versioned, lossless superset — round-trip tested), CycloneDX 1.6/1.7 ML-BOM (modelCard + `evidence.occurrences[]` + `vulnerabilities[]` for risks + `definitions`/`declarations` for compliance, validated against the official schemas), SARIF 2.1.0 (one rule per detector/risk, one result per occurrence, line-free fingerprints), YAML, a Markdown compliance report, table; multi-output `-o fmt=path` | **Complete** — Phase 7. `airom scan . -o cyclonedx=bom.json -o sarif=scan.sarif` emits both from one pass |
+| Compliance mapping (`--compliance`): AIBOM → governance-framework controls (met/gap/manual, no fabricated scores), projected as CycloneDX attestations + a Markdown report, gateable via `--fail-on compliance:gap`. Frameworks: NIST AI RMF 1.0, OWASP Agentic AI ([docs/compliance.md](docs/compliance.md)) | **Complete** — evidence-linked, deterministic, offline |
 | Test suite: golden end-to-end fixture repos through the whole pipeline into all five formats, official CycloneDX/SARIF schema conformance, `docs/mapping.md` round-trip enforcement, full-scan determinism (`--parallel 1` vs `16`), chaos degradation, and a P2 RSS-ceiling regression harness — everything under `-race`, ~74% coverage | **Complete** — Phase 8 |
 | Release automation: CI (lint/vet/gofmt, `-race` tests on Linux+macOS, `CGO_ENABLED=0` cross-compile matrix for all six targets, generated-code drift check, fuzz smoke, CodeQL), goreleaser (static matrix builds, checksums, keyless cosign signing, per-release SBOM + self-scanned AIBOM), Dependabot, issue/PR templates, `SECURITY.md`/`CODE_OF_CONDUCT.md`/`CONTRIBUTING.md` | **Complete** — Phase 9 |
 | Production hardening: whole-tree adversarial review (10 dimensions, per-finding verification) that found and fixed 17 verified defects — an OCI-layout path-traversal escape, a static-pickle scan evasion via memo/GET, the unwired `--fail-on` CI gate, a P7 stack-trace leak, YAML int64 corruption, non-canonical purls, and detector/rule-prefilter gaps — each with a regression test. Confirmed the empty CycloneDX `dependencies[]` (no substantiated `depends-on` edges) and the deferred live registry/daemon/cluster modes (fail cleanly) are deliberate, not defects | **Complete** — Phase 10 |
@@ -252,6 +271,7 @@ No FUD, just positioning — the tools below solve different problems:
 | Answers "why is this in my AIBOM?" | **Yes — file:line occurrences, technique, confidence in the BOM** | No — output describes the model, not your usage of it | Typically findings without BOM-native evidence |
 | CycloneDX `evidence.occurrences[]` | **Emitted** | Not emitted | Not emitted |
 | Load-time risk detection | **Built in — pickle / Lambda / template / PyFunc / unsafe-load, as CycloneDX `vulnerabilities[]` + SARIF, offline** | No | Varies — some scan model artifacts, typically SaaS or agent-based |
+| Compliance mapping | **Evidence-linked — NIST AI RMF / OWASP Agentic as CycloneDX attestations, honest about what a scan can't verify** | No | Sometimes, but without BOM-native evidence |
 | Coverage | Hosted APIs **and** local weights **and** frameworks, vector DBs, prompts, datasets, params, infra, RAG graphs | The named model | Usually model files and/or a curated subset |
 | Distribution | Single static Go binary, offline-capable | Python package | Agent or SaaS |
 | License | Apache 2.0 | Varies (often open source) | Proprietary |

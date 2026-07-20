@@ -109,7 +109,7 @@ outputs.
 
 ## Output formats
 
-The same inventory projects into five formats. Select them with `-o` (repeatable) or `--format`.
+The same inventory projects into several formats. Select them with `-o` (repeatable) or `--format`.
 
 | Format | Use it for |
 |---|---|
@@ -118,6 +118,7 @@ The same inventory projects into five formats. Select them with `-o` (repeatable
 | `yaml` | the native model, human-readable |
 | `cyclonedx` | feeding an SBOM consumer; spec 1.6 or 1.7 |
 | `sarif` | code-scanning UIs — one result per occurrence, anchored at `file:line` |
+| `compliance` | a Markdown [compliance](/concepts/compliance) report |
 
 ```bash title="Emit several formats at once"
 airom fs . -o table -o cyclonedx=airom.cdx.json -o sarif=airom.sarif
