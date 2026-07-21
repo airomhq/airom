@@ -10,16 +10,23 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [{ name = "AIROM Authors" }]
-keywords = ["aibom", "sbom", "ai", "security", "cyclonedx", "sarif", "supply-chain"]
+keywords = [
+  "aibom", "ai-bill-of-materials", "sbom", "ml-bom", "cyclonedx", "sarif",
+  "ai-security", "llm-security", "ml-security", "mlsecops", "ai-governance",
+  "compliance", "nist-ai-rmf", "owasp", "supply-chain-security",
+  "model-scanning", "vulnerability-scanner", "llm", "devsecops", "security",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Security",
   "Topic :: Software Development :: Quality Assurance",
   "Typing :: Typed",

@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "AIROM",
-  "description": "Open-source AI Bill of Materials (AIBOM) scanner — discover and inventory AI assets across code, containers, and Kubernetes.",
+  "description": "Open-source AI Bill of Materials (AIBOM) scanner — inventory AI models, datasets, prompts, embeddings, vector DBs & RAG pipelines across code, containers & Kubernetes, with file:line evidence, load-time risk detection, and NIST AI RMF / OWASP compliance mapping. Emits CycloneDX, SARIF, JSON.",
   "colors": {
     "primary": "#4F46E5",
     "light": "#818CF8",
