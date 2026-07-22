@@ -10,7 +10,7 @@ AIROM is an open-source scanner that discovers AI assets — including models, p
 [![Go Reference](https://pkg.go.dev/badge/github.com/airomhq/airom.svg)](https://pkg.go.dev/github.com/airomhq/airom)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-> **v0.1.5.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested, with the **AI-native risk overlay** and **compliance framework mapping** (see [Risk detection](#risk-detection) and [Compliance mapping](#compliance-mapping)). The terminal output is a boxed scan-summary panel and a component table with `LOCATION`, `RISK`, and `FLAGS` columns, and `--wide` expands every occurrence under each component. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
+> **v0.1.6.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested, with the **AI-native risk overlay**, an opt-in **[CVE overlay](#cve-overlay)** (OSV.dev), and **compliance framework mapping** (see [Risk detection](#risk-detection) and [Compliance mapping](#compliance-mapping)). The terminal output is a boxed scan-summary panel and a component table with `LOCATION`, `RISK`, and `FLAGS` columns, and `--wide` expands every occurrence under each component. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
 
 ---
 
@@ -284,7 +284,7 @@ Rules can even declare relationships and capture generation parameters at the ca
 
 ## Project status
 
-AIROM is at **v0.1.5**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with the risk overlay, compliance mapping, and a reworked terminal table added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
+AIROM is at **v0.1.6**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with the risk overlay, an opt-in CVE overlay (OSV.dev), compliance mapping, and a reworked terminal table added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
 
 | Area | Status |
 |---|---|
