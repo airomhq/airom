@@ -1,10 +1,28 @@
 AI Bill of Materials — risky-models
-6 component(s), 0 relationship(s)
 
-KIND              NAME           VERSION  PROVIDER  CONF  RISK                      EVIDENCE
-framework         torch          2.1.0    pytorch   0.99  medium:unsafe-load        2 occ
-library           openai         1.51.0   openai    0.95  -                         1 occ
-local-model-file  checkpoint.pt  -        local     0.95  high:pickle-import        1 occ
-local-model-file  lambda.h5      -        local     0.85  high:keras-lambda         1 occ
-local-model-file  poisoned.gguf  -        local     0.95  medium:gguf-template      1 occ
-local-model-file  tf_model       -        local     0.9   medium:savedmodel-pyfunc  1 occ
+┌─ Scan Summary ─────────────┐
+│ Target        risky-models │
+│ Components    6            │
+│ Files         6 scanned    │
+│                            │
+│ By Type                    │
+│   local-model-file   4     │
+│   framework          1     │
+│   library            1     │
+│                            │
+│ By Severity                │
+│   high               2     │
+│   medium             3     │
+│   low                0     │
+└────────────────────────────┘
+
+┌──────────────────┬───────────────┬─────────┬──────────┬──────┬────────┬───────────────────┬──────────┐
+│ KIND             │ NAME          │ VERSION │ PROVIDER │ CONF │ RISK   │ FLAGS             │ EVIDENCE │
+├──────────────────┼───────────────┼─────────┼──────────┼──────┼────────┼───────────────────┼──────────┤
+│ framework        │ torch         │ 2.1.0   │ pytorch  │ 0.99 │ medium │ unsafe-load       │ 2 occ    │
+│ library          │ openai        │ 1.51.0  │ openai   │ 0.95 │ -      │ -                 │ 1 occ    │
+│ local-model-file │ checkpoint.pt │ -       │ local    │ 0.95 │ high   │ pickle-import     │ 1 occ    │
+│ local-model-file │ lambda.h5     │ -       │ local    │ 0.85 │ high   │ keras-lambda      │ 1 occ    │
+│ local-model-file │ poisoned.gguf │ -       │ local    │ 0.95 │ medium │ gguf-template     │ 1 occ    │
+│ local-model-file │ tf_model      │ -       │ local    │ 0.9  │ medium │ savedmodel-pyfunc │ 1 occ    │
+└──────────────────┴───────────────┴─────────┴──────────┴──────┴────────┴───────────────────┴──────────┘

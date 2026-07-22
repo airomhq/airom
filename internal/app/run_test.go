@@ -137,7 +137,7 @@ rules:
 	}
 
 	out := buf.String()
-	if !strings.Contains(out, "1 component(s)") {
+	if !strings.Contains(out, "Components    1") {
 		t.Errorf("want exactly one component (two sightings, one identity):\n%s", out)
 	}
 	if !strings.Contains(out, "hosted-llm") || !strings.Contains(out, "gpt-4.1") {

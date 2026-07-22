@@ -1,9 +1,29 @@
 AI Bill of Materials — node-openai
-5 component(s), 1 relationship(s)
 
-KIND        NAME               VERSION  PROVIDER   CONF   EVIDENCE
-ai-config   max_tokens         -        -          0.5    1 occ
-framework   langchain          0.3.2    langchain  0.95   1 occ
-hosted-llm  claude-sonnet-4-5  -        anthropic  0.85   1 occ
-library     anthropic          0.27.3   anthropic  0.95   1 occ
-library     openai             4.67.1   openai     0.985  2 occ
+┌─ Scan Summary ────────────┐
+│ Target        node-openai │
+│ Components    5           │
+│ Relationships 1           │
+│ Files         2 scanned   │
+│                           │
+│ By Type                   │
+│   library            2    │
+│   ai-config          1    │
+│   framework          1    │
+│   hosted-llm         1    │
+│                           │
+│ By Severity               │
+│   high               0    │
+│   medium             0    │
+│   low                0    │
+└───────────────────────────┘
+
+┌────────────┬───────────────────┬─────────┬───────────┬───────┬──────────┐
+│ KIND       │ NAME              │ VERSION │ PROVIDER  │ CONF  │ EVIDENCE │
+├────────────┼───────────────────┼─────────┼───────────┼───────┼──────────┤
+│ ai-config  │ max_tokens        │ -       │ -         │ 0.5   │ 1 occ    │
+│ framework  │ langchain         │ 0.3.2   │ langchain │ 0.95  │ 1 occ    │
+│ hosted-llm │ claude-sonnet-4-5 │ -       │ anthropic │ 0.85  │ 1 occ    │
+│ library    │ anthropic         │ 0.27.3  │ anthropic │ 0.95  │ 1 occ    │
+│ library    │ openai            │ 4.67.1  │ openai    │ 0.985 │ 2 occ    │
+└────────────┴───────────────────┴─────────┴───────────┴───────┴──────────┘

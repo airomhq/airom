@@ -31,7 +31,12 @@ func TestTable(t *testing.T) {
 	if strings.Contains(out, "ai-app") && strings.Contains(out, "application") {
 		t.Error("scan-root application must not appear as a component row")
 	}
-	for _, want := range []string{"gpt-4.1", "langchain", "0.2.1", "5 component(s)", "hosted-llm"} {
+	for _, want := range []string{
+		"gpt-4.1", "langchain", "0.2.1", "hosted-llm",
+		"Scan Summary", "Components", "By Type", "By Severity",
+		// the fixture's tiny.gguf carries a high pickle-import risk
+		"high", "pickle-import",
+	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("table missing %q:\n%s", want, out)
 		}

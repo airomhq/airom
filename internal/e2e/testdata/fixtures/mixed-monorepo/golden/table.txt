@@ -1,8 +1,26 @@
 AI Bill of Materials — mixed-monorepo
-4 component(s), 0 relationship(s)
 
-KIND       NAME       VERSION  PROVIDER   CONF  EVIDENCE
-framework  langchain  0.2.16   langchain  0.95  1 occ
-infra      ollama     -        -          0.75  1 occ
-library    openai     1.51.0   openai     0.95  1 occ
-library    openai     4.67.1   openai     0.95  1 occ
+┌─ Scan Summary ───────────────┐
+│ Target        mixed-monorepo │
+│ Components    4              │
+│ Files         4 scanned      │
+│                              │
+│ By Type                      │
+│   library            2       │
+│   framework          1       │
+│   infra              1       │
+│                              │
+│ By Severity                  │
+│   high               0       │
+│   medium             0       │
+│   low                0       │
+└──────────────────────────────┘
+
+┌───────────┬───────────┬─────────┬───────────┬──────┬──────────┐
+│ KIND      │ NAME      │ VERSION │ PROVIDER  │ CONF │ EVIDENCE │
+├───────────┼───────────┼─────────┼───────────┼──────┼──────────┤
+│ framework │ langchain │ 0.2.16  │ langchain │ 0.95 │ 1 occ    │
+│ infra     │ ollama    │ -       │ -         │ 0.75 │ 1 occ    │
+│ library   │ openai    │ 1.51.0  │ openai    │ 0.95 │ 1 occ    │
+│ library   │ openai    │ 4.67.1  │ openai    │ 0.95 │ 1 occ    │
+└───────────┴───────────┴─────────┴───────────┴──────┴──────────┘
