@@ -57,11 +57,12 @@ icon: "rocket"
 
     ┌─ Scan Summary ───────────────┐
     │ Target        /tmp/my-ai-app │
-    │ Components    4              │
+    │ Components    6              │
     │ Relationships 1              │
     │ Files         2 scanned      │
     │                              │
     │ By Type                      │
+    │   ai-config          2       │
     │   framework          1       │
     │   hosted-llm         1       │
     │   library            1       │
@@ -73,14 +74,16 @@ icon: "rocket"
     │   low                0       │
     └──────────────────────────────┘
 
-    ┌────────────┬───────────┬─────────┬───────────┬───────┬──────────┐
-    │ KIND       │ NAME      │ VERSION │ PROVIDER  │ CONF  │ EVIDENCE │
-    ├────────────┼───────────┼─────────┼───────────┼───────┼──────────┤
-    │ framework  │ langchain │ 0.2.16  │ langchain │ 0.95  │ 1 occ    │
-    │ hosted-llm │ gpt-4.1   │ -       │ openai    │ 0.85  │ 1 occ    │
-    │ library    │ openai    │ 1.51.0  │ openai    │ 0.985 │ 2 occ    │
-    │ vector-db  │ chroma    │ 0.5.5   │ chroma    │ 0.985 │ 2 occ    │
-    └────────────┴───────────┴─────────┴───────────┴───────┴──────────┘
+    ┌────────────┬─────────────┬─────────┬───────────┬───────┬────────────────────┬──────────┐
+    │ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF  │ LOCATION           │ EVIDENCE │
+    ├────────────┼─────────────┼─────────┼───────────┼───────┼────────────────────┼──────────┤
+    │ ai-config  │ max_tokens  │ -       │ -         │ 0.5   │ src/rag.py:10      │ 1 occ    │
+    │ ai-config  │ temperature │ -       │ -         │ 0.5   │ src/rag.py:9       │ 1 occ    │
+    │ framework  │ langchain   │ 0.2.16  │ langchain │ 0.95  │ requirements.txt:1 │ 1 occ    │
+    │ hosted-llm │ gpt-4.1     │ -       │ openai    │ 0.85  │ src/rag.py:8       │ 1 occ    │
+    │ library    │ openai      │ 1.51.0  │ openai    │ 0.985 │ requirements.txt:2 │ 2 occ    │
+    │ vector-db  │ chroma      │ 0.5.5   │ chroma    │ 0.985 │ requirements.txt:3 │ 2 occ    │
+    └────────────┴─────────────┴─────────┴───────────┴───────┴────────────────────┴──────────┘
     ```
 
     <Note>
@@ -124,10 +127,11 @@ icon: "rocket"
 
 ## Where the evidence lives
 
-The table's `EVIDENCE` column tells you *how many* sightings back a component.
-The actual `file:line` provenance — plus the matched snippet, the enclosing
-symbol, the detector that fired, and a per-occurrence confidence — is carried in
-the structured outputs.
+The table's `LOCATION` column points at the primary sighting and `EVIDENCE`
+counts how many back a component. The full `file:line` provenance for *every*
+occurrence — plus the matched snippet, the enclosing symbol, the detector that
+fired, and a per-occurrence confidence — is carried in the structured outputs
+(and `--wide` expands them under each row).
 
 ```bash title="Inspect the occurrences"
 airom scan . -o json=aibom.json
@@ -146,8 +150,8 @@ airom scan . -o json=aibom.json
       {
         "location": {
           "path": "src/rag.py",
-          "line": 15,
-          "endLine": 15,
+          "line": 8,
+          "endLine": 8,
           "column": 9,
           "endColumn": 24
         },
@@ -167,7 +171,7 @@ airom scan . -o json=aibom.json
 ```
 
 That is the whole point: the `gpt-4.1` row in the table is not an assertion, it
-is `src/rag.py:15`, column 9–24, matched by `rules/openai/model-literal` via
+is `src/rag.py:8`, column 9–24, matched by `rules/openai/model-literal` via
 source-code analysis, with the literal text that triggered it.
 </Accordion>
 

@@ -121,11 +121,12 @@ AI Bill of Materials — /tmp/my-ai-app
 
 ┌─ Scan Summary ───────────────┐
 │ Target        /tmp/my-ai-app │
-│ Components    4              │
+│ Components    6              │
 │ Relationships 1              │
 │ Files         2 scanned      │
 │                              │
 │ By Type                      │
+│   ai-config          2       │
 │   framework          1       │
 │   hosted-llm         1       │
 │   library            1       │
@@ -137,13 +138,15 @@ AI Bill of Materials — /tmp/my-ai-app
 │   low                0       │
 └──────────────────────────────┘
 
-┌────────────┬───────────┬─────────┬───────────┬───────┬──────────┐
-│ KIND       │ NAME      │ VERSION │ PROVIDER  │ CONF  │ EVIDENCE │
-├────────────┼───────────┼─────────┼───────────┼───────┼──────────┤
-│ framework  │ langchain │ 0.2.16  │ langchain │ 0.95  │ 1 occ    │
-│ hosted-llm │ gpt-4.1   │ -       │ openai    │ 0.85  │ 1 occ    │
-│ library    │ openai    │ 1.51.0  │ openai    │ 0.985 │ 2 occ    │
-│ vector-db  │ chroma    │ 0.5.5   │ chroma    │ 0.985 │ 2 occ    │
+┌────────────┬─────────────┬─────────┬───────────┬───────┬────────────────────┬──────────┐
+│ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF  │ LOCATION           │ EVIDENCE │
+├────────────┼─────────────┼─────────┼───────────┼───────┼────────────────────┼──────────┤
+│ ai-config  │ max_tokens  │ -       │ -         │ 0.5   │ src/rag.py:10      │ 1 occ    │
+│ ai-config  │ temperature │ -       │ -         │ 0.5   │ src/rag.py:9       │ 1 occ    │
+│ framework  │ langchain   │ 0.2.16  │ langchain │ 0.95  │ requirements.txt:1 │ 1 occ    │
+│ hosted-llm │ gpt-4.1     │ -       │ openai    │ 0.85  │ src/rag.py:8       │ 1 occ    │
+│ library    │ openai      │ 1.51.0  │ openai    │ 0.985 │ requirements.txt:2 │ 2 occ    │
+│ vector-db  │ chroma      │ 0.5.5   │ chroma    │ 0.985 │ requirements.txt:3 │ 2 occ    │
 ```
 
 <Tip>

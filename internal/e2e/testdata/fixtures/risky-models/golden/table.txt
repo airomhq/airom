@@ -16,13 +16,13 @@ AI Bill of Materials — risky-models
 │   low                0     │
 └────────────────────────────┘
 
-┌──────────────────┬───────────────┬─────────┬──────────┬──────┬────────┬───────────────────┬──────────┐
-│ KIND             │ NAME          │ VERSION │ PROVIDER │ CONF │ RISK   │ FLAGS             │ EVIDENCE │
-├──────────────────┼───────────────┼─────────┼──────────┼──────┼────────┼───────────────────┼──────────┤
-│ framework        │ torch         │ 2.1.0   │ pytorch  │ 0.99 │ medium │ unsafe-load       │ 2 occ    │
-│ library          │ openai        │ 1.51.0  │ openai   │ 0.95 │ -      │ -                 │ 1 occ    │
-│ local-model-file │ checkpoint.pt │ -       │ local    │ 0.95 │ high   │ pickle-import     │ 1 occ    │
-│ local-model-file │ lambda.h5     │ -       │ local    │ 0.85 │ high   │ keras-lambda      │ 1 occ    │
-│ local-model-file │ poisoned.gguf │ -       │ local    │ 0.95 │ medium │ gguf-template     │ 1 occ    │
-│ local-model-file │ tf_model      │ -       │ local    │ 0.9  │ medium │ savedmodel-pyfunc │ 1 occ    │
-└──────────────────┴───────────────┴─────────┴──────────┴──────┴────────┴───────────────────┴──────────┘
+┌──────────────────┬───────────────┬─────────┬──────────┬──────┬────────┬───────────────────┬────────────────────────────────┬──────────┐
+│ KIND             │ NAME          │ VERSION │ PROVIDER │ CONF │ RISK   │ FLAGS             │ LOCATION                       │ EVIDENCE │
+├──────────────────┼───────────────┼─────────┼──────────┼──────┼────────┼───────────────────┼────────────────────────────────┼──────────┤
+│ framework        │ torch         │ 2.1.0   │ pytorch  │ 0.99 │ medium │ unsafe-load       │ requirements.txt:1             │ 2 occ    │
+│ library          │ openai        │ 1.51.0  │ openai   │ 0.95 │ -      │ -                 │ requirements.txt:2             │ 1 occ    │
+│ local-model-file │ checkpoint.pt │ -       │ local    │ 0.95 │ high   │ pickle-import     │ models/checkpoint.pt           │ 1 occ    │
+│ local-model-file │ lambda.h5     │ -       │ local    │ 0.85 │ high   │ keras-lambda      │ models/lambda.h5               │ 1 occ    │
+│ local-model-file │ poisoned.gguf │ -       │ local    │ 0.95 │ medium │ gguf-template     │ models/poisoned.gguf           │ 1 occ    │
+│ local-model-file │ tf_model      │ -       │ local    │ 0.9  │ medium │ savedmodel-pyfunc │ models/tf_model/saved_model.pb │ 1 occ    │
+└──────────────────┴───────────────┴─────────┴──────────┴──────┴────────┴───────────────────┴────────────────────────────────┴──────────┘

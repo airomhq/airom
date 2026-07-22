@@ -141,7 +141,7 @@ func writeTable(w io.Writer, comps []airom.Component, anyRisk bool) {
 	if anyRisk {
 		headers = append(headers, "RISK", "FLAGS")
 	}
-	headers = append(headers, "EVIDENCE")
+	headers = append(headers, "LOCATION", "EVIDENCE")
 
 	rows := make([][]string, 0, len(comps))
 	for _, c := range comps {
@@ -154,7 +154,7 @@ func writeTable(w io.Writer, comps []airom.Component, anyRisk bool) {
 		if anyRisk {
 			row = append(row, severityCell(c), flagsCell(c))
 		}
-		row = append(row, fmt.Sprintf("%d occ", len(c.Evidence.Occurrences)))
+		row = append(row, locationCell(c), fmt.Sprintf("%d occ", len(c.Evidence.Occurrences)))
 		rows = append(rows, row)
 	}
 	boxTable(w, headers, rows)
@@ -288,6 +288,40 @@ func flagsCell(c airom.Component) string {
 	}
 	sort.Strings(slugs)
 	return strings.Join(slugs, ", ")
+}
+
+// locationCell renders the primary sighting — the lowest (path, line)
+// occurrence, a deterministic pick — as source-relative "path:line" (or just
+// "path" for a whole-file match), truncated from the tail. "-" when there is
+// no located occurrence.
+func locationCell(c airom.Component) string {
+	occs := c.Evidence.Occurrences
+	if len(occs) == 0 {
+		return "-"
+	}
+	best := occs[0].Location
+	for _, o := range occs[1:] {
+		if locLess(o.Location, best) {
+			best = o.Location
+		}
+	}
+	if best.Path == "" {
+		return "-"
+	}
+	loc := best.Path
+	if best.Line > 0 {
+		loc = fmt.Sprintf("%s:%d", best.Path, best.Line)
+	}
+	return truncate(loc, 40)
+}
+
+// locLess orders occurrences by path, then line — a total order over the
+// fields that matter, so the primary sighting is stable across runs.
+func locLess(a, b airom.Location) bool {
+	if a.Path != b.Path {
+		return a.Path < b.Path
+	}
+	return a.Line < b.Line
 }
 
 func severityRank(s airom.RiskSeverity) int {
