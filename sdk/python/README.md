@@ -14,7 +14,7 @@ scanner binary itself into your environment's `bin/`, so there is nothing else t
 
 ```console
 $ airom --version
-airom 0.1.1
+airom 0.1.3
 
 $ airom fs ./my-app -o table          # the CLI, globally
 ```
