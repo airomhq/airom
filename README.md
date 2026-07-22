@@ -10,7 +10,7 @@ AIROM is an open-source scanner that discovers AI assets — including models, p
 [![Go Reference](https://pkg.go.dev/badge/github.com/airomhq/airom.svg)](https://pkg.go.dev/github.com/airomhq/airom)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-> **v0.1.6.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested, with the **AI-native risk overlay**, a **[CVE overlay](#cve-overlay)** (OSV.dev, on by default), and **compliance framework mapping** (see [Risk detection](#risk-detection) and [Compliance mapping](#compliance-mapping)). The terminal output is a boxed scan-summary panel, a component table with a `VULN` column, and a per-CVE detail table; `--wide` expands every occurrence under each component. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
+> **v0.1.7.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested, with the **AI-native risk overlay**, a **[CVE overlay](#cve-overlay)** (OSV.dev, on by default), and **compliance framework mapping** (see [Risk detection](#risk-detection) and [Compliance mapping](#compliance-mapping)). The terminal output is a boxed scan-summary panel, a component table with a `VULN` column, and a per-CVE detail table; `--wide` expands every occurrence under each component. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
 
 ---
 
@@ -294,7 +294,7 @@ Rules can even declare relationships and capture generation parameters at the ca
 
 ## Project status
 
-AIROM is at **v0.1.6**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with the risk overlay, a default-on CVE overlay (OSV.dev), compliance mapping, and a reworked terminal table added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
+AIROM is at **v0.1.7**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with the risk overlay, a default-on CVE overlay (OSV.dev), compliance mapping, and a reworked terminal table added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
 
 | Area | Status |
 |---|---|
