@@ -211,14 +211,14 @@ Vulnerabilities (3)
 ├─────────────────────┼────────────────┼──────────┼────────┼───────────┼────────┼──────────────────────────────────────────────────┤
 │ langchain/langchain │ CVE-2024-46946 │ HIGH     │ fixed  │ 0.2.16    │ 0.3.0  │ SSRF in the LangChain experimental LLMMathChain. │
 │                     │                │          │        │           │        │ https://osv.dev/vulnerability/CVE-2024-46946     │
-├─────────────────────┼────────────────┼──────────┼────────┼───────────┼────────┼──────────────────────────────────────────────────┤
-│ langchain/langchain │ CVE-2024-8309  │ HIGH     │ fixed  │ 0.2.16    │ 0.2.19 │ SQL injection via the SQLDatabase chain in       │
+│                     ├────────────────┼──────────┼────────┤           ├────────┼──────────────────────────────────────────────────┤
+│                     │ CVE-2024-8309  │ HIGH     │ fixed  │           │ 0.2.19 │ SQL injection via the SQLDatabase chain in       │
 │                     │                │          │        │           │        │ LangChain.                                       │
 │                     │                │          │        │           │        │ https://osv.dev/vulnerability/CVE-2024-8309      │
 └─────────────────────┴────────────────┴──────────┴────────┴───────────┴────────┴──────────────────────────────────────────────────┘
 ```
 
-> The **CVE overlay runs by default**: the `VULN` column flags affected components, the summary counts CVEs by severity, and the per-CVE detail table lists each advisory (most-severe first) with its fix and title. Pass `--no-cve` (or `--offline`) to skip it for a byte-stable, offline BOM. `LOCATION` is each component's primary `file:line`; `--wide` lists every occurrence. Load-time **risks** (pickle, Lambda, …) still surface in the CycloneDX/SARIF/JSON outputs — see [Risk detection](#risk-detection).
+> The **CVE overlay runs by default**: the `VULN` column flags affected components, the summary counts CVEs by severity, and the per-CVE detail table lists each advisory (most-severe first) with its fix and title. Per-package columns (`LIBRARY`, `INSTALLED`, `FIXED`) merge across a package's CVEs, Trivy-style — note `langchain`'s two rows share one library/installed cell. Pass `--no-cve` (or `--offline`) to skip it for a byte-stable, offline BOM. `LOCATION` is each component's primary `file:line`; `--wide` lists every occurrence. Load-time **risks** (pickle, Lambda, …) still surface in the CycloneDX/SARIF/JSON outputs — see [Risk detection](#risk-detection).
 
 And the answer to the auditor's question, in the CycloneDX BOM (abridged):
 

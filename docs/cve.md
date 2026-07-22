@@ -46,7 +46,7 @@ output format projects them.
 | CycloneDX | top-level `vulnerabilities[]` — the CVE `id`, `source.name: osv.dev`, a `ratings[]` entry with `method: CVSSv31`, the real `score`, `severity`, and `vector`, aliases as `references[]`, and `affects[].ref` pointing at the component's `bom-ref`. The first fixed version rides in an `airom:cve.fixedVersion` property. |
 | SARIF | a `cve/<id>` rule carrying the GitHub `security-severity` property — the **real CVSS base score** here, not the synthetic marker the risk rules use — and a result (level `error`/`warning`/`note` by severity) anchored to the manifest line that declared the vulnerable package. |
 | Native JSON / YAML | `component.vulnerabilities[]` — `{id, aliases, severity, score, vector, summary, fixedVersion, source, url}`. |
-| Table | a `VULN` column on the component (top severity + count, e.g. `high (2)`), a `Vulnerabilities` breakdown in the summary panel, and a per-CVE detail table below — `LIBRARY / VULNERABILITY / SEVERITY / STATUS / INSTALLED / FIXED / TITLE`, most-severe first. |
+| Table | a `VULN` column on the component (top severity + count, e.g. `high (2)`), a `Vulnerabilities` breakdown in the summary panel, and a per-CVE detail table below — `LIBRARY / VULNERABILITY / SEVERITY / STATUS / INSTALLED / FIXED / TITLE`, most-severe first. Per-package columns (`LIBRARY`, `INSTALLED`, `FIXED`) merge vertically across a package's CVEs, Trivy-style, so the name and versions show once and span the group. |
 | `--fail-on` | `cve` (any CVE), or `cve:<severity>` (a **threshold** — see below). |
 
 ## Severity and the `--fail-on` threshold

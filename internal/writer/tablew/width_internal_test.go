@@ -22,6 +22,56 @@ func TestDispWidth(t *testing.T) {
 	}
 }
 
+// TestVulnTableMergesPerPackageColumns checks the Trivy-style vertical merge:
+// two CVEs on the same package share one LIBRARY and INSTALLED cell (each value
+// appears once), while a differing FIXED version is NOT merged. Every rendered
+// line still has identical display width (the box stays rectangular).
+func TestVulnTableMergesPerPackageColumns(t *testing.T) {
+	inv := &airom.Inventory{
+		Source: airom.SourceInfo{Target: "/x"},
+		Components: []airom.Component{{
+			ID: "a", Kind: airom.KindFramework, Name: "torch", Version: airom.KnownString("2.1.0"), Confidence: 0.9,
+			Vulnerabilities: []airom.Vulnerability{
+				{ID: "CVE-2025-1", Severity: airom.VulnHigh, Score: 7.5, Fixed: "2.7.1", Summary: "A.", Source: "osv.dev", URL: "u1"},
+				{ID: "CVE-2025-2", Severity: airom.VulnHigh, Score: 7.5, Fixed: "2.9.0", Summary: "B.", Source: "osv.dev", URL: "u2"},
+			},
+			Evidence: airom.Evidence{Occurrences: []airom.Occurrence{{Location: airom.Location{Path: "requirements.txt", Line: 1}}}},
+		}},
+	}
+	var buf bytes.Buffer
+	if err := (Writer{}).Write(&buf, inv); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	body := out[strings.Index(out, "Vulnerabilities ("):]
+
+	// LIBRARY "torch" and INSTALLED "2.1.0" are per-package: they merge, so each
+	// appears exactly once in the detail table.
+	if n := strings.Count(body, "torch"); n != 1 {
+		t.Errorf("LIBRARY not merged: %q appears %d times, want 1\n%s", "torch", n, body)
+	}
+	if n := strings.Count(body, "2.1.0"); n != 1 {
+		t.Errorf("INSTALLED not merged: %q appears %d times, want 1\n%s", "2.1.0", n, body)
+	}
+	// The two distinct fixed versions are both present (FIXED not over-merged).
+	if !strings.Contains(body, "2.7.1") || !strings.Contains(body, "2.9.0") {
+		t.Errorf("both fixed versions should show:\n%s", body)
+	}
+	// Rectangular: every border/row line of the detail table has equal width.
+	want := 0
+	for _, l := range strings.Split(body, "\n") {
+		r := []rune(l)
+		if len(r) == 0 || (r[0] != '┌' && r[0] != '├' && r[0] != '│' && r[0] != '└') {
+			continue
+		}
+		if wdt := dispWidth(l); want == 0 {
+			want = wdt
+		} else if wdt != want {
+			t.Errorf("merged box line width = %d, want %d (not rectangular):\n%q", wdt, want, l)
+		}
+	}
+}
+
 // TestVulnTableWideGlyphRectangular guards the fix for wide (CJK/emoji) advisory
 // titles: every border/row line of the per-CVE detail table must have identical
 // display width, or the box stops being rectangular in a terminal.

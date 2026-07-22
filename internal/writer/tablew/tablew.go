@@ -288,9 +288,14 @@ func boxTable(w io.Writer, headers []string, rows [][]string) {
 
 // boxMultiline draws a bordered table whose cells may each span several lines
 // (rows is [row][column][line]). A logical row is as tall as its tallest cell,
-// shorter cells pad with blanks, and a rule separates every logical row.
-func boxMultiline(w io.Writer, headers []string, rows [][][]string) {
+// shorter cells pad with blanks. mergeUp[r][c] (may be nil) marks a cell that
+// visually merges with the one above it — its content is blanked and the rule
+// between the two rows carries no horizontal segment under that column, so the
+// two cells read as one spanning cell (Trivy-style).
+func boxMultiline(w io.Writer, headers []string, rows [][][]string, mergeUp [][]bool) {
 	n := len(headers)
+	merged := func(r, c int) bool { return mergeUp != nil && r >= 0 && mergeUp[r][c] }
+
 	width := make([]int, n)
 	for i, h := range headers {
 		width[i] = dispWidth(h)
@@ -304,7 +309,8 @@ func boxMultiline(w io.Writer, headers []string, rows [][][]string) {
 			}
 		}
 	}
-	rule := func(l, m, rr string) string {
+	// A full rule (top/header/bottom): every column separated.
+	fullRule := func(l, m, rr string) string {
 		var b strings.Builder
 		b.WriteString(l)
 		for i := 0; i < n; i++ {
@@ -316,24 +322,68 @@ func boxMultiline(w io.Writer, headers []string, rows [][][]string) {
 		b.WriteString(rr)
 		return b.String()
 	}
-	physical := func(cells []string) string {
+	// A between-rows rule: columns merged into the row below carry spaces (the
+	// cell continues) instead of ─, and the junctions bend accordingly.
+	spanRule := func(rowBelow int) string {
+		seg := func(c int) string {
+			if merged(rowBelow, c) {
+				return strings.Repeat(" ", width[c]+2)
+			}
+			return strings.Repeat("─", width[c]+2)
+		}
+		junction := func(leftMerged, rightMerged bool) string {
+			switch {
+			case !leftMerged && !rightMerged:
+				return "┼"
+			case !leftMerged && rightMerged:
+				return "┤"
+			case leftMerged && !rightMerged:
+				return "├"
+			default:
+				return "│"
+			}
+		}
 		var b strings.Builder
-		b.WriteString("│")
-		for i := 0; i < n; i++ {
-			b.WriteString(" " + cells[i] + strings.Repeat(" ", width[i]-dispWidth(cells[i])) + " │")
+		if merged(rowBelow, 0) {
+			b.WriteString("│")
+		} else {
+			b.WriteString("├")
+		}
+		for c := 0; c < n; c++ {
+			b.WriteString(seg(c))
+			if c < n-1 {
+				b.WriteString(junction(merged(rowBelow, c), merged(rowBelow, c+1)))
+			}
+		}
+		if merged(rowBelow, n-1) {
+			b.WriteString("│")
+		} else {
+			b.WriteString("┤")
 		}
 		return b.String()
 	}
-	fmt.Fprintln(w, rule("┌", "┬", "┐"))
-	fmt.Fprintln(w, physical(headers))
-	fmt.Fprintln(w, rule("├", "┼", "┤"))
+	physical := func(r int, cells []string) string {
+		var b strings.Builder
+		b.WriteString("│")
+		for i := 0; i < n; i++ {
+			cell := cells[i]
+			if merged(r, i) {
+				cell = "" // a merged cell shows nothing; the row above owns the value
+			}
+			b.WriteString(" " + cell + strings.Repeat(" ", width[i]-dispWidth(cell)) + " │")
+		}
+		return b.String()
+	}
+	fmt.Fprintln(w, fullRule("┌", "┬", "┐"))
+	fmt.Fprintln(w, physical(-1, headers)) // -1: header row never merges
+	fmt.Fprintln(w, fullRule("├", "┼", "┤"))
 	for ri, r := range rows {
 		if ri > 0 {
-			fmt.Fprintln(w, rule("├", "┼", "┤"))
+			fmt.Fprintln(w, spanRule(ri))
 		}
 		height := 1
 		for i := 0; i < n; i++ {
-			if len(r[i]) > height {
+			if !merged(ri, i) && len(r[i]) > height {
 				height = len(r[i])
 			}
 		}
@@ -344,10 +394,10 @@ func boxMultiline(w io.Writer, headers []string, rows [][][]string) {
 					line[i] = r[i][k]
 				}
 			}
-			fmt.Fprintln(w, physical(line))
+			fmt.Fprintln(w, physical(ri, line))
 		}
 	}
-	fmt.Fprintln(w, rule("└", "┴", "┘"))
+	fmt.Fprintln(w, fullRule("└", "┴", "┘"))
 }
 
 func name(c airom.Component) string {
@@ -435,8 +485,26 @@ func writeVulnTable(w io.Writer, comps []airom.Component) {
 			title,
 		})
 	}
+
+	// Vertically merge the per-package columns (LIBRARY, INSTALLED, FIXED) across
+	// adjacent rows that share a library, the way Trivy does — so a package with
+	// many CVEs shows its name and versions once, spanning the group, instead of
+	// repeating them on every row. VULNERABILITY, SEVERITY, STATUS, and TITLE
+	// stay per-row so the individual findings remain separated.
+	const colLibrary, colInstalled, colFixed = 0, 4, 5
+	mergeUp := make([][]bool, len(rows))
+	for i := range rows {
+		m := make([]bool, len(headers))
+		if i > 0 && rows[i].lib == rows[i-1].lib {
+			m[colLibrary] = true
+			m[colInstalled] = rows[i].installed == rows[i-1].installed
+			m[colFixed] = rows[i].fixed == rows[i-1].fixed
+		}
+		mergeUp[i] = m
+	}
+
 	fmt.Fprintf(w, "\nVulnerabilities (%d)\n", len(rows))
-	boxMultiline(w, headers, cells)
+	boxMultiline(w, headers, cells, mergeUp)
 }
 
 // wrapText greedily word-wraps s to lines of at most width runes, hard-splitting
