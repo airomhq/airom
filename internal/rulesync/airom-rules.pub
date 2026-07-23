@@ -1,6 +1,6 @@
 # airom-rules signing public key (ed25519, base64 of the 32-byte key on one line).
 #
-# PLACEHOLDER — no key is embedded yet. It is generated and committed here as
-# part of the airom-rules integration (its private half lives only in that
-# repo's CI secret). Until then, `airom rules update` can only run with
-# --insecure-skip-signature, and signed fetches fail with ErrNoSigningKey.
+# The private half lives only in the airom-rules repository's CI secret
+# (AIROM_RULES_SIGNING_KEY) and signs each release bundle's manifest. Rotation:
+# generate a new keypair, replace the line below, and ship an airom release.
+syEx+bushIfWXkxoEV6dyEW+tWKG4eP9VXzp5H233HA=

@@ -96,7 +96,11 @@ func Update(ctx context.Context, o Options) (*Result, error) {
 		if err != nil {
 			return nil, fmt.Errorf("fetch signature: %w", err)
 		}
-		if err := verifyManifest(manifestBytes, sigBytes, o.PublicKey); err != nil {
+		key := o.PublicKey
+		if key == nil {
+			key = embeddedPublicKey() // the key baked into this build
+		}
+		if err := verifyManifest(manifestBytes, sigBytes, key); err != nil {
 			return nil, err
 		}
 	}

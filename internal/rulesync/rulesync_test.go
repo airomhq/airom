@@ -131,16 +131,17 @@ func TestUpdateRejectsTamperedTarball(t *testing.T) {
 	}
 }
 
-func TestUpdateNoKeyFailsClosed(t *testing.T) {
-	_, priv := genKey(t)
-	tgz := makeTarGz(t, map[string]string{"a.yaml": "pack: a\n"})
-	manifest, sig := signedManifest(t, "v1", tgz, priv)
-	base := serve(t, manifest, sig, tgz)
-
-	// No injected key and the embedded key is a placeholder → cannot verify.
-	_, err := Update(context.Background(), Options{CacheDir: t.TempDir(), Source: base})
-	if !errors.Is(err, ErrNoSigningKey) {
+func TestVerifyManifestNoKeyFailsClosed(t *testing.T) {
+	// The absent-key path returns ErrNoSigningKey rather than silently passing.
+	if err := verifyManifest([]byte("manifest"), []byte("c2ln"), nil); !errors.Is(err, ErrNoSigningKey) {
 		t.Fatalf("err = %v, want ErrNoSigningKey", err)
+	}
+}
+
+func TestEmbeddedKeyIsPresent(t *testing.T) {
+	// A real build ships a signing key; a scan-time verification depends on it.
+	if embeddedPublicKey() == nil {
+		t.Fatal("no ed25519 signing key embedded (airom-rules.pub is a placeholder)")
 	}
 }
 

@@ -38,9 +38,6 @@ func embeddedPublicKey() ed25519.PublicKey {
 // at all (InsecureSkipSignature bypasses both this and the signature fetch).
 func verifyManifest(manifest, sig []byte, key ed25519.PublicKey) error {
 	if key == nil {
-		key = embeddedPublicKey()
-	}
-	if key == nil {
 		return ErrNoSigningKey
 	}
 	raw, err := base64.StdEncoding.DecodeString(strings.TrimSpace(string(sig)))
