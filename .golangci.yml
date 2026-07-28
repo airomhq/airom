@@ -139,3 +139,8 @@ formatters:
   exclusions:
     paths:
       - testdata
+      # A nested airom-rules checkout (gitignored, a separate module and a
+      # separate repo). `golangci-lint fmt` walks the filesystem rather than
+      # the module graph, so without this it would rewrite files this repo
+      # does not own — and report drift nobody here can fix.
+      - airom-rules

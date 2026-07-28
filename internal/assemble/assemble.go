@@ -948,7 +948,8 @@ func (a *assembly) resolveRelations(findings []detect.Finding) {
 			if to == "" {
 				a.warnings = append(a.warnings, fmt.Sprintf(
 					"unresolved %s relation from %q at %s: %s",
-					rel.Type, f.Claim.Name, f.Occurrence.Location.Path, why))
+					rel.Type, f.Claim.Name, f.Occurrence.Location.Path, why,
+				))
 				continue
 			}
 			if to == from {

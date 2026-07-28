@@ -486,7 +486,8 @@ var barewordRe = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-
 // value alternatives cannot begin with `=`.
 var assignRe = regexp.MustCompile(
 	`(?m)(?:^|;)[ \t]*([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)[ \t]*(?::[^=\n]{0,40})?=[ \t]*` +
-		`("[^"\n]*"|'[^'\n]*'|[0-9][0-9_.]*)[ \t\r]*($|[;#]|//)`)
+		`("[^"\n]*"|'[^'\n]*'|[0-9][0-9_.]*)[ \t\r]*($|[;#]|//)`,
+)
 
 // maxAssignBindings bounds the per-file resolver scan (P2: no silent
 // unbounded work); a file past the cap simply resolves fewer barewords.

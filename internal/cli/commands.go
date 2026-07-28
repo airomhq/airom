@@ -226,7 +226,8 @@ func newCleanCmd() *cobra.Command {
 func guardCacheRemoval(abs string) error {
 	if base := filepath.Base(abs); base != "airom" && base != "airom-cache" {
 		return &app.UsageError{Err: fmt.Errorf(
-			"refusing to remove %q: not an airom cache directory (basename must be \"airom\" or \"airom-cache\"); delete it manually if you really mean it", abs)}
+			"refusing to remove %q: not an airom cache directory (basename must be \"airom\" or \"airom-cache\"); delete it manually if you really mean it", abs,
+		)}
 	}
 
 	sameAs := func(guard string) bool {

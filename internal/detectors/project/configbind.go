@@ -50,7 +50,8 @@ var modelRefKeys = []string{"_name_or_path", "model", "model_name"}
 // DetectProject emits one ai-config component per generation/model config,
 // with a CONFIGURES edge to the named model when one is present.
 func (cb *ConfigBind) DetectProject(ctx context.Context, r detect.Resolver, _ *detect.FindingsView) ([]detect.Finding, error) {
-	refs, err := r.FilesByGlob(ctx,
+	refs, err := r.FilesByGlob(
+		ctx,
 		"**/generation_config.json",
 		"**/*generation*config*.yaml",
 		"**/*generation*config*.yml",

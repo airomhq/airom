@@ -54,12 +54,19 @@ cover: ## Run tests with coverage; prints the per-function summary (HTML: go too
 lint: ## Run golangci-lint (config: .golangci.yml — includes the §4 import-direction depguard rules)
 	golangci-lint run
 
+# Go sources belonging to THIS repo. A bare `.` would descend into a nested
+# airom-rules checkout (gitignored, a separate module and a separate repo) and
+# silently rewrite files in someone else's working tree. Plain POSIX find — no
+# -printf, which is GNU-only and would silently expand to nothing on macOS.
+GO_SRC := $(shell find . -name '*.go' -not -path './airom-rules/*' -not -path './.git/*')
+
 fmt: ## Format Go sources (gofumpt when installed, gofmt otherwise)
+	@test -n "$(GO_SRC)" || { echo "make fmt: no Go sources found — refusing to run a formatter with no arguments (it would read stdin and hang)"; exit 1; }
 	@if command -v gofumpt >/dev/null 2>&1; then \
-		gofumpt -l -w .; \
+		gofumpt -l -w $(GO_SRC); \
 	else \
 		echo "gofumpt not found; falling back to gofmt (install: go install mvdan.cc/gofumpt@latest)"; \
-		gofmt -l -w .; \
+		gofmt -l -w $(GO_SRC); \
 	fi
 
 vet: ## Run go vet across all packages

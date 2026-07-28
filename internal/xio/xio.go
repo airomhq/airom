@@ -67,7 +67,7 @@ func NewBufPool(size int) *BufPool {
 
 // Get returns a buffer of the pool's full length. Contents are undefined.
 func (p *BufPool) Get() []byte {
-	return *(p.pool.Get().(*[]byte))
+	return *p.pool.Get().(*[]byte)
 }
 
 // Put recycles a buffer obtained from Get. Buffers of the wrong capacity
