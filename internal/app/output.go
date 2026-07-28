@@ -58,9 +58,10 @@ func emit(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 	}
 
 	opts := writer.Options{
-		CDXVersion:  cfg.CDXVersion,
-		SARIFStrict: cfg.SARIFStrictKinds,
-		TableWide:   cfg.Wide,
+		CDXVersion:   cfg.CDXVersion,
+		SARIFStrict:  cfg.SARIFStrictKinds,
+		TableWide:    cfg.Wide,
+		IncludeTests: cfg.IncludeTests,
 	}
 	return writer.Fanout(ctx, inv, outputs, opts, stdout)
 }
@@ -76,7 +77,7 @@ func emit(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 func presentationFilter(inv *airom.Inventory, cfg *Config) *airom.Inventory {
 	out := filterByConfidence(inv, cfg.MinConfidence)
 	if len(cfg.Compliance) > 0 {
-		if results, err := compliance.Evaluate(out, cfg.Compliance); err == nil {
+		if results, err := compliance.Evaluate(out, cfg.Compliance, cfg.IncludeTests); err == nil {
 			out.Compliance = results
 		} else {
 			out.Compliance = nil

@@ -41,7 +41,7 @@ func gate(inv *airom.Inventory, cfg *Config) error {
 	if cfg.Policy == nil {
 		return nil
 	}
-	if cfg.Policy.Matches(inv) {
+	if cfg.Policy.Matches(inv, cfg.IncludeTests) {
 		return &PolicyExit{Code: cfg.ExitCode}
 	}
 	return nil

@@ -35,6 +35,13 @@ type Options struct {
 	Endpoint    string // default DefaultEndpoint
 	HTTP        Doer   // default http.DefaultClient
 	Concurrency int    // default 8
+	// SkipTestOnly omits components whose evidence is entirely test
+	// scaffolding. Their advisories are hidden from the table, SARIF, and the
+	// gate anyway, so querying them spends real network round-trips (and
+	// somebody's rate limit) on answers nobody will be shown. A repository of
+	// fixtures is the common case, not the rare one: AIROM's own tree is 180
+	// test-only components out of 185.
+	SkipTestOnly bool
 }
 
 // pkgEcosystems are the purl types OSV matches on — the package ecosystems
@@ -70,10 +77,27 @@ func Enrich(ctx context.Context, inv *airom.Inventory, opts Options) int {
 	// Collect the queryable components (versioned package purls).
 	type job struct{ idx int }
 	var jobs []job
+	skipped := 0
 	for i := range inv.Components {
 		if queryablePurl(inv.Components[i].PURL) {
+			if opts.SkipTestOnly && inv.Components[i].TestOnly {
+				skipped++
+				continue
+			}
 			jobs = append(jobs, job{i})
 		}
+	}
+	// The native and CycloneDX documents still CARRY these components, so an
+	// absent `vulnerabilities` list on them would be indistinguishable from
+	// "queried, nothing found". Say which it is: a consumer filtering CDX for
+	// `scope: excluded` — a legitimate "what does this tree touch anywhere?"
+	// read — must not take silence for an all-clear.
+	if skipped > 0 {
+		inv.Stats.Warnings = append(inv.Stats.Warnings, fmt.Sprintf(
+			"cve: %d test-scoped component(s) were not checked against OSV.dev; re-run with --include-tests to check them",
+			skipped,
+		))
+		sort.Strings(inv.Stats.Warnings)
 	}
 	if len(jobs) == 0 {
 		return 0

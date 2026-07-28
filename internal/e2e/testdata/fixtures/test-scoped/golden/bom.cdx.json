@@ -1,0 +1,421 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:00000000-0000-4000-8000-000000000000",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-01T12:00:00Z",
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "airom",
+          "version": "dev"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "airom:f465180fc8f3da77",
+      "type": "application",
+      "name": "test-scoped",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0"
+        },
+        {
+          "name": "airom:kind",
+          "value": "application"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "airom:eol.catalog",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:rules.hash",
+        "value": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "name": "airom:rules.version",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:source.target",
+        "value": "test-scoped"
+      },
+      {
+        "name": "airom:source.type",
+        "value": "dir"
+      },
+      {
+        "name": "airom:unknowns",
+        "value": "0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "airom:36fd9d7d8704ef27",
+      "type": "machine-learning-model",
+      "name": "claude-1.0",
+      "scope": "excluded",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:eol.announcedDate",
+          "value": "2024-09-04"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "-633"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "claude-haiku-4-5-20251001"
+        },
+        {
+          "name": "airom:eol.replacementState",
+          "value": "supported"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2024-11-06"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "retired"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-1.0"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "1 @ tests/test_app.py:27"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "tests/test_app.py",
+            "line": 28,
+            "additionalContext": "model=\"claude-1.0\", max_tokens=1, messages=[]"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:65ac1a1b3af7edab",
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.34.0",
+      "purl": "pkg:pypi/anthropic@0.34.0",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.985"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:36fd9d7d8704ef27@0.7"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.95,
+            "concludedValue": "0.34.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "requirements.txt",
+            "line": 2,
+            "additionalContext": "anthropic==0.34.0"
+          },
+          {
+            "location": "tests/test_app.py",
+            "line": 27,
+            "additionalContext": "anthropic.Anthropic().messages.create("
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:65ad4ea6556c5aad",
+      "type": "machine-learning-model",
+      "name": "gpt-4o-mini",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.8575"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o-mini"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "1 @ tests/test_app.py:20"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 17,
+            "additionalContext": "model=\"gpt-4o-mini\","
+          },
+          {
+            "location": "tests/test_app.py",
+            "line": 21,
+            "additionalContext": "model=\"gpt-4o-mini\", messages=[{\"role\": \"user\", \"content\": \"hi\"}]"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:91e505cba56acc91",
+      "type": "machine-learning-model",
+      "name": "gpt-4o",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 9,
+            "additionalContext": "model=\"gpt-4o\","
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:a6ccf893ff130124",
+      "type": "library",
+      "name": "openai",
+      "version": "1.40.0",
+      "purl": "pkg:pypi/openai@1.40.0",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.9872"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:65ad4ea6556c5aad@0.91"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:91e505cba56acc91@0.7"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:be123ae014845a9f@0.7"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.95,
+            "concludedValue": "1.40.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 8,
+            "additionalContext": "return client.chat.completions.create("
+          },
+          {
+            "location": "app.py",
+            "line": 16,
+            "additionalContext": "return client.chat.completions.create("
+          },
+          {
+            "location": "requirements.txt",
+            "line": 1,
+            "additionalContext": "openai==1.40.0"
+          },
+          {
+            "location": "testdata/golden_prompt.py",
+            "line": 4,
+            "additionalContext": "OpenAI().chat.completions.create(model=\"gpt-4-32k\", messages=[])"
+          },
+          {
+            "location": "tests/test_app.py",
+            "line": 20,
+            "additionalContext": "OpenAI().chat.completions.create("
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:be123ae014845a9f",
+      "type": "machine-learning-model",
+      "name": "gpt-4-32k",
+      "scope": "excluded",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:eol.announcedDate",
+          "value": "2024-06-06"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "-421"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "gpt-4o"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2025-06-06"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://developers.openai.com/api/docs/deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "retired"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4-32k"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "testdata/golden_prompt.py",
+            "line": 4,
+            "additionalContext": "OpenAI().chat.completions.create(model=\"gpt-4-32k\", messages=[])"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -67,7 +67,7 @@ func TestComplianceGateMatches(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ParsePolicy(%q): %v", expr, err)
 		}
-		if got := p.Matches(inv); got != want {
+		if got := p.Matches(inv, false); got != want {
 			t.Errorf("%q matched=%v, want %v", expr, got, want)
 		}
 	}
@@ -78,7 +78,7 @@ func TestComplianceGateMatches(t *testing.T) {
 func TestComplianceGateNoOverlay(t *testing.T) {
 	inv := &airom.Inventory{Components: []airom.Component{{ID: "airom:1", Kind: airom.KindHostedLLM}}}
 	p, _ := ParsePolicy("compliance:gap")
-	if p.Matches(inv) {
+	if p.Matches(inv, false) {
 		t.Error("compliance gate fired with no overlay")
 	}
 }

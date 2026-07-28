@@ -1,0 +1,517 @@
+components:
+  - confidence: 0.85
+    eol:
+      announced: "2024-09-04"
+      daysRemaining: -633
+      replacement: claude-haiku-4-5-20251001
+      replacementState: supported
+      shutdown: "2024-11-06"
+      source: airom-catalog
+      sourceUrl: https://platform.claude.com/docs/en/docs/about-claude/model-deprecations
+      state: retired
+      verified: "2026-07-23"
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/anthropic/model-literal
+          fields:
+            model: claude-1.0
+          location:
+            column: 9
+            endColumn: 27
+            endLine: 28
+            line: 28
+            path: tests/test_app.py
+          method: source-code-analysis
+          snippet: model="claude-1.0", max_tokens=1, messages=[]
+    id: airom:36fd9d7d8704ef27
+    kind: hosted-llm
+    model:
+      generationParams:
+        - name: max_tokens
+          occurrence:
+            confidence: 0.7
+            detectorId: rules/anthropic/messages-call
+            fields:
+              model: claude-1.0
+              param.max_tokens: "1"
+            location:
+              column: 26
+              endColumn: 43
+              endLine: 27
+              line: 27
+              path: tests/test_app.py
+            method: source-code-analysis
+            snippet: anthropic.Anthropic().messages.create(
+          value: "1"
+    name: claude-1.0
+    props:
+      - name: airom:model.provider
+        value: anthropic
+      - name: airom:model.id
+        value: claude-1.0
+    provider: anthropic
+    testOnly: true
+  - confidence: 0.985
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 0.34.0
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 2
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: anthropic==0.34.0
+        - confidence: 0.7
+          detectorId: rules/anthropic/messages-call
+          fields:
+            model: claude-1.0
+            param.max_tokens: "1"
+          location:
+            column: 26
+            endColumn: 43
+            endLine: 27
+            line: 27
+            path: tests/test_app.py
+          method: source-code-analysis
+          snippet: anthropic.Anthropic().messages.create(
+    id: airom:65ac1a1b3af7edab
+    kind: library
+    name: anthropic
+    package:
+      ecosystem: pypi
+    provider: anthropic
+    purl: pkg:pypi/anthropic@0.34.0
+    version: 0.34.0
+  - confidence: 0.8574999999999999
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4o-mini
+          location:
+            column: 9
+            endColumn: 28
+            endLine: 17
+            line: 17
+            path: app.py
+          method: source-code-analysis
+          snippet: model="gpt-4o-mini",
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4o-mini
+          location:
+            column: 9
+            endColumn: 28
+            endLine: 21
+            line: 21
+            path: tests/test_app.py
+          method: source-code-analysis
+          snippet: 'model="gpt-4o-mini", messages=[{"role": "user", "content": "hi"}]'
+    id: airom:65ad4ea6556c5aad
+    kind: hosted-llm
+    model:
+      generationParams:
+        - name: max_tokens
+          occurrence:
+            confidence: 0.7
+            detectorId: rules/openai/chat-call
+            fields:
+              model: gpt-4o-mini
+              param.max_tokens: "1"
+            location:
+              column: 13
+              endColumn: 38
+              endLine: 20
+              line: 20
+              path: tests/test_app.py
+            method: source-code-analysis
+            snippet: OpenAI().chat.completions.create(
+          value: "1"
+    name: gpt-4o-mini
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4o-mini
+    provider: openai
+  - confidence: 0.85
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4o
+          location:
+            column: 9
+            endColumn: 23
+            endLine: 9
+            line: 9
+            path: app.py
+          method: source-code-analysis
+          snippet: model="gpt-4o",
+    id: airom:91e505cba56acc91
+    kind: hosted-llm
+    name: gpt-4o
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4o
+    provider: openai
+  - confidence: 0.98725
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 1.40.0
+      occurrences:
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4o
+          location:
+            column: 18
+            endColumn: 43
+            endLine: 8
+            line: 8
+            path: app.py
+          method: source-code-analysis
+          snippet: return client.chat.completions.create(
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4o-mini
+          location:
+            column: 18
+            endColumn: 43
+            endLine: 16
+            line: 16
+            path: app.py
+          method: source-code-analysis
+          snippet: return client.chat.completions.create(
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 1
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: openai==1.40.0
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4-32k
+          location:
+            column: 9
+            endColumn: 34
+            endLine: 4
+            line: 4
+            path: testdata/golden_prompt.py
+          method: source-code-analysis
+          snippet: OpenAI().chat.completions.create(model="gpt-4-32k", messages=[])
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4o-mini
+            param.max_tokens: "1"
+          location:
+            column: 13
+            endColumn: 38
+            endLine: 20
+            line: 20
+            path: tests/test_app.py
+          method: source-code-analysis
+          snippet: OpenAI().chat.completions.create(
+    id: airom:a6ccf893ff130124
+    kind: library
+    name: openai
+    package:
+      ecosystem: pypi
+    provider: openai
+    purl: pkg:pypi/openai@1.40.0
+    version: 1.40.0
+  - confidence: 0.85
+    eol:
+      announced: "2024-06-06"
+      daysRemaining: -421
+      replacement: gpt-4o
+      shutdown: "2025-06-06"
+      source: airom-catalog
+      sourceUrl: https://developers.openai.com/api/docs/deprecations
+      state: retired
+      verified: "2026-07-23"
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4-32k
+          location:
+            column: 34
+            endColumn: 51
+            endLine: 4
+            line: 4
+            path: testdata/golden_prompt.py
+          method: source-code-analysis
+          snippet: OpenAI().chat.completions.create(model="gpt-4-32k", messages=[])
+    id: airom:be123ae014845a9f
+    kind: hosted-llm
+    name: gpt-4-32k
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4-32k
+    provider: openai
+    testOnly: true
+  - confidence: 0
+    evidence: {}
+    id: airom:f465180fc8f3da77
+    kind: application
+    name: test-scoped
+lifecycle: pre-build
+relationships:
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/anthropic/messages-call
+        fields:
+          model: claude-1.0
+          param.max_tokens: "1"
+        location:
+          column: 26
+          endColumn: 43
+          endLine: 27
+          line: 27
+          path: tests/test_app.py
+        method: source-code-analysis
+        snippet: anthropic.Anthropic().messages.create(
+    from: airom:65ac1a1b3af7edab
+    to: airom:36fd9d7d8704ef27
+    type: uses
+  - confidence: 0.9099999999999999
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4o-mini
+        location:
+          column: 18
+          endColumn: 43
+          endLine: 16
+          line: 16
+          path: app.py
+        method: source-code-analysis
+        snippet: return client.chat.completions.create(
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4o-mini
+          param.max_tokens: "1"
+        location:
+          column: 13
+          endColumn: 38
+          endLine: 20
+          line: 20
+          path: tests/test_app.py
+        method: source-code-analysis
+        snippet: OpenAI().chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:65ad4ea6556c5aad
+    type: uses
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4o
+        location:
+          column: 18
+          endColumn: 43
+          endLine: 8
+          line: 8
+          path: app.py
+        method: source-code-analysis
+        snippet: return client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:91e505cba56acc91
+    type: uses
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4-32k
+        location:
+          column: 9
+          endColumn: 34
+          endLine: 4
+          line: 4
+          path: testdata/golden_prompt.py
+        method: source-code-analysis
+        snippet: OpenAI().chat.completions.create(model="gpt-4-32k", messages=[])
+    from: airom:a6ccf893ff130124
+    to: airom:be123ae014845a9f
+    type: uses
+root: airom:f465180fc8f3da77
+schemaVersion: "1"
+serial: urn:uuid:00000000-0000-4000-8000-000000000000
+source:
+  kind: dir
+  target: test-scoped
+stats:
+  contentBytes: 1522
+  detectors:
+    - findings: 0
+      id: dataset/file
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: gosrc/ast
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/compose
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/dockerfile
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/cargo
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gomod
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gradle
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/maven
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/npm
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/nuget
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-pyproject
+      invocations: 0
+      ns: 0
+    - findings: 2
+      id: manifest/pypi-requirements
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: modelfile/gguf
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/onnx
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/safetensors
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/hdf5
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/savedmodel
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tensorrt
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tflite
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/torch
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: project/adapter
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/configbind
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/hfdir
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/raglink
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: prompt/file
+      invocations: 0
+      ns: 0
+    - findings: 10
+      id: ruleengine
+      invocations: 3
+      ns: 0
+  durationNs: 0
+  filesFailed: 0
+  filesProcessed: 4
+  filesWalked: 4
+  headerBytes: 1522
+  selection:
+    - 'dataset/file: selected by "default"'
+    - 'gosrc/ast: selected by "default"'
+    - 'infra/compose: selected by "default"'
+    - 'infra/dockerfile: selected by "default"'
+    - 'manifest/nuget: selected by "default"'
+    - 'manifest/cargo: selected by "default"'
+    - 'manifest/gomod: selected by "default"'
+    - 'manifest/gradle: selected by "default"'
+    - 'manifest/maven: selected by "default"'
+    - 'manifest/npm: selected by "default"'
+    - 'manifest/pypi-pyproject: selected by "default"'
+    - 'manifest/pypi-requirements: selected by "default"'
+    - 'modelfile/gguf: selected by "default"'
+    - 'modelfile/onnx: selected by "default"'
+    - 'modelfile/safetensors: selected by "default"'
+    - 'modelfilex/hdf5: selected by "default"'
+    - 'modelfilex/savedmodel: selected by "default"'
+    - 'modelfilex/tflite: selected by "default"'
+    - 'modelfilex/tensorrt: selected by "default"'
+    - 'modelfilex/torch: selected by "default"'
+    - 'project/adapter: selected by "default"'
+    - 'project/configbind: selected by "default"'
+    - 'project/hfdir: selected by "default"'
+    - 'project/raglink: selected by "default"'
+    - 'prompt/file: selected by "default"'
+    - 'ruleengine: selected by "default"'
+timestamp: "2026-08-01T12:00:00Z"
+tool:
+  eolCatalog: builtin
+  name: airom
+  rulesHash: "0000000000000000000000000000000000000000000000000000000000000000"
+  rulesVersion: builtin
+  version: dev

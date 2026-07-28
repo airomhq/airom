@@ -710,6 +710,9 @@ func (d *draft) finish() airom.Component {
 		Package:          d.pkg,
 		Confidence:       assembleConfidence(occs),
 		Evidence:         airom.Evidence{Occurrences: occs},
+		// Decided here, on the DEDUPED occurrence set, so the verdict matches
+		// the evidence the document actually carries.
+		TestOnly: airom.OccurrencesAreTestOnly(occs),
 	}
 
 	// Version: highest-confidence claim wins; every claim (winner included)

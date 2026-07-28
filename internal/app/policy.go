@@ -259,7 +259,13 @@ func (p *Policy) String() string { return p.raw }
 // Identifier terms match a ComponentKind ("hosted-llm") or the "pickle-risk"
 // signal (a component whose static pickle scan flagged a dangerous global). An
 // identifier matching no kind and no known signal simply never matches.
-func (p *Policy) Matches(inv *airom.Inventory) bool {
+// includeTests decides whether components whose every occurrence is test
+// scaffolding can trip the gate. Off by default, and that default is what makes
+// the gate usable at all: AIROM's own repository carries fixtures naming a
+// retired model, so a test-counting `--fail-on eol:retired` would fail every
+// build over a file that ships to nobody. A gate that cries wolf gets removed
+// from the pipeline, which costs more than the findings it was hiding.
+func (p *Policy) Matches(inv *airom.Inventory, includeTests bool) bool {
 	if p == nil || inv == nil {
 		return false
 	}
@@ -276,6 +282,9 @@ func (p *Policy) Matches(inv *airom.Inventory) bool {
 		for i := range inv.Components {
 			c := &inv.Components[i]
 			if c.Kind == airom.KindApplication {
+				continue
+			}
+			if c.TestOnly && !includeTests {
 				continue
 			}
 			if conjunctionMatches(conj, c) {

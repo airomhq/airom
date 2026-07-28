@@ -20,7 +20,7 @@
           },
           {
             "group": "Concepts",
-            "pages": ["concepts/aibom", "concepts/evidence", "concepts/confidence", "concepts/risks", "concepts/cve", "concepts/eol", "concepts/compliance"]
+            "pages": ["concepts/aibom", "concepts/evidence", "concepts/test-scope", "concepts/confidence", "concepts/risks", "concepts/cve", "concepts/eol", "concepts/compliance"]
           },
           {
             "group": "Scanning",

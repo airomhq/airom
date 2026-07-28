@@ -76,21 +76,21 @@ func TestPolicyMatches(t *testing.T) {
 		// still exercised below, via MatchAny against rootOnly.
 	}
 	for _, tc := range cases {
-		if got := mustParse(tc.expr).Matches(tc.inv); got != tc.want {
+		if got := mustParse(tc.expr).Matches(tc.inv, false); got != tc.want {
 			t.Errorf("Matches(%q) = %v, want %v", tc.expr, got, tc.want)
 		}
 	}
 
 	// MatchAny: any discovered component trips it; a root-only inventory does not.
-	if !MatchAny().Matches(inv) {
+	if !MatchAny().Matches(inv, false) {
 		t.Error("MatchAny should match an inventory with components")
 	}
-	if MatchAny().Matches(rootOnly) {
+	if MatchAny().Matches(rootOnly, false) {
 		t.Error("MatchAny should NOT match a root-only inventory")
 	}
 	// A nil policy never gates.
 	var nilPolicy *Policy
-	if nilPolicy.Matches(inv) {
+	if nilPolicy.Matches(inv, false) {
 		t.Error("nil policy must not match")
 	}
 }

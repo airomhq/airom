@@ -30,7 +30,8 @@ var knownKeys = map[string]bool{
 	// global flags (flags.go)
 	"output": true, "format": true, "select": true, "rules": true,
 	"compliance": true, "cve": true, "no-cve": true, "no-eol": true,
-	"parallel": true, "io-budget": true, "max-file-size": true,
+	"include-tests": true,
+	"parallel":      true, "io-budget": true, "max-file-size": true,
 	"min-confidence": true, "ignore": true, "cache-dir": true,
 	"no-cache": true, "cdx-version": true, "sarif-strict-kinds": true,
 	"exit-code": true, "fail-on": true, "offline": true, "pprof": true,
@@ -301,7 +302,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 	}
 
 	cveFlag := true // --cve defaults on; honored so an explicit false disables
-	var noCache, sarifStrict, offline, noCVE, noEOL, stats, wide, quiet, noProgress, k8sAll, k8sParallelImages bool
+	var noCache, sarifStrict, offline, noCVE, noEOL, includeTests, stats, wide, quiet, noProgress, k8sAll, k8sParallelImages bool
 	var noCachedRules, insecureSkipSig bool
 	for key, dst := range map[string]*bool{
 		"no-cache":                &noCache,
@@ -310,6 +311,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		"cve":                     &cveFlag,
 		"no-cve":                  &noCVE,
 		"no-eol":                  &noEOL,
+		"include-tests":           &includeTests,
 		"stats":                   &stats,
 		"wide":                    &wide,
 		"no-cached-rules":         &noCachedRules,
@@ -359,6 +361,9 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		// The EOL overlay reads an embedded catalog, so --offline does not
 		// disable it: an offline scan can still say what stops working when.
 		NoEOL: noEOL,
+		// Test-scoped components are always detected and always in the native
+		// document; this decides whether the table, SARIF, and the gate count them.
+		IncludeTests: includeTests,
 
 		Parallel:      parallel,
 		IOBudget:      ioBudget,

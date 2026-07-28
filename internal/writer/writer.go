@@ -22,6 +22,12 @@ type Options struct {
 	CDXVersion  string // "1.6" (default) | "1.7"
 	SARIFStrict bool   // kind:"informational" instead of level:"note"
 	TableWide   bool   // expand file:line lists in the table
+	// IncludeTests shows components whose every occurrence is test scaffolding
+	// on the ATTENTION surfaces (table, SARIF). The lossless formats — native
+	// JSON/YAML and CycloneDX — always carry them; CycloneDX marks them
+	// `scope: excluded` rather than dropping them, because a bill of materials
+	// that quietly omits things is worth less than one that scopes them.
+	IncludeTests bool
 }
 
 // Writer renders an Inventory to one format. Pure: no I/O decisions, no

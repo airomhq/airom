@@ -1,0 +1,23 @@
+AI Bill of Materials — test-scoped
+
+┌─ Scan Summary ────────────┐
+│ Target        test-scoped │
+│ Components    4           │
+│ Relationships 2           │
+│ Files         4 scanned   │
+│                           │
+│ By Type                   │
+│   hosted-llm         2    │
+│   library            2    │
+└───────────────────────────┘
+
+┌────────────┬─────────────┬─────────┬───────────┬────────┬────────────────────┬──────────┐
+│ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF   │ LOCATION           │ EVIDENCE │
+├────────────┼─────────────┼─────────┼───────────┼────────┼────────────────────┼──────────┤
+│ hosted-llm │ gpt-4o      │ -       │ openai    │ 0.85   │ app.py:9           │ 1 occ    │
+│ hosted-llm │ gpt-4o-mini │ -       │ openai    │ 0.8575 │ app.py:17          │ 1 occ    │
+│ library    │ anthropic   │ 0.34.0  │ anthropic │ 0.985  │ requirements.txt:2 │ 1 occ    │
+│ library    │ openai      │ 1.40.0  │ openai    │ 0.9872 │ app.py:8           │ 3 occ    │
+└────────────┴─────────────┴─────────┴───────────┴────────┴────────────────────┴──────────┘
+
+2 component(s) found only in test scaffolding, not shown (--include-tests to include them).

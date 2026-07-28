@@ -33,11 +33,13 @@ const (
 
 // Writer projects an Inventory to SARIF 2.1.0. strict selects the §7.1
 // encoding: default emits level "note"; strict emits kind "informational".
-type Writer struct{ strict bool }
+type Writer struct{ strict, includeTests bool }
 
 // New builds a SARIF writer from options. SARIFStrict flips the §7.1
 // level/kind encoding globally.
-func New(o writer.Options) Writer { return Writer{strict: o.SARIFStrict} }
+func New(o writer.Options) Writer {
+	return Writer{strict: o.SARIFStrict, includeTests: o.IncludeTests}
+}
 
 // Format implements writer.Writer.
 func (Writer) Format() string { return "sarif" }
@@ -56,7 +58,7 @@ func (wr Writer) Write(w io.Writer, inv *airom.Inventory) error {
 
 // build assembles the SARIF report from the inventory.
 func (wr Writer) build(inv *airom.Inventory) sarifReport {
-	comps := scannedComponents(inv)
+	comps := scannedComponents(inv, wr.includeTests)
 	rules, ruleIndex := buildRules(comps)
 	riskRules, riskIndex := buildRiskRules(comps, len(rules))
 	rules = append(rules, riskRules...)
@@ -99,16 +101,57 @@ func (wr Writer) build(inv *airom.Inventory) sarifReport {
 }
 
 // scannedComponents returns every component that produces results — every
-// kind except the scan-root application component (§7.3).
-func scannedComponents(inv *airom.Inventory) []airom.Component {
+// kind except the scan-root application component (§7.3), and, unless
+// includeTests, those whose evidence is all test scaffolding.
+//
+// SARIF drives code-scanning alerts, so its cost of noise is the highest of any
+// output: an alert on a rule-pack fixture is a notification a human must
+// dismiss, and enough of them train the team to dismiss the real ones. The
+// components remain in the native and CycloneDX documents.
+func scannedComponents(inv *airom.Inventory, includeTests bool) []airom.Component {
 	out := make([]airom.Component, 0, len(inv.Components))
 	for _, c := range inv.Components {
 		if c.Kind == airom.KindApplication || c.ID == inv.Root {
 			continue
 		}
+		if c.TestOnly && !includeTests {
+			continue
+		}
+		if !includeTests {
+			// Component-level filtering is not enough here. SARIF annotates
+			// individual LINES, so a genuinely production component that also
+			// appears in fixtures — `openai`, declared in requirements.txt and
+			// imported by three test files — would still plant alerts inside
+			// testdata/. Prune the occurrences too, and every downstream builder
+			// (detector results, risks, CVEs, EOL, locations) inherits it from
+			// this one place. A non-test-only component always keeps at least
+			// one occurrence, by definition.
+			c.Evidence.Occurrences = airom.ProductionOccurrences(c.Evidence.Occurrences)
+			// Risks carry their OWN provenance (ArtifactRisk.Occurrence), which
+			// the line above does not touch. Without this, a production
+			// dependency whose unsafe-load site happens to live in a test file
+			// still raises a security alert inside tests/ — the precise leak the
+			// pruning exists to stop, just arriving by a second route.
+			c.Risks = productionRisks(c.Risks)
+		}
 		out = append(out, c)
 	}
 	sort.SliceStable(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out
+}
+
+// productionRisks drops risks whose own occurrence sits in test scaffolding.
+// A risk with no occurrence at all is kept: it is attached to a component that
+// already survived the test-scope cut, and dropping a security finding for lack
+// of provenance would be the wrong way to be wrong.
+func productionRisks(risks []airom.ArtifactRisk) []airom.ArtifactRisk {
+	out := make([]airom.ArtifactRisk, 0, len(risks))
+	for _, r := range risks {
+		if r.Occurrence != nil && airom.IsTestPath(r.Occurrence.Location.Path) {
+			continue
+		}
+		out = append(out, r)
+	}
 	return out
 }
 

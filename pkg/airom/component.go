@@ -190,7 +190,18 @@ type Component struct {
 
 	Confidence Confidence `json:"confidence"` // assembled (§9.3) — never detector-set
 	Evidence   Evidence   `json:"evidence"`
-	Props      []KV       `json:"props,omitempty"` // overflow → CDX properties, airom:* namespace
+
+	// TestOnly marks a component whose every occurrence is test scaffolding —
+	// a fixture, a test file, or a tree holding them (see OccurrencesAreTestOnly).
+	// Such components are hidden from the table and SARIF by default and carry
+	// CycloneDX `scope: excluded`, because an AIBOM answers "what AI does this
+	// software use?" and a rule-pack fixture is not an answer to that.
+	//
+	// Stated in the document rather than left derivable: a BOM travels away from
+	// the tool that made it, and a consumer must not have to re-implement
+	// AIROM's path heuristics to know what it is looking at.
+	TestOnly bool `json:"testOnly,omitempty"`
+	Props    []KV `json:"props,omitempty"` // overflow → CDX properties, airom:* namespace
 
 	// Risks is the artifact-risk overlay: structural code-execution / injection
 	// findings keyed to this component, projected into CycloneDX vulnerabilities[]

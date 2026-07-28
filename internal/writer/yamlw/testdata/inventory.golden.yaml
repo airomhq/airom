@@ -148,11 +148,12 @@ components:
         - confidence: 0.7
           detectorId: dataset/file
           location:
-            path: data/squad.jsonl
+            path: testdata/squad.jsonl
           method: filename
     id: airom:4444444444444444
     kind: dataset
     name: squad
+    testOnly: true
   - confidence: 0.7
     evidence:
       occurrences:

@@ -112,6 +112,18 @@ type Config struct {
 	// zero-value Config gets the documented default (on).
 	NoEOL bool
 
+	// IncludeTests keeps components whose every occurrence is test scaffolding
+	// in the default view. They are always detected and always present in the
+	// native document (Component.TestOnly); this only decides whether the
+	// attention surfaces — table, SARIF, and the --fail-on gate — count them.
+	//
+	// Off by default because an AIBOM answers "what AI does this software use?"
+	// and a rule-pack fixture is not an answer: scanning AIROM's own repository
+	// produced 185 components, 180 of them fixtures. On when a reviewer's
+	// question is instead "what do our tests reach for?" — a test calling a live
+	// model is still a real key and a real bill.
+	IncludeTests bool
+
 	// Now pins the scan clock. Zero means the wall clock. It exists so a scan
 	// can be a pure function of its inputs: the EOL overlay's answer depends on
 	// the date ("is this shutdown in the past yet?"), so a golden suite must be

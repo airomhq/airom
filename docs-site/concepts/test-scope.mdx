@@ -1,0 +1,101 @@
+---
+title: "Test scope"
+description: "AI reached only from fixtures and test files is recorded, marked, and kept out of the default view — because an AIBOM answers what your software uses, not what its test suite mentions."
+icon: "flask"
+---
+
+An AIBOM answers one question: **what AI does this software use?** A rule-pack
+fixture calling `model="gpt-4-32k"` is not an answer to that question. Neither is
+a `_test.go` file naming twelve providers to prove a detector fires.
+
+Left unhandled, this is not a cosmetic problem — it is most of the document.
+Scanning AIROM's own repository produced 185 components, of which **180 existed
+only in test scaffolding**. The published bill of materials read as if a Go
+scanner that calls no models at all depended on fifty hosted LLMs.
+
+## What counts as test scope
+
+A path is test scaffolding when it matches an unambiguous, language-standard
+convention:
+
+| Directories | `testdata/`, `tests/`, `test/`, `spec/`, `__tests__/`, `__mocks__/`, `__fixtures__/`, `fixtures/`, `e2e/`, `integration-tests/`, `testutil/`, `testutils/` |
+| Go | `*_test.go` |
+| Python | `test_*.py`, `*_test.py`, `conftest.py` |
+| JS / TS | `*.test.ts`, `*.spec.tsx`, `*.test.js`, … |
+| Ruby | `*_spec.rb`, `*_test.rb` |
+| Java | `src/test/…`, `ChatTest.java`, `ChatTests.java` (case-sensitive — `Latest.java` is not a test) |
+| Rust | `*_test.rs` |
+
+Two rules keep this from doing damage:
+
+<Card title="Matched relative to the scan root" icon="folder-tree">
+  Point AIROM at a fixture directory — `airom fs ./testdata/rag-app` — and it
+  reports everything normally. You asked about *that* tree; nothing inside it is
+  "the tests" of anything. Only paths that sit under a test directory **of the
+  scanned project** are scoped out.
+</Card>
+
+<Note>
+  `spec/`, `fixtures/`, and `e2e/` are the three names most likely to hold real
+  code in a project that does not follow the convention they come from. If yours
+  does, point AIROM at the subtree directly (`airom fs ./e2e`) — matching is
+  root-relative, so everything inside is reported normally.
+</Note>
+
+<Card title="Never a substring match" icon="shield-check">
+  `src/testimonials.py`, `models/latest/`, `src/contest/`, and
+  `internal/attestation/` are all production code. Only exact, conventional
+  names count — a false positive here would hide real AI from the default view,
+  which is the more expensive mistake.
+</Card>
+
+## Reached from production code? Then it is production AI
+
+The rule is **all**, not **any**. A component is test-scoped only when *every*
+occurrence is test scaffolding.
+
+```python app.py
+client.chat.completions.create(model="gpt-4o-mini", ...)   # production
+```
+
+```python tests/test_app.py
+client.chat.completions.create(model="gpt-4o-mini", ...)   # also tested
+```
+
+`gpt-4o-mini` is production AI that happens to be tested, so it stays in the
+report. Scoping it out because a test also touched it would suppress exactly what
+the document exists to record.
+
+## Recorded everywhere, shown selectively
+
+Nothing is ever silently dropped. What changes is which surface counts it:
+
+| Surface | Behavior | Why |
+|---|---|---|
+| **Native JSON / YAML** | Always present, with `"testOnly": true` | The lossless superset. It states the conclusion rather than leaving you to re-derive it from paths. |
+| **CycloneDX** | Always present, with `"scope": "excluded"` | The standard's own field for "in the source tree, not in the deployed thing". Scoping beats dropping: a consumer asking "does this project touch a retired model *anywhere*?" still gets a truthful yes. |
+| **Table** | Hidden, with a count of what was withheld | Filtering silently would make a narrow scan look identical to a thorough one. |
+| **SARIF** | Omitted | SARIF drives code-scanning alerts. An alert on a fixture is a notification a human must dismiss, and enough of them train a team to dismiss the real ones. |
+| **`--fail-on`** | Not counted | A gate that fails the build over a file shipping to nobody gets deleted from the pipeline — which costs more than the findings it was hiding. |
+| **Compliance mapping** | Not counted as evidence or as a gap | A report asserting a control is MET while citing `testdata/rag/usage.py` claims a practice the shipped system does not have. |
+
+For the table and SARIF the filtering is per **occurrence**, not just per
+component: a real dependency that also appears in fixtures keeps its place in the
+report but stops planting alerts inside `testdata/`.
+
+## Including them
+
+```bash
+airom fs . --include-tests
+```
+
+Worth doing when the question changes from "what do we ship?" to "what do our
+tests reach for?" — a test calling a live model is still a real API key, a real
+bill, and real data leaving the building.
+
+<Note>
+  Test-scoped components are also skipped when querying OSV.dev, so the
+  [CVE overlay](/concepts/cve) does not spend network round-trips on advisories
+  for packages nobody will be shown. The scan says so in its warnings rather
+  than leaving an empty `vulnerabilities` list to be read as an all-clear.
+</Note>

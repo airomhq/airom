@@ -35,6 +35,7 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 	// The EOL overlay reads an embedded catalog, so unlike --cve it needs no
 	// network and stays on under --offline.
 	fs.Bool("no-eol", false, "disable the hosted-model end-of-life overlay (it is on by default and works offline)")
+	fs.Bool("include-tests", false, "count AI found only in test scaffolding (testdata/, *_test.go, tests/, spec/) — hidden by default")
 	fs.Int("parallel", 0, "worker count (default: GOMAXPROCS)")
 	fs.String("io-budget", formatSize(app.DefaultIOBudget), "byte-weighted I/O semaphore budget (k/m/g suffixes)")
 	fs.String("max-file-size", formatSize(app.DefaultMaxFileSize), "full-content read cap for text detectors (k/m/g suffixes)")

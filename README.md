@@ -75,6 +75,38 @@ airom scan . --exit-code 1 --fail-on "risk:unsafe-load"   # or one specific risk
 
 It stays deterministic and offline — no LLM, no vulnerability database. And it extends without Go: any rule pack can attach a catalog risk to a match via a `risk:` field. The full catalog and the model behind it are in **[docs/risks.md](docs/risks.md)**.
 
+## Test scope
+
+An AIBOM answers "what AI does this software use?" — and a rule-pack fixture
+calling `model="gpt-4-32k"` is not an answer. AI reached **only** from test
+scaffolding (`testdata/`, `*_test.go`, `tests/`, `spec/`, `test_*.py`,
+`*.spec.ts`, …) is recorded but kept out of the default view.
+
+This is not a cosmetic trim. Scanning AIROM's own repository produces 185
+components, **180 of them fixtures** — without scoping, the document reads as if
+a Go scanner that calls no models depended on fifty hosted LLMs.
+
+Nothing is dropped. What changes is which surface counts it:
+
+| Surface | Test-scoped components |
+|---|---|
+| Native JSON / YAML | present, `"testOnly": true` |
+| CycloneDX | present, `"scope": "excluded"` — the standard's own field for "not in the deployed artifact" |
+| Table | hidden, with a count of what was withheld |
+| SARIF | omitted (an alert on a fixture is a notification someone must dismiss) |
+| `--fail-on` | not counted (a gate that fails over a file shipping to nobody gets deleted) |
+| Compliance mapping | not counted as evidence, nor as a gap |
+
+Paths are matched **relative to the scan root**, so pointing AIROM at a fixture
+directory reports it normally. Matching is exact and conventional, never a
+substring — `src/testimonials.py` and `models/latest/` are production code. And
+the rule is *all*, not *any*: a model reached from production code stays in the
+report even when tests reach it too.
+
+```bash
+airom fs . --include-tests    # when the question is "what do our tests reach for?"
+```
+
 ## Model lifecycle (EOL)
 
 The risk and CVE overlays answer questions about *risk*. This one answers a question about *time*: **what in this stack stops working, and when?** A retired hosted model is not a vulnerability you weigh — on the shutdown date the provider's API stops answering and the app breaks, patched or not.

@@ -102,7 +102,12 @@ func BuildFixture() *airom.Inventory {
 		ID: "airom:4444444444444444", Kind: airom.KindDataset, Name: "squad",
 		Confidence: 0.7,
 		Data:       &airom.DataFacet{Format: airom.KnownString("jsonl"), SizeBytes: airom.KnownInt64(2048)},
-		Evidence:   airom.Evidence{Occurrences: []airom.Occurrence{{Location: airom.Location{Path: "data/squad.jsonl"}, DetectorID: "dataset/file", Method: airom.MethodFilename, Confidence: 0.7}}},
+		// Test-scoped, and self-consistently so (the path IS test scaffolding).
+		// Every writer suite — conformance, round-trip, and the goldens — needs
+		// one component carrying testOnly, or the field ships unexercised and
+		// the published JSON schema goes unvalidated against it.
+		TestOnly: true,
+		Evidence: airom.Evidence{Occurrences: []airom.Occurrence{{Location: airom.Location{Path: "testdata/squad.jsonl"}, DetectorID: "dataset/file", Method: airom.MethodFilename, Confidence: 0.7}}},
 	}
 	vecdb := airom.Component{
 		ID: "airom:5555555555555555", Kind: airom.KindVectorDB, Name: "chroma",

@@ -39,7 +39,7 @@ func TestMatch(t *testing.T) {
 		if err != nil {
 			t.Fatalf("compile(%q): %v", c.expr, err)
 		}
-		got := e.match(in)
+		got := e.match(in, false)
 		if !reflect.DeepEqual(got, c.want) {
 			t.Errorf("match(%q) = %v, want %v", c.expr, got, c.want)
 		}

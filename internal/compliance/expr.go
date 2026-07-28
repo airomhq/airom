@@ -98,11 +98,21 @@ func validRiskSelector(sel string) bool {
 // match returns the IDs of the components that satisfy the expression, sorted
 // and deduplicated. The application root is never eligible — it is the scan
 // target, not a finding, so it never counts as compliance evidence.
-func (e *expr) match(inv *airom.Inventory) []airom.ID {
+//
+// Neither is test scaffolding, unless includeTests. A governance report that
+// asserts a control is MET and cites `testdata/rag/usage.py` as the evidence is
+// worse than one that reports a gap: it claims a practice the shipped system
+// does not have. The same cut keeps `--fail-on compliance:gap` consistent with
+// every other gate — without it, `--fail-on risk` would ignore a finding that
+// `--fail-on compliance:gap` fails the build over, in the same file.
+func (e *expr) match(inv *airom.Inventory, includeTests bool) []airom.ID {
 	var out []airom.ID
 	for i := range inv.Components {
 		c := &inv.Components[i]
 		if c.Kind == airom.KindApplication {
+			continue
+		}
+		if c.TestOnly && !includeTests {
 			continue
 		}
 		if e.matchesComponent(c) {

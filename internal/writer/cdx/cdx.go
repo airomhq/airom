@@ -216,6 +216,13 @@ func (b *builder) component(c *airom.Component) cyclonedx.Component {
 		Name:   c.Name,
 		Group:  c.Group,
 	}
+	if c.TestOnly {
+		// CycloneDX's own answer for "present in the source tree but not in the
+		// deployed thing". Scoped, never dropped: a consumer asking "does this
+		// project touch a retired model anywhere?" still gets a truthful yes,
+		// while one building a production inventory can filter on scope.
+		cc.Scope = cyclonedx.ScopeExcluded
+	}
 	if v, ok := c.Version.Value(); ok {
 		cc.Version = v
 	}

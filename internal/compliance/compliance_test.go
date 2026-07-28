@@ -44,7 +44,7 @@ func TestEmbeddedSpecsLoad(t *testing.T) {
 // TestOWASPAgenticMapsRCE: the one auto-evaluable OWASP threat (T11, code
 // execution) maps to the risk overlay — a risk present makes it a gap.
 func TestOWASPAgenticMapsRCE(t *testing.T) {
-	res, err := Evaluate(inv(), []string{"owasp-agentic"})
+	res, err := Evaluate(inv(), []string{"owasp-agentic"}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestOWASPAgenticMapsRCE(t *testing.T) {
 // TestEvaluateStates: met (evidence found), gap (a risk present), and manual
 // each resolve correctly, and manual never carries a score.
 func TestEvaluateStates(t *testing.T) {
-	results, err := Evaluate(inv(), []string{"nist-ai-rmf"})
+	results, err := Evaluate(inv(), []string{"nist-ai-rmf"}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestEvaluateStates(t *testing.T) {
 func TestGapClears(t *testing.T) {
 	in := inv()
 	in.Components[3].Risks = nil // drop the risk
-	results, _ := Evaluate(in, []string{"nist-ai-rmf"})
+	results, _ := Evaluate(in, []string{"nist-ai-rmf"}, false)
 	for _, c := range results[0].Controls {
 		if c.ID == "MEASURE-2.7" {
 			if c.State != airom.ControlMet {
@@ -110,7 +110,7 @@ func TestGapClears(t *testing.T) {
 func TestManualNeverScores(t *testing.T) {
 	fws, _ := loadFrameworks()
 	for id := range fws {
-		res, _ := Evaluate(inv(), []string{id})
+		res, _ := Evaluate(inv(), []string{id}, false)
 		for _, c := range res[0].Controls {
 			if c.State == airom.ControlManual && c.Score != nil {
 				t.Errorf("%s/%s is manual but has score %v", id, c.ID, *c.Score)
@@ -121,15 +121,15 @@ func TestManualNeverScores(t *testing.T) {
 
 // TestUnknownFramework errors, naming the valid set.
 func TestUnknownFramework(t *testing.T) {
-	if _, err := Evaluate(inv(), []string{"nope"}); err == nil {
+	if _, err := Evaluate(inv(), []string{"nope"}, false); err == nil {
 		t.Error("unknown framework did not error")
 	}
 }
 
 // TestDeterministic: evaluation is stable across runs (P7).
 func TestDeterministic(t *testing.T) {
-	a, _ := Evaluate(inv(), []string{"nist-ai-rmf"})
-	b, _ := Evaluate(inv(), []string{"nist-ai-rmf"})
+	a, _ := Evaluate(inv(), []string{"nist-ai-rmf"}, false)
+	b, _ := Evaluate(inv(), []string{"nist-ai-rmf"}, false)
 	if !reflect.DeepEqual(a, b) {
 		t.Error("evaluation is not deterministic")
 	}
@@ -149,5 +149,43 @@ func TestValidateRejectsBadSpec(t *testing.T) {
 		if err := validate(&cases[i]); err == nil {
 			t.Errorf("case %d validated but should have failed", i)
 		}
+	}
+}
+
+// TestTestOnlyComponentsAreNotComplianceEvidence: a governance report that
+// asserts a control is MET and cites `testdata/rag/usage.py` claims a practice
+// the shipped system does not have — worse than reporting a gap. The same cut
+// keeps `--fail-on compliance:gap` consistent with every other gate, which
+// would otherwise fail a build over a finding `--fail-on risk` ignores.
+func TestTestOnlyComponentsAreNotComplianceEvidence(t *testing.T) {
+	in := inv()
+	for i := range in.Components {
+		in.Components[i].TestOnly = true
+	}
+
+	scoped, err := Evaluate(in, []string{"nist-ai-rmf"}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range scoped[0].Controls {
+		if len(c.Evidence) > 0 {
+			t.Errorf("control %s cites test-scoped components as evidence: %v", c.ID, c.Evidence)
+		}
+		if len(c.Counter) > 0 {
+			t.Errorf("control %s counts test-scoped components as a gap: %v", c.ID, c.Counter)
+		}
+	}
+
+	// --include-tests restores them: the user asked to count tests.
+	counted, err := Evaluate(in, []string{"nist-ai-rmf"}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cited int
+	for _, c := range counted[0].Controls {
+		cited += len(c.Evidence) + len(c.Counter)
+	}
+	if cited == 0 {
+		t.Error("--include-tests must let test-scoped components back into the mapping")
 	}
 }

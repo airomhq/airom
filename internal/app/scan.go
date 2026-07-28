@@ -173,7 +173,7 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	// fetch failed is CI theater, so there we fail closed with a clear error
 	// rather than let the outage look like a clean build.
 	if cfg.CVE {
-		if failed := osv.Enrich(ctx, inv, osv.Options{}); failed > 0 && cfg.Policy.ReferencesCVE() {
+		if failed := osv.Enrich(ctx, inv, osv.Options{SkipTestOnly: !cfg.IncludeTests}); failed > 0 && cfg.Policy.ReferencesCVE() {
 			return nil, fmt.Errorf(
 				"cve gate (--fail-on %s) cannot be evaluated: %d component(s) could not be checked against OSV.dev; re-run when it is reachable",
 				cfg.Policy, failed,
@@ -222,7 +222,7 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	// frameworks against the finished inventory (§ risks.md sibling). An
 	// unknown framework id is a usage error, surfaced with the valid set.
 	if len(cfg.Compliance) > 0 {
-		results, err := compliance.Evaluate(inv, cfg.Compliance)
+		results, err := compliance.Evaluate(inv, cfg.Compliance, cfg.IncludeTests)
 		if err != nil {
 			return nil, &UsageError{Err: err}
 		}

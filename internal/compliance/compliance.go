@@ -178,7 +178,7 @@ func HasControl(id, controlID string) bool {
 // Evaluate maps each requested framework onto inv, returning one
 // ComplianceResult per framework in the order requested (deduplicated). An
 // unknown framework id is an error naming the valid set.
-func Evaluate(inv *airom.Inventory, frameworkIDs []string) ([]airom.ComplianceResult, error) {
+func Evaluate(inv *airom.Inventory, frameworkIDs []string, includeTests bool) ([]airom.ComplianceResult, error) {
 	fws, err := loadFrameworks()
 	if err != nil {
 		return nil, err
@@ -194,7 +194,7 @@ func Evaluate(inv *airom.Inventory, frameworkIDs []string) ([]airom.ComplianceRe
 		if !ok {
 			return nil, fmt.Errorf("unknown compliance framework %q; valid: %s", id, strings.Join(IDs(), ", "))
 		}
-		results = append(results, evaluate(fw, inv))
+		results = append(results, evaluate(fw, inv, includeTests))
 	}
 	return results, nil
 }
@@ -209,7 +209,7 @@ var (
 // evaluate maps one framework onto the inventory. Controls stay in
 // spec-declared order (the framework's own logical order) — deterministic
 // because the embedded spec is fixed bytes.
-func evaluate(fw *framework, inv *airom.Inventory) airom.ComplianceResult {
+func evaluate(fw *framework, inv *airom.Inventory, includeTests bool) airom.ComplianceResult {
 	out := airom.ComplianceResult{
 		Framework: fw.ID,
 		Name:      fw.Name,
@@ -218,12 +218,12 @@ func evaluate(fw *framework, inv *airom.Inventory) airom.ComplianceResult {
 		Controls:  make([]airom.ControlOutcome, 0, len(fw.Controls)),
 	}
 	for i := range fw.Controls {
-		out.Controls = append(out.Controls, evalControl(&fw.Controls[i], inv))
+		out.Controls = append(out.Controls, evalControl(&fw.Controls[i], inv, includeTests))
 	}
 	return out
 }
 
-func evalControl(c *control, inv *airom.Inventory) airom.ControlOutcome {
+func evalControl(c *control, inv *airom.Inventory, includeTests bool) airom.ControlOutcome {
 	oc := airom.ControlOutcome{ID: c.ID, Title: c.Title, Text: c.Text, Ref: c.Ref}
 
 	switch {
@@ -233,7 +233,7 @@ func evalControl(c *control, inv *airom.Inventory) airom.ControlOutcome {
 		return oc
 
 	case c.evExpr != nil:
-		matches := c.evExpr.match(inv)
+		matches := c.evExpr.match(inv, includeTests)
 		if len(matches) > 0 {
 			oc.State, oc.Score = airom.ControlMet, &scoreMet
 			oc.Evidence = matches
@@ -245,7 +245,7 @@ func evalControl(c *control, inv *airom.Inventory) airom.ControlOutcome {
 		return oc
 
 	default: // gapExpr != nil (validate guarantees exactly one directive)
-		matches := c.gapExpr.match(inv)
+		matches := c.gapExpr.match(inv, includeTests)
 		if len(matches) > 0 {
 			oc.State, oc.Score = airom.ControlGap, &scoreGap
 			oc.Counter = matches

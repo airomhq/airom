@@ -73,6 +73,11 @@ var goldenFixtures = []string{
 	// Pinned to models across every lifecycle state, so the EOL overlay's
 	// projection is golden-filed rather than merely unit-tested.
 	"eol-models",
+	// Production code, a tests/ tree, and a testdata/ tree naming different
+	// models — plus one model named in BOTH app.py and the suite, which must
+	// stay a real component. Golden-files the test-scope split across every
+	// format, including CycloneDX `scope: excluded`.
+	"test-scoped",
 }
 
 func fixtureDir(name string) string { return filepath.Join("testdata", "fixtures", name) }

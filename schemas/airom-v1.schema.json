@@ -182,6 +182,7 @@
             "identity": { "type": "array", "items": { "$ref": "#/$defs/identityClaim" } }
           }
         },
+        "testOnly": { "type": "boolean" },
         "props": { "type": "array", "items": { "$ref": "#/$defs/kv" } },
         "attestations": { "type": "array" },
         "risks": { "type": "array", "items": { "$ref": "#/$defs/artifactRisk" } },

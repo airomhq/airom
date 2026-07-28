@@ -1,0 +1,728 @@
+{
+  "schemaVersion": "1",
+  "tool": {
+    "name": "airom",
+    "version": "dev",
+    "rulesVersion": "builtin",
+    "rulesHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "eolCatalog": "builtin"
+  },
+  "serial": "urn:uuid:00000000-0000-4000-8000-000000000000",
+  "timestamp": "2026-08-01T12:00:00Z",
+  "lifecycle": "pre-build",
+  "source": {
+    "kind": "dir",
+    "target": "test-scoped"
+  },
+  "root": "airom:f465180fc8f3da77",
+  "components": [
+    {
+      "id": "airom:36fd9d7d8704ef27",
+      "kind": "hosted-llm",
+      "name": "claude-1.0",
+      "provider": "anthropic",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "1",
+            "occurrence": {
+              "location": {
+                "path": "tests/test_app.py",
+                "line": 27,
+                "endLine": 27,
+                "column": 26,
+                "endColumn": 43
+              },
+              "detectorId": "rules/anthropic/messages-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "anthropic.Anthropic().messages.create(",
+              "fields": {
+                "model": "claude-1.0",
+                "param.max_tokens": "1"
+              }
+            }
+          }
+        ]
+      },
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "tests/test_app.py",
+              "line": 28,
+              "endLine": 28,
+              "column": 9,
+              "endColumn": 27
+            },
+            "detectorId": "rules/anthropic/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"claude-1.0\", max_tokens=1, messages=[]",
+            "fields": {
+              "model": "claude-1.0"
+            }
+          }
+        ]
+      },
+      "testOnly": true,
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-1.0"
+        }
+      ],
+      "eol": {
+        "state": "retired",
+        "announced": "2024-09-04",
+        "shutdown": "2024-11-06",
+        "daysRemaining": -633,
+        "replacement": "claude-haiku-4-5-20251001",
+        "replacementState": "supported",
+        "source": "airom-catalog",
+        "sourceUrl": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
+        "verified": "2026-07-23"
+      }
+    },
+    {
+      "id": "airom:65ac1a1b3af7edab",
+      "kind": "library",
+      "name": "anthropic",
+      "version": "0.34.0",
+      "provider": "anthropic",
+      "purl": "pkg:pypi/anthropic@0.34.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.985,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 2
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "anthropic==0.34.0"
+          },
+          {
+            "location": {
+              "path": "tests/test_app.py",
+              "line": 27,
+              "endLine": 27,
+              "column": 26,
+              "endColumn": 43
+            },
+            "detectorId": "rules/anthropic/messages-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "anthropic.Anthropic().messages.create(",
+            "fields": {
+              "model": "claude-1.0",
+              "param.max_tokens": "1"
+            }
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "0.34.0",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:65ad4ea6556c5aad",
+      "kind": "hosted-llm",
+      "name": "gpt-4o-mini",
+      "provider": "openai",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "1",
+            "occurrence": {
+              "location": {
+                "path": "tests/test_app.py",
+                "line": 20,
+                "endLine": 20,
+                "column": 13,
+                "endColumn": 38
+              },
+              "detectorId": "rules/openai/chat-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "OpenAI().chat.completions.create(",
+              "fields": {
+                "model": "gpt-4o-mini",
+                "param.max_tokens": "1"
+              }
+            }
+          }
+        ]
+      },
+      "confidence": 0.8574999999999999,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 17,
+              "endLine": 17,
+              "column": 9,
+              "endColumn": 28
+            },
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"gpt-4o-mini\",",
+            "fields": {
+              "model": "gpt-4o-mini"
+            }
+          },
+          {
+            "location": {
+              "path": "tests/test_app.py",
+              "line": 21,
+              "endLine": 21,
+              "column": 9,
+              "endColumn": 28
+            },
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"gpt-4o-mini\", messages=[{\"role\": \"user\", \"content\": \"hi\"}]",
+            "fields": {
+              "model": "gpt-4o-mini"
+            }
+          }
+        ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o-mini"
+        }
+      ]
+    },
+    {
+      "id": "airom:91e505cba56acc91",
+      "kind": "hosted-llm",
+      "name": "gpt-4o",
+      "provider": "openai",
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 9,
+              "endLine": 9,
+              "column": 9,
+              "endColumn": 23
+            },
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"gpt-4o\",",
+            "fields": {
+              "model": "gpt-4o"
+            }
+          }
+        ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o"
+        }
+      ]
+    },
+    {
+      "id": "airom:a6ccf893ff130124",
+      "kind": "library",
+      "name": "openai",
+      "version": "1.40.0",
+      "provider": "openai",
+      "purl": "pkg:pypi/openai@1.40.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.98725,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 8,
+              "endLine": 8,
+              "column": 18,
+              "endColumn": 43
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "return client.chat.completions.create(",
+            "fields": {
+              "model": "gpt-4o"
+            }
+          },
+          {
+            "location": {
+              "path": "app.py",
+              "line": 16,
+              "endLine": 16,
+              "column": 18,
+              "endColumn": 43
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "return client.chat.completions.create(",
+            "fields": {
+              "model": "gpt-4o-mini"
+            }
+          },
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 1
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "openai==1.40.0"
+          },
+          {
+            "location": {
+              "path": "testdata/golden_prompt.py",
+              "line": 4,
+              "endLine": 4,
+              "column": 9,
+              "endColumn": 34
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "OpenAI().chat.completions.create(model=\"gpt-4-32k\", messages=[])",
+            "fields": {
+              "model": "gpt-4-32k"
+            }
+          },
+          {
+            "location": {
+              "path": "tests/test_app.py",
+              "line": 20,
+              "endLine": 20,
+              "column": 13,
+              "endColumn": 38
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "OpenAI().chat.completions.create(",
+            "fields": {
+              "model": "gpt-4o-mini",
+              "param.max_tokens": "1"
+            }
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "1.40.0",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:be123ae014845a9f",
+      "kind": "hosted-llm",
+      "name": "gpt-4-32k",
+      "provider": "openai",
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "testdata/golden_prompt.py",
+              "line": 4,
+              "endLine": 4,
+              "column": 34,
+              "endColumn": 51
+            },
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "OpenAI().chat.completions.create(model=\"gpt-4-32k\", messages=[])",
+            "fields": {
+              "model": "gpt-4-32k"
+            }
+          }
+        ]
+      },
+      "testOnly": true,
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4-32k"
+        }
+      ],
+      "eol": {
+        "state": "retired",
+        "announced": "2024-06-06",
+        "shutdown": "2025-06-06",
+        "daysRemaining": -421,
+        "replacement": "gpt-4o",
+        "source": "airom-catalog",
+        "sourceUrl": "https://developers.openai.com/api/docs/deprecations",
+        "verified": "2026-07-23"
+      }
+    },
+    {
+      "id": "airom:f465180fc8f3da77",
+      "kind": "application",
+      "name": "test-scoped",
+      "confidence": 0,
+      "evidence": {}
+    }
+  ],
+  "relationships": [
+    {
+      "from": "airom:65ac1a1b3af7edab",
+      "to": "airom:36fd9d7d8704ef27",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "tests/test_app.py",
+            "line": 27,
+            "endLine": 27,
+            "column": 26,
+            "endColumn": 43
+          },
+          "detectorId": "rules/anthropic/messages-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "anthropic.Anthropic().messages.create(",
+          "fields": {
+            "model": "claude-1.0",
+            "param.max_tokens": "1"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:65ad4ea6556c5aad",
+      "type": "uses",
+      "confidence": 0.9099999999999999,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 16,
+            "endLine": 16,
+            "column": 18,
+            "endColumn": 43
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "return client.chat.completions.create(",
+          "fields": {
+            "model": "gpt-4o-mini"
+          }
+        },
+        {
+          "location": {
+            "path": "tests/test_app.py",
+            "line": 20,
+            "endLine": 20,
+            "column": 13,
+            "endColumn": 38
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "OpenAI().chat.completions.create(",
+          "fields": {
+            "model": "gpt-4o-mini",
+            "param.max_tokens": "1"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:91e505cba56acc91",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 8,
+            "endLine": 8,
+            "column": 18,
+            "endColumn": 43
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "return client.chat.completions.create(",
+          "fields": {
+            "model": "gpt-4o"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:be123ae014845a9f",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "testdata/golden_prompt.py",
+            "line": 4,
+            "endLine": 4,
+            "column": 9,
+            "endColumn": 34
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "OpenAI().chat.completions.create(model=\"gpt-4-32k\", messages=[])",
+          "fields": {
+            "model": "gpt-4-32k"
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "filesWalked": 4,
+    "filesProcessed": 4,
+    "filesFailed": 0,
+    "headerBytes": 1522,
+    "contentBytes": 1522,
+    "durationNs": 0,
+    "selection": [
+      "dataset/file: selected by \"default\"",
+      "gosrc/ast: selected by \"default\"",
+      "infra/compose: selected by \"default\"",
+      "infra/dockerfile: selected by \"default\"",
+      "manifest/nuget: selected by \"default\"",
+      "manifest/cargo: selected by \"default\"",
+      "manifest/gomod: selected by \"default\"",
+      "manifest/gradle: selected by \"default\"",
+      "manifest/maven: selected by \"default\"",
+      "manifest/npm: selected by \"default\"",
+      "manifest/pypi-pyproject: selected by \"default\"",
+      "manifest/pypi-requirements: selected by \"default\"",
+      "modelfile/gguf: selected by \"default\"",
+      "modelfile/onnx: selected by \"default\"",
+      "modelfile/safetensors: selected by \"default\"",
+      "modelfilex/hdf5: selected by \"default\"",
+      "modelfilex/savedmodel: selected by \"default\"",
+      "modelfilex/tflite: selected by \"default\"",
+      "modelfilex/tensorrt: selected by \"default\"",
+      "modelfilex/torch: selected by \"default\"",
+      "project/adapter: selected by \"default\"",
+      "project/configbind: selected by \"default\"",
+      "project/hfdir: selected by \"default\"",
+      "project/raglink: selected by \"default\"",
+      "prompt/file: selected by \"default\"",
+      "ruleengine: selected by \"default\""
+    ],
+    "detectors": [
+      {
+        "id": "dataset/file",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "gosrc/ast",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "infra/compose",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "infra/dockerfile",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/cargo",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/gomod",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/gradle",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/maven",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/npm",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/nuget",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-pyproject",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-requirements",
+        "invocations": 1,
+        "findings": 2,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/gguf",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/onnx",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/safetensors",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/hdf5",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/savedmodel",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/tensorrt",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/tflite",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/torch",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/adapter",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/configbind",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/hfdir",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/raglink",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "prompt/file",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "ruleengine",
+        "invocations": 3,
+        "findings": 10,
+        "ns": 0
+      }
+    ]
+  }
+}

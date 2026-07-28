@@ -201,14 +201,15 @@
         "occurrences": [
           {
             "location": {
-              "path": "data/squad.jsonl"
+              "path": "testdata/squad.jsonl"
             },
             "detectorId": "dataset/file",
             "method": "filename",
             "confidence": 0.7
           }
         ]
-      }
+      },
+      "testOnly": true
     },
     {
       "id": "airom:5555555555555555",

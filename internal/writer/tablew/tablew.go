@@ -19,11 +19,13 @@ import (
 )
 
 func init() {
-	writer.Register("table", func(o writer.Options) writer.Writer { return Writer{wide: o.TableWide} })
+	writer.Register("table", func(o writer.Options) writer.Writer {
+		return Writer{wide: o.TableWide, includeTests: o.IncludeTests}
+	})
 }
 
 // Writer renders the table format.
-type Writer struct{ wide bool }
+type Writer struct{ wide, includeTests bool }
 
 // Format implements writer.Writer.
 func (Writer) Format() string { return "table" }
@@ -31,9 +33,20 @@ func (Writer) Format() string { return "table" }
 // Write emits the summary panel and component table.
 func (t Writer) Write(w io.Writer, inv *airom.Inventory) error {
 	comps := make([]airom.Component, 0, len(inv.Components))
+	hiddenTests := 0
 	for _, c := range inv.Components {
 		if c.Kind == airom.KindApplication {
 			continue
+		}
+		if c.TestOnly && !t.includeTests {
+			hiddenTests++
+			continue
+		}
+		if !t.includeTests {
+			// Same reason SARIF prunes: a real dependency that also appears in
+			// fixtures must not report a testdata/ LOCATION, and "5 occ" must
+			// not count sightings the default view is filtering out.
+			c.Evidence.Occurrences = airom.ProductionOccurrences(c.Evidence.Occurrences)
 		}
 		comps = append(comps, c)
 	}
@@ -48,6 +61,10 @@ func (t Writer) Write(w io.Writer, inv *airom.Inventory) error {
 
 	if len(comps) == 0 {
 		fmt.Fprintf(w, "No AI components found in %s.\n", inv.Source.Target)
+		// Without this line, a tree whose AI lives entirely in fixtures reads as
+		// "there is no AI here" — the one sentence the scan must not imply when
+		// it found 180 things and chose not to show them.
+		writeHiddenTestNote(w, hiddenTests)
 		if n := len(inv.Unknowns); n > 0 {
 			fmt.Fprintf(w, "\n%d file(s) could not be fully processed (see --stats or the json output).\n", n)
 		}
@@ -96,10 +113,42 @@ func (t Writer) Write(w io.Writer, inv *airom.Inventory) error {
 		}
 	}
 
+	writeHiddenTestNote(w, hiddenTests)
+
 	if n := len(inv.Unknowns); n > 0 {
 		fmt.Fprintf(w, "\n%d file(s) could not be fully processed (see --stats or the json output).\n", n)
 	}
 	return nil
+}
+
+// writeHiddenTestNote states what the table left out. Filtering silently would
+// make a narrow scan indistinguishable from a thorough one, which is the same
+// failure as reporting fixtures as production AI — just in the other direction.
+// The components are still in the JSON and CycloneDX output either way.
+func writeHiddenTestNote(w io.Writer, hidden int) {
+	if hidden == 0 {
+		return
+	}
+	fmt.Fprintf(w, "\n%d component(s) found only in test scaffolding, not shown (--include-tests to include them).\n", hidden)
+}
+
+// visibleRelationships counts edges whose endpoints both survived filtering.
+// The scan root is always an endpoint of the "application uses X" edges and is
+// never in comps, so it counts as visible — it is the target, not a hidden
+// finding.
+func visibleRelationships(inv *airom.Inventory, comps []airom.Component) int {
+	shown := make(map[airom.ID]bool, len(comps)+1)
+	shown[inv.Root] = true
+	for _, c := range comps {
+		shown[c.ID] = true
+	}
+	n := 0
+	for _, r := range inv.Relationships {
+		if shown[r.From] && shown[r.To] {
+			n++
+		}
+	}
+	return n
 }
 
 // writeSummary renders the boxed scan-summary panel: headline counts, a
@@ -109,7 +158,10 @@ func writeSummary(w io.Writer, inv *airom.Inventory, comps []airom.Component) {
 	lines = append(lines,
 		kv("Target", truncate(inv.Source.Target, 58)),
 		kv("Components", fmt.Sprintf("%d", len(comps))))
-	if r := len(inv.Relationships); r > 0 {
+	// Count only edges whose BOTH endpoints are on screen. "Components 4 /
+	// Relationships 4" where two edges terminate on hidden components is a
+	// number describing a different graph than the table under it.
+	if r := visibleRelationships(inv, comps); r > 0 {
 		lines = append(lines, kv("Relationships", fmt.Sprintf("%d", r)))
 	}
 	lines = append(lines, kv("Files", fmt.Sprintf("%d scanned", inv.Stats.FilesProcessed)))
