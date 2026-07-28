@@ -308,11 +308,27 @@ func TestStalenessIsPerProvider(t *testing.T) {
 }
 
 // TestFutureVerifiedRejected: a typo'd year would park the staleness clock in
-// the future and permanently disable the only guard against rotting data.
+// the future and permanently disable the only guard against rotting data — but
+// a machine whose clock is merely a few days behind must NOT lose the whole
+// overlay, so the check is tolerant of skew and strict about typos.
 func TestFutureVerifiedRejected(t *testing.T) {
-	_, err := loadYAML(t, "provider: p\nsource: https://x\nverified: 2062-07-23\nmodels:\n  - {id: m, state: supported}\n")
-	if err == nil || !strings.Contains(err.Error(), "in the future") {
-		t.Fatalf("future verified date must be rejected, got err=%v", err)
+	yaml := func(verified string) string {
+		return "provider: p\nsource: https://x\nverified: " + verified + "\nmodels:\n  - {id: m, state: supported}\n"
+	}
+	// A year-scale typo is a broken record.
+	if _, err := loadYAML(t, yaml("2062-07-23")); err == nil || !strings.Contains(err.Error(), "implausibly far in the future") {
+		t.Fatalf("a year-scale future date must be rejected, got err=%v", err)
+	}
+	// Clock skew is not. A sandboxed build, a container without NTP, or a VM
+	// with a dead RTC must still get the overlay — losing it entirely there
+	// would silence the gate on exactly the airgapped hosts this is built for.
+	for _, skewed := range []string{
+		scanDay.AddDays(1).String(),
+		scanDay.AddDays(futureVerifiedToleranceDays).String(),
+	} {
+		if _, err := loadYAML(t, yaml(skewed)); err != nil {
+			t.Errorf("clock skew (%s vs scan day %s) must not reject the catalog: %v", skewed, scanDay, err)
+		}
 	}
 }
 

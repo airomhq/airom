@@ -25,6 +25,11 @@ import (
 // from the ldflags build metadata before running any command.
 var Tool = airom.ToolInfo{Name: "airom", Version: "dev"}
 
+// loadEOLCatalog is a seam. The catalog is embedded, so the failure path — the
+// one that decides whether an unevaluated gate fails closed — is otherwise
+// unreachable from a test, which is exactly the kind of code that rots.
+var loadEOLCatalog = eol.Load
+
 // buildCatalog composes the detector catalog: generated built-ins plus the
 // rule-engine detector when the effective ruleset is non-empty (§6.2 —
 // explicit construction, compiled matcher via constructor, no globals).
@@ -178,21 +183,29 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	// The EOL overlay attaches provider retirement facts to hosted models. It
 	// runs before compliance so a control mapping to "third-party lifecycle"
 	// can see them, and — unlike the CVE overlay — it needs no network, so it
-	// stays on under --offline. A catalog that fails to load means the embedded
-	// data is broken (CI validates it), which costs the overlay but must not
-	// cost the AIBOM: warn and carry on. Omitting an EOL claim is honest;
-	// failing the scan over it would not be.
+	// stays on under --offline. A catalog that fails to load costs the overlay
+	// but not the AIBOM: warn and carry on, since omitting a claim is honest.
+	// The exception is an active gate, which fails closed below.
 	if !cfg.NoEOL {
 		// Load validates catalog INTEGRITY against real time; the pinned scan
 		// day is passed to Enrich, which is what decides whether a shutdown has
 		// arrived. Sharing one clock would let a pinned past date reject a
 		// catalog verified after it.
-		cat, err := eol.Load()
-		if err != nil {
+		cat, err := loadEOLCatalog()
+		switch {
+		case err != nil && cfg.Policy.ReferencesEOL():
+			// Fail closed, exactly as the CVE gate does. A gate evaluated
+			// against an overlay that produced nothing can only ever pass, and
+			// a green build is the one outcome that must never be a lie.
+			return nil, fmt.Errorf(
+				"eol gate (--fail-on %s) cannot be evaluated: the model lifecycle catalog failed to load: %w",
+				cfg.Policy, err,
+			)
+		case err != nil:
 			inv.Stats.Warnings = append(inv.Stats.Warnings,
 				fmt.Sprintf("eol: model lifecycle catalog unavailable, no EOL findings reported (%v)", err))
 			sort.Strings(inv.Stats.Warnings)
-		} else {
+		default:
 			eol.Enrich(inv, cat, airom.DateOf(now))
 		}
 	}

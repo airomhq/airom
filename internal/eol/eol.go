@@ -45,6 +45,13 @@ var catalogFS embed.FS
 // silently trusting.
 const StaleAfterDays = 90
 
+// futureVerifiedToleranceDays is how far ahead of the local clock a verification
+// date may sit before the catalog is rejected as malformed. It exists to
+// separate two very different things: a transcription typo (a year off, which
+// must fail) and a machine whose clock is behind (which must not cost the user
+// the whole overlay).
+const futureVerifiedToleranceDays = 30
+
 // providerFile is one provider's catalog as written on disk.
 type providerFile struct {
 	Provider string       `yaml:"provider"`
@@ -151,11 +158,14 @@ func (c *Catalog) addProvider(path string, pf *providerFile) error {
 	if err != nil || fileVerified == nil {
 		return fmt.Errorf("%s: verified date is required (YYYY-MM-DD) — an unverifiable record is not a fact", path)
 	}
-	// A future verification date cannot be true, and a typo'd year would park
-	// the staleness clock permanently in the future — disabling the one guard
-	// against this data rotting.
-	if fileVerified.After(c.loadedOn) {
-		return fmt.Errorf("%s: verified date %s is in the future (today is %s)", path, fileVerified, c.loadedOn)
+	// A typo'd year (2062 for 2026) would park the staleness clock permanently
+	// in the future, disabling the one guard against this data rotting — so
+	// reject it. But only when it is IMPLAUSIBLE: a host whose clock is a few
+	// days behind (a sandboxed build, a container without NTP, a VM with a dead
+	// RTC) must not lose the entire overlay over a rounding error in reality.
+	// Tolerance catches the typo without punishing the clock.
+	if fileVerified.DaysUntil(c.loadedOn) < -futureVerifiedToleranceDays {
+		return fmt.Errorf("%s: verified date %s is implausibly far in the future (today is %s)", path, fileVerified, c.loadedOn)
 	}
 	if len(pf.Models) == 0 {
 		return fmt.Errorf("%s: no models", path)

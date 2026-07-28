@@ -270,6 +270,11 @@ func (c *Config) Validate() error {
 	if c.Policy.ReferencesCVE() && !c.CVE {
 		return fmt.Errorf("--fail-on references cve but the CVE overlay is disabled (remove --no-cve, or drop --offline)")
 	}
+	// Same rule for the lifecycle overlay: gating on findings the scan was told
+	// not to produce is a gate that can only ever pass.
+	if c.Policy.ReferencesEOL() && c.NoEOL {
+		return fmt.Errorf("--fail-on references eol but the model lifecycle overlay is disabled (remove --no-eol)")
+	}
 	stdout := 0
 	for _, o := range c.Outputs {
 		if _, err := ParseFormat(string(o.Format)); err != nil {

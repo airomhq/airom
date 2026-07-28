@@ -1,13 +1,17 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/airomhq/airom/internal/eol"
 	"github.com/airomhq/airom/pkg/airom"
 )
 
@@ -105,6 +109,148 @@ func TestNoEOLDisablesTheOverlay(t *testing.T) {
 	for name, lc := range eolByName(scanEOL(t, func(c *Config) { c.NoEOL = true })) {
 		if lc != nil {
 			t.Errorf("--no-eol must attach nothing, but %s has %+v", name, lc)
+		}
+	}
+}
+
+// TestEOLGateEndToEnd drives the whole pipeline through the exit-code contract:
+// a real scan, the real catalog, and the real policy evaluation deciding
+// whether CI fails. The fixture pins gpt-4-32k (retired 2025-06-06) and
+// gpt-4-turbo (shuts down 2026-10-23), scanned as of 2026-07-23.
+func TestEOLGateEndToEnd(t *testing.T) {
+	run := func(t *testing.T, expr string, mutate func(*Config)) error {
+		t.Helper()
+		var buf bytes.Buffer
+		orig := stdout
+		stdout = &buf
+		t.Cleanup(func() { stdout = orig })
+
+		p, err := ParsePolicy(expr)
+		if err != nil {
+			t.Fatalf("ParsePolicy(%q): %v", expr, err)
+		}
+		cfg := &Config{
+			Source: SourceFS, Target: eolFixture(t), CacheDir: t.TempDir(),
+			Now: eolScanDay, Policy: p, ExitCode: 1,
+		}
+		if mutate != nil {
+			mutate(cfg)
+		}
+		return Run(context.Background(), cfg)
+	}
+	matched := func(t *testing.T, err error) bool {
+		t.Helper()
+		var pe *PolicyExit
+		if errors.As(err, &pe) {
+			return true
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		return false
+	}
+
+	cases := []struct {
+		expr string
+		want bool
+	}{
+		{"eol", true},                    // gpt-4-32k is retired
+		{"eol:retired", true},            // ditto
+		{"eol:deprecated", true},         // threshold: retired counts
+		{"eol:before:2026-01-01", true},  // the retired one is long gone
+		{"eol:before:2025-01-01", false}, // nothing dies that early
+		{"eol:before:2027-01-01", true},  // gpt-4-turbo dies 2026-10-23
+		{"hosted-llm&eol:retired", true}, // both terms on one component
+		{"vector-db&eol:retired", false}, // no single component is both
+	}
+	for _, tc := range cases {
+		t.Run(tc.expr, func(t *testing.T) {
+			if got := matched(t, run(t, tc.expr, nil)); got != tc.want {
+				t.Errorf("--fail-on %q matched = %v, want %v", tc.expr, got, tc.want)
+			}
+		})
+	}
+
+	// The gate survives --offline: this overlay reads an embedded catalog, so
+	// an airgapped CI run can still block on a model that stopped answering.
+	t.Run("offline still gates", func(t *testing.T) {
+		if !matched(t, run(t, "eol:retired", func(c *Config) { c.Offline = true })) {
+			t.Error("--offline must not silence the lifecycle gate")
+		}
+	})
+
+	// And gating on an overlay that was turned off is a loud config error, not
+	// a gate that quietly always passes.
+	t.Run("--no-eol is a usage error", func(t *testing.T) {
+		err := run(t, "eol:retired", func(c *Config) { c.NoEOL = true })
+		if err == nil || !strings.Contains(err.Error(), "lifecycle overlay is disabled") {
+			t.Errorf("want a clear config error, got %v", err)
+		}
+	})
+
+	// The gate must fail CLOSED when the overlay could not be evaluated at all.
+	// A catalog that fails to load yields no findings, so every eol term would
+	// return false and the build would go green on an unevaluated gate — the
+	// one outcome that must never be a lie. Mirrors the CVE gate's behavior.
+	t.Run("unloadable catalog fails the gate closed", func(t *testing.T) {
+		// A shutdown boundary is irrelevant here; what matters is that the
+		// scan refuses rather than reporting a clean result it cannot back.
+		err := runWithBrokenCatalog(t, "eol:retired")
+		if err == nil {
+			t.Fatal("an unevaluated eol gate must fail the scan, not pass it")
+		}
+		if !strings.Contains(err.Error(), "cannot be evaluated") {
+			t.Errorf("error should say the gate could not be evaluated, got %v", err)
+		}
+		var pe *PolicyExit
+		if errors.As(err, &pe) {
+			t.Error("this is a scan failure, not a policy match")
+		}
+	})
+}
+
+// runWithBrokenCatalog runs a scan whose lifecycle catalog cannot be loaded.
+func runWithBrokenCatalog(t *testing.T, expr string) error {
+	t.Helper()
+	orig := loadEOLCatalog
+	loadEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
+	t.Cleanup(func() { loadEOLCatalog = orig })
+
+	var buf bytes.Buffer
+	so := stdout
+	stdout = &buf
+	t.Cleanup(func() { stdout = so })
+
+	p, err := ParsePolicy(expr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return Run(context.Background(), &Config{
+		Source: SourceFS, Target: eolFixture(t), CacheDir: t.TempDir(),
+		Now: eolScanDay, Policy: p, ExitCode: 1,
+	})
+}
+
+// TestBrokenCatalogWithoutAGateOnlyWarns: with no eol gate active, an
+// unloadable catalog costs the overlay, never the AIBOM.
+func TestBrokenCatalogWithoutAGateOnlyWarns(t *testing.T) {
+	orig := loadEOLCatalog
+	loadEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
+	t.Cleanup(func() { loadEOLCatalog = orig })
+
+	inv := scanEOL(t, nil)
+	var found bool
+	for _, w := range inv.Stats.Warnings {
+		if strings.Contains(w, "lifecycle catalog unavailable") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("a degraded overlay must warn, got %v", inv.Stats.Warnings)
+	}
+	for _, c := range inv.Components {
+		if c.EOL != nil {
+			t.Errorf("no lifecycle claims should survive a failed load, got %+v", c.EOL)
 		}
 	}
 }

@@ -296,6 +296,7 @@ every command carries: `-h`/`--help`, and `--version` on the root.
 | `--cdx-version` | string | `1.6` | CycloneDX spec version: `1.6` or `1.7`. |
 | `--no-cached-rules` | bool | `false` | Ignore any fetched rule bundle; scan with the built-in packs. See [Rule updates](/rules/updates). |
 | `--compliance` | stringArray | — | Map the AIBOM onto a governance framework (`nist-ai-rmf`, `owasp-agentic`). Repeatable. |
+| `--no-eol` | bool | `false` | Disable the **model lifecycle (EOL) overlay**, which is **on by default**. It matches inventoried AI models against a curated catalog of provider retirement announcements. Reads an embedded catalog, so unlike `--no-cve` it needs no network and survives `--offline`. See [Model lifecycle](/concepts/eol). |
 | `--no-cve` | bool | `false` | Disable the OSV.dev **CVE overlay**, which is **on by default**. The overlay matches AI dependencies against OSV.dev for known CVEs; it queries the network and is not deterministic over time, so `--no-cve` (or `--offline`) gives a byte-stable offline BOM. See [CVE overlay](/concepts/cve). |
 | `--exit-code` | int | `1` when a policy is active | Exit status when `--fail-on` matches. `0` reports matches without failing. |
 | `--fail-on` | string | — | CI policy expression, e.g. `"hosted-llm&confidence>=0.9"`. |
@@ -374,10 +375,11 @@ build — useful for a soft rollout of a new gate.
 ```text title="Grammar"
 expr       = clause *( "|" clause )      ; OR
 clause     = term   *( "&" term )        ; AND — all terms must hold for ONE component
-term       = ident | risk | cve | compliance | comparison
+term       = ident | risk | cve | eol | compliance | comparison
 ident      = a ComponentKind ("hosted-llm")
 risk       = "risk" | "risk:<severity>" | "risk:<slug>"        ; see Risk detection
 cve        = "cve"  | "cve:<severity>"                          ; threshold; overlay is on by default
+eol        = "eol"  | "eol:<state>" | "eol:before:<YYYY-MM-DD>"  ; model lifecycle; on by default
 compliance = "compliance:gap" | "compliance:<fw>" | "compliance:<fw>:<control>" ; requires --compliance
 comparison = "confidence" OP number      ; OP: >= <= > < =
 ```
@@ -390,6 +392,8 @@ An unknown term is a **usage error at parse time**, never a silently-passing gat
 airom fs . --fail-on "hosted-llm"
 airom fs . --fail-on "risk:high"
 airom fs . --fail-on "cve:high"             # high AND critical (overlay on by default)
+airom fs . --fail-on "eol:retired"          # a model that already stopped answering
+airom fs . --fail-on "eol:before:2027-01-01" # anything dying before the next release train
 airom fs . --fail-on "hosted-llm&confidence>=0.9"
 airom fs . --fail-on "local-model-file|hosted-llm&confidence>=0.8"
 ```
@@ -400,7 +404,10 @@ Any of the 13 component kinds may be used as an `ident`: `hosted-llm`,
 `application`. Beyond kinds: the [risk](/concepts/risks) selectors (`risk`,
 `risk:<severity>`, `risk:<slug>`; `pickle-risk` is a deprecated alias for
 `risk:pickle-import`), the [CVE](/concepts/cve) selectors (`cve`,
-`cve:<severity>` — a threshold; the overlay is on by default), and the
+`cve:<severity>` — a threshold; the overlay is on by default), the
+[model-lifecycle](/concepts/eol) selectors (`eol`, `eol:retired`,
+`eol:deprecated` — a threshold — and `eol:before:<YYYY-MM-DD>`, which fails when
+anything dies before a date you name), and the
 [compliance](/concepts/compliance) selectors (`compliance:gap`,
 `compliance:<framework>`, `compliance:<framework>:<control>`; requires
 `--compliance`, cannot be `&`-combined).

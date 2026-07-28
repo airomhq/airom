@@ -114,6 +114,19 @@ func TestValidate(t *testing.T) {
 			p, _ := ParsePolicy("cve:high")
 			c.Policy, c.CVE = p, true
 		}, ""},
+		{"fail-on eol ok by default", func(c *Config) {
+			p, _ := ParsePolicy("eol:retired")
+			c.Policy = p
+		}, ""},
+		{"fail-on eol with --no-eol", func(c *Config) {
+			p, _ := ParsePolicy("eol:before:2027-01-01")
+			c.Policy, c.NoEOL = p, true
+		}, "lifecycle overlay is disabled"},
+		// EOL needs no network, so --offline must NOT disable the gate.
+		{"fail-on eol while offline ok", func(c *Config) {
+			p, _ := ParsePolicy("eol")
+			c.Policy, c.Offline = p, true
+		}, ""},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

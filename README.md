@@ -75,6 +75,29 @@ airom scan . --exit-code 1 --fail-on "risk:unsafe-load"   # or one specific risk
 
 It stays deterministic and offline — no LLM, no vulnerability database. And it extends without Go: any rule pack can attach a catalog risk to a match via a `risk:` field. The full catalog and the model behind it are in **[docs/risks.md](docs/risks.md)**.
 
+## Model lifecycle (EOL)
+
+The risk and CVE overlays answer questions about *risk*. This one answers a question about *time*: **what in this stack stops working, and when?** A retired hosted model is not a vulnerability you weigh — on the shutdown date the provider's API stops answering and the app breaks, patched or not.
+
+```bash
+airom scan .                                            # lifecycle shown by default
+airom scan . --exit-code 1 --fail-on "eol:retired"      # block on a model already gone
+airom scan . --exit-code 1 --fail-on "eol:before:2027-01-01"  # dies before the next release train
+```
+
+```
+Model lifecycle (3)
+┌──────────────────────────┬───────────┬────────────┬────────────┬──────┬─────────────────┐
+│ MODEL                    │ PROVIDER  │ STATE      │ SHUTDOWN   │ DAYS │ MIGRATE TO      │
+├──────────────────────────┼───────────┼────────────┼────────────┼──────┼─────────────────┤
+│ gpt-4-32k                │ openai    │ RETIRED    │ 2025-06-06 │ -417 │ gpt-4o          │
+│ claude-opus-4-1-20250805 │ anthropic │ DEPRECATED │ 2026-08-05 │ 8    │ claude-opus-4-8 │
+│ gpt-4-turbo              │ openai    │ DEPRECATED │ 2026-10-23 │ 87   │ gpt-5.6-sol     │
+└──────────────────────────┴───────────┴────────────┴────────────┴──────┴─────────────────┘
+```
+
+**On by default and fully offline** — the curated catalog ships in the binary, so an airgapped scan still answers it (`--no-eol` opts out). Every record is **transcribed from the provider's own deprecation page** with that URL and a verification date; nothing is inferred from naming. A model the catalog doesn't cover reports `unknown` — *no claim*, never a quiet "supported". Migration advice carries the target's own state, because providers routinely point a deprecation at a model since deprecated itself. It projects as CycloneDX component properties and SARIF results — **not** `vulnerabilities[]`, since a scheduled vendor shutdown is an availability fact no patch fixes. Full contract in **[docs/eol.md](docs/eol.md)**.
+
 ## Compliance mapping
 
 `--compliance <framework>` maps the AIBOM onto an AI-governance framework's controls and decides **met / gap / manual** for each — with the `file:line` evidence behind every verdict.

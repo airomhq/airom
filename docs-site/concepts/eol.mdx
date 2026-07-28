@@ -1,0 +1,137 @@
+---
+title: "Model lifecycle (EOL)"
+description: "AIROM flags hosted models their providers have scheduled for retirement — with the date, the migration target, and the page the claim came from."
+icon: "calendar-xmark"
+---
+
+AIROM's other overlays answer questions about risk. This one answers a question
+about **time**: what in this stack stops working, when, and what do I move to?
+
+A hosted model's retirement is unlike any other finding AIROM makes. A CVE is a
+risk you weigh — severity, exploitability, reachability. A retired model is a
+**calendar fact with a hard consequence**: on the shutdown date the provider's
+API stops answering and the application breaks, patched or not. Nothing about
+your code changes; the ground moves.
+
+<Info>
+**On by default, and it works offline.** The catalog ships inside the binary, so
+unlike the [CVE overlay](/concepts/cve) this needs no network and survives
+`--offline`. Disable it with `--no-eol`.
+</Info>
+
+```text title="airom fs ."
+Model lifecycle (3)
+┌──────────────────────────┬───────────┬────────────┬────────────┬──────┬─────────────────┐
+│ MODEL                    │ PROVIDER  │ STATE      │ SHUTDOWN   │ DAYS │ MIGRATE TO      │
+├──────────────────────────┼───────────┼────────────┼────────────┼──────┼─────────────────┤
+│ gpt-4-32k                │ openai    │ RETIRED    │ 2025-06-06 │ -417 │ gpt-4o          │
+│ claude-opus-4-1-20250805 │ anthropic │ DEPRECATED │ 2026-08-05 │ 8    │ claude-opus-4-8 │
+│ gpt-4-turbo              │ openai    │ DEPRECATED │ 2026-10-23 │ 87   │ gpt-5.6-sol     │
+└──────────────────────────┴───────────┴────────────┴────────────┴──────┴─────────────────┘
+  anthropic — https://platform.claude.com/… (verified 2026-07-23)
+  openai — https://developers.openai.com/… (verified 2026-07-23)
+```
+
+Worst first, then soonest deadline. The footnote is the provenance: which page
+each claim came from, and when a maintainer last checked it.
+
+## States
+
+| State | Meaning |
+|---|---|
+| `retired` | The shutdown date has passed. Calls fail **today**. |
+| `deprecated` | Retirement announced, still served. A deadline. |
+| `supported` | The provider lists it as current. |
+| `unknown` | **No catalog record — no claim.** Not "safe". |
+
+`retired` is derived at scan time from the shutdown date rather than stored, so a
+curated record stays truthful as time passes: a `deprecated` entry becomes
+`retired` on its own date with nobody re-editing it.
+
+## The honesty contract
+
+<Warning>
+**Absence is not health.** A model the catalog does not cover gets no record at
+all. `unknown` means "nobody has curated this" — never "this is fine".
+</Warning>
+
+- **Every record is transcribed** from the provider's own deprecation page,
+  carrying that URL and the date a maintainer verified it. A catalog file missing
+  either is rejected at load. Nothing is inferred from naming patterns.
+- **Matching is exact**, case-folded, explicit aliases only. A wrong retirement
+  date is worse than no date.
+- **Platforms are scoped.** Amazon Bedrock, Google Vertex, and Azure OpenAI
+  publish their *own* schedules for the same weights, so their provider keys
+  deliberately do not match these records.
+- **Migration advice carries the target's state** — providers point a deprecation
+  at whatever was current when they wrote it, then deprecate that too, so the
+  output says `gpt-5.1-chat-latest (retired)` rather than sending you onto a
+  model that is already gone.
+- **Staleness is visible.** If the least-recently-verified provider is more than
+  90 days old, the scan says so rather than quietly serving data that may have
+  moved.
+
+## How it appears in output
+
+<Tabs>
+  <Tab title="Table">
+    An `EOL` column (`retired` / `87d`), a `Model lifecycle` block in the summary
+    panel, and the detail table above with per-provider source footnotes.
+  </Tab>
+  <Tab title="CycloneDX">
+    Component `properties`: `airom:eol.state`, `airom:eol.announcedDate`,
+    `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`,
+    `airom:eol.replacementState`, plus `source` / `sourceUrl` / `verified`.
+
+    **Deliberately not `vulnerabilities[]`** — a scheduled vendor retirement is an
+    availability fact, not a defect. Filing it there would put a non-CVE with no
+    CVSS into the array downstream triage and VEX tooling treat as security
+    findings.
+  </Tab>
+  <Tab title="SARIF">
+    An `eol/<provider>/<model>` rule — `error` when retired, `warning` when
+    deprecated — whose single result carries **every** call-site
+    location, because unlike a CVE (one version pin) the model literal has to
+    change everywhere it appears. No
+    `security-severity`: no patch fixes a vendor shutdown, and tagging it would
+    inflate a security dashboard.
+  </Tab>
+  <Tab title="Native JSON / YAML">
+    `component.eol` — the full lifecycle record, dates as calendar days.
+  </Tab>
+</Tabs>
+
+## The CI gate
+
+```bash
+airom fs . --exit-code 1 --fail-on "eol:retired"            # already broken — block
+airom fs . --exit-code 1 --fail-on "eol"                    # any announced retirement
+airom fs . --exit-code 1 --fail-on "eol:before:2027-01-01"  # dies before the next release train
+```
+
+`eol:<state>` is a **threshold**, matching the `cve:<severity>` convention:
+`eol:deprecated` fires on deprecated **and** retired.
+
+`eol:before:<YYYY-MM-DD>` is the planning gate, and the one worth putting in a
+release checklist: *"fail if anything we ship depends on a model that dies before
+our next train leaves."* `before:D` means "not still serving on D", so a model shutting down exactly on D
+matches — the tool already calls that day retired, and the gate must agree. A
+retired model matches any date (already gone, dated or not); only an **undated
+deprecation** matches nothing, because it cannot answer without inventing a
+deadline the provider never announced.
+
+Gating on a state that is not a finding (`eol:supported`, `eol:unknown`) is a
+usage error, as is gating on `eol` while `--no-eol` is set, or `&`-combining an
+`eol` selector with a `cve` one — lifecycle applies to hosted models and CVEs to
+versioned packages, so no single component is both. All are rejected at parse
+time: a gate that can only ever pass is worse than no gate.
+
+## Coverage
+
+The catalog seeds **OpenAI** and **Anthropic**, the two providers whose
+deprecation pages publish structured, dated schedules. It is deliberately not a
+list of every model in existence: each record is hand-verified, and the cost of
+that discipline is coverage. A model outside it reports `unknown`, which is the
+honest answer.
+
+Adding a provider is a data change, not a code change.

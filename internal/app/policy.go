@@ -67,6 +67,14 @@ var (
 	// cveRe matches the CVE selectors: "cve" (any) or "cve:<severity>" — a
 	// severity THRESHOLD (cve:high fires on high and critical). Requires --cve.
 	cveRe = regexp.MustCompile(`^cve(?::([a-z]+))?$`)
+	// eolRe matches the model-lifecycle selectors: "eol" (anything retired or
+	// deprecated), "eol:retired" / "eol:deprecated" (a state THRESHOLD, so
+	// eol:deprecated also fires on retired), or "eol:before:<YYYY-MM-DD>" — the
+	// planning gate: "fail if anything in this stack dies before that date".
+	// The capture is `.*` so a bare trailing colon ("eol:") reaches
+	// validateEOLSel and gets the selector help, rather than falling through to
+	// the generic "bad term" message — a trailing colon is the likelier typo.
+	eolRe = regexp.MustCompile(`^eol(:(.*))?$`)
 )
 
 // MatchAny is the policy used when --exit-code is set without --fail-on:
@@ -99,9 +107,27 @@ func ParsePolicy(expr string) (*Policy, error) {
 		if hasComplianceTerm(conj) && len(conj.terms) > 1 {
 			return nil, fmt.Errorf("--fail-on: a compliance selector cannot be combined with '&'; use '|' to OR it with other terms")
 		}
+		// Lifecycle and CVE selectors describe disjoint populations: EOL applies
+		// to hosted models, which carry no purl by design (D9), and CVEs are
+		// matched BY purl. No single component can satisfy both, so "&"-ing them
+		// is a gate that can only ever pass — almost always a typo'd "|".
+		if hasTermPrefix(conj, "eol") && hasTermPrefix(conj, "cve") {
+			return nil, fmt.Errorf("--fail-on: eol and cve selectors cannot be combined with '&' — no single component is both a hosted model and a versioned package; use '|' to fail on either")
+		}
 		p.anyOf = append(p.anyOf, conj)
 	}
 	return p, nil
+}
+
+// hasTermPrefix reports whether a clause contains a selector of the given
+// family ("eol", "cve"): the bare word or the word followed by ':'.
+func hasTermPrefix(conj conjunction, family string) bool {
+	for _, t := range conj.terms {
+		if t.Ident == family || strings.HasPrefix(t.Ident, family+":") {
+			return true
+		}
+	}
+	return false
 }
 
 // hasComplianceTerm reports whether a clause contains a compliance selector.
@@ -153,6 +179,20 @@ func parseTerm(raw string) (term, error) {
 	if m := cveRe.FindStringSubmatch(s); m != nil {
 		if sev := m[1]; sev != "" && cveSeverityRank(sev) == 0 {
 			return term{}, fmt.Errorf("unknown cve severity %q; want critical, high, medium, or low", sev)
+		}
+		return term{Ident: s}, nil
+	}
+	// Lifecycle selectors ("eol", "eol:<state>", "eol:before:<date>").
+	if m := eolRe.FindStringSubmatch(s); m != nil {
+		// m[1] is the whole ":<sel>" (empty for bare "eol"); m[2] is <sel>.
+		// They differ only for "eol:", where m[1]=":" and m[2]="" — an empty
+		// selector after a colon, which is an error rather than the bare form.
+		sel, hadColon := m[2], m[1] != ""
+		if hadColon && sel == "" {
+			return term{}, fmt.Errorf("empty eol selector; want eol, eol:deprecated, eol:retired, or eol:before:YYYY-MM-DD")
+		}
+		if err := validateEOLSel(sel); err != nil {
+			return term{}, err
 		}
 		return term{Ident: s}, nil
 	}
@@ -304,6 +344,82 @@ func complianceMatches(ident string, inv *airom.Inventory) bool {
 	return false
 }
 
+// eolBeforePrefix introduces the date form of the lifecycle selector.
+const eolBeforePrefix = "before:"
+
+// validateEOLSel checks an "eol:<sel>" selector at PARSE time, so a typo is a
+// usage error rather than a gate that quietly never fires.
+//
+// "supported" and "unknown" are rejected deliberately: a gate exists to catch
+// findings, and neither is one. "unknown" especially — it means the catalog
+// says nothing, so a gate on it would fire on every uncurated model in the
+// tree and mean nothing at all.
+func validateEOLSel(sel string) error {
+	switch sel {
+	case "": // bare "eol"
+		return nil
+	case string(airom.EOLRetired), string(airom.EOLDeprecated):
+		return nil
+	case string(airom.EOLSupported), string(airom.EOLUnknown):
+		return fmt.Errorf("eol:%s is not a finding to gate on; use eol, eol:deprecated, eol:retired, or eol:before:YYYY-MM-DD", sel)
+	}
+	if date, ok := strings.CutPrefix(sel, eolBeforePrefix); ok {
+		if _, err := airom.ParseDate(date); err != nil {
+			return fmt.Errorf("bad eol:before date %q: %w", date, err)
+		}
+		return nil
+	}
+	return fmt.Errorf("unknown eol selector %q; want eol, eol:deprecated, eol:retired, or eol:before:YYYY-MM-DD", sel)
+}
+
+// eolTermMatches evaluates a lifecycle selector against one component:
+//
+//	eol                  any announced retirement (deprecated or retired)
+//	eol:retired          already shut down
+//	eol:deprecated       a THRESHOLD — deprecated or worse, i.e. also retired
+//	eol:before:<date>    shuts down before that date (a retired model, whose
+//	                     shutdown is already past, matches any future date)
+//
+// A model with no lifecycle record never matches: absence is not a finding.
+func eolTermMatches(ident string, c *airom.Component) bool {
+	e := c.EOL
+	if e == nil {
+		return false
+	}
+	sel, _ := strings.CutPrefix(ident, "eol:")
+	if ident == "eol" {
+		sel = ""
+	}
+
+	if date, ok := strings.CutPrefix(sel, eolBeforePrefix); ok {
+		if e.Shutdown == nil {
+			// A model already retired is before every date, dated or not.
+			// An undated DEPRECATION is the only silent case: it cannot answer
+			// "does it die before X?" without inventing a deadline the provider
+			// never announced.
+			return e.State == airom.EOLRetired
+		}
+		cutoff, err := airom.ParseDate(date)
+		if err != nil {
+			return false // unreachable: validated at parse time
+		}
+		// Shutdown ON the cutoff day counts. DeriveEOLState treats the shutdown
+		// day as inclusive — on 2026-10-23 the model is already retired — so an
+		// exclusive cutoff here would disagree with the rest of the tool on
+		// precisely the boundary this gate exists for: "our train leaves on D,
+		// fail if anything we ship is dead by then".
+		return !e.Shutdown.After(cutoff)
+	}
+
+	// State threshold. Bare "eol" uses the deprecated floor, so it means "any
+	// announced retirement" and never fires on supported or unknown.
+	floor := airom.EOLStateRank(airom.EOLDeprecated)
+	if sel != "" {
+		floor = airom.EOLStateRank(airom.EOLState(sel))
+	}
+	return airom.EOLStateRank(e.State) >= floor
+}
+
 // cveTermMatches evaluates "cve" (any vuln) or "cve:<severity>" (a vuln at or
 // above that severity — a threshold) against one component.
 func cveTermMatches(ident string, c *airom.Component) bool {
@@ -352,6 +468,23 @@ func (p *Policy) ReferencesCVE() bool {
 	return false
 }
 
+// ReferencesEOL reports whether the policy gates on a lifecycle selector — so
+// config validation can reject gating on an overlay that was turned off, which
+// would be a gate that silently never fires.
+func (p *Policy) ReferencesEOL() bool {
+	if p == nil {
+		return false
+	}
+	for _, conj := range p.anyOf {
+		for _, t := range conj.terms {
+			if t.Ident == "eol" || strings.HasPrefix(t.Ident, "eol:") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // ReferencesCompliance reports whether the policy gates on a compliance
 // selector — so config validation can reject gating on compliance that was
 // never evaluated (--fail-on compliance:gap without --compliance).
@@ -393,6 +526,9 @@ func termMatches(t term, c *airom.Component) bool {
 	}
 	if t.Ident == "cve" || strings.HasPrefix(t.Ident, "cve:") {
 		return cveTermMatches(t.Ident, c)
+	}
+	if t.Ident == "eol" || strings.HasPrefix(t.Ident, "eol:") {
+		return eolTermMatches(t.Ident, c)
 	}
 	// pickle-risk: deprecated alias for the pickle-import risk (back-compat).
 	if t.Ident == "pickle-risk" {
