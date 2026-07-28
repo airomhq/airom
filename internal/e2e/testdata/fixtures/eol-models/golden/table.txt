@@ -2,20 +2,40 @@ AI Bill of Materials — eol-models
 
 ┌─ Scan Summary ───────────┐
 │ Target        eol-models │
-│ Components    4          │
-│ Relationships 3          │
+│ Components    8          │
+│ Relationships 5          │
 │ Files         2 scanned  │
 │                          │
 │ By Type                  │
-│   hosted-llm         3   │
-│   library            1   │
+│   hosted-llm         5   │
+│   library            2   │
+│   ai-config          1   │
+│                          │
+│ Model lifecycle          │
+│   retired            1   │
+│   deprecated         2   │
 └──────────────────────────┘
 
-┌────────────┬─────────────┬─────────┬──────────┬────────┬───────────┬──────────┐
-│ KIND       │ NAME        │ VERSION │ PROVIDER │ CONF   │ LOCATION  │ EVIDENCE │
-├────────────┼─────────────┼─────────┼──────────┼────────┼───────────┼──────────┤
-│ hosted-llm │ gpt-4-32k   │ -       │ openai   │ 0.85   │ app.py:15 │ 1 occ    │
-│ hosted-llm │ gpt-4-turbo │ -       │ openai   │ 0.85   │ app.py:21 │ 1 occ    │
-│ hosted-llm │ gpt-4o      │ -       │ openai   │ 0.85   │ app.py:27 │ 1 occ    │
-│ library    │ openai      │ 1.51.0  │ openai   │ 0.9865 │ app.py:14 │ 4 occ    │
-└────────────┴─────────────┴─────────┴──────────┴────────┴───────────┴──────────┘
+┌────────────┬──────────────────────────┬─────────┬───────────┬────────┬─────────┬───────────┬──────────┐
+│ KIND       │ NAME                     │ VERSION │ PROVIDER  │ CONF   │ EOL     │ LOCATION  │ EVIDENCE │
+├────────────┼──────────────────────────┼─────────┼───────────┼────────┼─────────┼───────────┼──────────┤
+│ ai-config  │ max_tokens               │ -       │ -         │ 0.525  │ -       │ app.py:40 │ 2 occ    │
+│ hosted-llm │ claude-opus-4-1-20250805 │ -       │ anthropic │ 0.85   │ 4d      │ app.py:39 │ 1 occ    │
+│ hosted-llm │ claude-sonnet-4-6        │ -       │ anthropic │ 0.85   │ -       │ app.py:45 │ 1 occ    │
+│ hosted-llm │ gpt-4-32k                │ -       │ openai    │ 0.85   │ retired │ app.py:19 │ 1 occ    │
+│ hosted-llm │ gpt-4-turbo              │ -       │ openai    │ 0.85   │ 83d     │ app.py:25 │ 1 occ    │
+│ hosted-llm │ gpt-4o                   │ -       │ openai    │ 0.85   │ -       │ app.py:31 │ 1 occ    │
+│ library    │ anthropic                │ 0.39.0  │ anthropic │ 0.9858 │ -       │ app.py:38 │ 3 occ    │
+│ library    │ openai                   │ 1.51.0  │ openai    │ 0.9865 │ -       │ app.py:18 │ 4 occ    │
+└────────────┴──────────────────────────┴─────────┴───────────┴────────┴─────────┴───────────┴──────────┘
+
+Model lifecycle (3)
+┌──────────────────────────┬───────────┬────────────┬────────────┬──────┬─────────────────┐
+│ MODEL                    │ PROVIDER  │ STATE      │ SHUTDOWN   │ DAYS │ MIGRATE TO      │
+├──────────────────────────┼───────────┼────────────┼────────────┼──────┼─────────────────┤
+│ gpt-4-32k                │ openai    │ RETIRED    │ 2025-06-06 │ -421 │ gpt-4o          │
+│ claude-opus-4-1-20250805 │ anthropic │ DEPRECATED │ 2026-08-05 │ 4    │ claude-opus-4-8 │
+│ gpt-4-turbo              │ openai    │ DEPRECATED │ 2026-10-23 │ 83   │ gpt-5.6-sol     │
+└──────────────────────────┴───────────┴────────────┴────────────┴──────┴─────────────────┘
+  anthropic — https://platform.claude.com/docs/en/docs/about-claude/model-deprecations (verified 2026-07-23)
+  openai — https://developers.openai.com/api/docs/deprecations (verified 2026-07-23)

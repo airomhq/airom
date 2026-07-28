@@ -223,6 +223,7 @@
         "shutdown": { "type": "string", "format": "date" },
         "daysRemaining": { "type": "integer" },
         "replacement": { "type": "string" },
+        "replacementState": { "enum": ["supported", "deprecated", "retired", "unknown"] },
         "source": { "type": "string" },
         "sourceUrl": { "type": "string" },
         "verified": { "type": "string", "format": "date" }

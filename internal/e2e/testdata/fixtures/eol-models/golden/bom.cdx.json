@@ -60,6 +60,62 @@
   },
   "components": [
     {
+      "bom-ref": "airom:0b7828a4ff243920",
+      "type": "machine-learning-model",
+      "name": "claude-sonnet-4-6",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "supported"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-sonnet-4-6"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "64 @ app.py:44"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 45,
+            "additionalContext": "model=\"claude-sonnet-4-6\","
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "airom:1b13aab20f840ad4",
       "type": "machine-learning-model",
       "name": "gpt-4-turbo",
@@ -67,6 +123,38 @@
         {
           "name": "airom:confidence",
           "value": "0.85"
+        },
+        {
+          "name": "airom:eol.announcedDate",
+          "value": "2026-04-22"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "83"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "gpt-5.6-sol"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2026-10-23"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://developers.openai.com/api/docs/deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "deprecated"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
         },
         {
           "name": "airom:kind",
@@ -89,8 +177,180 @@
         "occurrences": [
           {
             "location": "app.py",
-            "line": 21,
+            "line": 25,
             "additionalContext": "model=\"gpt-4-turbo\","
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:65ac1a1b3af7edab",
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.39.0",
+      "purl": "pkg:pypi/anthropic@0.39.0",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.9858"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:0b7828a4ff243920@0.7"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:76a548bfe1b671c7@0.7"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.95,
+            "concludedValue": "0.39.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 38,
+            "additionalContext": "legacy = claude.messages.create("
+          },
+          {
+            "location": "app.py",
+            "line": 44,
+            "additionalContext": "current = claude.messages.create("
+          },
+          {
+            "location": "requirements.txt",
+            "line": 2,
+            "additionalContext": "anthropic==0.39.0"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:737f185ea7c9f67f",
+      "type": "data",
+      "name": "max_tokens",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.525"
+        },
+        {
+          "name": "airom:kind",
+          "value": "ai-config"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 40,
+            "additionalContext": "max_tokens=64,"
+          },
+          {
+            "location": "app.py",
+            "line": 46,
+            "additionalContext": "max_tokens=64,"
+          }
+        ]
+      },
+      "data": [
+        {
+          "type": "configuration",
+          "name": "max_tokens"
+        }
+      ]
+    },
+    {
+      "bom-ref": "airom:76a548bfe1b671c7",
+      "type": "machine-learning-model",
+      "name": "claude-opus-4-1-20250805",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:eol.announcedDate",
+          "value": "2026-06-05"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "4"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "claude-opus-4-8"
+        },
+        {
+          "name": "airom:eol.replacementState",
+          "value": "supported"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2026-08-05"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "deprecated"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-opus-4-1-20250805"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "64 @ app.py:38"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app.py",
+            "line": 39,
+            "additionalContext": "model=\"claude-opus-4-1-20250805\","
           }
         ]
       }
@@ -119,13 +379,17 @@
         {
           "name": "airom:model.provider",
           "value": "openai"
+        },
+        {
+          "name": "airom:param.max_tokens",
+          "value": "64 @ app.py:30"
         }
       ],
       "evidence": {
         "occurrences": [
           {
             "location": "app.py",
-            "line": 27,
+            "line": 31,
             "additionalContext": "model=\"gpt-4o\","
           }
         ]
@@ -180,17 +444,17 @@
         "occurrences": [
           {
             "location": "app.py",
-            "line": 14,
+            "line": 18,
             "additionalContext": "summary = client.chat.completions.create("
           },
           {
             "location": "app.py",
-            "line": 20,
+            "line": 24,
             "additionalContext": "draft = client.chat.completions.create("
           },
           {
             "location": "app.py",
-            "line": 26,
+            "line": 30,
             "additionalContext": "reply = client.chat.completions.create("
           },
           {
@@ -209,6 +473,38 @@
         {
           "name": "airom:confidence",
           "value": "0.85"
+        },
+        {
+          "name": "airom:eol.announcedDate",
+          "value": "2024-06-06"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "-421"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "gpt-4o"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2025-06-06"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://developers.openai.com/api/docs/deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "retired"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-23"
         },
         {
           "name": "airom:kind",
@@ -231,7 +527,7 @@
         "occurrences": [
           {
             "location": "app.py",
-            "line": 15,
+            "line": 19,
             "additionalContext": "model=\"gpt-4-32k\","
           }
         ]

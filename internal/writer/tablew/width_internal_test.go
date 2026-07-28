@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/airomhq/airom/pkg/airom"
 )
@@ -68,6 +69,73 @@ func TestVulnTableMergesPerPackageColumns(t *testing.T) {
 			want = wdt
 		} else if wdt != want {
 			t.Errorf("merged box line width = %d, want %d (not rectangular):\n%q", wdt, want, l)
+		}
+	}
+}
+
+// TestEOLTableIsRectangular guards the lifecycle detail table the same way the
+// vuln table is guarded: every border and row line must have identical display
+// width, or the box breaks in a terminal.
+func TestEOLTableIsRectangular(t *testing.T) {
+	day := func(y, m, d int) *airom.Date {
+		v := airom.Date{Year: y, Month: time.Month(m), Day: d}
+		return &v
+	}
+	days := func(n int) *int { return &n }
+	inv := &airom.Inventory{
+		Source: airom.SourceInfo{Target: "/x"},
+		Components: []airom.Component{
+			{
+				ID: "a", Kind: airom.KindHostedLLM, Name: "gpt-4-32k",
+				Provider: airom.KnownString("openai"), Confidence: 0.9,
+				EOL: &airom.Lifecycle{
+					State: airom.EOLRetired, Announced: day(2024, 6, 6), Shutdown: day(2025, 6, 6),
+					DaysRemaining: days(-417), Replacement: "gpt-4o",
+					Source: "airom-catalog", SourceURL: "https://developers.openai.com/api/docs/deprecations",
+					Verified: day(2026, 7, 23),
+				},
+				Evidence: airom.Evidence{Occurrences: []airom.Occurrence{{Location: airom.Location{Path: "app.py", Line: 3}}}},
+			},
+			{
+				ID: "b", Kind: airom.KindHostedLLM, Name: "claude-opus-4-1-20250805",
+				Provider: airom.KnownString("anthropic"), Confidence: 0.9,
+				EOL: &airom.Lifecycle{
+					State: airom.EOLDeprecated, Announced: day(2026, 6, 5), Shutdown: day(2026, 8, 5),
+					DaysRemaining: days(13), Replacement: "claude-opus-4-8", ReplacementState: airom.EOLSupported,
+					Source: "airom-catalog", SourceURL: "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
+					Verified: day(2026, 7, 23),
+				},
+				Evidence: airom.Evidence{Occurrences: []airom.Occurrence{{Location: airom.Location{Path: "app.py", Line: 4}}}},
+			},
+		},
+	}
+	var buf bytes.Buffer
+	if err := (Writer{}).Write(&buf, inv); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	body := out[strings.Index(out, "Model lifecycle ("):]
+	want := 0
+	for _, l := range strings.Split(body, "\n") {
+		r := []rune(l)
+		if len(r) == 0 || (r[0] != '┌' && r[0] != '├' && r[0] != '│' && r[0] != '└') {
+			continue
+		}
+		if w := dispWidth(l); want == 0 {
+			want = w
+		} else if w != want {
+			t.Errorf("lifecycle box line width = %d, want %d:\n%q", w, want, l)
+		}
+	}
+	// Retired sorts before deprecated: what is already broken outranks a deadline.
+	ri, di := strings.Index(body, "RETIRED"), strings.Index(body, "DEPRECATED")
+	if ri < 0 || di < 0 || ri > di {
+		t.Errorf("retired must sort before deprecated:\n%s", body)
+	}
+	// Both providers' sources are footnoted, each once.
+	for _, want := range []string{"openai — https://developers.openai.com", "anthropic — https://platform.claude.com"} {
+		if n := strings.Count(body, want); n != 1 {
+			t.Errorf("source footnote %q appears %d times, want 1:\n%s", want, n, body)
 		}
 	}
 }

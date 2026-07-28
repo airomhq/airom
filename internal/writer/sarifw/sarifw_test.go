@@ -54,6 +54,17 @@ func sample() *airom.Inventory {
 				Group:      "openai",
 				Provider:   airom.KnownString("openai"),
 				Confidence: 0.9,
+				EOL: &airom.Lifecycle{
+					State:            airom.EOLDeprecated,
+					Announced:        &airom.Date{Year: 2026, Month: 4, Day: 22},
+					Shutdown:         &airom.Date{Year: 2026, Month: 10, Day: 23},
+					DaysRemaining:    func() *int { d := 99; return &d }(),
+					Replacement:      "gpt-4.2",
+					ReplacementState: airom.EOLRetired,
+					Source:           "airom-catalog",
+					SourceURL:        "https://example.com/deprecations",
+					Verified:         &airom.Date{Year: 2026, Month: 7, Day: 16},
+				},
 				Evidence: airom.Evidence{Occurrences: []airom.Occurrence{
 					{
 						Location:   airom.Location{Path: "src/app.py", Line: 12, EndLine: 12, Column: 5, EndColumn: 21},
@@ -197,11 +208,12 @@ func parse(t *testing.T, b []byte) report {
 	return r
 }
 
-// isSecurityRule reports whether an id names a security finding (risk/<slug> or
-// cve/<id>) rather than a per-occurrence inventory result — the inventory tests
-// skip these, which have their own shape (TestRiskResults, TestCVEResults).
+// isSecurityRule reports whether an id names an overlay finding (risk/<slug>,
+// cve/<id>, or eol/<provider>/<model>) rather than a per-occurrence inventory
+// result — the inventory tests skip these, which have their own shape (see
+// TestRiskResults, TestCVEResults, TestEOLResults).
 func isSecurityRule(id string) bool {
-	return strings.HasPrefix(id, "risk/") || strings.HasPrefix(id, "cve/")
+	return strings.HasPrefix(id, "risk/") || strings.HasPrefix(id, "cve/") || strings.HasPrefix(id, "eol/")
 }
 
 func TestEnvelope(t *testing.T) {
@@ -514,6 +526,57 @@ func TestCVEResults(t *testing.T) {
 	}
 	if !resFound {
 		t.Fatal("no cve/CVE-2024-0001 result emitted")
+	}
+}
+
+// TestEOLResults checks the lifecycle overlay: an eol/<provider>/<model> rule
+// carrying NO security-severity (a scheduled retirement is an availability
+// fact, not a security finding), and a message that names the deadline and the
+// migration target — including when that target is itself dead.
+func TestEOLResults(t *testing.T) {
+	run := parse(t, render(t, false)).Runs[0]
+
+	const id = "eol/openai/gpt-4.1"
+	ruleFound := false
+	for _, r := range run.Tool.Driver.Rules {
+		if r.ID != id {
+			continue
+		}
+		ruleFound = true
+		if r.DefaultConfiguration.Level != "warning" {
+			t.Errorf("a live deprecation is a deadline, want level warning, got %q", r.DefaultConfiguration.Level)
+		}
+		if _, ok := r.Properties["security-severity"]; ok {
+			t.Error("a retirement must NOT carry security-severity: no patch can fix a vendor shutdown, and tagging it would inflate the security dashboard")
+		}
+		if r.Properties["airom:eol.state"] != "deprecated" {
+			t.Errorf("airom:eol.state = %v", r.Properties["airom:eol.state"])
+		}
+	}
+	if !ruleFound {
+		t.Fatalf("no %s rule emitted", id)
+	}
+
+	resFound := false
+	for _, res := range run.Results {
+		if res.RuleID != id {
+			continue
+		}
+		resFound = true
+		if res.Level != "warning" {
+			t.Errorf("result level = %q, want warning", res.Level)
+		}
+		for _, want := range []string{"deprecated", "2026-10-23", "99 days", "migrate to gpt-4.2", "also retired"} {
+			if !strings.Contains(res.Message.Text, want) {
+				t.Errorf("message %q missing %q", res.Message.Text, want)
+			}
+		}
+		if res.Properties["airom:eol.replacementState"] != "retired" {
+			t.Errorf("replacementState = %v, want retired", res.Properties["airom:eol.replacementState"])
+		}
+	}
+	if !resFound {
+		t.Fatalf("no %s result emitted", id)
 	}
 }
 

@@ -81,6 +81,22 @@
                 "airom:cve.vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
                 "security-severity": "7.5"
               }
+            },
+            {
+              "id": "eol/openai/gpt-4.1",
+              "name": "EolOpenaiGpt41",
+              "shortDescription": {
+                "text": "gpt-4.1 is deprecated and stops serving requests on 2026-10-23."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://example.com/deprecations",
+              "properties": {
+                "airom:eol.replacement": "gpt-4.2",
+                "airom:eol.shutdownDate": "2026-10-23",
+                "airom:eol.state": "deprecated"
+              }
             }
           ],
           "properties": {
@@ -284,6 +300,50 @@
             "airom:cve.fixed": "0.2.5",
             "airom:cve.score": 7.5,
             "airom:cve.severity": "high"
+          }
+        },
+        {
+          "ruleId": "eol/openai/gpt-4.1",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "gpt-4.1 (openai) is deprecated — shuts down 2026-10-23 (99 days); referenced at 2 sites; migrate to gpt-4.2 (note: also retired — check the provider for a current model)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 5,
+                  "endLine": 12,
+                  "endColumn": 21,
+                  "snippet": {
+                    "text": "model=\"gpt-4.1\""
+                  }
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/util.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "airom:componentId": "airom:aaaa111122223333",
+            "airom:eol.daysRemaining": 99,
+            "airom:eol.replacementState": "retired",
+            "airom:eol.state": "deprecated"
           }
         }
       ]

@@ -90,7 +90,18 @@
           "name": "airom:param.temperature",
           "value": "0.2 @ src/rag.py:8"
         }
-      ]
+      ],
+      "eol": {
+        "state": "deprecated",
+        "announced": "2026-04-22",
+        "shutdown": "2026-10-23",
+        "daysRemaining": 98,
+        "replacement": "gpt-4.2",
+        "replacementState": "deprecated",
+        "source": "airom-catalog",
+        "sourceUrl": "https://example.com/deprecations",
+        "verified": "2026-07-17"
+      }
     },
     {
       "id": "airom:2222222222222222",

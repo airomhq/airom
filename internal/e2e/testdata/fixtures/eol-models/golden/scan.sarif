@@ -24,6 +24,48 @@
               }
             },
             {
+              "id": "rules/aiconfig/token-limits",
+              "name": "RulesAiconfigTokenLimits",
+              "shortDescription": {
+                "text": "Components identified by the rules/aiconfig/token-limits detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/anthropic/messages-call",
+              "name": "RulesAnthropicMessagesCall",
+              "shortDescription": {
+                "text": "Components identified by the rules/anthropic/messages-call detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/anthropic/model-literal",
+              "name": "RulesAnthropicModelLiteral",
+              "shortDescription": {
+                "text": "Components identified by the rules/anthropic/model-literal detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
               "id": "rules/openai/chat-call",
               "name": "RulesOpenaiChatCall",
               "shortDescription": {
@@ -50,6 +92,54 @@
               "properties": {
                 "airom:method": "source-code-analysis"
               }
+            },
+            {
+              "id": "eol/anthropic/claude-opus-4-1-20250805",
+              "name": "EolAnthropicClaudeOpus4120250805",
+              "shortDescription": {
+                "text": "claude-opus-4-1-20250805 is deprecated and stops serving requests on 2026-08-05."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
+              "properties": {
+                "airom:eol.replacement": "claude-opus-4-8",
+                "airom:eol.shutdownDate": "2026-08-05",
+                "airom:eol.state": "deprecated"
+              }
+            },
+            {
+              "id": "eol/openai/gpt-4-32k",
+              "name": "EolOpenaiGpt432k",
+              "shortDescription": {
+                "text": "gpt-4-32k was retired by its provider on 2025-06-06 and no longer serves requests."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://developers.openai.com/api/docs/deprecations",
+              "properties": {
+                "airom:eol.replacement": "gpt-4o",
+                "airom:eol.shutdownDate": "2025-06-06",
+                "airom:eol.state": "retired"
+              }
+            },
+            {
+              "id": "eol/openai/gpt-4-turbo",
+              "name": "EolOpenaiGpt4Turbo",
+              "shortDescription": {
+                "text": "gpt-4-turbo is deprecated and stops serving requests on 2026-10-23."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://developers.openai.com/api/docs/deprecations",
+              "properties": {
+                "airom:eol.replacement": "gpt-5.6-sol",
+                "airom:eol.shutdownDate": "2026-10-23",
+                "airom:eol.state": "deprecated"
+              }
             }
           ],
           "properties": {
@@ -72,8 +162,45 @@
       ],
       "results": [
         {
+          "ruleId": "rules/anthropic/model-literal",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "hosted-llm 'claude-sonnet-4-6' detected (confidence 0.85)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 5,
+                  "endLine": 45,
+                  "endColumn": 30,
+                  "snippet": {
+                    "text": "model=\"claude-sonnet-4-6\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "6a4e6b604ce194865396f54d42fc0ca7fb84b7223926286897d533b4edc23677"
+          },
+          "properties": {
+            "airom:componentId": "airom:0b7828a4ff243920",
+            "airom:confidence": 0.85,
+            "airom:kind": "hosted-llm",
+            "airom:occurrence.confidence": 0.85,
+            "airom:provider": "anthropic"
+          }
+        },
+        {
           "ruleId": "rules/openai/model-literal",
-          "ruleIndex": 2,
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "hosted-llm 'gpt-4-turbo' detected (confidence 0.85)"
@@ -86,9 +213,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 21,
+                  "startLine": 25,
                   "startColumn": 5,
-                  "endLine": 21,
+                  "endLine": 25,
                   "endColumn": 24,
                   "snippet": {
                     "text": "model=\"gpt-4-turbo\","
@@ -109,8 +236,228 @@
           }
         },
         {
-          "ruleId": "rules/openai/model-literal",
+          "ruleId": "rules/anthropic/messages-call",
           "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.39.0] detected (confidence 0.9858)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 38,
+                  "startColumn": 16,
+                  "endLine": 38,
+                  "endColumn": 33,
+                  "snippet": {
+                    "text": "legacy = claude.messages.create("
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "ba55684a617dba70f699b3d838de55c1376f0803c81764056c851fc6e3078bef"
+          },
+          "properties": {
+            "airom:componentId": "airom:65ac1a1b3af7edab",
+            "airom:confidence": 0.9858,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:pypi/anthropic@0.39.0"
+          }
+        },
+        {
+          "ruleId": "rules/anthropic/messages-call",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.39.0] detected (confidence 0.9858)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 17,
+                  "endLine": 44,
+                  "endColumn": 34,
+                  "snippet": {
+                    "text": "current = claude.messages.create("
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "ba55684a617dba70f699b3d838de55c1376f0803c81764056c851fc6e3078bef"
+          },
+          "properties": {
+            "airom:componentId": "airom:65ac1a1b3af7edab",
+            "airom:confidence": 0.9858,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:pypi/anthropic@0.39.0"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.39.0] detected (confidence 0.9858)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 2,
+                  "snippet": {
+                    "text": "anthropic==0.39.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "f8d3d2cc68885f7bbbfbf094508a3007a9c3acd8fc559ce8a28b7d5416c77f40"
+          },
+          "properties": {
+            "airom:componentId": "airom:65ac1a1b3af7edab",
+            "airom:confidence": 0.9858,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:pypi/anthropic@0.39.0"
+          }
+        },
+        {
+          "ruleId": "rules/aiconfig/token-limits",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "ai-config 'max_tokens' detected (confidence 0.525)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 1,
+                  "endLine": 40,
+                  "endColumn": 17,
+                  "snippet": {
+                    "text": "max_tokens=64,"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "d97fb2ed4192711f269940abb126b1760ee4ae4ffda618e2a93d874065012ab2"
+          },
+          "properties": {
+            "airom:componentId": "airom:737f185ea7c9f67f",
+            "airom:confidence": 0.525,
+            "airom:kind": "ai-config",
+            "airom:occurrence.confidence": 0.5
+          }
+        },
+        {
+          "ruleId": "rules/aiconfig/token-limits",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "ai-config 'max_tokens' detected (confidence 0.525)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 46,
+                  "startColumn": 1,
+                  "endLine": 46,
+                  "endColumn": 17,
+                  "snippet": {
+                    "text": "max_tokens=64,"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "d97fb2ed4192711f269940abb126b1760ee4ae4ffda618e2a93d874065012ab2"
+          },
+          "properties": {
+            "airom:componentId": "airom:737f185ea7c9f67f",
+            "airom:confidence": 0.525,
+            "airom:kind": "ai-config",
+            "airom:occurrence.confidence": 0.5
+          }
+        },
+        {
+          "ruleId": "rules/anthropic/model-literal",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "hosted-llm 'claude-opus-4-1-20250805' detected (confidence 0.85)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 5,
+                  "endLine": 39,
+                  "endColumn": 37,
+                  "snippet": {
+                    "text": "model=\"claude-opus-4-1-20250805\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "3032b226cb1d100683f1aebe8e7665b4ebbdbe3e5febee3fe58a022e741828e2"
+          },
+          "properties": {
+            "airom:componentId": "airom:76a548bfe1b671c7",
+            "airom:confidence": 0.85,
+            "airom:kind": "hosted-llm",
+            "airom:occurrence.confidence": 0.85,
+            "airom:provider": "anthropic"
+          }
+        },
+        {
+          "ruleId": "rules/openai/model-literal",
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "hosted-llm 'gpt-4o' detected (confidence 0.85)"
@@ -123,9 +470,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 27,
+                  "startLine": 31,
                   "startColumn": 5,
-                  "endLine": 27,
+                  "endLine": 31,
                   "endColumn": 19,
                   "snippet": {
                     "text": "model=\"gpt-4o\","
@@ -147,7 +494,7 @@
         },
         {
           "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 1,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
@@ -160,9 +507,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 14,
+                  "startLine": 18,
                   "startColumn": 17,
-                  "endLine": 14,
+                  "endLine": 18,
                   "endColumn": 42,
                   "snippet": {
                     "text": "summary = client.chat.completions.create("
@@ -185,7 +532,7 @@
         },
         {
           "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 1,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
@@ -198,9 +545,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 20,
+                  "startLine": 24,
                   "startColumn": 15,
-                  "endLine": 20,
+                  "endLine": 24,
                   "endColumn": 40,
                   "snippet": {
                     "text": "draft = client.chat.completions.create("
@@ -223,7 +570,7 @@
         },
         {
           "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 1,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
@@ -236,9 +583,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 26,
+                  "startLine": 30,
                   "startColumn": 15,
-                  "endLine": 26,
+                  "endLine": 30,
                   "endColumn": 40,
                   "snippet": {
                     "text": "reply = client.chat.completions.create("
@@ -296,7 +643,7 @@
         },
         {
           "ruleId": "rules/openai/model-literal",
-          "ruleIndex": 2,
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "hosted-llm 'gpt-4-32k' detected (confidence 0.85)"
@@ -309,9 +656,9 @@
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 15,
+                  "startLine": 19,
                   "startColumn": 5,
-                  "endLine": 15,
+                  "endLine": 19,
                   "endColumn": 22,
                   "snippet": {
                     "text": "model=\"gpt-4-32k\","
@@ -329,6 +676,103 @@
             "airom:kind": "hosted-llm",
             "airom:occurrence.confidence": 0.85,
             "airom:provider": "openai"
+          }
+        },
+        {
+          "ruleId": "eol/openai/gpt-4-turbo",
+          "ruleIndex": 8,
+          "level": "warning",
+          "message": {
+            "text": "gpt-4-turbo (openai) is deprecated — shuts down 2026-10-23 (83 days); migrate to gpt-5.6-sol"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 5,
+                  "endLine": 25,
+                  "endColumn": 24,
+                  "snippet": {
+                    "text": "model=\"gpt-4-turbo\","
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "airom:componentId": "airom:1b13aab20f840ad4",
+            "airom:eol.daysRemaining": 83,
+            "airom:eol.state": "deprecated"
+          }
+        },
+        {
+          "ruleId": "eol/anthropic/claude-opus-4-1-20250805",
+          "ruleIndex": 6,
+          "level": "warning",
+          "message": {
+            "text": "claude-opus-4-1-20250805 (anthropic) is deprecated — shuts down 2026-08-05 (4 days); migrate to claude-opus-4-8"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 5,
+                  "endLine": 39,
+                  "endColumn": 37,
+                  "snippet": {
+                    "text": "model=\"claude-opus-4-1-20250805\","
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "airom:componentId": "airom:76a548bfe1b671c7",
+            "airom:eol.daysRemaining": 4,
+            "airom:eol.replacementState": "supported",
+            "airom:eol.state": "deprecated"
+          }
+        },
+        {
+          "ruleId": "eol/openai/gpt-4-32k",
+          "ruleIndex": 7,
+          "level": "error",
+          "message": {
+            "text": "gpt-4-32k (openai) is retired — shut down 2025-06-06; migrate to gpt-4o"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 19,
+                  "startColumn": 5,
+                  "endLine": 19,
+                  "endColumn": 22,
+                  "snippet": {
+                    "text": "model=\"gpt-4-32k\","
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "airom:componentId": "airom:be123ae014845a9f",
+            "airom:eol.daysRemaining": -421,
+            "airom:eol.state": "retired"
           }
         }
       ]

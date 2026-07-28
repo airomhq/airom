@@ -192,6 +192,16 @@ func (c *Catalog) addProvider(path string, pf *providerFile) error {
 		if state == airom.EOLSupported && shutdown != nil {
 			return fmt.Errorf("%s: model %q: state 'supported' cannot carry a shutdown date", path, m.ID)
 		}
+		// "Migrate to yourself" is not advice. A replacement naming this record's
+		// own id or one of its aliases would render as "migrate to X (note: also
+		// deprecated)" — pointing at the very model being deprecated.
+		if m.Replacement != "" {
+			for _, own := range append([]string{m.ID}, m.Aliases...) {
+				if strings.EqualFold(strings.TrimSpace(m.Replacement), strings.TrimSpace(own)) {
+					return fmt.Errorf("%s: model %q: replacement points at itself (%q)", path, m.ID, m.Replacement)
+				}
+			}
+		}
 		verified := *fileVerified
 		if m.Verified != "" {
 			v, err := parseDate(m.Verified)
@@ -249,6 +259,16 @@ func (c *Catalog) Lookup(provider, modelID string, on airom.Date) *airom.Lifecyc
 		Replacement: rec.replacement,
 		Source:      "airom-catalog",
 		SourceURL:   rec.source,
+	}
+	// Resolve where the migration target itself stands. Providers point a
+	// deprecation at whatever was current when they wrote it, and then deprecate
+	// that too — so "migrate to X" is only actionable alongside X's own state.
+	// Looked up in the same provider's namespace and never recursively: one hop
+	// answers "is the advice still good?", which is the question.
+	if rec.replacement != "" {
+		if target, ok := c.byKey[key(rec.provider, rec.replacement)]; ok {
+			lc.ReplacementState = airom.DeriveEOLState(target.state, target.shutdown, on)
+		}
 	}
 	v := rec.verified
 	lc.Verified = &v

@@ -85,6 +85,42 @@
           "value": "0.9"
         },
         {
+          "name": "airom:eol.announcedDate",
+          "value": "2026-04-22"
+        },
+        {
+          "name": "airom:eol.daysRemaining",
+          "value": "99"
+        },
+        {
+          "name": "airom:eol.replacement",
+          "value": "gpt-4.2"
+        },
+        {
+          "name": "airom:eol.replacementState",
+          "value": "retired"
+        },
+        {
+          "name": "airom:eol.shutdownDate",
+          "value": "2026-10-23"
+        },
+        {
+          "name": "airom:eol.source",
+          "value": "airom-catalog"
+        },
+        {
+          "name": "airom:eol.sourceUrl",
+          "value": "https://example.com/deprecations"
+        },
+        {
+          "name": "airom:eol.state",
+          "value": "deprecated"
+        },
+        {
+          "name": "airom:eol.verified",
+          "value": "2026-07-16"
+        },
+        {
           "name": "airom:kind",
           "value": "hosted-llm"
         },

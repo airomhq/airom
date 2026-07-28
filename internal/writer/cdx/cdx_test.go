@@ -6,6 +6,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -87,6 +88,19 @@ func fixtureInventory() *airom.Inventory {
 		// Raw provider-native id has no dedicated domain field; it rides in
 		// Props verbatim (§3.2 overflow → airom:model.id).
 		Props: []airom.KV{{Name: "airom:model.id", Value: "gpt-4.1-2026-01-14"}},
+		// EOL overlay: projects as airom:eol.* component properties, NOT a
+		// vulnerabilities[] entry — a scheduled retirement is not a defect.
+		EOL: &airom.Lifecycle{
+			State:            airom.EOLDeprecated,
+			Announced:        &airom.Date{Year: 2026, Month: 4, Day: 22},
+			Shutdown:         &airom.Date{Year: 2026, Month: 10, Day: 23},
+			DaysRemaining:    func() *int { d := 99; return &d }(),
+			Replacement:      "gpt-4.2",
+			ReplacementState: airom.EOLRetired,
+			Source:           "airom-catalog",
+			SourceURL:        "https://example.com/deprecations",
+			Verified:         &airom.Date{Year: 2026, Month: 7, Day: 16},
+		},
 		Evidence: airom.Evidence{
 			Occurrences: []airom.Occurrence{{
 				Location:   airom.Location{Path: "src/rag.py", Line: 42},
@@ -581,6 +595,60 @@ func TestCDXScoringMethod(t *testing.T) {
 	for _, c := range cases {
 		if got := cdxScoringMethod(c.vector); got != c.want {
 			t.Errorf("cdxScoringMethod(%q) = %q, want %q", c.vector, got, c.want)
+		}
+	}
+}
+
+// TestEOLProjectsAsPropertiesNotVulnerabilities pins the placement decision: a
+// scheduled vendor retirement is an availability fact, not a defect. Filing it
+// in vulnerabilities[] would put a non-CVE with no CVSS into the array that
+// downstream triage and VEX tooling treat as security findings.
+func TestEOLProjectsAsPropertiesNotVulnerabilities(t *testing.T) {
+	var bom cyclonedx.BOM
+	if err := json.Unmarshal(encode(t, writer.Options{}), &bom); err != nil {
+		t.Fatal(err)
+	}
+	var props map[string]string
+	for _, c := range *bom.Components {
+		if c.BOMRef != string(idHosted) {
+			continue
+		}
+		props = map[string]string{}
+		for _, p := range *c.Properties {
+			props[p.Name] = p.Value
+		}
+	}
+	if props == nil {
+		t.Fatal("hosted component not found")
+	}
+	want := map[string]string{
+		"airom:eol.state":            "deprecated",
+		"airom:eol.shutdownDate":     "2026-10-23",
+		"airom:eol.announcedDate":    "2026-04-22",
+		"airom:eol.daysRemaining":    "99",
+		"airom:eol.replacement":      "gpt-4.2",
+		"airom:eol.replacementState": "retired", // the target is itself dead
+		"airom:eol.source":           "airom-catalog",
+		"airom:eol.verified":         "2026-07-16",
+	}
+	for k, v := range want {
+		if props[k] != v {
+			t.Errorf("%s = %q, want %q", k, props[k], v)
+		}
+	}
+	// Dates are calendar days, never timestamps: a consumer west of UTC must
+	// not read 2026-10-23 as the 22nd.
+	for _, k := range []string{"airom:eol.shutdownDate", "airom:eol.announcedDate", "airom:eol.verified"} {
+		if strings.Contains(props[k], "T") {
+			t.Errorf("%s = %q, want a bare YYYY-MM-DD day", k, props[k])
+		}
+	}
+	// And nothing lifecycle-shaped leaked into vulnerabilities[].
+	if bom.Vulnerabilities != nil {
+		for _, v := range *bom.Vulnerabilities {
+			if strings.Contains(strings.ToLower(v.ID), "eol") {
+				t.Errorf("EOL must not appear in vulnerabilities[], found %q", v.ID)
+			}
 		}
 	}
 }

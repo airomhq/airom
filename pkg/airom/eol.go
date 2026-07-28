@@ -26,6 +26,12 @@ type Lifecycle struct {
 	DaysRemaining *int `json:"daysRemaining,omitempty"`
 	// Replacement is the provider's named migration target, when they name one.
 	Replacement string `json:"replacement,omitempty"`
+	// ReplacementState is that target's OWN lifecycle state, when the catalog
+	// also covers it. Providers routinely point a deprecation at a model that
+	// has since been deprecated itself, so migration advice is only actionable
+	// if it says where the target stands. Empty means the catalog has no record
+	// of the target — no claim, same as everywhere else.
+	ReplacementState EOLState `json:"replacementState,omitempty"`
 	// Source identifies the catalog ("airom-catalog"), SourceURL the provider
 	// page the record was transcribed from, and Verified when a maintainer last
 	// checked it — so a reader can audit and date every claim.

@@ -91,6 +91,56 @@ func TestEmbeddedCatalogKnownRecords(t *testing.T) {
 	}
 }
 
+// TestReplacementStateResolves is the point of surfacing a migration target at
+// all: providers point a deprecation at whatever was current when they wrote
+// it, then deprecate that too. Advice to "migrate to X" is only actionable
+// alongside where X stands — and an uncurated target must stay silent rather
+// than imply health.
+func TestReplacementStateResolves(t *testing.T) {
+	c, err := LoadOn(scanDay)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		provider, model string
+		wantReplacement string
+		wantState       airom.EOLState
+	}{
+		// The target is itself dead — the case that makes this feature exist.
+		{"openai", "chatgpt-4o-latest", "gpt-5.1-chat-latest", airom.EOLRetired},
+		// The target is on its own clock.
+		{"openai", "gpt-3.5-turbo-0613", "gpt-3.5-turbo", airom.EOLDeprecated},
+		// The target is current, per Anthropic's Active table.
+		{"anthropic", "claude-opus-4-1-20250805", "claude-opus-4-8", airom.EOLSupported},
+		// The target is not curated: no claim, not a quiet "supported".
+		{"openai", "gpt-4-32k", "gpt-4o", ""},
+	}
+	for _, tc := range cases {
+		lc := c.Lookup(tc.provider, tc.model, scanDay)
+		if lc == nil {
+			t.Errorf("%s/%s: no record", tc.provider, tc.model)
+			continue
+		}
+		if lc.Replacement != tc.wantReplacement {
+			t.Errorf("%s/%s: replacement = %q, want %q", tc.provider, tc.model, lc.Replacement, tc.wantReplacement)
+		}
+		if lc.ReplacementState != tc.wantState {
+			t.Errorf("%s/%s: replacementState = %q, want %q", tc.provider, tc.model, lc.ReplacementState, tc.wantState)
+		}
+	}
+}
+
+func TestReplacementPointingAtItselfIsRejected(t *testing.T) {
+	for _, body := range []string{
+		"provider: p\nsource: https://x\nverified: 2026-07-23\nmodels:\n  - {id: m, state: deprecated, announced: 2026-01-01, replacement: m}\n",
+		"provider: p\nsource: https://x\nverified: 2026-07-23\nmodels:\n  - {id: m, aliases: [m-alias], state: deprecated, announced: 2026-01-01, replacement: M-ALIAS}\n",
+	} {
+		if _, err := loadYAML(t, body); err == nil || !strings.Contains(err.Error(), "points at itself") {
+			t.Errorf("self-referential replacement must be rejected, got %v", err)
+		}
+	}
+}
+
 // TestUnknownIsNotSupported is the central honesty invariant: a model nobody
 // curated must yield NO record, never a "supported" claim.
 func TestUnknownIsNotSupported(t *testing.T) {

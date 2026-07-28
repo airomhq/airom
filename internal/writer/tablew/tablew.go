@@ -56,23 +56,30 @@ func (t Writer) Write(w io.Writer, inv *airom.Inventory) error {
 
 	writeSummary(w, inv, comps)
 
-	// The VULN column appears only when a scan surfaces at least one CVE, so
-	// CVE-free output stays narrow.
-	anyVuln := false
+	// The VULN and EOL columns appear only when a scan surfaces something, so
+	// clean output stays narrow.
+	anyVuln, anyEOL := false, false
 	for _, c := range comps {
 		if len(c.Vulnerabilities) > 0 {
 			anyVuln = true
-			break
+		}
+		if eolReportable(c) {
+			anyEOL = true
 		}
 	}
 
 	fmt.Fprintln(w)
-	writeTable(w, comps, anyVuln)
+	writeTable(w, comps, anyVuln, anyEOL)
 
 	// The per-CVE detail table (library, id, severity, fix, title) follows the
 	// component table when the CVE overlay found anything.
 	if anyVuln {
 		writeVulnTable(w, comps)
+	}
+	// Then the lifecycle detail table: what stops working, when, and what to
+	// move to.
+	if anyEOL {
+		writeEOLTable(w, comps)
 	}
 
 	if t.wide {
@@ -147,15 +154,38 @@ func writeSummary(w io.Writer, inv *airom.Inventory, comps []airom.Component) {
 		}
 	}
 
+	// Model lifecycle — counted only for states that are findings, so a healthy
+	// scan stays quiet. A model that stopped answering belongs in the first
+	// thing a reader looks at, not only in a table further down.
+	eolByState := map[airom.EOLState]int{}
+	eolTotal := 0
+	for _, c := range comps {
+		if eolReportable(c) {
+			eolByState[c.EOL.State]++
+			eolTotal++
+		}
+	}
+	if eolTotal > 0 {
+		lines = append(lines, "", "Model lifecycle")
+		for _, s := range airom.EOLStates() {
+			if n := eolByState[s]; n > 0 {
+				lines = append(lines, fmt.Sprintf("  %-18s %d", s, n))
+			}
+		}
+	}
+
 	summaryBox(w, "Scan Summary", lines)
 }
 
 // writeTable renders the component table with box-drawing borders, columns
 // sized to their widest cell (full names are never truncated).
-func writeTable(w io.Writer, comps []airom.Component, anyVuln bool) {
+func writeTable(w io.Writer, comps []airom.Component, anyVuln, anyEOL bool) {
 	headers := []string{"KIND", "NAME", "VERSION", "PROVIDER", "CONF"}
 	if anyVuln {
 		headers = append(headers, "VULN")
+	}
+	if anyEOL {
+		headers = append(headers, "EOL")
 	}
 	headers = append(headers, "LOCATION", "EVIDENCE")
 
@@ -169,6 +199,9 @@ func writeTable(w io.Writer, comps []airom.Component, anyVuln bool) {
 		}
 		if anyVuln {
 			row = append(row, vulnCell(c))
+		}
+		if anyEOL {
+			row = append(row, eolCell(c))
 		}
 		row = append(row, locationCell(c), fmt.Sprintf("%d occ", len(c.Evidence.Occurrences)))
 		rows = append(rows, row)
@@ -540,6 +573,127 @@ func wrapText(s string, width int) []string {
 		lines = append(lines, cur)
 	}
 	return lines
+}
+
+// eolReportable reports whether a component carries a lifecycle finding worth a
+// row: an announced retirement. "supported" is good news and "unknown" is no
+// news — neither is a finding, and neither should widen the table.
+func eolReportable(c airom.Component) bool {
+	return c.EOL != nil && (c.EOL.State == airom.EOLRetired || c.EOL.State == airom.EOLDeprecated)
+}
+
+// eolCell renders the lifecycle column: "retired" for a model that is already
+// gone, or "87d" — the deadline, which is the number that decides urgency — for
+// one still being served.
+func eolCell(c airom.Component) string {
+	if !eolReportable(c) {
+		return "-"
+	}
+	e := c.EOL
+	if e.State == airom.EOLRetired {
+		return string(airom.EOLRetired)
+	}
+	if e.DaysRemaining != nil && *e.DaysRemaining >= 0 {
+		return fmt.Sprintf("%dd", *e.DaysRemaining)
+	}
+	return string(airom.EOLDeprecated)
+}
+
+// writeEOLTable renders the per-model lifecycle detail table, worst-first: what
+// stops working, when, and what to move to. The replacement carries the target's
+// own state when the catalog covers it, so the table never quietly recommends
+// migrating onto a model that is itself retired.
+func writeEOLTable(w io.Writer, comps []airom.Component) {
+	type erow struct {
+		model, provider string
+		state           airom.EOLState
+		shutdown, days  string
+		replacement     string
+		source          string
+	}
+	var rows []erow
+	for _, c := range comps {
+		if !eolReportable(c) {
+			continue
+		}
+		e := c.EOL
+		provider, _ := c.Provider.Value()
+		shutdown, days := "-", "-"
+		if e.Shutdown != nil {
+			shutdown = e.Shutdown.String()
+		}
+		if e.DaysRemaining != nil {
+			days = fmt.Sprintf("%d", *e.DaysRemaining)
+		}
+		repl := dash(e.Replacement)
+		switch e.ReplacementState {
+		case airom.EOLRetired:
+			repl += " (retired)"
+		case airom.EOLDeprecated:
+			repl += " (deprecated)"
+		}
+		rows = append(rows, erow{
+			model: name(c), provider: dash(provider), state: e.State,
+			shutdown: shutdown, days: days, replacement: repl, source: e.SourceURL,
+		})
+	}
+	if len(rows) == 0 {
+		return
+	}
+	sort.SliceStable(rows, func(i, j int) bool {
+		if ri, rj := airom.EOLStateRank(rows[i].state), airom.EOLStateRank(rows[j].state); ri != rj {
+			return ri > rj // retired before deprecated
+		}
+		// Soonest deadline first — but a deprecation with no date yet is the
+		// LEAST urgent thing here, so it sinks below every dated row. Comparing
+		// the rendered strings alone would do the opposite, since "-" sorts
+		// before any digit, and float an undated row above a model that stops
+		// answering next week.
+		di, dj := rows[i].shutdown != "-", rows[j].shutdown != "-"
+		if di != dj {
+			return di
+		}
+		if di && rows[i].shutdown != rows[j].shutdown {
+			return rows[i].shutdown < rows[j].shutdown
+		}
+		return rows[i].model < rows[j].model
+	})
+
+	headers := []string{"MODEL", "PROVIDER", "STATE", "SHUTDOWN", "DAYS", "MIGRATE TO"}
+	tableRows := make([][]string, 0, len(rows))
+	for _, r := range rows {
+		tableRows = append(tableRows, []string{
+			r.model, r.provider, strings.ToUpper(string(r.state)),
+			r.shutdown, r.days, r.replacement,
+		})
+	}
+	fmt.Fprintf(w, "\nModel lifecycle (%d)\n", len(rows))
+	boxTable(w, headers, tableRows)
+
+	// Provenance as a footnote rather than a column: every row from a provider
+	// cites the same page, so repeating a wrapped URL per row would crowd out
+	// the dates that actually decide anything — while dropping it entirely
+	// would leave the claims unsourced.
+	seen := map[string]bool{}
+	var lines []string
+	for _, c := range comps {
+		if !eolReportable(c) || c.EOL.SourceURL == "" {
+			continue
+		}
+		provider, _ := c.Provider.Value()
+		line := fmt.Sprintf("  %s — %s", dash(provider), c.EOL.SourceURL)
+		if c.EOL.Verified != nil {
+			line += fmt.Sprintf(" (verified %s)", c.EOL.Verified)
+		}
+		if !seen[line] {
+			seen[line] = true
+			lines = append(lines, line)
+		}
+	}
+	sort.Strings(lines)
+	for _, l := range lines {
+		fmt.Fprintln(w, l)
+	}
 }
 
 // vulnCell renders the CVE overlay for a component as "<top-severity> (<n>)"

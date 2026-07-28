@@ -31,6 +31,16 @@ components:
     kind: application
     name: ai-app
   - confidence: 0.8738
+    eol:
+      announced: "2026-04-22"
+      daysRemaining: 98
+      replacement: gpt-4.2
+      replacementState: deprecated
+      shutdown: "2026-10-23"
+      source: airom-catalog
+      sourceUrl: https://example.com/deprecations
+      state: deprecated
+      verified: "2026-07-17"
     evidence:
       identity:
         - confidence: 0.85

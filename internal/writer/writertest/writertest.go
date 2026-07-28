@@ -40,6 +40,21 @@ func BuildFixture() *airom.Inventory {
 			{Name: "airom:model.id", Value: "gpt-4.1"},
 			{Name: "airom:param.temperature", Value: "0.2 @ src/rag.py:8"},
 		},
+		// EOL overlay: a deprecation whose own migration target is on the way
+		// out too, so the goldens pin both the lifecycle projection and the
+		// replacement-state annotation. Hand-authored (the catalog has its own
+		// tests); this fixture proves the writer projection.
+		EOL: &airom.Lifecycle{
+			State:            airom.EOLDeprecated,
+			Announced:        &airom.Date{Year: 2026, Month: 4, Day: 22},
+			Shutdown:         &airom.Date{Year: 2026, Month: 10, Day: 23},
+			DaysRemaining:    func() *int { d := 98; return &d }(),
+			Replacement:      "gpt-4.2",
+			ReplacementState: airom.EOLDeprecated,
+			Source:           "airom-catalog",
+			SourceURL:        "https://example.com/deprecations",
+			Verified:         &airom.Date{Year: 2026, Month: 7, Day: 17},
+		},
 		Evidence: airom.Evidence{
 			Occurrences: []airom.Occurrence{
 				occ("src/rag.py", 7, "rules/openai/model-literal", airom.MethodSourceCode, 0.85),

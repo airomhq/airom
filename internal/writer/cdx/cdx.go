@@ -575,6 +575,40 @@ func (b *builder) properties(c *airom.Component) *[]cyclonedx.Property {
 		}
 	}
 
+	// Hosted-model lifecycle (the EOL overlay). These are component PROPERTIES,
+	// deliberately not a vulnerabilities[] entry: a retirement is a scheduled
+	// vendor action, not a defect, and filing it as a vulnerability would put a
+	// non-CVE with no CVSS into the array downstream triage and VEX tooling
+	// treats as security findings.
+	if e := c.EOL; e != nil {
+		p.add("airom:eol.state", string(e.State))
+		if e.Shutdown != nil {
+			p.add("airom:eol.shutdownDate", e.Shutdown.String())
+		}
+		if e.Announced != nil {
+			p.add("airom:eol.announcedDate", e.Announced.String())
+		}
+		if e.DaysRemaining != nil {
+			p.add("airom:eol.daysRemaining", strconv.Itoa(*e.DaysRemaining))
+		}
+		if e.Replacement != "" {
+			p.add("airom:eol.replacement", e.Replacement)
+			// The target's own state travels with it: advice to migrate onto a
+			// model that is itself retired is worse than no advice.
+			if e.ReplacementState != "" {
+				p.add("airom:eol.replacementState", string(e.ReplacementState))
+			}
+		}
+		// Provenance for the claim, so a reader can audit and date it.
+		p.add("airom:eol.source", e.Source)
+		if e.SourceURL != "" {
+			p.add("airom:eol.sourceUrl", e.SourceURL)
+		}
+		if e.Verified != nil {
+			p.add("airom:eol.verified", e.Verified.String())
+		}
+	}
+
 	// Legacy pickle properties (§3.3), kept for one release as the inline view
 	// of the pickle-import risk; the authoritative home is vulnerabilities[].
 	// Derived from c.Risks so the two never disagree.

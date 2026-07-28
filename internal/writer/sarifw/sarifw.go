@@ -62,10 +62,13 @@ func (wr Writer) build(inv *airom.Inventory) sarifReport {
 	rules = append(rules, riskRules...)
 	cveRules, cveIndex := buildCVERules(comps, len(rules))
 	rules = append(rules, cveRules...)
+	eolRules, eolIndex := buildEOLRules(comps, len(rules))
+	rules = append(rules, eolRules...)
 
 	results := wr.buildResults(comps, ruleIndex)
 	results = append(results, buildRiskResults(comps, riskIndex)...)
 	results = append(results, buildCVEResults(comps, cveIndex)...)
+	results = append(results, buildEOLResults(comps, eolIndex)...)
 
 	run := sarifRun{
 		Tool:        buildTool(inv, rules),
@@ -420,6 +423,211 @@ func cveSecuritySeverity(v airom.Vulnerability) string {
 	default:
 		return "0.0"
 	}
+}
+
+// buildEOLRules adds one rule per distinct model lifecycle finding, id
+// "eol/<provider>/<model>". Only models with an announced retirement get one:
+// "supported" is good news and "unknown" is no news, and neither belongs in a
+// findings list. Indices continue from offset. Deterministic: sorted by id.
+//
+// No `security-severity` property here, unlike the risk and CVE rules — a
+// scheduled retirement is an availability fact, not a security finding, and
+// tagging it as one would inflate a Code Scanning security dashboard with
+// something no patch can fix.
+func buildEOLRules(comps []airom.Component, offset int) ([]sarifRule, map[string]int) {
+	rep := map[string]airom.Component{}
+	ids := make([]string, 0)
+	for _, c := range comps {
+		if !eolReportable(c) {
+			continue
+		}
+		id := eolRuleID(c)
+		if _, seen := rep[id]; !seen {
+			rep[id] = c
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	sort.Strings(ids)
+
+	rules := make([]sarifRule, 0, len(ids))
+	index := make(map[string]int, len(ids))
+	for i, id := range ids {
+		c := rep[id]
+		e := c.EOL
+		index[id] = offset + i
+		props := map[string]any{"airom:eol.state": string(e.State)}
+		if e.Shutdown != nil {
+			props["airom:eol.shutdownDate"] = e.Shutdown.String()
+		}
+		if e.Replacement != "" {
+			props["airom:eol.replacement"] = e.Replacement
+		}
+		rules = append(rules, sarifRule{
+			ID:                   id,
+			Name:                 upperCamelCase(id),
+			ShortDescription:     sarifText{Text: eolRuleDescription(c)},
+			DefaultConfiguration: sarifConfig{Level: eolLevel(e.State)},
+			HelpURI:              e.SourceURL,
+			Properties:           props,
+		})
+	}
+	return rules, index
+}
+
+// buildEOLResults emits one result per affected model, anchored to where the
+// model is referenced in the code — the line a developer has to change.
+func buildEOLResults(comps []airom.Component, index map[string]int) []sarifResult {
+	if len(index) == 0 {
+		return nil
+	}
+	var results []sarifResult
+	for _, c := range comps {
+		if !eolReportable(c) {
+			continue
+		}
+		id := eolRuleID(c)
+		e := c.EOL
+		props := map[string]any{
+			"airom:componentId": string(c.ID),
+			"airom:eol.state":   string(e.State),
+		}
+		if e.DaysRemaining != nil {
+			props["airom:eol.daysRemaining"] = *e.DaysRemaining
+		}
+		// Only meaningful alongside a replacement, and CDX nests it the same
+		// way: one struct must not describe itself two different ways.
+		if e.Replacement != "" && e.ReplacementState != "" {
+			props["airom:eol.replacementState"] = string(e.ReplacementState)
+		}
+		results = append(results, sarifResult{
+			RuleID:    id,
+			RuleIndex: index[id],
+			Level:     eolLevel(e.State),
+			Message:   sarifText{Text: eolMessage(c)},
+			// EVERY sighting, not just the primary one. A CVE is fixed by
+			// bumping one version pin, so anchoring to the declaration site is
+			// enough; a retired model is a literal that has to change at each
+			// call site. Showing one would let a developer clear the alert while
+			// the other files keep calling a model that no longer answers.
+			Locations:  allLocations(c),
+			Properties: props,
+		})
+	}
+	return results
+}
+
+// allLocations projects every located sighting of a component, in the same
+// (path, line) order the inventory results use, so a reader sees each place the
+// finding applies. Falls back to an empty slice when nothing is located.
+func allLocations(c airom.Component) []sarifLocation {
+	occs := append([]airom.Occurrence(nil), c.Evidence.Occurrences...)
+	sort.SliceStable(occs, func(i, j int) bool {
+		if occs[i].Location.Path != occs[j].Location.Path {
+			return occs[i].Location.Path < occs[j].Location.Path
+		}
+		return occs[i].Location.Line < occs[j].Location.Line
+	})
+	out := make([]sarifLocation, 0, len(occs))
+	for _, o := range occs {
+		if o.Location.Path == "" {
+			continue
+		}
+		out = append(out, sarifLocation{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: o.Location.Path, URIBaseID: srcRootID},
+				Region:           buildRegion(o),
+			},
+		})
+	}
+	return out
+}
+
+// eolReportable reports whether a component carries a lifecycle finding worth
+// listing: an announced retirement. A supported model is not a finding, and an
+// absent record is not a claim.
+func eolReportable(c airom.Component) bool {
+	return c.EOL != nil && (c.EOL.State == airom.EOLRetired || c.EOL.State == airom.EOLDeprecated)
+}
+
+// eolProvider is the provider label, rendered one way everywhere. A
+// provider-less component cannot reach this from a scan (Enrich skips it), but
+// an SDK-built inventory can, and "gpt-4 () is deprecated" reads like a bug.
+func eolProvider(c airom.Component) string {
+	if p, ok := c.Provider.Value(); ok && strings.TrimSpace(p) != "" {
+		return p
+	}
+	return "unknown-provider"
+}
+
+// eolRuleID is "eol/<provider>/<model>" — provider-qualified because the same
+// model name can exist on platforms with different retirement schedules.
+func eolRuleID(c airom.Component) string {
+	return "eol/" + eolProvider(c) + "/" + c.Name
+}
+
+// eolRuleDescription states the rule's standing fact.
+func eolRuleDescription(c airom.Component) string {
+	e := c.EOL
+	if e.State == airom.EOLRetired {
+		if e.Shutdown != nil {
+			return fmt.Sprintf("%s was retired by its provider on %s and no longer serves requests.", c.Name, e.Shutdown)
+		}
+		return fmt.Sprintf("%s has been retired by its provider.", c.Name)
+	}
+	if e.Shutdown != nil {
+		return fmt.Sprintf("%s is deprecated and stops serving requests on %s.", c.Name, e.Shutdown)
+	}
+	return fmt.Sprintf("%s is deprecated by its provider.", c.Name)
+}
+
+// eolMessage renders the per-occurrence headline: what happens, when, and what
+// to move to — including whether that target is itself on the way out.
+func eolMessage(c airom.Component) string {
+	e := c.EOL
+	var b strings.Builder
+	provider := eolProvider(c)
+	if e.State == airom.EOLRetired {
+		fmt.Fprintf(&b, "%s (%s) is retired", c.Name, provider)
+		if e.Shutdown != nil {
+			fmt.Fprintf(&b, " — shut down %s", e.Shutdown)
+		}
+	} else {
+		fmt.Fprintf(&b, "%s (%s) is deprecated", c.Name, provider)
+		if e.Shutdown != nil {
+			fmt.Fprintf(&b, " — shuts down %s", e.Shutdown)
+			if e.DaysRemaining != nil && *e.DaysRemaining >= 0 {
+				fmt.Fprintf(&b, " (%d days)", *e.DaysRemaining)
+			}
+		}
+	}
+	if n := len(c.Evidence.Occurrences); n > 1 {
+		// The literal has to change at every call site, so say how many.
+		fmt.Fprintf(&b, "; referenced at %d sites", n)
+	}
+	if e.Replacement != "" {
+		fmt.Fprintf(&b, "; migrate to %s", e.Replacement)
+		// Say so when the recommended target is itself scheduled to go: sending
+		// someone onto a dead model is worse than saying nothing.
+		switch e.ReplacementState {
+		case airom.EOLRetired:
+			b.WriteString(" (note: also retired — check the provider for a current model)")
+		case airom.EOLDeprecated:
+			b.WriteString(" (note: also deprecated)")
+		}
+	}
+	return b.String()
+}
+
+// eolLevel maps a lifecycle state to a SARIF result level: a retired model is
+// broken today (error), a deprecation is a deadline (warning).
+func eolLevel(s airom.EOLState) string {
+	if s == airom.EOLRetired {
+		return "error"
+	}
+	return "warning"
 }
 
 // buildTool assembles tool.driver (§3.1).

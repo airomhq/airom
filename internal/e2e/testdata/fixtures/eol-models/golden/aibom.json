@@ -16,6 +16,74 @@
   "root": "airom:aa2a11f29e846576",
   "components": [
     {
+      "id": "airom:0b7828a4ff243920",
+      "kind": "hosted-llm",
+      "name": "claude-sonnet-4-6",
+      "provider": "anthropic",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "64",
+            "occurrence": {
+              "location": {
+                "path": "app.py",
+                "line": 44,
+                "endLine": 44,
+                "column": 17,
+                "endColumn": 34
+              },
+              "detectorId": "rules/anthropic/messages-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "current = claude.messages.create(",
+              "fields": {
+                "model": "claude-sonnet-4-6",
+                "param.max_tokens": "64"
+              }
+            }
+          }
+        ]
+      },
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 45,
+              "endLine": 45,
+              "column": 5,
+              "endColumn": 30
+            },
+            "detectorId": "rules/anthropic/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"claude-sonnet-4-6\",",
+            "fields": {
+              "model": "claude-sonnet-4-6"
+            }
+          }
+        ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-sonnet-4-6"
+        }
+      ],
+      "eol": {
+        "state": "supported",
+        "source": "airom-catalog",
+        "sourceUrl": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
+        "verified": "2026-07-23"
+      }
+    },
+    {
       "id": "airom:1b13aab20f840ad4",
       "kind": "hosted-llm",
       "name": "gpt-4-turbo",
@@ -26,8 +94,8 @@
           {
             "location": {
               "path": "app.py",
-              "line": 21,
-              "endLine": 21,
+              "line": 25,
+              "endLine": 25,
               "column": 5,
               "endColumn": 24
             },
@@ -63,18 +131,228 @@
       }
     },
     {
-      "id": "airom:91e505cba56acc91",
+      "id": "airom:65ac1a1b3af7edab",
+      "kind": "library",
+      "name": "anthropic",
+      "version": "0.39.0",
+      "provider": "anthropic",
+      "purl": "pkg:pypi/anthropic@0.39.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.98575,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 38,
+              "endLine": 38,
+              "column": 16,
+              "endColumn": 33
+            },
+            "detectorId": "rules/anthropic/messages-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "legacy = claude.messages.create(",
+            "fields": {
+              "model": "claude-opus-4-1-20250805",
+              "param.max_tokens": "64"
+            }
+          },
+          {
+            "location": {
+              "path": "app.py",
+              "line": 44,
+              "endLine": 44,
+              "column": 17,
+              "endColumn": 34
+            },
+            "detectorId": "rules/anthropic/messages-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "current = claude.messages.create(",
+            "fields": {
+              "model": "claude-sonnet-4-6",
+              "param.max_tokens": "64"
+            }
+          },
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 2
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "anthropic==0.39.0"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "0.39.0",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:737f185ea7c9f67f",
+      "kind": "ai-config",
+      "name": "max_tokens",
+      "confidence": 0.525,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 40,
+              "endLine": 40,
+              "column": 1,
+              "endColumn": 17
+            },
+            "detectorId": "rules/aiconfig/token-limits",
+            "method": "source-code-analysis",
+            "confidence": 0.5,
+            "snippet": "max_tokens=64,",
+            "fields": {
+              "param": "max_tokens"
+            }
+          },
+          {
+            "location": {
+              "path": "app.py",
+              "line": 46,
+              "endLine": 46,
+              "column": 1,
+              "endColumn": 17
+            },
+            "detectorId": "rules/aiconfig/token-limits",
+            "method": "source-code-analysis",
+            "confidence": 0.5,
+            "snippet": "max_tokens=64,",
+            "fields": {
+              "param": "max_tokens"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:76a548bfe1b671c7",
       "kind": "hosted-llm",
-      "name": "gpt-4o",
-      "provider": "openai",
+      "name": "claude-opus-4-1-20250805",
+      "provider": "anthropic",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "64",
+            "occurrence": {
+              "location": {
+                "path": "app.py",
+                "line": 38,
+                "endLine": 38,
+                "column": 16,
+                "endColumn": 33
+              },
+              "detectorId": "rules/anthropic/messages-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "legacy = claude.messages.create(",
+              "fields": {
+                "model": "claude-opus-4-1-20250805",
+                "param.max_tokens": "64"
+              }
+            }
+          }
+        ]
+      },
       "confidence": 0.85,
       "evidence": {
         "occurrences": [
           {
             "location": {
               "path": "app.py",
-              "line": 27,
-              "endLine": 27,
+              "line": 39,
+              "endLine": 39,
+              "column": 5,
+              "endColumn": 37
+            },
+            "detectorId": "rules/anthropic/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"claude-opus-4-1-20250805\",",
+            "fields": {
+              "model": "claude-opus-4-1-20250805"
+            }
+          }
+        ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "anthropic"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "claude-opus-4-1-20250805"
+        }
+      ],
+      "eol": {
+        "state": "deprecated",
+        "announced": "2026-06-05",
+        "shutdown": "2026-08-05",
+        "daysRemaining": 4,
+        "replacement": "claude-opus-4-8",
+        "replacementState": "supported",
+        "source": "airom-catalog",
+        "sourceUrl": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
+        "verified": "2026-07-23"
+      }
+    },
+    {
+      "id": "airom:91e505cba56acc91",
+      "kind": "hosted-llm",
+      "name": "gpt-4o",
+      "provider": "openai",
+      "model": {
+        "generationParams": [
+          {
+            "name": "max_tokens",
+            "value": "64",
+            "occurrence": {
+              "location": {
+                "path": "app.py",
+                "line": 30,
+                "endLine": 30,
+                "column": 15,
+                "endColumn": 40
+              },
+              "detectorId": "rules/openai/chat-call",
+              "method": "source-code-analysis",
+              "confidence": 0.7,
+              "snippet": "reply = client.chat.completions.create(",
+              "fields": {
+                "model": "gpt-4o",
+                "param.max_tokens": "64"
+              }
+            }
+          }
+        ]
+      },
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 31,
+              "endLine": 31,
               "column": 5,
               "endColumn": 19
             },
@@ -115,8 +393,8 @@
           {
             "location": {
               "path": "app.py",
-              "line": 14,
-              "endLine": 14,
+              "line": 18,
+              "endLine": 18,
               "column": 17,
               "endColumn": 42
             },
@@ -131,8 +409,8 @@
           {
             "location": {
               "path": "app.py",
-              "line": 20,
-              "endLine": 20,
+              "line": 24,
+              "endLine": 24,
               "column": 15,
               "endColumn": 40
             },
@@ -147,8 +425,8 @@
           {
             "location": {
               "path": "app.py",
-              "line": 26,
-              "endLine": 26,
+              "line": 30,
+              "endLine": 30,
               "column": 15,
               "endColumn": 40
             },
@@ -157,7 +435,8 @@
             "confidence": 0.7,
             "snippet": "reply = client.chat.completions.create(",
             "fields": {
-              "model": "gpt-4o"
+              "model": "gpt-4o",
+              "param.max_tokens": "64"
             }
           },
           {
@@ -201,8 +480,8 @@
           {
             "location": {
               "path": "app.py",
-              "line": 15,
-              "endLine": 15,
+              "line": 19,
+              "endLine": 19,
               "column": 5,
               "endColumn": 22
             },
@@ -240,6 +519,56 @@
   ],
   "relationships": [
     {
+      "from": "airom:65ac1a1b3af7edab",
+      "to": "airom:0b7828a4ff243920",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 44,
+            "endLine": 44,
+            "column": 17,
+            "endColumn": 34
+          },
+          "detectorId": "rules/anthropic/messages-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "current = claude.messages.create(",
+          "fields": {
+            "model": "claude-sonnet-4-6",
+            "param.max_tokens": "64"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:65ac1a1b3af7edab",
+      "to": "airom:76a548bfe1b671c7",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 38,
+            "endLine": 38,
+            "column": 16,
+            "endColumn": 33
+          },
+          "detectorId": "rules/anthropic/messages-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "legacy = claude.messages.create(",
+          "fields": {
+            "model": "claude-opus-4-1-20250805",
+            "param.max_tokens": "64"
+          }
+        }
+      ]
+    },
+    {
       "from": "airom:a6ccf893ff130124",
       "to": "airom:1b13aab20f840ad4",
       "type": "uses",
@@ -248,8 +577,8 @@
         {
           "location": {
             "path": "app.py",
-            "line": 20,
-            "endLine": 20,
+            "line": 24,
+            "endLine": 24,
             "column": 15,
             "endColumn": 40
           },
@@ -272,8 +601,8 @@
         {
           "location": {
             "path": "app.py",
-            "line": 26,
-            "endLine": 26,
+            "line": 30,
+            "endLine": 30,
             "column": 15,
             "endColumn": 40
           },
@@ -282,7 +611,8 @@
           "confidence": 0.7,
           "snippet": "reply = client.chat.completions.create(",
           "fields": {
-            "model": "gpt-4o"
+            "model": "gpt-4o",
+            "param.max_tokens": "64"
           }
         }
       ]
@@ -296,8 +626,8 @@
         {
           "location": {
             "path": "app.py",
-            "line": 14,
-            "endLine": 14,
+            "line": 18,
+            "endLine": 18,
             "column": 17,
             "endColumn": 42
           },
@@ -316,8 +646,8 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
-    "headerBytes": 898,
-    "contentBytes": 898,
+    "headerBytes": 1558,
+    "contentBytes": 1558,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",
@@ -417,7 +747,7 @@
       {
         "id": "manifest/pypi-requirements",
         "invocations": 1,
-        "findings": 1,
+        "findings": 2,
         "ns": 0
       },
       {
@@ -501,7 +831,7 @@
       {
         "id": "ruleengine",
         "invocations": 1,
-        "findings": 6,
+        "findings": 12,
         "ns": 0
       }
     ]

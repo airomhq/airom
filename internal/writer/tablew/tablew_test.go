@@ -41,6 +41,11 @@ func TestTable(t *testing.T) {
 		"LIBRARY", "VULNERABILITY", "SEVERITY", "STATUS", "INSTALLED", "FIXED", "TITLE",
 		"CVE-2024-0001", "HIGH", "fixed", "0.2.5",
 		"Server-side request forgery", "https://osv.dev/vulnerability/CVE-2024-0001",
+		// the fixture's gpt-4.1 is deprecated with 98 days left — the EOL column
+		// shows the deadline (the number that decides urgency), and the detail
+		// table names the migration target plus ITS state
+		"EOL", "98d", "Model lifecycle", "MIGRATE TO", "gpt-4.2 (deprecated)",
+		"2026-10-23", "example.com/deprecations", "verified 2026-07-17",
 		// the LOCATION column shows each component's primary sighting —
 		// gpt-4.1 has two occurrences, so this also asserts the min-pick
 		"LOCATION", "src/rag.py:7",
