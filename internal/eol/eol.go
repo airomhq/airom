@@ -18,9 +18,9 @@
 //     "supported": the overlay never implies a model is healthy just because
 //     nobody has curated it.
 //
-// Unlike the CVE overlay this needs no network — the catalog is embedded (and,
-// later, refreshed through the signed airom-rules bundle) — so it works under
-// --offline.
+// Unlike the CVE overlay this needs no network: the catalog is embedded in the
+// binary and can be refreshed through the signed airom-rules bundle, so it
+// works under --offline either way.
 package eol
 
 import (
@@ -96,6 +96,17 @@ type Catalog struct {
 	// loadedOn is the day the catalog was loaded, used to reject verification
 	// dates that claim to be from the future.
 	loadedOn airom.Date
+	// source records where these records came from, so a staleness warning can
+	// name the lever that actually refreshes them.
+	source string
+}
+
+// Source reports where the catalog came from: SourceBuiltin or SourceBundle.
+func (c *Catalog) Source() string {
+	if c == nil || c.source == "" {
+		return SourceBuiltin
+	}
+	return c.source
 }
 
 // key builds the case-folded lookup key. Providers publish model ids in
@@ -108,6 +119,137 @@ func key(provider, id string) string {
 // Load parses and validates the embedded catalog. A malformed catalog ships in
 // the binary, so any error here means the build itself is broken.
 func Load() (*Catalog, error) { return LoadOn(airom.DateOf(time.Now())) }
+
+// BundleDir is where a fetched rule bundle carries lifecycle catalogs. Model B
+// ships them alongside the rule packs so retirement data — which changes on a
+// provider's calendar, not on AIROM's release schedule — can be refreshed with
+// `airom rules update` instead of a binary upgrade.
+const BundleDir = "eol"
+
+// SourceBuiltin and SourceBundle label where a catalog came from, so the scan
+// can tell a user which lever actually refreshes it.
+const (
+	SourceBuiltin = "builtin"
+	SourceBundle  = "bundle"
+)
+
+// LoadBundle loads the lifecycle catalogs from a fetched rule bundle. It
+// returns ok=false when the bundle carries none — an older bundle, or one
+// published before this feature — which is not an error: the caller falls back
+// to the embedded catalog, the offline floor.
+func LoadBundle(bundle fs.FS, today airom.Date) (c *Catalog, ok bool, err error) {
+	if bundle == nil {
+		return nil, false, nil
+	}
+	// Walk, not glob: a catalog at eol/sub/openai.yaml would otherwise be
+	// invisible here while still being skipped by the rule walk — present in the
+	// bundle, honored by nothing.
+	var found bool
+	_ = fs.WalkDir(bundle, BundleDir, func(p string, d fs.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && strings.HasSuffix(p, ".yaml") {
+			found = true
+			return fs.SkipAll
+		}
+		return nil
+	})
+	if !found {
+		return nil, false, nil
+	}
+	cat, err := loadFS(bundle, BundleDir, today)
+	if err != nil {
+		return nil, true, err // the bundle HAS a catalog and it is broken: say so
+	}
+	cat.source = SourceBundle
+	return cat, true, nil
+}
+
+// Overlay returns a catalog where every provider the overlay covers replaces
+// the base's records for that provider, and providers the overlay is silent
+// about keep the base's.
+//
+// Per-provider, not wholesale, because publishing is incremental: a bundle that
+// ships eol/openai.yaml alone is saying "here is newer OpenAI data", not
+// "Anthropic no longer has retirement dates". Replacing wholesale would delete
+// every Anthropic claim from every scan and flip a --fail-on eol gate green
+// with nothing in the output to explain why. Within a provider the overlay wins
+// entirely, so a record it drops IS dropped — that is the unit a maintainer
+// actually edits and re-verifies.
+func Overlay(base, overlay *Catalog) *Catalog {
+	if overlay == nil {
+		return base
+	}
+	if base == nil {
+		return overlay
+	}
+	out := &Catalog{
+		byKey:              make(map[string]record, len(base.byKey)+len(overlay.byKey)),
+		verifiedByProvider: map[string]airom.Date{},
+		loadedOn:           overlay.loadedOn,
+		source:             overlay.source,
+	}
+	replaced := map[string]bool{}
+	for p := range overlay.verifiedByProvider {
+		replaced[strings.ToLower(strings.TrimSpace(p))] = true
+	}
+	for k, r := range base.byKey {
+		if replaced[strings.ToLower(strings.TrimSpace(r.provider))] {
+			continue // this provider is fully re-stated by the overlay
+		}
+		out.byKey[k] = r
+	}
+	for p, d := range base.verifiedByProvider {
+		if !replaced[strings.ToLower(strings.TrimSpace(p))] {
+			out.verifiedByProvider[p] = d
+		}
+	}
+	for k, r := range overlay.byKey {
+		out.byKey[k] = r
+	}
+	for p, d := range overlay.verifiedByProvider {
+		out.verifiedByProvider[p] = d
+	}
+	return out
+}
+
+// LintFile validates a single lifecycle catalog file against the full contract
+// and reports what it holds. It exists for the publishing side: a catalog ships
+// through the signed channel, so a maintainer needs to catch a bad transcription
+// before it reaches every scan, not after.
+func LintFile(path string, data []byte, today airom.Date) (provider string, models int, err error) {
+	var pf providerFile
+	if err := yaml.Unmarshal(data, &pf); err != nil {
+		return "", 0, fmt.Errorf("%s: %w", path, err)
+	}
+	c := &Catalog{byKey: map[string]record{}, verifiedByProvider: map[string]airom.Date{}, loadedOn: today}
+	if err := c.addProvider(path, &pf); err != nil {
+		return "", 0, err
+	}
+	return pf.Provider, len(pf.Models), nil
+}
+
+// IsCatalogFile reports whether raw YAML looks like a lifecycle catalog rather
+// than a rule pack, so one lint command can serve both. It keys on the two
+// fields a catalog always has and a pack never does.
+func IsCatalogFile(data []byte) bool {
+	var probe struct {
+		Provider string `yaml:"provider"`
+		Models   []any  `yaml:"models"`
+		Verified string `yaml:"verified"`
+		Pack     string `yaml:"pack"`
+		Rules    []any  `yaml:"rules"`
+	}
+	if err := yaml.Unmarshal(data, &probe); err != nil {
+		return false
+	}
+	if probe.Pack != "" || len(probe.Rules) > 0 {
+		return false // pack-shaped (or ambiguous): the stricter validator owns it
+	}
+	// Any ONE catalog-only field is enough. Requiring all of them would send a
+	// catalog that is missing exactly the field it forgot to the rule-pack
+	// validator, which would then complain about the wrong contract and a
+	// --rules flag the user never passed.
+	return probe.Provider != "" || len(probe.Models) > 0 || probe.Verified != ""
+}
 
 // LoadOn is Load with an explicit "today" for INTEGRITY validation — is this
 // data internally sane, e.g. is a verification date impossibly in the future?
@@ -122,12 +264,21 @@ func LoadOn(today airom.Date) (*Catalog, error) { return loadFS(catalogFS, "cata
 
 // loadFS is Load's testable core: it reads every <dir>/*.yaml from fsys.
 func loadFS(fsys fs.FS, dir string, on airom.Date) (*Catalog, error) {
-	paths, err := fs.Glob(fsys, dir+"/*.yaml")
+	var paths []string
+	err := fs.WalkDir(fsys, dir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(p, ".yaml") {
+			paths = append(paths, p)
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 	sort.Strings(paths) // deterministic duplicate-detection order
-	c := &Catalog{byKey: make(map[string]record), verifiedByProvider: map[string]airom.Date{}, loadedOn: on}
+	c := &Catalog{byKey: make(map[string]record), verifiedByProvider: map[string]airom.Date{}, loadedOn: on, source: SourceBuiltin}
 	for _, p := range paths {
 		data, err := fs.ReadFile(fsys, p)
 		if err != nil {
@@ -339,13 +490,18 @@ func (c *Catalog) StalenessWarning(on airom.Date) string {
 	if age <= StaleAfterDays {
 		return ""
 	}
-	// Name the action that actually helps. The catalog is embedded in the
-	// binary, so `airom rules update` — which fetches the RULE bundle — cannot
-	// refresh it; telling a user to run it would send them in a circle, warning
-	// unchanged, until they upgraded anyway.
+	// Name the lever that actually helps, which depends on where these records
+	// came from. Advising `airom rules update` against an embedded catalog would
+	// send a user in a circle — command succeeds, warning unchanged — and
+	// advising an upgrade when the channel already carries a fresher catalog
+	// would send them the long way round.
+	fix := "upgrade airom for a newer catalog"
+	if c.Source() == SourceBundle {
+		fix = "run 'airom rules update' for a newer catalog"
+	}
 	return fmt.Sprintf(
-		"eol: the %s model lifecycle catalog was last verified %d days ago (%s); retirement dates may be out of date — upgrade airom for a newer catalog",
-		worstProvider, age, worst,
+		"eol: the %s model lifecycle catalog was last verified %d days ago (%s); retirement dates may be out of date — %s",
+		worstProvider, age, worst, fix,
 	)
 }
 

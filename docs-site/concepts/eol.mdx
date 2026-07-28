@@ -69,7 +69,7 @@ all. `unknown` means "nobody has curated this" — never "this is fine".
   model that is already gone.
 - **Staleness is visible.** If the least-recently-verified provider is more than
   90 days old, the scan says so rather than quietly serving data that may have
-  moved.
+  moved — naming the lever that actually refreshes *this* catalog (see below).
 
 ## How it appears in output
 
@@ -82,6 +82,7 @@ all. `unknown` means "nobody has curated this" — never "this is fine".
     Component `properties`: `airom:eol.state`, `airom:eol.announcedDate`,
     `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`,
     `airom:eol.replacementState`, plus `source` / `sourceUrl` / `verified`.
+    The document-level `airom:eol.catalog` names which catalog answered.
 
     **Deliberately not `vulnerabilities[]`** — a scheduled vendor retirement is an
     availability fact, not a defect. Filing it there would put a non-CVE with no
@@ -135,3 +136,35 @@ that discipline is coverage. A model outside it reports `unknown`, which is the
 honest answer.
 
 Adding a provider is a data change, not a code change.
+
+## Where the catalog comes from
+
+Retirement dates move on a provider's calendar, not on AIROM's release schedule,
+so the catalog is delivered two ways:
+
+| Source | When it is used | How to refresh |
+|---|---|---|
+| **Signed bundle** | whenever `airom rules update` has fetched one carrying `eol/` | `airom rules update` |
+| **Embedded** | for every provider the bundle does not cover, and as the whole catalog when no bundle does | upgrade airom |
+
+The two are merged **per provider**: a bundle shipping `eol/openai.yaml` alone
+says "here is newer OpenAI data", not "Anthropic no longer has retirement
+dates", so untouched providers keep their embedded records. Within a provider
+the bundle wins entirely. `--no-cached-rules` pins the scan to the embedded
+catalog.
+
+It is ed25519-verified like the rule packs, so a fresher catalog is not a less
+trusted one. A malformed bundle catalog is ignored with a warning **in the scan
+output** (`Stats.Warnings`, not just stderr) and the embedded catalog is used —
+a bad publish must not be worse than an old binary, or quieter.
+
+The staleness warning names whichever lever applies, so it never sends you in a
+circle. A catalog can also be validated before publishing:
+
+```bash
+airom rules lint eol/openai.yaml
+# eol/openai.yaml: OK (model lifecycle catalog: openai, 52 model(s))
+```
+
+The same command lints rule packs — one contract check for anything the bundle
+carries.

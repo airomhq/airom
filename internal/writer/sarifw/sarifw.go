@@ -648,6 +648,9 @@ func buildTool(inv *airom.Inventory, rules []sarifRule) sarifTool {
 	if inv.Tool.RulesHash != "" {
 		props["airom:rules.hash"] = inv.Tool.RulesHash
 	}
+	if inv.Tool.EOLCatalog != "" {
+		props["airom:eol.catalog"] = inv.Tool.EOLCatalog
+	}
 	if len(props) > 0 {
 		d.Properties = props
 	}

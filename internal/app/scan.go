@@ -25,10 +25,11 @@ import (
 // from the ldflags build metadata before running any command.
 var Tool = airom.ToolInfo{Name: "airom", Version: "dev"}
 
-// loadEOLCatalog is a seam. The catalog is embedded, so the failure path — the
-// one that decides whether an unevaluated gate fails closed — is otherwise
-// unreachable from a test, which is exactly the kind of code that rots.
-var loadEOLCatalog = eol.Load
+// loadEmbeddedEOLCatalog is a seam. The embedded catalog cannot fail in
+// practice (CI validates it), so the failure path — the one that decides
+// whether an unevaluated gate fails closed — is otherwise unreachable from a
+// test, which is exactly the kind of code that rots.
+var loadEmbeddedEOLCatalog = eol.Load
 
 // buildCatalog composes the detector catalog: generated built-ins plus the
 // rule-engine detector when the effective ruleset is non-empty (§6.2 —
@@ -191,7 +192,11 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 		// day is passed to Enrich, which is what decides whether a shutdown has
 		// arrived. Sharing one clock would let a pinned past date reject a
 		// catalog verified after it.
-		cat, err := loadEOLCatalog()
+		cat, catSource, catWarn, err := loadEOLCatalogFor(cfg)
+		if catWarn != "" {
+			inv.Stats.Warnings = append(inv.Stats.Warnings, catWarn)
+			sort.Strings(inv.Stats.Warnings)
+		}
 		switch {
 		case err != nil && cfg.Policy.ReferencesEOL():
 			// Fail closed, exactly as the CVE gate does. A gate evaluated
@@ -207,6 +212,9 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 			sort.Strings(inv.Stats.Warnings)
 		default:
 			eol.Enrich(inv, cat, airom.DateOf(now))
+			// Recorded even when nothing matched: "this catalog had nothing to
+			// say about your models" and "no catalog ran" are different claims.
+			inv.Tool.EOLCatalog = catSource
 		}
 	}
 

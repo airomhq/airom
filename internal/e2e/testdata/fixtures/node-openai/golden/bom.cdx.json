@@ -37,6 +37,10 @@
     },
     "properties": [
       {
+        "name": "airom:eol.catalog",
+        "value": "builtin"
+      },
+      {
         "name": "airom:rules.hash",
         "value": "0000000000000000000000000000000000000000000000000000000000000000"
       },

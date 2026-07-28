@@ -96,9 +96,19 @@ func newRulesListCmd() *cobra.Command {
 func newRulesLintCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "lint <file>",
-		Short: "Validate a rule pack against the full lint contract and its fixture coverage",
+		Short: "Validate a rule pack (or a model lifecycle catalog) against its full contract",
 		Args:  exactArgs("exactly one <file>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// The signed bundle carries both rule packs and lifecycle catalogs,
+			// so one lint command serves both — a maintainer should not have to
+			// know which validator a file needs before checking it.
+			if res, err := app.LintEOLCatalog(args[0]); err != nil {
+				return &app.UsageError{Err: err}
+			} else if res != nil {
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: OK (model lifecycle catalog: %s, %d model(s))\n",
+					args[0], res.Provider, res.Models)
+				return nil
+			}
 			report, err := app.RulesLint(args[0])
 			if err != nil {
 				return &app.UsageError{Err: err}
@@ -114,6 +124,17 @@ func newRulesTestCmd() *cobra.Command {
 		Short: "Run a rule pack against its fixtures (no Go toolchain needed)",
 		Args:  exactArgs("exactly one <file>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// A publishing pipeline runs lint AND test over every YAML in the
+			// bundle. A lifecycle catalog has no fixtures to run, so say that
+			// plainly and succeed rather than failing with a rule-pack parse
+			// error on a file that is not a rule pack.
+			if res, err := app.LintEOLCatalog(args[0]); err != nil {
+				return &app.UsageError{Err: err}
+			} else if res != nil {
+				fmt.Fprintf(cmd.OutOrStdout(), "%s: model lifecycle catalog (%s, %d model(s)) — validated by 'rules lint'; no fixtures to run\n",
+					args[0], res.Provider, res.Models)
+				return nil
+			}
 			report, err := app.RulesTest(args[0])
 			if err != nil {
 				return &app.UsageError{Err: err}

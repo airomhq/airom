@@ -29,7 +29,7 @@ airom fs .                   # this scan now uses it
     so a scan is reproducible: it uses whatever bundle is already cached.
   </Step>
   <Step title="Scans prefer the cached bundle">
-    Once cached, the bundle replaces the embedded packs as the base rule layer.
+    Once cached, the bundle replaces the embedded packs as the base rule layer, and any lifecycle catalogs it carries overlay the embedded ones per provider.
     Your `--rules` overlays still layer on top. Every AIBOM records which ruleset
     produced it (see [Provenance](#provenance)).
   </Step>
@@ -67,7 +67,7 @@ copy the cache directory (`<cache-dir>/rules`) to the isolated host, or point
 
 ## Trust
 
-A bundle is a gzipped tar of the packs plus a `manifest.json` (version, tarball
+A bundle is a gzipped tar of the packs (and, when published, the [model lifecycle catalogs](/concepts/eol) under `eol/`) plus a `manifest.json` (version, tarball
 SHA-256, counts) and a detached **ed25519 signature** over the manifest. airom
 verifies, in order:
 
@@ -105,13 +105,24 @@ that produced it:
   "name": "airom",
   "version": "v1.3.0",
   "rulesVersion": "v1.2.0",
-  "rulesHash": "5f9eef7d107acbdf…"
+  "rulesHash": "5f9eef7d107acbdf…",
+  "eolCatalog": "builtin+v1.2.0"
 }
 ```
 
 `rulesVersion` is `builtin` or the fetched bundle version; `rulesHash` is the
-SHA-256 of the effective ruleset. Both project into CycloneDX
-(`airom:rules.version` / `airom:rules.hash`) and SARIF.
+SHA-256 of the effective ruleset.
+
+`eolCatalog` names the [lifecycle catalog](/concepts/eol) behind the document's
+EOL claims — `builtin`, or `builtin+<version>` when a bundle overlaid it, since
+the merge is per provider and both layers can be answering. It is absent when
+`--no-eol` turned the overlay off: a claim nobody made needs no provenance. A
+retirement date is only as trustworthy as the catalog and verification date
+behind it, and a reader holding just the artifact cannot tell an eight-month-old
+embedded record from yesterday's publish unless the document says so.
+
+All three project into CycloneDX (`airom:rules.version`, `airom:rules.hash`,
+`airom:eol.catalog`) and SARIF.
 
 ## Authoring rules
 

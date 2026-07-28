@@ -53,6 +53,7 @@
             }
           ],
           "properties": {
+            "airom:eol.catalog": "builtin",
             "airom:rules.hash": "0000000000000000000000000000000000000000000000000000000000000000",
             "airom:rules.version": "builtin"
           }

@@ -176,6 +176,9 @@ func (b *builder) metadata() *cyclonedx.Metadata {
 	if inv.Tool.RulesHash != "" {
 		props.add("airom:rules.hash", inv.Tool.RulesHash)
 	}
+	if inv.Tool.EOLCatalog != "" {
+		props.add("airom:eol.catalog", inv.Tool.EOLCatalog)
+	}
 	if inv.Source.Kind != "" {
 		props.add("airom:source.type", inv.Source.Kind)
 	}

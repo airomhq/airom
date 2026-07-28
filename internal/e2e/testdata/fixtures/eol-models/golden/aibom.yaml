@@ -589,6 +589,7 @@ stats:
     - 'ruleengine: selected by "default"'
 timestamp: "2026-08-01T12:00:00Z"
 tool:
+  eolCatalog: builtin
   name: airom
   rulesHash: "0000000000000000000000000000000000000000000000000000000000000000"
   rulesVersion: builtin

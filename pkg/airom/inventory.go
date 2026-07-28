@@ -51,6 +51,12 @@ type ToolInfo struct {
 	// is the SHA-256 of the effective ruleset (self-invalidating, reproducible).
 	RulesVersion string `json:"rulesVersion,omitempty"`
 	RulesHash    string `json:"rulesHash,omitempty"`
+	// EOLCatalog names the model lifecycle catalog behind this document's
+	// Component.EOL claims: "builtin" (the embedded one), or "builtin+<version>"
+	// when a fetched bundle overlaid it — the merge is per provider, so both
+	// layers can be answering. Empty when the EOL overlay did not run: a claim
+	// nobody made needs no provenance.
+	EOLCatalog string `json:"eolCatalog,omitempty"`
 }
 
 // GitInfo is repository provenance for repo-backed scans.

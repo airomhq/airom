@@ -65,7 +65,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 | `--select <expr>` | string | per-source defaults | Detector selection expression (Syft-style tags + include/exclude): `"rules,+modelfile/gguf,-dataset/file"`. Which expression enabled which detector is recorded in the output `Stats`. |
 | `--rules <file>` | string, repeatable | — | Overlay rule pack(s), merged by rule ID (add/override/disable — see [rule-schema.md](./rule-schema.md#the-three-rule-layers-and-merge-semantics)). Changes the effective ruleset hash and therefore the cache namespace. |
 | `--compliance <framework>` | string, repeatable | — | Map the AIBOM onto a governance framework (e.g. `nist-ai-rmf`) and attach the result as CycloneDX `definitions`/`declarations`. A mapping, never a certification — see [compliance.md](./compliance.md). |
-| `--no-eol` | bool | `false` | Disable the **hosted-model end-of-life overlay**, which is **on by default**. It matches the AI models AIROM inventoried against a curated catalog of provider retirement announcements and attaches a dated, sourced lifecycle (`supported` / `deprecated` / `retired`) with the migration target the provider names. Unlike `--cve` it reads an **embedded** catalog, so it needs no network and keeps working under `--offline`. A model the catalog does not cover carries no claim at all — "unknown" is the absence of a statement, never a quiet "supported". |
+| `--no-eol` | bool | `false` | Disable the **hosted-model end-of-life overlay**, which is **on by default** (its catalog comes from a fetched bundle when one carries it, else the embedded copy — see [eol.md](./eol.md)). It matches the AI models AIROM inventoried against a curated catalog of provider retirement announcements and attaches a dated, sourced lifecycle (`supported` / `deprecated` / `retired`) with the migration target the provider names. Unlike `--cve` the catalog is local (bundle or embedded), never a live query, so it needs no network and keeps working under `--offline`. A model the catalog does not cover carries no claim at all — "unknown" is the absence of a statement, never a quiet "supported". |
 | `--no-cve` | bool | `false` | Disable the **CVE overlay**, which is **on by default**. The overlay matches the AI package dependencies AIROM inventoried (by their purl) against the live [OSV.dev](https://osv.dev) advisory database and attaches the resulting CVEs — see [cve.md](./cve.md). Scoped to AI packages, not a general-purpose SCA. Because it queries a live database it is neither offline nor deterministic across time (the same scan surfaces more CVEs as OSV grows), so disable it with `--no-cve` for a byte-stable BOM. `--offline` also disables it. Degrades honestly: a network failure yields no CVEs and a warning, never a fatal error — except that an active `--fail-on cve…` gate fails closed rather than silently pass. (The old `--cve` flag is a deprecated no-op.) |
 | `--parallel N` | int | `GOMAXPROCS` | Worker count. Output is byte-identical at any value (invariant P7 — CI diffs `--parallel 1` vs `16`). |
 | `--io-budget <size>` | size | `256m` | Byte-weighted I/O semaphore budget, independent of CPU parallelism (§8). Peak memory is a function of this and the caps below — never of input size. |
@@ -74,7 +74,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 | `--ignore <glob>` | string, repeatable | — | Additional ignore globs, applied on top of `.gitignore`/`.airomignore`. Participates in the cache namespace. |
 | `--cache-dir <path>` | path | `<user cache dir>/airom` | bbolt cache location (per-user OS cache directory by default). Also where `airom rules update` stores fetched rule bundles. |
 | `--no-cache` | bool | `false` | Disable cache reads and writes for this run. |
-| `--no-cached-rules` | bool | `false` | Ignore any rule bundle fetched by `airom rules update` (from [airom-rules](https://github.com/airomhq/airom-rules)); scan with the built-in packs. |
+| `--no-cached-rules` | bool | `false` | Ignore any bundle fetched by `airom rules update` (from [airom-rules](https://github.com/airomhq/airom-rules)); scan with the built-in packs — and the built-in model lifecycle catalog. |
 | `--cdx-version <v>` | string | `1.6` | CycloneDX spec version: `1.6` (default) or `1.7` (modelCard shape is identical in both). |
 | `--sarif-strict-kinds` | bool | `false` | Emit spec-pure `kind:"informational"` instead of the GitHub-Code-Scanning-compatible default `level:"note"`. |
 | `--exit-code N` | int | `1` (when policy active) | Exit status to return when `--fail-on` matches. Setting `--exit-code` without `--fail-on` implies failing on **any** component. An explicit `--exit-code 0` with `--fail-on` means "evaluate and report matches, but never fail the build". |
@@ -247,7 +247,9 @@ selected:  selected by "default"
   [rule-schema.md](./rule-schema.md#lint-contract): regexes compile, keywords mandatory,
   named groups referenced, IDs globally unique, fixture coverage.
 - `test <file>` — run a pack's fixtures and compare against its golden **without a Go
-  toolchain** — the rules-contributor loop in one command.
+  toolchain** — the rules-contributor loop in one command. Handed a lifecycle catalog it
+  says so and exits 0 (a catalog has no fixtures; `lint` is what validates one), so a
+  publishing pipeline can run both commands over every YAML in the bundle.
 - `update [version]` — fetch, verify (ed25519), and cache a signed rule bundle from the
   [airom-rules](https://github.com/airomhq/airom-rules) channel; scans then prefer it over
   the embedded packs. The **only** rules subcommand that touches the network — scans never

@@ -179,14 +179,20 @@ arguments, no command-specific flags.
 
 ### airom rules lint
 
-Validate a rule pack against the full lint contract and its fixture coverage.
+Validate a rule pack — or a [model lifecycle catalog](/concepts/eol) — against
+its full contract. The signed bundle carries both, so one command checks either;
+the file's shape selects the validator.
 
 ```bash title="airom rules lint"
 airom rules lint <file>
+airom rules lint eol/openai.yaml
 ```
 
-Exactly one `<file>`. Reports failures, rules missing a positive fixture, and rules
-missing a negative fixture. A failing pack exits non-zero.
+Exactly one `<file>`. For a rule pack: reports failures and rules missing a
+positive or negative fixture. For a lifecycle catalog: enforces the honesty
+contract (a source URL and verification date on every file, parseable states and
+dates, no transposed or self-referential records). A failing file exits
+non-zero.
 
 ### airom rules test
 
@@ -197,12 +203,17 @@ airom rules test <file>
 ```
 
 Exactly one `<file>`. Prints `<file>: OK (n expectation(s) checked)` on success;
-failures exit non-zero.
+failures exit non-zero. Handed a [model lifecycle catalog](/concepts/eol) it says
+so and exits 0 — a catalog has no fixtures to run, and it is `rules lint` that
+validates one. That keeps a publishing pipeline free to run both commands over
+every YAML in the bundle without special-casing which file is which.
 
 ### airom rules update
 
 Fetch, verify, and cache a signed rule bundle from the
-[airom-rules](https://github.com/airomhq/airom-rules) release channel. This is
+[airom-rules](https://github.com/airomhq/airom-rules) release channel. A bundle
+may also carry the [model lifecycle catalog](/concepts/eol), so this is what
+refreshes retirement dates without a binary upgrade. This is
 the only rules subcommand that touches the network — scans never do. See
 [Rule updates](/rules/updates) for the full model.
 
@@ -296,7 +307,7 @@ every command carries: `-h`/`--help`, and `--version` on the root.
 | `--cdx-version` | string | `1.6` | CycloneDX spec version: `1.6` or `1.7`. |
 | `--no-cached-rules` | bool | `false` | Ignore any fetched rule bundle; scan with the built-in packs. See [Rule updates](/rules/updates). |
 | `--compliance` | stringArray | — | Map the AIBOM onto a governance framework (`nist-ai-rmf`, `owasp-agentic`). Repeatable. |
-| `--no-eol` | bool | `false` | Disable the **model lifecycle (EOL) overlay**, which is **on by default**. It matches inventoried AI models against a curated catalog of provider retirement announcements. Reads an embedded catalog, so unlike `--no-cve` it needs no network and survives `--offline`. See [Model lifecycle](/concepts/eol). |
+| `--no-eol` | bool | `false` | Disable the **model lifecycle (EOL) overlay**, which is **on by default**. It matches inventoried AI models against a curated catalog of provider retirement announcements. The catalog is local — from a fetched bundle when one carries it, else embedded — so unlike `--no-cve` it needs no network and survives `--offline`. See [Model lifecycle](/concepts/eol). |
 | `--no-cve` | bool | `false` | Disable the OSV.dev **CVE overlay**, which is **on by default**. The overlay matches AI dependencies against OSV.dev for known CVEs; it queries the network and is not deterministic over time, so `--no-cve` (or `--offline`) gives a byte-stable offline BOM. See [CVE overlay](/concepts/cve). |
 | `--exit-code` | int | `1` when a policy is active | Exit status when `--fail-on` matches. `0` reports matches without failing. |
 | `--fail-on` | string | — | CI policy expression, e.g. `"hosted-llm&confidence>=0.9"`. |

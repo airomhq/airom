@@ -212,9 +212,9 @@ func TestEOLGateEndToEnd(t *testing.T) {
 // runWithBrokenCatalog runs a scan whose lifecycle catalog cannot be loaded.
 func runWithBrokenCatalog(t *testing.T, expr string) error {
 	t.Helper()
-	orig := loadEOLCatalog
-	loadEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
-	t.Cleanup(func() { loadEOLCatalog = orig })
+	orig := loadEmbeddedEOLCatalog
+	loadEmbeddedEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
+	t.Cleanup(func() { loadEmbeddedEOLCatalog = orig })
 
 	var buf bytes.Buffer
 	so := stdout
@@ -234,9 +234,9 @@ func runWithBrokenCatalog(t *testing.T, expr string) error {
 // TestBrokenCatalogWithoutAGateOnlyWarns: with no eol gate active, an
 // unloadable catalog costs the overlay, never the AIBOM.
 func TestBrokenCatalogWithoutAGateOnlyWarns(t *testing.T) {
-	orig := loadEOLCatalog
-	loadEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
-	t.Cleanup(func() { loadEOLCatalog = orig })
+	orig := loadEmbeddedEOLCatalog
+	loadEmbeddedEOLCatalog = func() (*eol.Catalog, error) { return nil, errors.New("catalog unreadable") }
+	t.Cleanup(func() { loadEmbeddedEOLCatalog = orig })
 
 	inv := scanEOL(t, nil)
 	var found bool
@@ -252,6 +252,192 @@ func TestBrokenCatalogWithoutAGateOnlyWarns(t *testing.T) {
 		if c.EOL != nil {
 			t.Errorf("no lifecycle claims should survive a failed load, got %+v", c.EOL)
 		}
+	}
+}
+
+// writeBundle stages a cache holding a signed-bundle layout: rule packs at the
+// root (where tools/bundle tars them) plus the lifecycle catalogs under eol/.
+func writeBundle(t *testing.T, catalog string) string {
+	t.Helper()
+	cacheDir := t.TempDir()
+	const version = "v9.9.9"
+	root := filepath.Join(cacheDir, "rules", version)
+	for _, d := range []string{filepath.Join(root, "eol"), filepath.Join(root, "models")} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// A real bundle carries rule packs beside the catalog. Without one here the
+	// test could not tell "the catalog was ignored" from "the ruleset broke".
+	pack := `pack: openai
+version: 1
+rules:
+  - id: openai/model-literal
+    kind: hosted-llm
+    provider: openai
+    languages: [python]
+    keywords: ["gpt-"]
+    pattern: 'model\s*[:=]\s*["''](?P<model>gpt-[\w.\-]+)["'']'
+    claim: { name: "${model}" }
+    confidence: 0.85
+`
+	if err := os.WriteFile(filepath.Join(root, "models", "openai.yaml"), []byte(pack), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// A second provider, so a test can show that a bundle catalog covering only
+	// ONE provider leaves the other's embedded records intact.
+	anthropicPack := "pack: anthropic\nversion: 1\nrules:\n" +
+		"  - id: anthropic/model-literal\n" +
+		"    kind: hosted-llm\n" +
+		"    provider: anthropic\n" +
+		"    languages: [python]\n" +
+		"    keywords: [\"claude-\"]\n" +
+		"    pattern: 'model\\s*[:=]\\s*\"(?P<model>claude-[\\w.\\-]+)\"'\n" +
+		"    claim: { name: \"${model}\" }\n" +
+		"    confidence: 0.85\n"
+	if err := os.WriteFile(filepath.Join(root, "models", "anthropic.yaml"), []byte(anthropicPack), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if catalog != "" {
+		if err := os.WriteFile(filepath.Join(root, "eol", "openai.yaml"), []byte(catalog), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(cacheDir, "rules", "current.json"),
+		[]byte(`{"version":"`+version+`"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return cacheDir
+}
+
+// bundleOpenAICatalog says something the EMBEDDED catalog does not (gpt-4o is
+// uncurated there), so any claim about gpt-4o can only have come from here.
+const bundleOpenAICatalog = `provider: openai
+source: https://developers.openai.com/api/docs/deprecations
+verified: 2026-07-23
+models:
+  - id: gpt-4o
+    state: deprecated
+    announced: 2026-07-01
+    shutdown: 2027-01-01
+    replacement: gpt-5.6-sol
+`
+
+// TestBundleCatalogOverridesEmbedded is the Model B payoff: retirement dates
+// change on a provider's calendar, not on AIROM's release schedule, so a
+// verified bundle can carry a fresher catalog than the binary shipped with —
+// and `airom rules update` becomes the refresh lever instead of an upgrade.
+func TestBundleCatalogOverridesEmbedded(t *testing.T) {
+	cacheDir := writeBundle(t, bundleOpenAICatalog)
+
+	inv := scanEOL(t, func(c *Config) { c.CacheDir = cacheDir })
+	got := eolByName(inv)
+	if lc := got["gpt-4o"]; lc == nil || lc.State != airom.EOLDeprecated || lc.Replacement != "gpt-5.6-sol" {
+		t.Fatalf("the bundle catalog should have supplied gpt-4o, got %+v", lc)
+	}
+
+	// Carrying a catalog must NOT cost the bundle its rules. The rule walk and
+	// the catalog share the bundle root, and a catalog is not a parseable rule
+	// pack — so publishing one used to fail the whole ruleset and silently drop
+	// the scan back to the built-in packs, turning off the channel it shipped in.
+	if inv.Tool.RulesVersion != "v9.9.9" {
+		t.Errorf("rulesVersion = %q, want the bundle version: a catalog must not break the rule layer",
+			inv.Tool.RulesVersion)
+	}
+
+	// --no-cached-rules pins the scan to the built-in catalog, which says
+	// nothing about gpt-4o — the same escape hatch the rule packs have.
+	embedded := eolByName(scanEOL(t, func(c *Config) { c.CacheDir = cacheDir; c.NoCachedRules = true }))
+	if lc := embedded["gpt-4o"]; lc != nil {
+		t.Errorf("--no-cached-rules must fall back to the embedded catalog, got %+v", lc)
+	}
+	if lc := embedded["gpt-4-32k"]; lc == nil || lc.State != airom.EOLRetired {
+		t.Errorf("embedded fallback should still resolve gpt-4-32k, got %+v", lc)
+	}
+}
+
+// TestEOLCatalogProvenanceIsRecorded: a lifecycle claim is only as good as the
+// catalog and date behind it. "gpt-4o retires 2026-11-01" from an eight-month-old
+// embedded catalog and the same line from yesterday's bundle are not equally
+// trustworthy, and a reader holding only the artifact cannot tell them apart
+// unless the document says which layer answered.
+func TestEOLCatalogProvenanceIsRecorded(t *testing.T) {
+	cacheDir := writeBundle(t, bundleOpenAICatalog)
+
+	if got := scanEOL(t, func(c *Config) { c.CacheDir = cacheDir }).Tool.EOLCatalog; got != "builtin+v9.9.9" {
+		t.Errorf("eolCatalog = %q, want builtin+v9.9.9 — after a per-provider merge BOTH layers answer", got)
+	}
+	if got := scanEOL(t, func(c *Config) { c.CacheDir = cacheDir; c.NoCachedRules = true }).Tool.EOLCatalog; got != "builtin" {
+		t.Errorf("eolCatalog = %q, want builtin when the scan is pinned to the embedded catalog", got)
+	}
+	// A rejected bundle catalog did not contribute, so claiming it did would be
+	// the one lie that matters here: the artifact says builtin, and the warning
+	// says why.
+	broken := writeBundle(t, "provider: openai\nverified: 2026-07-23\nmodels:\n  - {id: m, state: supported}\n")
+	if got := scanEOL(t, func(c *Config) { c.CacheDir = broken }).Tool.EOLCatalog; got != "builtin" {
+		t.Errorf("eolCatalog = %q, want builtin: a catalog that failed to load produced nothing", got)
+	}
+	// No overlay, no claims, no provenance to state.
+	if got := scanEOL(t, func(c *Config) { c.CacheDir = cacheDir; c.NoEOL = true }).Tool.EOLCatalog; got != "" {
+		t.Errorf("eolCatalog = %q, want empty when --no-eol turned the overlay off", got)
+	}
+}
+
+// TestBundleCatalogOverlaysPerProvider: publishing is incremental. A bundle
+// shipping only eol/openai.yaml says "here is newer OpenAI data", NOT "Anthropic
+// no longer has retirement dates" — so untouched providers keep the embedded
+// records instead of vanishing and flipping a --fail-on eol gate green.
+func TestBundleCatalogOverlaysPerProvider(t *testing.T) {
+	cacheDir := writeBundle(t, bundleOpenAICatalog)
+	target := writeTree(t, map[string]string{
+		"app.py": `import anthropic
+c = anthropic.Anthropic()
+c.messages.create(model="claude-1.0", max_tokens=1, messages=[])
+`,
+	})
+	inv, err := Scan(context.Background(), &Config{
+		Source: SourceFS, Target: target, CacheDir: cacheDir, Now: eolScanDay,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, c := range inv.Components {
+		if c.Name == "claude-1.0" {
+			found = true
+			if c.EOL == nil || c.EOL.State != airom.EOLRetired {
+				t.Errorf("a provider the bundle is silent about must keep its embedded records, got %+v", c.EOL)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("claude-1.0 was not detected")
+	}
+}
+
+// TestBrokenBundleCatalogWarnsInTheArtifact: stderr is routinely discarded in
+// CI and the BOM is the record, so a rejected catalog has to say so there.
+func TestBrokenBundleCatalogWarnsInTheArtifact(t *testing.T) {
+	// Valid YAML, invalid per the honesty contract: no source URL.
+	cacheDir := writeBundle(t, `provider: openai
+verified: 2026-07-23
+models:
+  - {id: m, state: supported}
+`)
+	inv := scanEOL(t, func(c *Config) { c.CacheDir = cacheDir })
+
+	var found bool
+	for _, w := range inv.Stats.Warnings {
+		if strings.Contains(w, "could not be loaded and was ignored") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("a rejected bundle catalog must warn in the artifact, got %v", inv.Stats.Warnings)
+	}
+	// And the scan degrades to the embedded catalog rather than losing the overlay.
+	if lc := eolByName(inv)["gpt-4-32k"]; lc == nil || lc.State != airom.EOLRetired {
+		t.Errorf("a bad publish must not be worse than an old binary, got %+v", lc)
 	}
 }
 

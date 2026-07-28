@@ -164,6 +164,15 @@ func ParsePack(stem string, data []byte) (Pack, error) {
 	return p, nil
 }
 
+// NonRulePackDirs are top-level directories a signed bundle may carry that are
+// NOT rule packs. They are declared here, in the walker that would otherwise
+// choke on them, rather than in the packages that own them — the walk is where
+// the coupling actually bites, and a bundle namespace added without updating
+// this set would break the ruleset rather than be ignored.
+var NonRulePackDirs = map[string]bool{
+	"eol": true, // model lifecycle catalogs (internal/eol)
+}
+
 // Load assembles the effective ruleset from the embedded layer (nil-able
 // fs.FS holding <category>/<pack>.yaml) plus overlay files in flag order,
 // applying the documented merge semantics (add / override / disable by rule
@@ -176,6 +185,14 @@ func Load(embedded fs.FS, overlayPaths []string, readFile func(string) ([]byte, 
 		err := fs.WalkDir(embedded, ".", func(p string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+			// A signed bundle carries more than rule packs: NonRulePackDirs are
+			// sibling namespaces (today the model lifecycle catalogs) with their
+			// own schemas. ParsePack uses KnownFields, so walking one would fail
+			// the ENTIRE ruleset and silently drop the scan back to the built-in
+			// packs — publishing a catalog would turn off the channel's rules.
+			if d.IsDir() && NonRulePackDirs[p] {
+				return fs.SkipDir
 			}
 			if !d.IsDir() && strings.HasSuffix(p, ".yaml") {
 				paths = append(paths, p)

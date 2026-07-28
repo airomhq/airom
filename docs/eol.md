@@ -71,14 +71,15 @@ strict:
   model that is already gone.
 - **Staleness is visible.** If the least-recently-verified provider is more than
   90 days old, the scan says so in `Stats.Warnings` rather than quietly serving
-  data that may have moved.
+  data that may have moved — and it names the lever that actually refreshes
+  *this* catalog (see below).
 
 ## How it appears in output
 
 | Format | Where |
 |--------|-------|
 | Table | an `EOL` column (`retired` / `87d`), a `Model lifecycle` summary block, and the detail table above. |
-| CycloneDX | component `properties`: `airom:eol.state`, `airom:eol.announcedDate`, `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`, `airom:eol.replacementState`, plus `source`/`sourceUrl`/`verified`. **Not** `vulnerabilities[]` — see below. |
+| CycloneDX | component `properties`: `airom:eol.state`, `airom:eol.announcedDate`, `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`, `airom:eol.replacementState`, plus `source`/`sourceUrl`/`verified`. The document-level `airom:eol.catalog` names which catalog answered. **Not** `vulnerabilities[]` — see below. |
 | SARIF | an `eol/<provider>/<model>` rule (`error` retired, `warning` deprecated) whose single result carries **every** call-site location — unlike a CVE (one version pin), the model literal has to change in each one. |
 | Native JSON / YAML | `component.eol` — the full `Lifecycle` record. |
 | `--fail-on` | `eol`, `eol:retired`, `eol:deprecated`, `eol:before:<date>`. |
@@ -125,5 +126,40 @@ list of every model in existence: each record is hand-verified, and the cost of
 that discipline is coverage. A model outside it reports `unknown`, which is the
 honest answer.
 
-Adding a provider is a data change (a YAML file under `internal/eol/catalog/`),
-not a code change.
+Adding a provider is a data change, not a code change: a YAML file in
+`internal/eol/catalog/` (shipped in the binary) or `eol/` in the rule bundle
+(shipped through the channel).
+
+## Where the catalog comes from
+
+Retirement dates move on a provider's calendar, not on AIROM's release
+schedule, so the catalog is delivered two ways:
+
+| Source | When it is used | How to refresh |
+|---|---|---|
+| **Signed bundle** | whenever `airom rules update` has fetched one carrying `eol/` | `airom rules update` |
+| **Embedded** | for every provider the bundle does not cover, and as the whole catalog when no bundle does | upgrade airom |
+
+The two are merged **per provider**: a bundle shipping `eol/openai.yaml` alone
+says "here is newer OpenAI data", not "Anthropic no longer has retirement
+dates", so untouched providers keep their embedded records. Within a provider
+the bundle wins entirely — that file is the unit a maintainer edits and
+re-verifies. `--no-cached-rules` pins the scan to the embedded catalog.
+
+The bundle is ed25519-verified like the rule packs, so a fresher catalog does not
+mean a less trusted one. A bundle whose catalog is malformed is ignored, with a
+warning **in the scan output** (`Stats.Warnings`, not just stderr), and the
+embedded catalog is used — a bad publish must not be worse than an old binary,
+and must not be silent either.
+
+The staleness warning names whichever lever applies, so it never sends you in a
+circle. And because a catalog ships through the channel, it can be validated
+before publishing:
+
+```console
+$ airom rules lint eol/openai.yaml
+eol/openai.yaml: OK (model lifecycle catalog: openai, 52 model(s))
+```
+
+The same command lints rule packs — one contract check for anything the bundle
+carries.

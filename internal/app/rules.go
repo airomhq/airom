@@ -7,10 +7,13 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/airomhq/airom/internal/eol"
 	"github.com/airomhq/airom/internal/ruleengine"
 	"github.com/airomhq/airom/internal/ruleengine/ruletest"
 	"github.com/airomhq/airom/internal/rulesync"
+	"github.com/airomhq/airom/pkg/airom"
 )
 
 // EmbeddedRules is the built-in rule-pack filesystem (rules/**). It is set
@@ -36,6 +39,56 @@ func resolveRuleBase(cfg *Config) (fs.FS, string) {
 		return bundle, version
 	}
 	return EmbeddedRules, "builtin"
+}
+
+// loadEOLCatalogFor picks the lifecycle catalog the same way resolveRuleBase
+// picks rules: a verified, cached bundle when it carries one, else the embedded
+// catalog — the offline floor. Retirement data changes on a provider's
+// calendar, not on AIROM's release schedule, so shipping it through the signed
+// channel is what makes `airom rules update` able to refresh it.
+//
+// A bundle that carries a BROKEN catalog degrades to the embedded one with a
+// warning rather than costing the overlay: a bad publish must not be worse than
+// an old binary.
+//
+// The returned source label is recorded in the document (ToolInfo.EOLCatalog):
+// a lifecycle claim is only as good as the catalog and date behind it, so a
+// reader must be able to tell which layer answered.
+func loadEOLCatalogFor(cfg *Config) (cat *eol.Catalog, source, warn string, err error) {
+	embedded, err := loadEmbeddedEOLCatalog()
+	if err != nil {
+		return nil, "", "", err
+	}
+	if cfg.NoCachedRules {
+		return embedded, eol.SourceBuiltin, "", nil
+	}
+	dir := cfg.CacheDir
+	if dir == "" {
+		dir = DefaultCacheDir()
+	}
+	bundle, version, ok := rulesync.Active(dir)
+	if !ok {
+		return embedded, eol.SourceBuiltin, "", nil
+	}
+	fetched, present, loadErr := eol.LoadBundle(bundle, airom.DateOf(time.Now()))
+	switch {
+	case loadErr != nil:
+		// A bad publish must not be worse than an old binary — but the user has
+		// to be TOLD, in the artifact, that the catalog they fetched was
+		// rejected. stderr is routinely discarded in CI; the BOM is the record.
+		slog.Warn("cached bundle's model lifecycle catalog failed to load; using the built-in one",
+			"version", version, "error", loadErr)
+		return embedded, eol.SourceBuiltin, fmt.Sprintf(
+			"eol: the model lifecycle catalog in rule bundle %s could not be loaded and was ignored; using the built-in catalog (%v)",
+			version, loadErr,
+		), nil
+	case present:
+		// Per-provider overlay, never wholesale: see eol.Overlay. The label says
+		// "both", because after a per-provider merge both layers really are
+		// answering — for different providers.
+		return eol.Overlay(embedded, fetched), eol.SourceBuiltin + "+" + version, "", nil
+	}
+	return embedded, eol.SourceBuiltin, "", nil
 }
 
 // loadRuleset assembles the effective ruleset (base layer + --rules overlays)
@@ -83,6 +136,29 @@ func RulesUpdate(ctx context.Context, cfg *Config, version string) (*rulesync.Re
 		Offline:               cfg.Offline,
 		InsecureSkipSignature: cfg.InsecureSkipSignature,
 	})
+}
+
+// EOLLintResult reports what a linted lifecycle catalog holds.
+type EOLLintResult struct {
+	Provider string
+	Models   int
+}
+
+// LintEOLCatalog validates one lifecycle catalog file. Returns nil when the
+// file is not a catalog, so RulesLint can fall through to the rule-pack path.
+func LintEOLCatalog(path string) (*EOLLintResult, error) {
+	data, err := os.ReadFile(path) // #nosec G304 -- a path the user named
+	if err != nil {
+		return nil, &UsageError{Err: err}
+	}
+	if !eol.IsCatalogFile(data) {
+		return nil, nil
+	}
+	provider, models, err := eol.LintFile(path, data, airom.DateOf(time.Now()))
+	if err != nil {
+		return nil, &UsageError{Err: err}
+	}
+	return &EOLLintResult{Provider: provider, Models: models}, nil
 }
 
 // RulesLint validates a single user rule-pack file against the full lint
