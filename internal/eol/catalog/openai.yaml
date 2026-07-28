@@ -1,0 +1,370 @@
+# catalog/openai.yaml — OpenAI model lifecycle facts.
+#
+# Every record is transcribed from OpenAI's own deprecations page (the `source`
+# URL below), never inferred from a naming pattern. `verified` is the date a
+# maintainer last checked the page. A model absent from this file gets NO
+# lifecycle claim — that is "unknown", not "supported".
+#
+# `state` records what the provider announced; whether a shutdown has ARRIVED is
+# derived at scan time from the date, so these records stay truthful as time
+# passes without being re-edited.
+# SCOPE: these dates apply to the OpenAI-operated API. Azure OpenAI publishes
+# its OWN retirement schedule for the same models, so Azure deployments (which
+# AIROM detects with provider "azure-openai") deliberately do NOT match this
+# file — claiming these dates for Azure would be unverified.
+provider: openai
+version: 1
+source: https://developers.openai.com/api/docs/deprecations
+verified: 2026-07-23
+models:
+  # ── retired: the API no longer serves these ───────────────────────────────
+  - id: gpt-4-32k
+    aliases: [gpt-4-32k-0613, gpt-4-32k-0314]
+    state: deprecated
+    announced: 2024-06-06
+    shutdown: 2025-06-06
+    replacement: gpt-4o
+
+  - id: gpt-4-vision-preview
+    aliases: [gpt-4-1106-vision-preview]
+    state: deprecated
+    announced: 2024-06-06
+    shutdown: 2024-12-06
+    replacement: gpt-4o
+
+  - id: gpt-4-0314
+    state: deprecated
+    announced: 2025-09-26
+    shutdown: 2026-03-26
+    replacement: gpt-5
+
+  - id: gpt-4-0125-preview
+    aliases: [gpt-4-turbo-preview]
+    state: deprecated
+    announced: 2025-09-26
+    shutdown: 2026-03-26
+    replacement: gpt-5
+
+  - id: gpt-4.5-preview
+    state: deprecated
+    announced: 2025-04-14
+    shutdown: 2025-07-14
+    replacement: gpt-4.1
+
+  - id: o1-preview
+    state: deprecated
+    announced: 2025-04-28
+    shutdown: 2025-07-28
+    replacement: o3
+
+  - id: o1-mini
+    state: deprecated
+    announced: 2025-04-28
+    shutdown: 2025-10-27
+    replacement: o4-mini
+
+  - id: chatgpt-4o-latest
+    state: deprecated
+    announced: 2025-11-18
+    shutdown: 2026-02-17
+    replacement: gpt-5.1-chat-latest
+
+  - id: codex-mini-latest
+    state: deprecated
+    announced: 2025-11-17
+    shutdown: 2026-02-12
+    replacement: gpt-5-codex-mini
+
+  - id: dall-e-2
+    state: deprecated
+    announced: 2025-11-14
+    shutdown: 2026-05-12
+    replacement: gpt-image-2
+
+  - id: dall-e-3
+    state: deprecated
+    announced: 2025-11-14
+    shutdown: 2026-05-12
+    replacement: gpt-image-2
+
+  - id: gpt-4o-realtime-preview
+    aliases: [gpt-4o-realtime-preview-2025-06-03, gpt-4o-realtime-preview-2024-12-17]
+    state: deprecated
+    announced: 2025-09-15
+    shutdown: 2026-05-07
+    replacement: gpt-realtime-1.5
+
+  - id: gpt-4o-audio-preview
+    state: deprecated
+    announced: 2025-09-15
+    shutdown: 2026-05-07
+    replacement: gpt-audio-1.5
+
+  - id: gpt-3.5-turbo-0613
+    aliases: [gpt-3.5-turbo-16k-0613]
+    state: deprecated
+    announced: 2023-11-06
+    shutdown: 2024-09-13
+    replacement: gpt-3.5-turbo
+
+  # Announced in the 2023-06-13 block, not with the -0613 pair above.
+  - id: gpt-3.5-turbo-0301
+    state: deprecated
+    announced: 2023-06-13
+    shutdown: 2024-09-13
+    replacement: gpt-3.5-turbo
+
+  - id: text-moderation-007
+    aliases: [text-moderation-stable, text-moderation-latest]
+    state: deprecated
+    announced: 2025-04-28
+    shutdown: 2025-10-27
+    replacement: omni-moderation
+
+  # ── announced, shutting down soon ─────────────────────────────────────────
+  - id: computer-use-preview
+    aliases: [computer-use-preview-2025-03-11]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-terra
+
+  - id: gpt-5-chat-latest
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-5-codex
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-5.1-codex
+    aliases: [gpt-5.1-codex-max]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-5.1-chat-latest
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: o3-deep-research
+    aliases: [o3-deep-research-2025-06-26]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-4o-search-preview-2025-03-11
+    aliases: [gpt-4o-mini-search-preview-2025-03-11]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-terra
+
+  - id: gpt-audio-mini-2025-10-06
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-audio-1.5
+
+  - id: gpt-realtime-mini-2025-10-06
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-realtime-2.1-mini
+
+  - id: gpt-5.1-codex-mini
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-terra
+
+  - id: gpt-5.2-codex
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  - id: o4-mini-deep-research
+    aliases: [o4-mini-deep-research-2025-06-26]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-07-23
+    replacement: gpt-5.6-sol
+
+  # 2026-06-02 image block.
+  - id: gpt-image-1-mini
+    aliases: [gpt-image-1.5, chatgpt-image-latest]
+    state: deprecated
+    announced: 2026-06-02
+    shutdown: 2026-12-01
+    replacement: gpt-image-2
+
+  - id: gpt-5.2-chat-latest
+    aliases: [gpt-5.3-chat-latest]
+    state: deprecated
+    announced: 2026-05-08
+    shutdown: 2026-08-10
+    replacement: gpt-5.6-sol
+
+  - id: sora-2
+    aliases: [sora-2-pro, sora-2-2025-10-06, sora-2-2025-12-08, sora-2-pro-2025-10-06]
+    state: deprecated
+    announced: 2026-03-24
+    shutdown: 2026-09-24
+
+  - id: gpt-3.5-turbo-instruct
+    state: deprecated
+    announced: 2025-09-26
+    shutdown: 2026-09-28
+    replacement: gpt-5.4-mini
+
+  - id: babbage-002
+    aliases: [davinci-002]
+    state: deprecated
+    announced: 2025-09-26
+    shutdown: 2026-09-28
+    replacement: gpt-5.4-mini
+
+  - id: gpt-3.5-turbo-1106
+    state: deprecated
+    announced: 2025-09-26
+    shutdown: 2026-09-28
+    replacement: gpt-5.4-mini
+
+  - id: gpt-4
+    aliases: [gpt-4-0613]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-4-turbo
+    aliases: [gpt-4-turbo-2024-04-09, gpt-4-1106-preview]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-3.5-turbo
+    aliases: [gpt-3.5-turbo-0125]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-terra
+
+  - id: gpt-4o-2024-05-13
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: gpt-4.1-nano
+    aliases: [gpt-4.1-nano-2025-04-14]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-luna
+
+  - id: gpt-image-1
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-image-2
+
+  - id: o1
+    aliases: [o1-2024-12-17]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: o1-pro
+    aliases: [o1-pro-2025-03-19]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: o3-mini
+    aliases: [o3-mini-2025-01-31]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-sol
+
+  - id: o4-mini
+    aliases: [o4-mini-2025-04-16]
+    state: deprecated
+    announced: 2026-04-22
+    shutdown: 2026-10-23
+    replacement: gpt-5.6-terra
+
+  - id: gpt-5-2025-08-07
+    state: deprecated
+    announced: 2026-06-11
+    shutdown: 2026-12-11
+    replacement: gpt-5.6-sol
+
+  - id: gpt-5-mini-2025-08-07
+    state: deprecated
+    announced: 2026-06-11
+    shutdown: 2026-12-11
+    replacement: gpt-5.6-terra
+
+  - id: gpt-5-nano-2025-08-07
+    state: deprecated
+    announced: 2026-06-11
+    shutdown: 2026-12-11
+    replacement: gpt-5.6-luna
+
+  - id: gpt-5-pro-2025-10-06
+    state: deprecated
+    announced: 2026-06-11
+    shutdown: 2026-12-11
+    replacement: gpt-5.6-sol
+
+  - id: o3-2025-04-16
+    aliases: [o3-pro-2025-06-10]
+    state: deprecated
+    announced: 2026-06-11
+    shutdown: 2026-12-11
+    replacement: gpt-5.6-sol
+
+  - id: gpt-realtime
+    aliases: [gpt-4o-realtime]
+    state: deprecated
+    announced: 2026-07-20
+    shutdown: 2027-01-20
+    replacement: gpt-realtime-2.1
+
+  # Same dates as gpt-realtime but a DIFFERENT replacement tier — the page names
+  # the -mini target for these, so they cannot share that record.
+  - id: gpt-realtime-mini
+    aliases: [gpt-4o-mini-realtime]
+    state: deprecated
+    announced: 2026-07-20
+    shutdown: 2027-01-20
+    replacement: gpt-realtime-2.1-mini
+
+  - id: gpt-audio
+    aliases: [gpt-4o-audio, gpt-audio-mini, gpt-4o-mini-audio]
+    state: deprecated
+    announced: 2026-07-20
+    shutdown: 2027-01-20
+    replacement: gpt-audio-1.5
+
+  # NOTE: no "supported" records here. The source below is a DEPRECATIONS page:
+  # it can only ever substantiate that a model is deprecated. Absence from a
+  # deprecation log is not a provider statement of support, so claiming
+  # "supported" from this URL would be unfalsifiable by its own source. Models
+  # not listed above therefore resolve to "unknown" — no claim — which is the
+  # honest answer. (anthropic.yaml differs: that page publishes an explicit
+  # Active/Deprecated/Retired status table, so its supported records are sourced.)

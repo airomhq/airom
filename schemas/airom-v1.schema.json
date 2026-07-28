@@ -185,7 +185,8 @@
         "props": { "type": "array", "items": { "$ref": "#/$defs/kv" } },
         "attestations": { "type": "array" },
         "risks": { "type": "array", "items": { "$ref": "#/$defs/artifactRisk" } },
-        "vulnerabilities": { "type": "array", "items": { "$ref": "#/$defs/vulnerability" } }
+        "vulnerabilities": { "type": "array", "items": { "$ref": "#/$defs/vulnerability" } },
+        "eol": { "$ref": "#/$defs/eol" }
       }
     },
     "artifactRisk": {
@@ -211,6 +212,20 @@
         "fixedVersion": { "type": "string" },
         "source": { "type": "string" },
         "url": { "type": "string" }
+      }
+    },
+    "eol": {
+      "type": "object",
+      "required": ["state", "source"],
+      "properties": {
+        "state": { "enum": ["supported", "deprecated", "retired", "unknown"] },
+        "announced": { "type": "string", "format": "date" },
+        "shutdown": { "type": "string", "format": "date" },
+        "daysRemaining": { "type": "integer" },
+        "replacement": { "type": "string" },
+        "source": { "type": "string" },
+        "sourceUrl": { "type": "string" },
+        "verified": { "type": "string", "format": "date" }
       }
     },
     "relationship": {

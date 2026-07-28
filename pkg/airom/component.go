@@ -202,5 +202,14 @@ type Component struct {
 	// vulnerabilities[] with a real CVSS rating. Sorted by ID for determinism.
 	Vulnerabilities []Vulnerability `json:"vulnerabilities,omitempty"`
 
+	// EOL is the hosted-model end-of-life overlay: a dated, sourced statement
+	// that this model has an announced retirement. A pointer because absence is
+	// meaningful — no record means no claim (EOLUnknown), NOT "supported".
+	//
+	// Named "eol", not "lifecycle": Inventory.Lifecycle already means the
+	// CycloneDX lifecycle PHASE the BOM was produced in ("pre-build"), and two
+	// unrelated things called lifecycle in one document would read as one.
+	EOL *Lifecycle `json:"eol,omitempty"`
+
 	Attestations []AttestationRef `json:"attestations,omitempty"`
 }
