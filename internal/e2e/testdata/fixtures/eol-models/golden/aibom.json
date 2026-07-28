@@ -11,57 +11,32 @@
   "lifecycle": "pre-build",
   "source": {
     "kind": "dir",
-    "target": "node-openai"
+    "target": "eol-models"
   },
-  "root": "airom:bfa221b1fd6ea0d5",
+  "root": "airom:aa2a11f29e846576",
   "components": [
     {
-      "id": "airom:14ac8720c7a8d1ef",
+      "id": "airom:1b13aab20f840ad4",
       "kind": "hosted-llm",
-      "name": "claude-sonnet-4-5",
-      "provider": "anthropic",
-      "model": {
-        "generationParams": [
-          {
-            "name": "max_tokens",
-            "value": "512",
-            "occurrence": {
-              "location": {
-                "path": "src/agent.ts",
-                "line": 6,
-                "endLine": 6,
-                "column": 34,
-                "endColumn": 59
-              },
-              "detectorId": "rules/openai/chat-call",
-              "method": "source-code-analysis",
-              "confidence": 0.7,
-              "snippet": "const completion = await client.chat.completions.create({",
-              "fields": {
-                "model": "claude-sonnet-4-5",
-                "param.max_tokens": "512"
-              }
-            }
-          }
-        ]
-      },
+      "name": "gpt-4-turbo",
+      "provider": "openai",
       "confidence": 0.85,
       "evidence": {
         "occurrences": [
           {
             "location": {
-              "path": "src/agent.ts",
-              "line": 7,
-              "endLine": 7,
+              "path": "app.py",
+              "line": 21,
+              "endLine": 21,
               "column": 5,
-              "endColumn": 31
+              "endColumn": 24
             },
-            "detectorId": "rules/anthropic/model-literal",
+            "detectorId": "rules/openai/model-literal",
             "method": "source-code-analysis",
             "confidence": 0.85,
-            "snippet": "model: \"claude-sonnet-4-5\",",
+            "snippet": "model=\"gpt-4-turbo\",",
             "fields": {
-              "model": "claude-sonnet-4-5"
+              "model": "gpt-4-turbo"
             }
           }
         ]
@@ -69,128 +44,137 @@
       "props": [
         {
           "name": "airom:model.provider",
-          "value": "anthropic"
+          "value": "openai"
         },
         {
           "name": "airom:model.id",
-          "value": "claude-sonnet-4-5"
+          "value": "gpt-4-turbo"
+        }
+      ],
+      "eol": {
+        "state": "deprecated",
+        "announced": "2026-04-22",
+        "shutdown": "2026-10-23",
+        "daysRemaining": 83,
+        "replacement": "gpt-5.6-sol",
+        "source": "airom-catalog",
+        "sourceUrl": "https://developers.openai.com/api/docs/deprecations",
+        "verified": "2026-07-23"
+      }
+    },
+    {
+      "id": "airom:91e505cba56acc91",
+      "kind": "hosted-llm",
+      "name": "gpt-4o",
+      "provider": "openai",
+      "confidence": 0.85,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "app.py",
+              "line": 27,
+              "endLine": 27,
+              "column": 5,
+              "endColumn": 19
+            },
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"gpt-4o\",",
+            "fields": {
+              "model": "gpt-4o"
+            }
+          }
+        ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o"
         }
       ]
     },
     {
-      "id": "airom:737f185ea7c9f67f",
-      "kind": "ai-config",
-      "name": "max_tokens",
-      "confidence": 0.5,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "src/agent.ts",
-              "line": 8,
-              "endLine": 8,
-              "column": 1,
-              "endColumn": 18
-            },
-            "detectorId": "rules/aiconfig/token-limits",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "max_tokens: 512,",
-            "fields": {
-              "param": "max_tokens"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "airom:74c94e76beb18249",
-      "kind": "framework",
-      "name": "langchain",
-      "version": "0.3.2",
-      "provider": "langchain",
-      "purl": "pkg:npm/langchain@0.3.2",
-      "package": {
-        "ecosystem": "npm"
-      },
-      "confidence": 0.95,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "package.json",
-              "line": 8
-            },
-            "detectorId": "manifest/npm",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "\"langchain\": \"^0.3.2\","
-          }
-        ],
-        "identity": [
-          {
-            "field": "version",
-            "value": "0.3.2",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "airom:bfa221b1fd6ea0d5",
-      "kind": "application",
-      "name": "node-openai",
-      "confidence": 0,
-      "evidence": {}
-    },
-    {
-      "id": "airom:f16d02e10b6caf23",
+      "id": "airom:a6ccf893ff130124",
       "kind": "library",
       "name": "openai",
-      "version": "4.67.1",
+      "version": "1.51.0",
       "provider": "openai",
-      "purl": "pkg:npm/openai@4.67.1",
+      "purl": "pkg:pypi/openai@1.51.0",
       "package": {
-        "ecosystem": "npm"
+        "ecosystem": "pypi"
       },
-      "confidence": 0.985,
+      "confidence": 0.9864999999999999,
       "evidence": {
         "occurrences": [
           {
             "location": {
-              "path": "package.json",
-              "line": 6
-            },
-            "detectorId": "manifest/npm",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "\"openai\": \"^4.67.1\","
-          },
-          {
-            "location": {
-              "path": "src/agent.ts",
-              "line": 6,
-              "endLine": 6,
-              "column": 34,
-              "endColumn": 59
+              "path": "app.py",
+              "line": 14,
+              "endLine": 14,
+              "column": 17,
+              "endColumn": 42
             },
             "detectorId": "rules/openai/chat-call",
             "method": "source-code-analysis",
             "confidence": 0.7,
-            "snippet": "const completion = await client.chat.completions.create({",
+            "snippet": "summary = client.chat.completions.create(",
             "fields": {
-              "model": "claude-sonnet-4-5",
-              "param.max_tokens": "512"
+              "model": "gpt-4-32k"
             }
+          },
+          {
+            "location": {
+              "path": "app.py",
+              "line": 20,
+              "endLine": 20,
+              "column": 15,
+              "endColumn": 40
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "draft = client.chat.completions.create(",
+            "fields": {
+              "model": "gpt-4-turbo"
+            }
+          },
+          {
+            "location": {
+              "path": "app.py",
+              "line": 26,
+              "endLine": 26,
+              "column": 15,
+              "endColumn": 40
+            },
+            "detectorId": "rules/openai/chat-call",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "reply = client.chat.completions.create(",
+            "fields": {
+              "model": "gpt-4o"
+            }
+          },
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 1
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "openai==1.51.0"
           }
         ],
         "identity": [
           {
             "field": "version",
-            "value": "4.67.1",
+            "value": "1.51.0",
             "confidence": 0.95,
             "methods": [
               "manifest-analysis"
@@ -200,72 +184,129 @@
       }
     },
     {
-      "id": "airom:f9aed661fdbdcef2",
-      "kind": "library",
-      "name": "anthropic",
-      "version": "0.27.3",
-      "provider": "anthropic",
-      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
-      "package": {
-        "ecosystem": "npm"
-      },
-      "confidence": 0.95,
+      "id": "airom:aa2a11f29e846576",
+      "kind": "application",
+      "name": "eol-models",
+      "confidence": 0,
+      "evidence": {}
+    },
+    {
+      "id": "airom:be123ae014845a9f",
+      "kind": "hosted-llm",
+      "name": "gpt-4-32k",
+      "provider": "openai",
+      "confidence": 0.85,
       "evidence": {
         "occurrences": [
           {
             "location": {
-              "path": "package.json",
-              "line": 7
+              "path": "app.py",
+              "line": 15,
+              "endLine": 15,
+              "column": 5,
+              "endColumn": 22
             },
-            "detectorId": "manifest/npm",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "\"@anthropic-ai/sdk\": \"^0.27.3\","
-          }
-        ],
-        "identity": [
-          {
-            "field": "version",
-            "value": "0.27.3",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
-          },
-          {
-            "field": "name",
-            "value": "@anthropic-ai/sdk",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
+            "detectorId": "rules/openai/model-literal",
+            "method": "source-code-analysis",
+            "confidence": 0.85,
+            "snippet": "model=\"gpt-4-32k\",",
+            "fields": {
+              "model": "gpt-4-32k"
+            }
           }
         ]
+      },
+      "props": [
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4-32k"
+        }
+      ],
+      "eol": {
+        "state": "retired",
+        "announced": "2024-06-06",
+        "shutdown": "2025-06-06",
+        "daysRemaining": -421,
+        "replacement": "gpt-4o",
+        "source": "airom-catalog",
+        "sourceUrl": "https://developers.openai.com/api/docs/deprecations",
+        "verified": "2026-07-23"
       }
     }
   ],
   "relationships": [
     {
-      "from": "airom:f16d02e10b6caf23",
-      "to": "airom:14ac8720c7a8d1ef",
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:1b13aab20f840ad4",
       "type": "uses",
       "confidence": 0.7,
       "evidence": [
         {
           "location": {
-            "path": "src/agent.ts",
-            "line": 6,
-            "endLine": 6,
-            "column": 34,
-            "endColumn": 59
+            "path": "app.py",
+            "line": 20,
+            "endLine": 20,
+            "column": 15,
+            "endColumn": 40
           },
           "detectorId": "rules/openai/chat-call",
           "method": "source-code-analysis",
           "confidence": 0.7,
-          "snippet": "const completion = await client.chat.completions.create({",
+          "snippet": "draft = client.chat.completions.create(",
           "fields": {
-            "model": "claude-sonnet-4-5",
-            "param.max_tokens": "512"
+            "model": "gpt-4-turbo"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:91e505cba56acc91",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 26,
+            "endLine": 26,
+            "column": 15,
+            "endColumn": 40
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "reply = client.chat.completions.create(",
+          "fields": {
+            "model": "gpt-4o"
+          }
+        }
+      ]
+    },
+    {
+      "from": "airom:a6ccf893ff130124",
+      "to": "airom:be123ae014845a9f",
+      "type": "uses",
+      "confidence": 0.7,
+      "evidence": [
+        {
+          "location": {
+            "path": "app.py",
+            "line": 14,
+            "endLine": 14,
+            "column": 17,
+            "endColumn": 42
+          },
+          "detectorId": "rules/openai/chat-call",
+          "method": "source-code-analysis",
+          "confidence": 0.7,
+          "snippet": "summary = client.chat.completions.create(",
+          "fields": {
+            "model": "gpt-4-32k"
           }
         }
       ]
@@ -275,8 +316,8 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
-    "headerBytes": 588,
-    "contentBytes": 588,
+    "headerBytes": 898,
+    "contentBytes": 898,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",
@@ -357,8 +398,8 @@
       },
       {
         "id": "manifest/npm",
-        "invocations": 1,
-        "findings": 3,
+        "invocations": 0,
+        "findings": 0,
         "ns": 0
       },
       {
@@ -375,8 +416,8 @@
       },
       {
         "id": "manifest/pypi-requirements",
-        "invocations": 0,
-        "findings": 0,
+        "invocations": 1,
+        "findings": 1,
         "ns": 0
       },
       {
@@ -460,7 +501,7 @@
       {
         "id": "ruleengine",
         "invocations": 1,
-        "findings": 3,
+        "findings": 6,
         "ns": 0
       }
     ]

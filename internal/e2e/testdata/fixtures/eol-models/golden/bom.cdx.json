@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:c4cea838751d80a9",
+      "bom-ref": "airom:aa2a11f29e846576",
       "type": "application",
-      "name": "mixed-monorepo",
+      "name": "eol-models",
       "properties": [
         {
           "name": "airom:confidence",
@@ -46,7 +46,7 @@
       },
       {
         "name": "airom:source.target",
-        "value": "mixed-monorepo"
+        "value": "eol-models"
       },
       {
         "name": "airom:source.type",
@@ -60,72 +60,73 @@
   },
   "components": [
     {
-      "bom-ref": "airom:53f987ae810a0674",
-      "type": "application",
-      "name": "ollama",
+      "bom-ref": "airom:1b13aab20f840ad4",
+      "type": "machine-learning-model",
+      "name": "gpt-4-turbo",
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.75"
+          "value": "0.85"
         },
         {
           "name": "airom:kind",
-          "value": "infra"
+          "value": "hosted-llm"
         },
         {
-          "name": "airom:service.endpoint",
-          "value": "11434"
+          "name": "airom:model.id",
+          "value": "gpt-4-turbo"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
         }
       ],
       "evidence": {
         "occurrences": [
           {
-            "location": "Dockerfile",
-            "line": 1,
-            "additionalContext": "FROM ollama/ollama:latest"
+            "location": "app.py",
+            "line": 21,
+            "additionalContext": "model=\"gpt-4-turbo\","
           }
         ]
       }
     },
     {
-      "bom-ref": "airom:6ed15db34c48ea41",
-      "type": "framework",
-      "name": "langchain",
-      "version": "0.2.16",
-      "purl": "pkg:pypi/langchain@0.2.16",
+      "bom-ref": "airom:91e505cba56acc91",
+      "type": "machine-learning-model",
+      "name": "gpt-4o",
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.95"
+          "value": "0.85"
         },
         {
           "name": "airom:kind",
-          "value": "framework"
+          "value": "hosted-llm"
         },
         {
-          "name": "airom:provider",
-          "value": "langchain"
+          "name": "airom:model.id",
+          "value": "gpt-4o"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
         }
       ],
       "evidence": {
-        "identity": [
-          {
-            "field": "version",
-            "confidence": 0.95,
-            "concludedValue": "0.2.16",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
         "occurrences": [
           {
-            "location": "api/requirements.txt",
-            "line": 1,
-            "additionalContext": "langchain==0.2.16"
+            "location": "app.py",
+            "line": 27,
+            "additionalContext": "model=\"gpt-4o\","
           }
         ]
       }
@@ -139,7 +140,7 @@
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.95"
+          "value": "0.9865"
         },
         {
           "name": "airom:kind",
@@ -148,6 +149,18 @@
         {
           "name": "airom:provider",
           "value": "openai"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:1b13aab20f840ad4@0.7"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:91e505cba56acc91@0.7"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:be123ae014845a9f@0.7"
         }
       ],
       "evidence": {
@@ -166,52 +179,60 @@
         ],
         "occurrences": [
           {
-            "location": "api/requirements.txt",
-            "line": 2,
+            "location": "app.py",
+            "line": 14,
+            "additionalContext": "summary = client.chat.completions.create("
+          },
+          {
+            "location": "app.py",
+            "line": 20,
+            "additionalContext": "draft = client.chat.completions.create("
+          },
+          {
+            "location": "app.py",
+            "line": 26,
+            "additionalContext": "reply = client.chat.completions.create("
+          },
+          {
+            "location": "requirements.txt",
+            "line": 1,
             "additionalContext": "openai==1.51.0"
           }
         ]
       }
     },
     {
-      "bom-ref": "airom:f16d02e10b6caf23",
-      "type": "library",
-      "name": "openai",
-      "version": "4.67.1",
-      "purl": "pkg:npm/openai@4.67.1",
+      "bom-ref": "airom:be123ae014845a9f",
+      "type": "machine-learning-model",
+      "name": "gpt-4-32k",
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.95"
+          "value": "0.85"
         },
         {
           "name": "airom:kind",
-          "value": "library"
+          "value": "hosted-llm"
         },
         {
-          "name": "airom:provider",
+          "name": "airom:model.id",
+          "value": "gpt-4-32k"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
           "value": "openai"
         }
       ],
       "evidence": {
-        "identity": [
-          {
-            "field": "version",
-            "confidence": 0.95,
-            "concludedValue": "4.67.1",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
         "occurrences": [
           {
-            "location": "web/package.json",
-            "line": 6,
-            "additionalContext": "\"openai\": \"^4.67.1\","
+            "location": "app.py",
+            "line": 15,
+            "additionalContext": "model=\"gpt-4-32k\","
           }
         ]
       }

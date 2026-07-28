@@ -1,0 +1,337 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "airom",
+          "semanticVersion": "dev",
+          "informationUri": "https://github.com/airomhq/airom",
+          "rules": [
+            {
+              "id": "manifest/pypi-requirements",
+              "name": "ManifestPypiRequirements",
+              "shortDescription": {
+                "text": "Components identified by the manifest/pypi-requirements detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            },
+            {
+              "id": "rules/openai/chat-call",
+              "name": "RulesOpenaiChatCall",
+              "shortDescription": {
+                "text": "Components identified by the rules/openai/chat-call detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/openai/model-literal",
+              "name": "RulesOpenaiModelLiteral",
+              "shortDescription": {
+                "text": "Components identified by the rules/openai/model-literal detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            }
+          ],
+          "properties": {
+            "airom:rules.hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "airom:rules.version": "builtin"
+          }
+        }
+      },
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "SRCROOT": {
+          "uri": "file:///eol-models/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2026-08-01T12:00:00Z"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "rules/openai/model-literal",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "hosted-llm 'gpt-4-turbo' detected (confidence 0.85)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 21,
+                  "startColumn": 5,
+                  "endLine": 21,
+                  "endColumn": 24,
+                  "snippet": {
+                    "text": "model=\"gpt-4-turbo\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "da9d875825c32ba8f3cea4fc3e31f3a58d773f6a44ad252dfeed747a44489980"
+          },
+          "properties": {
+            "airom:componentId": "airom:1b13aab20f840ad4",
+            "airom:confidence": 0.85,
+            "airom:kind": "hosted-llm",
+            "airom:occurrence.confidence": 0.85,
+            "airom:provider": "openai"
+          }
+        },
+        {
+          "ruleId": "rules/openai/model-literal",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "hosted-llm 'gpt-4o' detected (confidence 0.85)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 27,
+                  "startColumn": 5,
+                  "endLine": 27,
+                  "endColumn": 19,
+                  "snippet": {
+                    "text": "model=\"gpt-4o\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "dcf8079fb58d7154bce4e4e146140774e0f64ffb164f6095d562bfedf7ba4b07"
+          },
+          "properties": {
+            "airom:componentId": "airom:91e505cba56acc91",
+            "airom:confidence": 0.85,
+            "airom:kind": "hosted-llm",
+            "airom:occurrence.confidence": 0.85,
+            "airom:provider": "openai"
+          }
+        },
+        {
+          "ruleId": "rules/openai/chat-call",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 17,
+                  "endLine": 14,
+                  "endColumn": 42,
+                  "snippet": {
+                    "text": "summary = client.chat.completions.create("
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "50a3bdd47603593794bd85bcc77e4484cf336247f4bdc12fe04a267437432444"
+          },
+          "properties": {
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.9865,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.51.0"
+          }
+        },
+        {
+          "ruleId": "rules/openai/chat-call",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 20,
+                  "startColumn": 15,
+                  "endLine": 20,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "draft = client.chat.completions.create("
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "50a3bdd47603593794bd85bcc77e4484cf336247f4bdc12fe04a267437432444"
+          },
+          "properties": {
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.9865,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.51.0"
+          }
+        },
+        {
+          "ruleId": "rules/openai/chat-call",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 26,
+                  "startColumn": 15,
+                  "endLine": 26,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "reply = client.chat.completions.create("
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "50a3bdd47603593794bd85bcc77e4484cf336247f4bdc12fe04a267437432444"
+          },
+          "properties": {
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.9865,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.51.0"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [1.51.0] detected (confidence 0.9865)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 1,
+                  "snippet": {
+                    "text": "openai==1.51.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "f4dcbce03a17b673ff77be6971ebf09e56e678c2cc59e8c21d148ee42f8277e7"
+          },
+          "properties": {
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.9865,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.51.0"
+          }
+        },
+        {
+          "ruleId": "rules/openai/model-literal",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "hosted-llm 'gpt-4-32k' detected (confidence 0.85)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 5,
+                  "endLine": 15,
+                  "endColumn": 22,
+                  "snippet": {
+                    "text": "model=\"gpt-4-32k\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "417273ffe287df29315ce624ec202eff896320de1121e82908e3537ef5cce8f5"
+          },
+          "properties": {
+            "airom:componentId": "airom:be123ae014845a9f",
+            "airom:confidence": 0.85,
+            "airom:kind": "hosted-llm",
+            "airom:occurrence.confidence": 0.85,
+            "airom:provider": "openai"
+          }
+        }
+      ]
+    }
+  ]
+}

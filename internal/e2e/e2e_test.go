@@ -45,7 +45,12 @@ var update = flag.Bool("update", false, "regenerate golden files")
 // Injected clock and serial: the two values a real scan draws from the
 // environment (time.Now, crypto/rand). Pinning them is what makes the goldens
 // reproducible (P7).
-var fixedTimestamp = time.Date(2026, 7, 17, 12, 0, 0, 0, time.UTC)
+//
+// The day matters beyond reproducibility: the EOL overlay evaluates retirement
+// dates against it, so it is pinned AFTER the lifecycle catalog's `verified`
+// date. A scan day earlier than that would mean the catalog knows things the
+// scan date does not — an inconsistency the overlay reports rather than hides.
+var fixedTimestamp = time.Date(2026, 8, 1, 12, 0, 0, 0, time.UTC)
 
 const fixedSerial = "urn:uuid:00000000-0000-4000-8000-000000000000"
 
@@ -65,6 +70,9 @@ var goldenFixtures = []string{
 	"go-openai",
 	"mixed-monorepo",
 	"risky-models",
+	// Pinned to models across every lifecycle state, so the EOL overlay's
+	// projection is golden-filed rather than merely unit-tested.
+	"eol-models",
 }
 
 func fixtureDir(name string) string { return filepath.Join("testdata", "fixtures", name) }
@@ -89,6 +97,12 @@ func scanNormalized(t *testing.T, name string, tweak func(*app.Config)) *airom.I
 		// an extra walked file on the next run). Excluding it keeps every
 		// scan a pure function of the source files.
 		IgnoreGlobs: []string{"**/golden", "**/golden/**"},
+		// Pin the scan clock for the same reason CacheDir is isolated above: the
+		// EOL overlay answers "has this model's shutdown date arrived yet?", so
+		// on a wall clock a golden would silently change the day a curated
+		// retirement passes. With the day fixed, the scan stays a pure function
+		// of the fixture bytes.
+		Now: fixedTimestamp,
 	}
 	if tweak != nil {
 		tweak(cfg)

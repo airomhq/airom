@@ -1,0 +1,360 @@
+components:
+  - confidence: 0.85
+    eol:
+      announced: "2026-04-22"
+      daysRemaining: 83
+      replacement: gpt-5.6-sol
+      shutdown: "2026-10-23"
+      source: airom-catalog
+      sourceUrl: https://developers.openai.com/api/docs/deprecations
+      state: deprecated
+      verified: "2026-07-23"
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4-turbo
+          location:
+            column: 5
+            endColumn: 24
+            endLine: 21
+            line: 21
+            path: app.py
+          method: source-code-analysis
+          snippet: model="gpt-4-turbo",
+    id: airom:1b13aab20f840ad4
+    kind: hosted-llm
+    name: gpt-4-turbo
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4-turbo
+    provider: openai
+  - confidence: 0.85
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4o
+          location:
+            column: 5
+            endColumn: 19
+            endLine: 27
+            line: 27
+            path: app.py
+          method: source-code-analysis
+          snippet: model="gpt-4o",
+    id: airom:91e505cba56acc91
+    kind: hosted-llm
+    name: gpt-4o
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4o
+    provider: openai
+  - confidence: 0.9864999999999999
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 1.51.0
+      occurrences:
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4-32k
+          location:
+            column: 17
+            endColumn: 42
+            endLine: 14
+            line: 14
+            path: app.py
+          method: source-code-analysis
+          snippet: summary = client.chat.completions.create(
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4-turbo
+          location:
+            column: 15
+            endColumn: 40
+            endLine: 20
+            line: 20
+            path: app.py
+          method: source-code-analysis
+          snippet: draft = client.chat.completions.create(
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4o
+          location:
+            column: 15
+            endColumn: 40
+            endLine: 26
+            line: 26
+            path: app.py
+          method: source-code-analysis
+          snippet: reply = client.chat.completions.create(
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 1
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: openai==1.51.0
+    id: airom:a6ccf893ff130124
+    kind: library
+    name: openai
+    package:
+      ecosystem: pypi
+    provider: openai
+    purl: pkg:pypi/openai@1.51.0
+    version: 1.51.0
+  - confidence: 0
+    evidence: {}
+    id: airom:aa2a11f29e846576
+    kind: application
+    name: eol-models
+  - confidence: 0.85
+    eol:
+      announced: "2024-06-06"
+      daysRemaining: -421
+      replacement: gpt-4o
+      shutdown: "2025-06-06"
+      source: airom-catalog
+      sourceUrl: https://developers.openai.com/api/docs/deprecations
+      state: retired
+      verified: "2026-07-23"
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4-32k
+          location:
+            column: 5
+            endColumn: 22
+            endLine: 15
+            line: 15
+            path: app.py
+          method: source-code-analysis
+          snippet: model="gpt-4-32k",
+    id: airom:be123ae014845a9f
+    kind: hosted-llm
+    name: gpt-4-32k
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4-32k
+    provider: openai
+lifecycle: pre-build
+relationships:
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4-turbo
+        location:
+          column: 15
+          endColumn: 40
+          endLine: 20
+          line: 20
+          path: app.py
+        method: source-code-analysis
+        snippet: draft = client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:1b13aab20f840ad4
+    type: uses
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4o
+        location:
+          column: 15
+          endColumn: 40
+          endLine: 26
+          line: 26
+          path: app.py
+        method: source-code-analysis
+        snippet: reply = client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:91e505cba56acc91
+    type: uses
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4-32k
+        location:
+          column: 17
+          endColumn: 42
+          endLine: 14
+          line: 14
+          path: app.py
+        method: source-code-analysis
+        snippet: summary = client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:be123ae014845a9f
+    type: uses
+root: airom:aa2a11f29e846576
+schemaVersion: "1"
+serial: urn:uuid:00000000-0000-4000-8000-000000000000
+source:
+  kind: dir
+  target: eol-models
+stats:
+  contentBytes: 898
+  detectors:
+    - findings: 0
+      id: dataset/file
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: gosrc/ast
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/compose
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/dockerfile
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/cargo
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gomod
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gradle
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/maven
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/npm
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/nuget
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-pyproject
+      invocations: 0
+      ns: 0
+    - findings: 1
+      id: manifest/pypi-requirements
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: modelfile/gguf
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/onnx
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/safetensors
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/hdf5
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/savedmodel
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tensorrt
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tflite
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/torch
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: project/adapter
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/configbind
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/hfdir
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/raglink
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: prompt/file
+      invocations: 0
+      ns: 0
+    - findings: 6
+      id: ruleengine
+      invocations: 1
+      ns: 0
+  durationNs: 0
+  filesFailed: 0
+  filesProcessed: 2
+  filesWalked: 2
+  headerBytes: 898
+  selection:
+    - 'dataset/file: selected by "default"'
+    - 'gosrc/ast: selected by "default"'
+    - 'infra/compose: selected by "default"'
+    - 'infra/dockerfile: selected by "default"'
+    - 'manifest/nuget: selected by "default"'
+    - 'manifest/cargo: selected by "default"'
+    - 'manifest/gomod: selected by "default"'
+    - 'manifest/gradle: selected by "default"'
+    - 'manifest/maven: selected by "default"'
+    - 'manifest/npm: selected by "default"'
+    - 'manifest/pypi-pyproject: selected by "default"'
+    - 'manifest/pypi-requirements: selected by "default"'
+    - 'modelfile/gguf: selected by "default"'
+    - 'modelfile/onnx: selected by "default"'
+    - 'modelfile/safetensors: selected by "default"'
+    - 'modelfilex/hdf5: selected by "default"'
+    - 'modelfilex/savedmodel: selected by "default"'
+    - 'modelfilex/tflite: selected by "default"'
+    - 'modelfilex/tensorrt: selected by "default"'
+    - 'modelfilex/torch: selected by "default"'
+    - 'project/adapter: selected by "default"'
+    - 'project/configbind: selected by "default"'
+    - 'project/hfdir: selected by "default"'
+    - 'project/raglink: selected by "default"'
+    - 'prompt/file: selected by "default"'
+    - 'ruleengine: selected by "default"'
+timestamp: "2026-08-01T12:00:00Z"
+tool:
+  name: airom
+  rulesHash: "0000000000000000000000000000000000000000000000000000000000000000"
+  rulesVersion: builtin
+  version: dev

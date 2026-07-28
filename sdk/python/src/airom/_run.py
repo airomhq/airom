@@ -62,6 +62,7 @@ class ScanOptions:
     cache_dir: str | None = None
     offline: bool = False
     cve: bool = True
+    eol: bool = True
     stats: bool = False
     fail_on: str | None = None
     exit_code: int | None = None
@@ -92,6 +93,9 @@ class ScanOptions:
         # The CVE overlay is on by default; only the opt-out needs a flag.
         if not self.cve:
             out += ["--no-cve"]
+        # Same for the EOL overlay, which works offline (embedded catalog).
+        if not self.eol:
+            out += ["--no-eol"]
         if self.stats:
             out += ["--stats"]
         if self.fail_on is not None:

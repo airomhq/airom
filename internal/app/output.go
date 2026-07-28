@@ -42,6 +42,13 @@ func emit(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 			FilesWalked:    inv.Stats.FilesWalked,
 			FilesProcessed: inv.Stats.FilesProcessed,
 			FilesFailed:    inv.Stats.FilesFailed,
+			// Warnings survive the reset. They are the honesty channel, not a
+			// volatile timing counter: they record where the scan could NOT see
+			// (an unreachable advisory database, an unusable lifecycle catalog),
+			// and dropping them makes a degraded scan byte-identical to a clean
+			// one. Under `-q` the log copy is suppressed too, so this would be
+			// the only surviving trace.
+			Warnings: inv.Stats.Warnings,
 		}
 	}
 

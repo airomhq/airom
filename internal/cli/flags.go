@@ -32,6 +32,9 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 	fs.Bool("cve", true, "deprecated: the CVE overlay is on by default; use --no-cve to disable")
 	_ = fs.MarkDeprecated("cve", "the CVE overlay is on by default now; use --no-cve to disable it")
 	fs.Bool("no-cve", false, "disable the OSV.dev CVE overlay (it is on by default; also implied by --offline)")
+	// The EOL overlay reads an embedded catalog, so unlike --cve it needs no
+	// network and stays on under --offline.
+	fs.Bool("no-eol", false, "disable the hosted-model end-of-life overlay (it is on by default and works offline)")
 	fs.Int("parallel", 0, "worker count (default: GOMAXPROCS)")
 	fs.String("io-budget", formatSize(app.DefaultIOBudget), "byte-weighted I/O semaphore budget (k/m/g suffixes)")
 	fs.String("max-file-size", formatSize(app.DefaultMaxFileSize), "full-content read cap for text detectors (k/m/g suffixes)")

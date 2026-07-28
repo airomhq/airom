@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/airomhq/airom/internal/compliance"
 )
@@ -104,6 +105,18 @@ type Config struct {
 	RulePaths  []string // --rules overlays (loaded in Phase 6)
 	Compliance []string // --compliance framework ids (e.g. "nist-ai-rmf"); empty = off
 	CVE        bool     // match package purls against OSV.dev (on by default; off under --no-cve/--offline)
+
+	// NoEOL disables the hosted-model end-of-life overlay, which is otherwise
+	// always on. Unlike the CVE overlay this needs no network — the catalog is
+	// embedded — so it runs under --offline too, and the field is negative so a
+	// zero-value Config gets the documented default (on).
+	NoEOL bool
+
+	// Now pins the scan clock. Zero means the wall clock. It exists so a scan
+	// can be a pure function of its inputs: the EOL overlay's answer depends on
+	// the date ("is this shutdown in the past yet?"), so a golden suite must be
+	// able to fix the day the way it already fixes the rule cache.
+	Now time.Time
 
 	// Performance knobs (invariant P2: peak memory is a function of these,
 	// never of input size)

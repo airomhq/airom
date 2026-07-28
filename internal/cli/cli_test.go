@@ -81,7 +81,8 @@ func TestFSResolvesConfig(t *testing.T) {
 	got := captureScan(t)
 	t.Chdir(t.TempDir())
 
-	_, err := execute(t, "fs", ".",
+	_, err := execute(
+		t, "fs", ".",
 		"--parallel", "3",
 		"-o", "table", "-o", "cyclonedx=bom.json",
 		"--io-budget", "64m",
@@ -172,6 +173,41 @@ func TestCVEDefaultsOnAndOptOut(t *testing.T) {
 		}
 		if (*got).CVE {
 			t.Error("cve: false in .airom.yaml must disable the overlay, not be silently ignored")
+		}
+	})
+}
+
+// TestEOLDefaultsOnAndOptOut pins the EOL overlay's flag contract. Unlike the
+// CVE overlay it reads an embedded catalog, so --offline must NOT disable it:
+// an offline scan can still report what stops working and when.
+func TestEOLDefaultsOnAndOptOut(t *testing.T) {
+	check := func(t *testing.T, wantDisabled bool, args ...string) {
+		t.Helper()
+		got := captureScan(t)
+		t.Chdir(t.TempDir())
+		if _, err := execute(t, append([]string{"fs", "."}, args...)...); err != nil {
+			t.Fatalf("fs %v: %v", args, err)
+		}
+		if (*got).NoEOL != wantDisabled {
+			t.Errorf("fs %v: NoEOL = %v, want %v", args, (*got).NoEOL, wantDisabled)
+		}
+	}
+	t.Run("default on", func(t *testing.T) { check(t, false) })
+	t.Run("--no-eol off", func(t *testing.T) { check(t, true, "--no-eol") })
+	t.Run("--offline keeps it on", func(t *testing.T) { check(t, false, "--offline") })
+
+	t.Run("no-eol:true in .airom.yaml", func(t *testing.T) {
+		got := captureScan(t)
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, ".airom.yaml"), []byte("no-eol: true\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		t.Chdir(dir)
+		if _, err := execute(t, "fs", "."); err != nil {
+			t.Fatalf("fs: %v", err)
+		}
+		if !(*got).NoEOL {
+			t.Error("no-eol: true in .airom.yaml must disable the overlay")
 		}
 	})
 }

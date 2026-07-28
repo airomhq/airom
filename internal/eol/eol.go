@@ -102,9 +102,16 @@ func key(provider, id string) string {
 // the binary, so any error here means the build itself is broken.
 func Load() (*Catalog, error) { return LoadOn(airom.DateOf(time.Now())) }
 
-// LoadOn is Load with an explicit "today", so validation that reasons about the
-// present (a verification date claiming to be from the future) is testable.
-func LoadOn(on airom.Date) (*Catalog, error) { return loadFS(catalogFS, "catalog", on) }
+// LoadOn is Load with an explicit "today" for INTEGRITY validation — is this
+// data internally sane, e.g. is a verification date impossibly in the future?
+//
+// That is a different question from the one Lookup answers ("has this shutdown
+// arrived yet?"), and the two must not share a clock. A caller that pins the
+// scan date to reproduce a golden is choosing an evaluation day, not claiming
+// the world's calendar moved; validating catalog integrity against that pinned
+// day would reject a perfectly good catalog verified after it. So the pipeline
+// passes real time here and the pinned day to Lookup/Enrich.
+func LoadOn(today airom.Date) (*Catalog, error) { return loadFS(catalogFS, "catalog", today) }
 
 // loadFS is Load's testable core: it reads every <dir>/*.yaml from fsys.
 func loadFS(fsys fs.FS, dir string, on airom.Date) (*Catalog, error) {
@@ -289,11 +296,25 @@ func (c *Catalog) StalenessWarning(on airom.Date) string {
 		}
 	}
 	age := worst.DaysUntil(on)
+	if age < 0 {
+		// Verified AFTER the day being evaluated. Legitimate when scanning "as
+		// of" a past date, but it is not freshness — the catalog knows things
+		// the scan date does not — so say so rather than let a negative number
+		// slide through the threshold below as if it were healthy.
+		return fmt.Sprintf(
+			"eol: the %s model lifecycle catalog was verified %s, after the scan date %s; retirement states are evaluated as of the scan date",
+			worstProvider, worst, on,
+		)
+	}
 	if age <= StaleAfterDays {
 		return ""
 	}
+	// Name the action that actually helps. The catalog is embedded in the
+	// binary, so `airom rules update` — which fetches the RULE bundle — cannot
+	// refresh it; telling a user to run it would send them in a circle, warning
+	// unchanged, until they upgraded anyway.
 	return fmt.Sprintf(
-		"eol: the %s model lifecycle catalog was last verified %d days ago (%s); retirement dates may be out of date — run 'airom rules update'",
+		"eol: the %s model lifecycle catalog was last verified %d days ago (%s); retirement dates may be out of date — upgrade airom for a newer catalog",
 		worstProvider, age, worst,
 	)
 }

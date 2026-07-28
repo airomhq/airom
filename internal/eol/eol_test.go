@@ -34,6 +34,25 @@ func TestEmbeddedCatalogLoads(t *testing.T) {
 	}
 }
 
+// TestLoadUsesTheRealClock exercises the entry point the PIPELINE calls. Every
+// other test here pins the day, which would hide the one failure mode that
+// matters most: a catalog whose `verified` date is ahead of real time loads
+// fine against a pinned day, ships green, and then silently disables the
+// overlay for every user until that date arrives.
+func TestLoadUsesTheRealClock(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("the shipped catalog must load against the real clock: %v", err)
+	}
+	if c.Size() == 0 {
+		t.Fatal("catalog is empty")
+	}
+	// And it must not already be reporting itself stale on the day it ships.
+	if w := c.StalenessWarning(airom.DateOf(time.Now())); w != "" {
+		t.Logf("note: %s", w) // a warning here is a signal to re-verify, not a build failure
+	}
+}
+
 // TestEmbeddedCatalogKnownRecords spot-checks facts transcribed from the
 // providers' deprecation pages, including the state that must flip with time.
 func TestEmbeddedCatalogKnownRecords(t *testing.T) {
@@ -205,10 +224,15 @@ func TestStalenessWarning(t *testing.T) {
 	if w == "" {
 		t.Fatal("203 days old must warn")
 	}
-	for _, want := range []string{"203 days", "2026-01-01", "rules update"} {
+	for _, want := range []string{"203 days", "2026-01-01", "upgrade airom"} {
 		if !strings.Contains(w, want) {
 			t.Errorf("warning %q missing %q", w, want)
 		}
+	}
+	// Verified AFTER the evaluated day is an inconsistency, not freshness: a
+	// negative age must be reported rather than sliding under the threshold.
+	if w := c.StalenessWarning(day(2025, time.January, 1)); !strings.Contains(w, "after the scan date") {
+		t.Errorf("verified-after-scan should be surfaced, got %q", w)
 	}
 }
 

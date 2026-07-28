@@ -25,6 +25,7 @@ def _common(
     cache_dir: str | None = None,
     offline: bool = False,
     cve: bool = True,
+    eol: bool = True,
     stats: bool = False,
     fail_on: str | None = None,
     exit_code: int | None = None,
@@ -41,6 +42,7 @@ def _common(
         cache_dir=cache_dir,
         offline=offline,
         cve=cve,
+        eol=eol,
         stats=stats,
         fail_on=fail_on,
         exit_code=exit_code,
@@ -65,6 +67,9 @@ _DOC_COMMON = """
     * ``cve`` — the OSV.dev CVE overlay, **on by default**. Pass ``cve=False``
       (or ``offline=True``) to skip it. It queries the network and is not
       deterministic over time, so disable it for offline/reproducible scans.
+    * ``eol`` — the hosted-model end-of-life overlay, **on by default**. Reads an
+      embedded catalog, so unlike ``cve`` it needs no network and survives
+      ``offline=True``. Pass ``eol=False`` to skip it.
     * ``fail_on`` / ``exit_code`` — the opt-in CI gate. A match is reported on
       :class:`ScanResult`, never raised.
     * ``binary`` — an explicit path to the ``airom`` executable.

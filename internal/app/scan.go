@@ -13,6 +13,7 @@ import (
 	"github.com/airomhq/airom/internal/detectors/all"
 	"github.com/airomhq/airom/internal/dispatch"
 	"github.com/airomhq/airom/internal/engine"
+	"github.com/airomhq/airom/internal/eol"
 	"github.com/airomhq/airom/internal/osv"
 	"github.com/airomhq/airom/internal/ruleengine"
 	"github.com/airomhq/airom/internal/source"
@@ -140,13 +141,23 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	tool.RulesHash = matcher.Hash()
 	tool.RulesVersion = rulesVersion
 
+	// One clock read for the whole scan: the same instant stamps the BOM and
+	// decides the EOL overlay's "has this shutdown arrived yet?", so the two can
+	// never disagree — a BOM dated July cannot carry a state evaluated in
+	// October. cfg.Now lets a golden suite pin the day.
+	now := cfg.Now
+	if now.IsZero() {
+		now = time.Now()
+	}
+	now = now.UTC()
+
 	info := src.Info()
 	inv := assemble.Build(findings, unknowns, stats, assemble.Options{
 		Tool:      tool,
 		Source:    airom.SourceInfo{Kind: string(info.Kind), Target: info.Target},
 		Lifecycle: "pre-build",
 		Serial:    newSerial(),
-		Timestamp: time.Now().UTC(),
+		Timestamp: now,
 	})
 
 	// The CVE overlay (opt-in) matches package purls against OSV.dev before
@@ -161,6 +172,28 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 				"cve gate (--fail-on %s) cannot be evaluated: %d component(s) could not be checked against OSV.dev; re-run when it is reachable",
 				cfg.Policy, failed,
 			)
+		}
+	}
+
+	// The EOL overlay attaches provider retirement facts to hosted models. It
+	// runs before compliance so a control mapping to "third-party lifecycle"
+	// can see them, and — unlike the CVE overlay — it needs no network, so it
+	// stays on under --offline. A catalog that fails to load means the embedded
+	// data is broken (CI validates it), which costs the overlay but must not
+	// cost the AIBOM: warn and carry on. Omitting an EOL claim is honest;
+	// failing the scan over it would not be.
+	if !cfg.NoEOL {
+		// Load validates catalog INTEGRITY against real time; the pinned scan
+		// day is passed to Enrich, which is what decides whether a shutdown has
+		// arrived. Sharing one clock would let a pinned past date reject a
+		// catalog verified after it.
+		cat, err := eol.Load()
+		if err != nil {
+			inv.Stats.Warnings = append(inv.Stats.Warnings,
+				fmt.Sprintf("eol: model lifecycle catalog unavailable, no EOL findings reported (%v)", err))
+			sort.Strings(inv.Stats.Warnings)
+		} else {
+			eol.Enrich(inv, cat, airom.DateOf(now))
 		}
 	}
 
