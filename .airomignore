@@ -1,0 +1,28 @@
+# AIROM's own detection knowledge is not AIROM's dependencies.
+#
+# A scanner's source necessarily contains the names of everything it can find:
+# `{"huggingface/text-generation-inference", "tgi"}` in an image table,
+# `"@mistralai/mistralai": "mistralai"` in a provider normalization map. Those
+# are patterns, not calls. Without this file a self-scan reports that AIROM runs
+# Ollama and depends on the Mistral SDK, neither of which is true — AIROM is a
+# deterministic Go binary that calls no model (ARCHITECTURE.md: no LLM, no
+# network during a scan).
+#
+# This is a fact about THIS repository, not a rule AIROM applies to yours. The
+# same table in a gateway that routes to those providers is a true finding, and
+# no static analysis can tell the two apart — so the judgement is recorded here,
+# by the only people who know the answer, instead of guessed at in a detector.
+#
+# Rule packs and lifecycle catalogs need no entry: they are recognised
+# structurally (pkg/airom/detect.IsAIROMConfig), which protects your custom
+# packs too, not just ours.
+
+# Pattern tables: image names, module paths, provider aliases, env-var keys.
+internal/detectors/
+internal/source/
+
+# The provider-alias normalization map (§9.1 canonical identity).
+internal/assemble/
+
+# The embedded rule packs themselves.
+rules/

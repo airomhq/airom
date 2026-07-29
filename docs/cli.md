@@ -122,6 +122,16 @@ addition to** `.gitignore` (both are honored on `fs`/`repo` scans; `!` re-inclus
 Use it for AIROM-specific exclusions you don't want in `.gitignore` — vendored fixtures,
 sample prompts, data directories.
 
+It is also the right place for **a tree whose AI names are data rather than
+dependencies**: a routing table, a docs page listing supported providers, a
+migration script's lookup map. No static analysis can distinguish "we list these
+providers because we call them" from "we list them because we catalogue them", so
+the judgement belongs with the people who know the answer. AIROM's own repository
+ships an [`.airomignore`](https://github.com/airomhq/airom/blob/main/.airomignore)
+doing exactly this for its detector pattern tables. (You do **not** need an entry
+for AIROM rule packs or lifecycle catalogs — those are recognised structurally and
+never inventoried as prompts.)
+
 Always-on default skips: `.git`, `node_modules`, `vendor`, virtualenvs. These are enforced
 in an isolated rule layer that no `!` re-inclusion can override. Ignored files are never
 opened (they're excluded at walk time, and the phase-2 resolver enforces the same rules),

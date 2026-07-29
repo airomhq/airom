@@ -93,6 +93,19 @@ Worth doing when the question changes from "what do we ship?" to "what do our
 tests reach for?" — a test calling a live model is still a real API key, a real
 bill, and real data leaving the building.
 
+## Not the same as data-about-AI
+
+Test scope is decided automatically. The neighbouring problem — a file whose AI
+names are *data* rather than dependencies, like a provider routing table or a
+docs page listing supported models — is not decidable by static analysis: the
+identical table in a gateway that routes to those providers is a true finding.
+That judgement belongs in [`.airomignore`](/reference/cli), with the people who
+know the answer.
+
+AIROM's own [rule packs](/rules/overview) and lifecycle catalogs are the one
+exception, because they have an unambiguous structure: they are recognised by
+shape and never inventoried as prompts, in your repository as well as ours.
+
 <Note>
   Test-scoped components are also skipped when querying OSV.dev, so the
   [CVE overlay](/concepts/cve) does not spend network round-trips on advisories

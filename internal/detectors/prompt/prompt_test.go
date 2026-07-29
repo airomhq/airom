@@ -88,3 +88,36 @@ func file(t *testing.T, p, content string) *detect.File {
 		detect.FileProviders{Content: func() ([]byte, bool, error) { return b, false, nil }},
 	)
 }
+
+// TestAIROMConfigIsNotAPrompt: a rule pack is YAML full of provider names and
+// prompt patterns, so a project that keeps its custom packs under prompts/ had
+// its detection CONFIGURATION inventoried as part of the software being
+// scanned. AIROM's own rules/prompts/prompts.yaml was the first casualty; a
+// user's mycorp-prompts.yaml is the one that matters.
+func TestAIROMConfigIsNotAPrompt(t *testing.T) {
+	cases := map[string]string{
+		"prompts/mycorp.yaml":   "pack: mycorp\nversion: 1\nrules:\n  - id: mycorp/template\n    kind: prompt\n",
+		"prompts/lifecycle.yml": "provider: openai\nsource: https://x\nverified: 2026-07-23\nmodels:\n  - {id: gpt-4, state: deprecated}\n",
+	}
+	for p, body := range cases {
+		f := file(t, p, body)
+		got, err := NewPrompt().DetectFile(context.Background(), f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) != 0 {
+			t.Errorf("%s: AIROM's own configuration reported as a prompt asset", p)
+		}
+	}
+
+	// And the guard must be narrow: a genuine prompt in the same directory,
+	// with the same extension, is still a finding.
+	f := file(t, "prompts/greeting.yaml", "system: |\n  You are a helpful assistant.\nuser: \"{{question}}\"\n")
+	got, err := NewPrompt().DetectFile(context.Background(), f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) == 0 {
+		t.Error("a real prompt beside a rule pack must still be detected")
+	}
+}

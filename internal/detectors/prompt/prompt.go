@@ -184,6 +184,12 @@ func (p *Prompt) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding
 	if bytes.IndexByte(content, 0) >= 0 {
 		return nil, nil
 	}
+	// Nor is one of AIROM's own configuration files. A rule pack is YAML full of
+	// prompt patterns, so a project keeping its custom packs in prompts/ had its
+	// detection config inventoried as the prompts of the software being scanned.
+	if detect.IsAIROMConfig(content) {
+		return nil, nil
+	}
 
 	lower := strings.ToLower(string(content))
 	jinja := hasJinja(content)
