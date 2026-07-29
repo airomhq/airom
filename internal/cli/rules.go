@@ -97,7 +97,7 @@ func newRulesLintCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "lint <file>",
 		Short: "Validate a rule pack (or a model lifecycle catalog) against its full contract",
-		Args:  exactArgs("exactly one <file>"),
+		Args:  exactArgs(1, "exactly one <file>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// The signed bundle carries both rule packs and lifecycle catalogs,
 			// so one lint command serves both — a maintainer should not have to
@@ -122,7 +122,7 @@ func newRulesTestCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "test <file>",
 		Short: "Run a rule pack against its fixtures (no Go toolchain needed)",
-		Args:  exactArgs("exactly one <file>"),
+		Args:  exactArgs(1, "exactly one <file>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// A publishing pipeline runs lint AND test over every YAML in the
 			// bundle. A lifecycle catalog has no fixtures to run, so say that

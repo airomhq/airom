@@ -49,7 +49,7 @@ func newDetectorsCmd() *cobra.Command {
 		&cobra.Command{
 			Use:   "explain <id>",
 			Short: "Print one detector's full selector, needs, and rule count",
-			Args:  exactArgs("exactly one <id>"),
+			Args:  exactArgs(1, "exactly one <id>"),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				infos, err := detectorInfos(cmd)
 				if err != nil {

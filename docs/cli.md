@@ -30,6 +30,7 @@ airom
 ├── repo <url|path>
 ├── image <ref>            # --input tar, --platform; remote→daemon→tarball→layout chain
 ├── k8s [context]          # --namespace | -A; --manifests <dir> (offline mode)
+├── diff <old> <new>       # semantic delta between two native AIBOMs; --format table|markdown|json
 ├── detectors {list|explain <id>}     # the explainability view
 ├── rules {list|lint <file>|test <file>}
 ├── dev {new-rulepack <name>|new-detector <name>}   # contributor scaffolding
@@ -227,6 +228,38 @@ $ airom k8s prod -A -o cyclonedx=cluster-aibom.json
 $ airom k8s --manifests ./deploy/rendered --offline
 ```
 
+### `airom diff <old-aibom.json> <new-aibom.json>`
+
+Compare two native AIBOM documents (`airom scan <target> -o json=<file>`) and report the
+**semantic delta**: components added, removed, and changed, keyed by the stable component
+ID. Version is deliberately not part of component identity (§9.2), so a version bump reads
+as a field change on one component — never as a remove+add pair. Evidence churn
+(occurrence counts, detector sets) is not compared, and confidence is compared by band, so
+two scans of unchanged code diff as empty. The scan root and test-scoped components are
+excluded by default (`--include-tests` to count them).
+
+One format to stdout, selected with `--format`:
+
+| Format | For |
+|---|---|
+| `table` (default) | terminals — summary box + added/removed/changed tables |
+| `markdown` | CI — ready to post as a PR comment |
+| `json` | tooling — full component snapshots plus field-level changes |
+
+The gate flags work like scan's, evaluated over the **added and changed** components only:
+`--fail-on` names the AI delta you refuse to merge, `--exit-code N` alone fails on any
+added or changed component. Removals never trip the gate — a policy names AI you do not
+want to appear, and a removal is that policy succeeding. `compliance:` terms are rejected
+(they gate a scan's framework mapping, not a delta). Wrong-format input (CycloneDX, SARIF)
+is refused explicitly rather than diffed as empty.
+
+```console
+$ airom diff old.json new.json
+$ airom diff base.json head.json --format markdown > aibom-diff.md
+$ airom diff base.json head.json --fail-on "hosted-llm|local-model-file"
+$ airom diff base.json head.json --exit-code 1     # any AI change fails the build
+```
+
 ### `airom detectors {list | explain <id>}`
 
 Capability-as-data: every detector's ID, version, tags, and exactly what it looks at —
@@ -318,6 +351,15 @@ $ airom scan . -o table -o cyclonedx=aibom.cdx.json -o sarif=airom.sarif
 
 ```console
 $ airom fs . --fail-on "hosted-llm&confidence>=0.9" --exit-code 1 -o table
+```
+
+**PR gate — surface and gate the AI delta a pull request introduces:**
+
+```console
+$ airom repo https://github.com/acme/rag-service.git -o json=base.json   # base branch
+$ airom fs . -o json=head.json                                           # PR checkout
+$ airom diff base.json head.json --format markdown > aibom-diff.md       # post as PR comment
+$ airom diff base.json head.json --fail-on "hosted-llm|local-model-file"
 ```
 
 **Air-gapped image scan from a build artifact:**
