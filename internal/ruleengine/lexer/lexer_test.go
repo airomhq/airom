@@ -42,7 +42,9 @@ func checkTiling(t *testing.T, label string, src []byte, regions []Region) {
 		if r.End <= r.Start {
 			t.Fatalf("%s: region %d is empty or inverted [%d,%d)", label, k, r.Start, r.End)
 		}
-		if r.Type > String {
+		// Asked via String() rather than an upper bound, so adding a region
+		// class cannot silently pass here — it either has a name or it fails.
+		if r.Type.String() == "invalid" {
 			t.Fatalf("%s: region %d has invalid type %d", label, k, r.Type)
 		}
 		prev = r.End

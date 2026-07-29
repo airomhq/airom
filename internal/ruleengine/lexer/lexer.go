@@ -5,13 +5,25 @@ import "github.com/airomhq/airom/internal/classify"
 // RegionType is the classification of one byte range of source text.
 type RegionType uint8
 
-// The three region classes. Comment regions are never scanned by the rule
-// engine — not even by the keyword prefilter (docs/rule-schema.md
-// "regions"); rules select subsets of {Code, String}.
+// The region classes. Comment and Docstring are never scanned by the rule
+// engine unless a rule opts in — not even by the keyword prefilter
+// (docs/rule-schema.md "regions"); rules select subsets of
+// {Code, String, Docstring}.
 const (
 	Code RegionType = iota
 	Comment
 	String
+	// Docstring is a Python string literal standing alone as a statement —
+	// a module, class, or function docstring. It is documentation that
+	// happens to be quoted, so it is classified apart from String and
+	// excluded by default, exactly as Comment is.
+	//
+	// This is not a nicety. Library docstrings are full of worked examples,
+	// and a scan of huggingface/transformers attributed 226 hosted models to
+	// lines like `>>> AutoModel.from_pretrained("facebook/esmfold_v1")` —
+	// 42% of everything it reported. transformers documents those
+	// checkpoints; it does not call them.
+	Docstring
 )
 
 // String returns the lowercase region-class name (for diagnostics).
@@ -23,6 +35,8 @@ func (t RegionType) String() string {
 		return "comment"
 	case String:
 		return "string"
+	case Docstring:
+		return "docstring"
 	default:
 		return "invalid"
 	}

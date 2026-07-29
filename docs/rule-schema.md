@@ -129,14 +129,39 @@ pattern fails lint.
 
 ### `regions`
 
-Which classified text regions the pattern may match: any subset of `code` and `string`
-(default: both). The region lexer classifies every file into code / comment / string
-regions before matching; **comment regions are never scanned** — not even by the keyword
-prefilter — so there is no `comment` value. Typical choices:
+Which classified text regions the pattern may match: any subset of `code`, `string`, and
+`docstring` (default: `[code, string]`). The region lexer classifies every file into
+code / comment / string / docstring regions before matching; **comment regions are never
+scanned** — not even by the keyword prefilter — so there is no `comment` value. Typical
+choices:
 
 - Model-ID literals: `[code, string]` or `[string]` (the ID is a quoted literal).
 - Import/call patterns: `[code]` — but note JS/TS module specifiers
   (`from "openai"`) are *string* regions; use `[code, string]` when matching them.
+
+#### `docstring` — documentation that happens to be quoted
+
+A Python string literal standing alone as a statement (a module, class, or function
+docstring) is classified `docstring`, **not** `string`, and is excluded by default for the
+same reason comments are: a worked example is not a dependency. Scanning
+`huggingface/transformers` once attributed 226 hosted models to lines like
+
+```python
+>>> AutoModel.from_pretrained("facebook/esmfold_v1")
+```
+
+— 42% of everything reported. transformers *documents* those checkpoints; it does not
+call them.
+
+The test is Python's own: a triple-quoted literal reached by scanning back over blanks to
+a newline (or the start of file) is a statement, hence a docstring. Anything that consumes
+it is a value and stays `string` — `PROMPT = """…"""`, `f("""…""")`, `{"k": """…"""}`,
+`return """…"""`. That is what keeps prompt-template detection working, since a template
+is always assigned or passed.
+
+Opt back in with `regions: [code, string, docstring]` when a rule genuinely wants
+documentation — for instance a pack that inventories the models a library *advertises*
+rather than the ones it calls.
 
 ### `claim`
 

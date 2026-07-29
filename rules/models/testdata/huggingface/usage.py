@@ -19,3 +19,16 @@ tok = AutoModelForCausalLM.from_pretrained("bert-base-uncased")  # no org/name s
 
 # airom-ok: huggingface/pipeline
 flow = Pipeline(steps=[])  # sklearn Pipeline is capitalized, keyword is lowercase
+
+
+def documented():
+    """Load a checkpoint.
+
+    The example below is documentation, not a call. Before docstrings were
+    classified apart from strings, lines like this made up 42% of a scan of
+    huggingface/transformers.
+
+    >>> model = AutoModel.from_pretrained("facebook/esmfold_v1")
+    """
+    # airom-ok: huggingface/from-pretrained
+    return None

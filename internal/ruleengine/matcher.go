@@ -29,6 +29,7 @@ const maxMatchesPerRulePerFile = 200
 const (
 	regionCode uint8 = 1 << iota
 	regionString
+	regionDocstring
 )
 
 type compiledRule struct {
@@ -150,6 +151,10 @@ func regionMaskOf(regions []string) uint8 {
 			mask |= regionCode
 		case "string":
 			mask |= regionString
+		case "docstring":
+			// Opt-in only. A docstring is documentation, so the default set
+			// excludes it — a worked example is not a dependency.
+			mask |= regionDocstring
 		}
 	}
 	return mask
@@ -215,6 +220,8 @@ func (d *Detector) DetectFile(ctx context.Context, f *detect.File) ([]detect.Fin
 				return mask&regionCode != 0
 			case lexer.String:
 				return mask&regionString != 0
+			case lexer.Docstring:
+				return mask&regionDocstring != 0
 			default:
 				return false
 			}

@@ -98,9 +98,35 @@ prefix:
 		delim = "'''"
 	}
 	if hasAt(src, j, delim) {
-		return scanTriple(src, j+len(delim), delim, !raw), String, true
+		return scanTriple(src, j+len(delim), delim, !raw), tripleKind(src, i), true
 	}
 	return scanQuoted(src, j+1, q, !raw, false), String, true
+}
+
+// tripleKind decides whether a Python triple-quoted literal opening at i is a
+// DOCSTRING or an ordinary String, by asking Python's own question: is this
+// literal an expression statement, or is it a value?
+//
+// Scanning back over blanks, a newline (or the start of file) means the literal
+// stands alone as a statement — a module/class/function docstring. Anything
+// else means something consumes it: `PROMPT = """…"""`, `f("""…""")`,
+// `{"k": """…"""}`, `return """…"""`.
+//
+// That distinction is what makes excluding docstrings safe. Prompt templates —
+// the reason AIROM reads triple-quoted strings at all — are assigned or passed,
+// so they stay String and keep matching.
+func tripleKind(src []byte, i int) RegionType {
+	for k := i - 1; k >= 0; k-- {
+		switch src[k] {
+		case ' ', '\t', '\r':
+			continue // indentation before a statement
+		case '\n':
+			return Docstring
+		default:
+			return String
+		}
+	}
+	return Docstring // start of file
 }
 
 // rustPrefixedString scans Rust raw strings r"..." and r#"..."# (up to 8
