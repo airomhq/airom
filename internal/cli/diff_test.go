@@ -37,15 +37,23 @@ func writeAIBOM(t *testing.T, dir, name string, comps ...airom.Component) string
 func diffFixtures(t *testing.T) (oldPath, newPath string) {
 	t.Helper()
 	dir := t.TempDir()
-	oldPath = writeAIBOM(t, dir, "old.json",
-		airom.Component{ID: "airom:00000000000000aa", Kind: airom.KindFramework, Name: "langchain",
-			Version: airom.KnownString("0.2.1"), Confidence: 0.95},
+	oldPath = writeAIBOM(
+		t, dir, "old.json",
+		airom.Component{
+			ID: "airom:00000000000000aa", Kind: airom.KindFramework, Name: "langchain",
+			Version: airom.KnownString("0.2.1"), Confidence: 0.95,
+		},
 	)
-	newPath = writeAIBOM(t, dir, "new.json",
-		airom.Component{ID: "airom:00000000000000aa", Kind: airom.KindFramework, Name: "langchain",
-			Version: airom.KnownString("0.3.0"), Confidence: 0.95},
-		airom.Component{ID: "airom:00000000000000bb", Kind: airom.KindHostedLLM, Name: "gpt-4.1",
-			Provider: airom.KnownString("openai"), Confidence: 0.95},
+	newPath = writeAIBOM(
+		t, dir, "new.json",
+		airom.Component{
+			ID: "airom:00000000000000aa", Kind: airom.KindFramework, Name: "langchain",
+			Version: airom.KnownString("0.3.0"), Confidence: 0.95,
+		},
+		airom.Component{
+			ID: "airom:00000000000000bb", Kind: airom.KindHostedLLM, Name: "gpt-4.1",
+			Provider: airom.KnownString("openai"), Confidence: 0.95,
+		},
 	)
 	return oldPath, newPath
 }
@@ -174,8 +182,10 @@ func TestDiffIncludeTests(t *testing.T) {
 	dir := t.TempDir()
 	oldPath := writeAIBOM(t, dir, "old.json")
 	newPath := writeAIBOM(t, dir, "new.json",
-		airom.Component{ID: "airom:00000000000000aa", Kind: airom.KindHostedLLM, Name: "gpt-4.1",
-			Confidence: 0.9, TestOnly: true})
+		airom.Component{
+			ID: "airom:00000000000000aa", Kind: airom.KindHostedLLM, Name: "gpt-4.1",
+			Confidence: 0.9, TestOnly: true,
+		})
 
 	out, err := execute(t, "diff", oldPath, newPath)
 	if err != nil {

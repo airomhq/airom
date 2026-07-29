@@ -41,13 +41,15 @@ func inv(target string, comps ...airom.Component) *airom.Inventory {
 }
 
 func TestComputeClassifiesAddedRemovedChanged(t *testing.T) {
-	oldInv := inv("old",
+	oldInv := inv(
+		"old",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) {
 			c.Version = airom.KnownString("0.2.1")
 		}),
 		comp("airom:00000000000000bb", "hosted-llm", "gpt-4o"),
 	)
-	newInv := inv("new",
+	newInv := inv(
+		"new",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) {
 			c.Version = airom.KnownString("0.3.0")
 		}),
@@ -133,11 +135,13 @@ func TestComputeSkipsRootAndTestOnly(t *testing.T) {
 }
 
 func TestGateComponentsIsAddedPlusChanged(t *testing.T) {
-	oldInv := inv("t",
+	oldInv := inv(
+		"t",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) { c.Version = airom.KnownString("1") }),
 		comp("airom:00000000000000bb", "vector-db", "chroma"),
 	)
-	newInv := inv("t",
+	newInv := inv(
+		"t",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) { c.Version = airom.KnownString("2") }),
 		comp("airom:00000000000000cc", "hosted-llm", "gpt-4.1"),
 	)
@@ -193,11 +197,13 @@ func TestLoadRoundTripAndRejections(t *testing.T) {
 
 func result(t *testing.T) *Result {
 	t.Helper()
-	oldInv := inv("repo@base",
+	oldInv := inv(
+		"repo@base",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) { c.Version = airom.KnownString("0.2.1") }),
 		comp("airom:00000000000000bb", "vector-db", "chroma"),
 	)
-	newInv := inv("repo@head",
+	newInv := inv(
+		"repo@head",
 		comp("airom:00000000000000aa", "framework", "langchain", func(c *airom.Component) { c.Version = airom.KnownString("0.3.0") }),
 		comp("airom:00000000000000cc", "hosted-llm", "gpt-4.1", func(c *airom.Component) { c.Provider = airom.KnownString("openai") }),
 	)
