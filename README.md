@@ -107,6 +107,19 @@ report even when tests reach it too.
 airom fs . --include-tests    # when the question is "what do our tests reach for?"
 ```
 
+## AIBOM diff
+
+A scan answers *"what AI is in this repo?"* — a snapshot. The question security teams live with is **"what AI changed?"** `airom diff` compares two native AIBOM documents and reports the semantic delta: components added, removed, and changed, keyed by the stable component ID. Version is not part of identity, so a version bump reads as a field change on one component, never as a remove+add pair — and evidence churn is not compared, so two scans of unchanged code diff as empty.
+
+```bash
+airom scan . -o json=head.json && airom diff base.json head.json   # what changed?
+airom diff base.json head.json --format markdown                   # ready to post as a PR comment
+airom diff base.json head.json --fail-on "hosted-llm|local-model-file"   # no new AI providers without sign-off
+airom diff base.json head.json --exit-code 1                       # any AI change fails the build
+```
+
+This turns AIROM from a point-in-time inventory into a **per-PR control**: scan the base branch and the head, diff the two, post the markdown to the PR, and gate the merge on the delta you refuse to accept — a new hosted model, new local weights, a new vector store, a component that just picked up a `pickle-import` risk. Removals never trip the gate. Three formats — `table`, `markdown`, `json` — all projections of the same result; details in **[docs/cli.md](docs/cli.md)**.
+
 ## Model lifecycle (EOL)
 
 The risk and CVE overlays answer questions about *risk*. This one answers a question about *time*: **what in this stack stops working, and when?** A retired hosted model is not a vulnerability you weigh — on the shutdown date the provider's API stops answering and the app breaks, patched or not.

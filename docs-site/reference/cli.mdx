@@ -140,6 +140,27 @@ airom k8s --manifests ./deploy/k8s --offline
 
 ## Inspection commands
 
+### airom diff
+
+Compare two native AIBOM documents and report the semantic delta: components added,
+removed, and changed, keyed by the stable component ID. A version bump reads as a field
+change on one component, never as a remove+add pair; evidence churn is not compared, so
+two scans of unchanged code diff as empty.
+
+```bash title="airom diff"
+airom diff old.json new.json
+airom diff base.json head.json --format markdown
+airom diff base.json head.json --fail-on "hosted-llm|local-model-file"
+airom diff base.json head.json --exit-code 1
+```
+
+Exactly two native AIBOM JSON files are required (`airom scan <target> -o json=<file>`);
+other formats are refused explicitly. `--format` selects one of `table` (default),
+`markdown` (ready to post as a PR comment), or `json`. The gate flags work like scan's,
+evaluated over the added and changed components only — removals never trip the gate, and
+`compliance:` terms are rejected. Test-scoped components are excluded unless
+`--include-tests` is set.
+
 ### airom detectors list
 
 List every detector with its selection status. Honors `--select` and `--rules`, so

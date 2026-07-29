@@ -106,6 +106,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newRepoCmd(),
 		newImageCmd(),
 		newK8sCmd(),
+		newDiffCmd(),
 		newDetectorsCmd(),
 		newRulesCmd(),
 		newDevCmd(),

@@ -32,7 +32,7 @@ func newDevRulePackCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new-rulepack <name>",
 		Short: "Scaffold a rule pack (rules/<category>/<name>.yaml) plus fixtures",
-		Args:  exactArgs("exactly one <name>"),
+		Args:  exactArgs(1, "exactly one <name>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 			if !nameRe.MatchString(name) {
@@ -95,7 +95,7 @@ func newDevDetectorCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "new-detector <name>",
 		Short: "Scaffold a Go code detector (internal/detectors/<name>/) plus a contract test",
-		Args:  exactArgs("exactly one <name>"),
+		Args:  exactArgs(1, "exactly one <name>"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 			if !nameRe.MatchString(name) {

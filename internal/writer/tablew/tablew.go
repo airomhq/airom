@@ -226,7 +226,7 @@ func writeSummary(w io.Writer, inv *airom.Inventory, comps []airom.Component) {
 		}
 	}
 
-	summaryBox(w, "Scan Summary", lines)
+	SummaryBox(w, "Scan Summary", lines)
 }
 
 // writeTable renders the component table with box-drawing borders, columns
@@ -258,7 +258,7 @@ func writeTable(w io.Writer, comps []airom.Component, anyVuln, anyEOL bool) {
 		row = append(row, locationCell(c), fmt.Sprintf("%d occ", len(c.Evidence.Occurrences)))
 		rows = append(rows, row)
 	}
-	boxTable(w, headers, rows)
+	BoxTable(w, headers, rows)
 }
 
 // ── rendering helpers ───────────────────────────────────────────────────────
@@ -312,8 +312,10 @@ func isWide(r rune) bool {
 
 func kv(k, v string) string { return fmt.Sprintf("%-13s %s", k, v) }
 
-// summaryBox draws a single-column box with the title set into the top border.
-func summaryBox(w io.Writer, title string, lines []string) {
+// SummaryBox draws a single-column box with the title set into the top border.
+// Exported for renderers of non-Inventory shapes (internal/diff) that share
+// the table writer's visual language.
+func SummaryBox(w io.Writer, title string, lines []string) {
 	inner := dispWidth("─ " + title + " ")
 	for _, l := range lines {
 		if dispWidth(l) > inner {
@@ -328,8 +330,9 @@ func summaryBox(w io.Writer, title string, lines []string) {
 	fmt.Fprintln(w, "└"+strings.Repeat("─", inner+2)+"┘")
 }
 
-// boxTable draws a bordered table with per-column widths.
-func boxTable(w io.Writer, headers []string, rows [][]string) {
+// BoxTable draws a bordered table with per-column widths. Exported for the
+// same reason as SummaryBox.
+func BoxTable(w io.Writer, headers []string, rows [][]string) {
 	n := len(headers)
 	width := make([]int, n)
 	for i, h := range headers {
@@ -720,7 +723,7 @@ func writeEOLTable(w io.Writer, comps []airom.Component) {
 		})
 	}
 	fmt.Fprintf(w, "\nModel lifecycle (%d)\n", len(rows))
-	boxTable(w, headers, tableRows)
+	BoxTable(w, headers, tableRows)
 
 	// Provenance as a footnote rather than a column: every row from a provider
 	// cites the same page, so repeating a wrapped URL per row would crowd out
