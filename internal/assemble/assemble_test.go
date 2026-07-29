@@ -743,3 +743,57 @@ func TestPackageFoldRefusesAmbiguity(t *testing.T) {
 		t.Errorf("library components = %d, want 3 (ambiguous ecosystem: no fold)", libs)
 	}
 }
+
+// TestFoldByPublisher: two rules can claim one model id with DIFFERENT
+// providers — "sentence-transformers/all-MiniLM-L6-v2" as an embedding model,
+// and (because the same line calls from_pretrained) as a hosted LLM from
+// huggingface. foldModels only ever folded provider-LESS drafts, so this
+// rendered one model as two rows whose kinds contradicted each other. The id
+// names its publisher, so the org prefix decides.
+func TestFoldByPublisher(t *testing.T) {
+	inv := Build([]detect.Finding{
+		finding(airom.KindEmbeddingModel, "sentence-transformers/all-MiniLM-L6-v2", "sentence-transformers",
+			"rules/sentence-transformers/model-literal", airom.MethodSourceCode, 0.85, "rag.py", 5),
+		finding(airom.KindHostedLLM, "sentence-transformers/all-MiniLM-L6-v2", "huggingface",
+			"rules/huggingface/from-pretrained", airom.MethodSourceCode, 0.85, "rag.py", 5),
+	}, nil, airom.ScanStats{}, opts())
+
+	c := componentByName(t, inv, "sentence-transformers/all-minilm-l6-v2")
+	if c.Kind != airom.KindEmbeddingModel {
+		t.Errorf("kind = %s, want embedding-model (the more specific claim)", c.Kind)
+	}
+	if p, _ := c.Provider.Value(); p != "sentence-transformers" {
+		t.Errorf("provider = %q, want the publisher the id names — not the registry", p)
+	}
+	n := 0
+	for _, x := range inv.Components {
+		if x.Kind != airom.KindApplication {
+			n++
+		}
+	}
+	if n != 1 {
+		t.Errorf("one model must be one component, got %d", n)
+	}
+	if len(c.Evidence.Occurrences) == 0 {
+		t.Error("the folded draft's evidence must survive the merge")
+	}
+}
+
+// TestFoldByPublisherLeavesAmbiguityAlone: when no claim names the publisher
+// there is nothing to prefer, and picking one arbitrarily would be worse than
+// showing both.
+func TestFoldByPublisherLeavesAmbiguityAlone(t *testing.T) {
+	inv := Build([]detect.Finding{
+		finding(airom.KindHostedLLM, "meta-llama/llama-3-8b", "huggingface", "r1", airom.MethodSourceCode, 0.8, "a.py", 1),
+		finding(airom.KindHostedLLM, "meta-llama/llama-3-8b", "together", "r2", airom.MethodSourceCode, 0.8, "a.py", 1),
+	}, nil, airom.ScanStats{}, opts())
+	n := 0
+	for _, x := range inv.Components {
+		if x.Kind != airom.KindApplication {
+			n++
+		}
+	}
+	if n != 2 {
+		t.Errorf("neither provider is the publisher, so both must stand; got %d", n)
+	}
+}

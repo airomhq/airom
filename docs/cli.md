@@ -132,7 +132,7 @@ doing exactly this for its detector pattern tables. (You do **not** need an entr
 for AIROM rule packs or lifecycle catalogs — those are recognised structurally and
 never inventoried as prompts.)
 
-Always-on default skips: `.git`, `node_modules`, `vendor`, virtualenvs. These are enforced
+Always-on default skips: `.git`, `node_modules`, `vendor`, virtualenvs, and **version-stamped dependency directories** (`…/lib@v1.2.3/` — the Go module cache and the pnpm store). That last one keys on the `@v<digit>` stamp, not on `pkg/mod/`, so a project with its own `pkg/mod` package keeps being scanned; point AIROM at a cached module directly and it is reported normally. These are enforced
 in an isolated rule layer that no `!` re-inclusion can override. Ignored files are never
 opened (they're excluded at walk time, and the phase-2 resolver enforces the same rules),
 and the effective ignore configuration participates in the cache namespace, so changing it

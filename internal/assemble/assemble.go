@@ -497,7 +497,7 @@ func (a *assembly) foldModels() {
 		groups[d.key.Name] = append(groups[d.key.Name], d)
 	}
 
-	for _, ds := range groups {
+	for name, ds := range groups {
 		if len(ds) < 2 {
 			continue
 		}
@@ -509,11 +509,47 @@ func (a *assembly) foldModels() {
 				targets = append(targets, d)
 			}
 		}
-		if len(targets) != 1 || len(providerless) == 0 {
-			continue // no unique home, or nothing to fold
+		switch {
+		case len(targets) == 1 && len(providerless) > 0:
+			a.foldInto(targets[0], providerless)
+		case len(targets) > 1:
+			a.foldByPublisher(name, targets, providerless)
 		}
-		a.foldInto(targets[0], providerless)
 	}
+}
+
+// foldByPublisher resolves one model id claimed by several rules with DIFFERENT
+// providers — "sentence-transformers/all-MiniLM-L6-v2" arriving both as an
+// embedding model (provider sentence-transformers) and, because the same line
+// calls from_pretrained, as a hosted LLM (provider huggingface). That is one
+// model rendered as two rows whose kinds contradict each other.
+//
+// The id settles it. An "org/name" checkpoint is published by org, so the draft
+// whose provider matches the org is the real one; a rule naming anything else is
+// naming the registry it was fetched from or the library that loads it. When no
+// draft claims the publisher there is nothing to prefer, so both stand rather
+// than one being picked arbitrarily.
+func (a *assembly) foldByPublisher(name string, targets, providerless []*draft) {
+	org, _, ok := strings.Cut(name, "/")
+	if !ok || org == "" {
+		return
+	}
+	var home *draft
+	rest := make([]*draft, 0, len(targets)+len(providerless))
+	for _, d := range targets {
+		if home == nil && strings.EqualFold(d.key.Provider, org) {
+			home = d
+			continue
+		}
+		rest = append(rest, d)
+	}
+	if home == nil {
+		return
+	}
+	rest = append(rest, providerless...)
+	// Deterministic fold order (P7): map iteration decided `targets`.
+	sort.Slice(rest, func(i, j int) bool { return rest[i].id < rest[j].id })
+	a.foldInto(home, rest)
 }
 
 // foldInto merges each src draft into dst, deletes it, and records the fold

@@ -490,3 +490,43 @@ func TestCaseFoldIgnore(t *testing.T) {
 		t.Errorf("walk = %v, want %v", got, want)
 	}
 }
+
+// TestModuleCacheIsSkippedButRealPkgModIsNot: version-stamped directories are a
+// package manager's, so the Go module cache is skipped like node_modules —
+// without that, scanning a home directory inventories every cached module's
+// fixtures as your own AI. The pattern keys on the "@v<digit>" stamp rather
+// than "pkg/mod/", because a project may legitimately have a pkg/mod package
+// and these default skips cannot be re-included with "!".
+func TestModuleCacheIsSkippedButRealPkgModIsNot(t *testing.T) {
+	root := t.TempDir()
+	for _, rel := range []string{
+		"go/pkg/mod/github.com/acme/lib@v1.2.3/model.py", // cached dependency
+		"pkg/mod/agent.py", // a real project package
+		"src/app.py",
+	} {
+		full := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, []byte("x = 1\n"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s, err := New(root, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	for _, p := range walkPaths(t, s) {
+		seen[p] = true
+	}
+	if seen["go/pkg/mod/github.com/acme/lib@v1.2.3/model.py"] {
+		t.Error("the Go module cache must be skipped by default")
+	}
+	if !seen["pkg/mod/agent.py"] {
+		t.Error("a real pkg/mod package is source, not a cache — it must be scanned")
+	}
+	if !seen["src/app.py"] {
+		t.Error("ordinary sources must be scanned")
+	}
+}

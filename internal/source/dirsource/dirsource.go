@@ -44,6 +44,17 @@ var defaultIgnoreLines = []string{
 	"__pycache__/",
 	".tox/",
 	".mypy_cache/",
+	// Version-stamped dependency directories: the Go module cache
+	// (~/go/pkg/mod/github.com/foo/bar@v1.2.3) and the pnpm store use them.
+	// Same category as node_modules and vendor above — third-party source you
+	// did not write. Without this, scanning a home directory inventories every
+	// cached module's fixtures and pattern tables as your own AI.
+	//
+	// Matched on the "@v<digit>" stamp rather than "pkg/mod/", because a real
+	// project may legitimately have a pkg/mod package (one that parses go.mod
+	// files, say) and these skips cannot be re-included. A directory named
+	// foo@v1.2.3 is a package manager's, never a source tree's.
+	"*@v[0-9]*/",
 }
 
 var defaultMatcher = func() gitignore.Matcher {

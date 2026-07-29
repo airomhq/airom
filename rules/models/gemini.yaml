@@ -20,7 +20,12 @@ rules:
     provider: google
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["GenerativeModel", "generate_content", "generateContent"]
-    pattern: '\b(?:GenerativeModel|generate_content|generateContent)\s*\('
+    # generate_content / generateContent are ordinary English method names —
+    # a Go filesystem test helper called generateContent() was reported as a
+    # Google GenAI dependency. Require a receiver, which the real API always
+    # has (`model.generate_content(…)`, `ai.models.generateContent({…})`).
+    # GenerativeModel stays bare: it is a distinctive class name, not a verb.
+    pattern: '(?:\bGenerativeModel\s*\(|\.(?:generate_content|generateContent)\s*\()'
     regions: [code]
     claim: { name: "google-genai" }
     confidence: 0.7
