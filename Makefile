@@ -30,8 +30,16 @@ LDFLAGS = -s -w \
 
 BUILDFLAGS = -trimpath
 
-# Per-target budget for the fuzz loop; raise locally for deeper runs
-# (e.g. `make fuzz FUZZ_TIME=5m`). CI runs long campaigns separately.
+# Per-target budget for the fuzz loop. Takes either form Go's -fuzztime accepts:
+# a duration (`5m`) for a local exploratory run, or an exec count (`50000x`) for
+# anything gating a merge.
+#
+# The distinction is not cosmetic. A duration is enforced as a context deadline,
+# and when it fires while a worker is mid-execution the run reports
+# "context deadline exceeded" and FAILS — a timing race, not a finding. It
+# bit two unrelated PRs before CI moved to a count, which cannot race a
+# deadline because no timed context is created. A required check that fails at
+# random teaches people to re-run red builds without reading them.
 FUZZ_TIME ?= 10s
 
 .PHONY: all build install test cover lint fmt vet generate golden fuzz clean help
@@ -83,6 +91,10 @@ golden: ## Re-record golden files (writer outputs, detector fixtures). Review th
 # each one a short FUZZ_TIME burst. This is the smoke-test loop for local dev
 # and PR CI; new failing inputs are minimized into **/testdata/fuzz/ and must
 # be committed (they become regression seeds — see .gitignore).
+#
+# Note what this budget does NOT govern: each target's in-code f.Add seeds run
+# on every plain `go test`, so regression coverage is independent of it. The
+# budget buys new exploration only.
 fuzz: ## Run every Fuzz* target briefly (FUZZ_TIME per target, default 10s)
 	@for pkg in $$(go list ./...); do \
 		targets=$$(go test -list '^Fuzz' $$pkg 2>/dev/null | grep '^Fuzz' || true); \

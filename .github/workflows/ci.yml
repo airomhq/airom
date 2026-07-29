@@ -189,6 +189,14 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
       # Short burst of every Fuzz* target (binary parsers eat untrusted
-      # bytes, §13). Committed testdata/fuzz corpora are the regression seeds.
-      - name: Fuzz targets (15s each)
-        run: make fuzz FUZZ_TIME=15s
+      # bytes, §13). Regression seeds are each target's in-code f.Add values,
+      # which run on every plain `go test` — this job buys new exploration.
+      #
+      # An exec COUNT, not a duration: -fuzztime as a duration is a context
+      # deadline, and a worker still executing when it fires fails the run with
+      # "context deadline exceeded". That is a timing race on a contended
+      # runner, not a finding, and it turned two unrelated PRs red. A count
+      # cannot race a deadline. It is also faster than the 15s/target it
+      # replaces.
+      - name: Fuzz targets (50k execs each)
+        run: make fuzz FUZZ_TIME=50000x
