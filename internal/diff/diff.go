@@ -71,9 +71,58 @@ type Result struct {
 	Changed []Change
 
 	Unchanged int
+	// Drift lists the tooling provenance fields that differ between the two
+	// documents. Non-empty means the delta cannot be attributed to the code:
+	// see ProvenanceDrift.
+	Drift []string
 	// TestOnlySkipped counts components excluded because every occurrence is
 	// test scaffolding (Component.TestOnly), summed across both documents.
 	TestOnlySkipped int
+}
+
+// ProvenanceDrift reports the tooling fields that differ between two
+// documents, in reading order. Empty means both were produced by the same
+// binary, ruleset, and lifecycle catalog, so every difference between them is
+// a difference in the code.
+//
+// When it is NOT empty the comparison is confounded, and quietly diffing anyway
+// invents a delta. A rule added between the two scans makes components appear
+// that the PR never wrote; a rule removed makes them vanish. Reproduced during
+// review: two scans of one unchanged directory, differing only in scan
+// configuration, reported a hosted model as removed — and gating the reverse
+// direction exited 1, failing a build for AI nobody had touched.
+//
+// tool.version matters as much as rulesHash, because detection also lives in
+// Go: the docstring region class shipped in the lexer, changing what every
+// Python rule sees without moving the ruleset hash by a byte.
+func ProvenanceDrift(oldInv, newInv *airom.Inventory) []string {
+	var out []string
+	cmp := func(label, oldV, newV string) {
+		if oldV != newV {
+			out = append(out, fmt.Sprintf("%s: %s → %s", label, display(oldV), display(newV)))
+		}
+	}
+	cmp("airom version", oldInv.Tool.Version, newInv.Tool.Version)
+	cmp("ruleset", oldInv.Tool.RulesVersion, newInv.Tool.RulesVersion)
+	cmp("ruleset hash", shortHash(oldInv.Tool.RulesHash), shortHash(newInv.Tool.RulesHash))
+	cmp("lifecycle catalog", oldInv.Tool.EOLCatalog, newInv.Tool.EOLCatalog)
+	return out
+}
+
+func display(s string) string {
+	if s == "" {
+		return "(unset)"
+	}
+	return s
+}
+
+// shortHash trims a ruleset hash to a readable prefix; the full value is in
+// the documents and adds nothing to a mismatch message.
+func shortHash(h string) string {
+	if len(h) > 12 {
+		return h[:12]
+	}
+	return h
 }
 
 // Empty reports whether the diff found no added, removed, or changed
@@ -101,7 +150,7 @@ func (r *Result) GateComponents() []airom.Component {
 // are excluded unless includeTests is set, mirroring every other default
 // surface (docs: "Test scope").
 func Compute(oldInv, newInv *airom.Inventory, includeTests bool) *Result {
-	r := &Result{Old: oldInv, New: newInv}
+	r := &Result{Old: oldInv, New: newInv, Drift: ProvenanceDrift(oldInv, newInv)}
 
 	skip := func(inv *airom.Inventory, c *airom.Component) bool {
 		if c.ID == inv.Root || c.Kind == airom.KindApplication {

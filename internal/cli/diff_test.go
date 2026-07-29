@@ -203,3 +203,87 @@ func TestDiffIncludeTests(t *testing.T) {
 		t.Errorf("--include-tests did not count the fixture component:\n%s", out)
 	}
 }
+
+// writeAIBOMWithTool is writeAIBOM plus the tooling provenance a real scan
+// stamps, so a test can make two documents disagree about how they were made.
+func writeAIBOMWithTool(t *testing.T, dir, name, rulesHash string, comps ...airom.Component) string {
+	t.Helper()
+	path := writeAIBOM(t, dir, name, comps...)
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc airom.Inventory
+	if err := json.Unmarshal(b, &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc.Tool = airom.ToolInfo{Name: "airom", Version: "0.2.2", RulesVersion: "builtin", RulesHash: rulesHash}
+	b, err = json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// TestDiffRefusesToGateAcrossToolingDrift is the reason the guard exists.
+// Two scans of unchanged code, produced by different rulesets, disagree — and
+// gating that disagreement fails a build for AI nobody wrote. Refusing (exit
+// 2, "cannot answer") is the only honest verdict: skipping the gate would be a
+// false green, running it a false red.
+func TestDiffRefusesToGateAcrossToolingDrift(t *testing.T) {
+	dir := t.TempDir()
+	oldPath := writeAIBOMWithTool(t, dir, "old.json", "aaaaaaaaaaaaaaaa")
+	newPath := writeAIBOMWithTool(t, dir, "new.json", "bbbbbbbbbbbbbbbb",
+		airom.Component{ID: "airom:00000000000000cc", Kind: airom.KindHostedLLM, Name: "gpt-4.1", Confidence: 0.9})
+
+	out, err := execute(t, "diff", oldPath, newPath, "--fail-on", "hosted-llm")
+	var ue *app.UsageError
+	if !errors.As(err, &ue) {
+		t.Fatalf("err = %v, want a UsageError (exit 2) — not a pass and not a policy failure", err)
+	}
+	if !strings.Contains(err.Error(), "ruleset hash") {
+		t.Errorf("the error must name what drifted, got: %v", err)
+	}
+	// The report still prints: the reader gets the delta plus the reason it is
+	// not being gated.
+	if !strings.Contains(out, "Not comparable") {
+		t.Errorf("the diff must still be reported under drift:\n%s", out)
+	}
+}
+
+// TestDiffReportsDriftWithoutAGate: no --fail-on means nothing to refuse, so
+// the diff succeeds — carrying the caveat rather than withholding the report.
+func TestDiffReportsDriftWithoutAGate(t *testing.T) {
+	dir := t.TempDir()
+	oldPath := writeAIBOMWithTool(t, dir, "old.json", "aaaaaaaaaaaaaaaa")
+	newPath := writeAIBOMWithTool(t, dir, "new.json", "bbbbbbbbbbbbbbbb")
+
+	out, err := execute(t, "diff", oldPath, newPath)
+	if err != nil {
+		t.Fatalf("an ungated diff must succeed under drift: %v", err)
+	}
+	if !strings.Contains(out, "Not comparable") {
+		t.Errorf("the caveat must still be shown:\n%s", out)
+	}
+}
+
+// TestDiffSameToolingGatesNormally: the guard must not disturb the normal
+// case, where base and head are scanned in one CI run by one binary.
+func TestDiffSameToolingGatesNormally(t *testing.T) {
+	dir := t.TempDir()
+	oldPath := writeAIBOMWithTool(t, dir, "old.json", "aaaaaaaaaaaaaaaa")
+	newPath := writeAIBOMWithTool(t, dir, "new.json", "aaaaaaaaaaaaaaaa",
+		airom.Component{ID: "airom:00000000000000cc", Kind: airom.KindHostedLLM, Name: "gpt-4.1", Confidence: 0.9})
+
+	out, err := execute(t, "diff", oldPath, newPath, "--fail-on", "hosted-llm")
+	var pe *app.PolicyExit
+	if !errors.As(err, &pe) {
+		t.Fatalf("identical tooling must gate normally, got %v", err)
+	}
+	if strings.Contains(out, "Not comparable") {
+		t.Error("no drift, so no caveat")
+	}
+}

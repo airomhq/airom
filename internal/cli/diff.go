@@ -88,6 +88,21 @@ func runDiff(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if policy != nil {
+		// A gate needs a delta it can attribute to the code. When the two
+		// documents came from different tooling it cannot: the same drift that
+		// invents an added component would fail the build, and the drift that
+		// hides one would pass it. Refuse, the way an unevaluable eol/cve gate
+		// refuses (scan.go) — exit 2 says "I cannot answer", which is neither
+		// the false green of skipping the gate nor the false red of running it.
+		//
+		// Reported after the diff is printed: the reader still gets the delta,
+		// with the reason it is not being gated.
+		if len(res.Drift) > 0 {
+			return &app.UsageError{Err: fmt.Errorf(
+				"--fail-on cannot be evaluated: %s and %s were produced by different tooling, so the delta between them is not attributable to the code (%s); re-scan both with the same airom build and ruleset, or drop --fail-on to report the diff without gating",
+				args[0], args[1], strings.Join(res.Drift, "; "),
+			)}
+		}
 		// The gated set is pre-filtered by --include-tests above, so the
 		// policy itself must not filter again.
 		gated := &airom.Inventory{Components: res.GateComponents()}

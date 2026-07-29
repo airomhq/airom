@@ -307,3 +307,98 @@ func TestRenderDeterminism(t *testing.T) {
 		}
 	}
 }
+
+// withTool stamps the tooling provenance a real scan records.
+func withTool(i *airom.Inventory, version, rulesVersion, rulesHash, eolCatalog string) *airom.Inventory {
+	i.Tool = airom.ToolInfo{
+		Name: "airom", Version: version,
+		RulesVersion: rulesVersion, RulesHash: rulesHash, EOLCatalog: eolCatalog,
+	}
+	return i
+}
+
+// TestProvenanceDriftDetectsEachField: every one of these changes what a scan
+// FINDS, so a delta across two of them is not the code's doing. tool.version
+// counts as much as the ruleset hash — the docstring region class shipped in
+// the Go lexer and changed what every Python rule sees without moving the
+// ruleset hash by a byte.
+func TestProvenanceDriftDetectsEachField(t *testing.T) {
+	base := func() *airom.Inventory {
+		return withTool(inv("t"), "0.2.2", "builtin", "abcdef0123456789", "builtin")
+	}
+	cases := []struct {
+		name string
+		mut  func(*airom.Inventory)
+		want string
+	}{
+		{"binary", func(i *airom.Inventory) { i.Tool.Version = "0.2.3" }, "airom version"},
+		{"ruleset", func(i *airom.Inventory) { i.Tool.RulesVersion = "v1.1.0" }, "ruleset:"},
+		{"ruleset hash", func(i *airom.Inventory) { i.Tool.RulesHash = "9999999999999999" }, "ruleset hash"},
+		{"lifecycle catalog", func(i *airom.Inventory) { i.Tool.EOLCatalog = "builtin+v1.0.0" }, "lifecycle catalog"},
+	}
+	for _, tc := range cases {
+		newInv := base()
+		tc.mut(newInv)
+		drift := ProvenanceDrift(base(), newInv)
+		if len(drift) == 0 {
+			t.Errorf("%s: drift not detected", tc.name)
+			continue
+		}
+		if !strings.Contains(strings.Join(drift, "; "), tc.want) {
+			t.Errorf("%s: drift %v does not name %q", tc.name, drift, tc.want)
+		}
+	}
+
+	// Identical tooling is the normal case — scan base and head in one CI run
+	// — and must stay silent, or the warning becomes noise nobody reads.
+	if d := ProvenanceDrift(base(), base()); len(d) != 0 {
+		t.Errorf("identical tooling must not report drift, got %v", d)
+	}
+}
+
+// TestDriftIsCarriedOnTheResult: Compute attaches it, so every renderer and
+// the gate see the same verdict rather than each deciding for itself.
+func TestDriftIsCarriedOnTheResult(t *testing.T) {
+	oldInv := withTool(inv("old", comp("airom:00000000000000aa", "hosted-llm", "gpt-4o")), "0.2.2", "builtin", "aaaa", "builtin")
+	newInv := withTool(inv("new", comp("airom:00000000000000aa", "hosted-llm", "gpt-4o")), "0.2.2", "v1.1.0", "bbbb", "builtin")
+
+	r := Compute(oldInv, newInv, false)
+	if len(r.Drift) == 0 {
+		t.Fatal("Compute must attach provenance drift to the Result")
+	}
+	// The delta itself is still computed and reported — refusing to show it
+	// would leave the reader with nothing at all.
+	if r.Unchanged != 1 {
+		t.Errorf("the diff must still be computed under drift, unchanged = %d", r.Unchanged)
+	}
+
+	var buf bytes.Buffer
+	if err := Render(&buf, "table", r); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "Not comparable") {
+		t.Errorf("the table must carry the caveat, got:\n%s", buf.String())
+	}
+
+	buf.Reset()
+	if err := Render(&buf, "markdown", r); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "[!WARNING]") {
+		t.Error("the markdown PR comment must lead with the warning")
+	}
+
+	buf.Reset()
+	if err := Render(&buf, "json", r); err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		ProvenanceDrift []string `json:"provenanceDrift"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.ProvenanceDrift) == 0 {
+		t.Error("a machine consumer must see the drift without re-deriving it")
+	}
+}

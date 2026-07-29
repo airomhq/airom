@@ -44,6 +44,15 @@ func renderTable(w io.Writer, r *Result) {
 		lines = append(lines, fmt.Sprintf("%-13s %d test-scoped component(s) skipped (--include-tests to count them)",
 			"Test scope", r.TestOnlySkipped))
 	}
+	// Inside the summary box, above the counts: a reader who takes the numbers
+	// as fact has already been misled by the time a footnote arrives.
+	if len(r.Drift) > 0 {
+		lines = append(lines, "", "⚠ Not comparable")
+		for _, d := range r.Drift {
+			lines = append(lines, "  "+d)
+		}
+		lines = append(lines, "  the delta below includes tooling differences, not just code")
+	}
 	tablew.SummaryBox(w, "AIBOM Diff", lines)
 
 	if r.Empty() {
@@ -100,6 +109,7 @@ func dash(s string) string {
 // so the comment still reads correctly when detached from the CI run.
 func renderMarkdown(w io.Writer, r *Result) {
 	fmt.Fprintf(w, "## AIBOM diff — `%s` → `%s`\n\n", mdEscape(r.Old.Source.Target), mdEscape(r.New.Source.Target))
+	writeMDDriftNote(w, r)
 
 	if r.Empty() {
 		fmt.Fprintf(w, "**No AI changes.** %d component(s) unchanged.\n", r.Unchanged)
@@ -150,6 +160,23 @@ func renderMarkdown(w io.Writer, r *Result) {
 	}
 }
 
+// writeMDDriftNote leads the comment with the caveat. A PR comment is read by
+// someone deciding whether to merge, and "these numbers are not purely your
+// change" has to reach them before the numbers do.
+func writeMDDriftNote(w io.Writer, r *Result) {
+	if len(r.Drift) == 0 {
+		return
+	}
+	fmt.Fprintln(w, "> [!WARNING]")
+	fmt.Fprintln(w, "> **These two AIBOMs were produced by different tooling, so this delta is not attributable to the code alone.**")
+	for _, d := range r.Drift {
+		fmt.Fprintf(w, "> - %s\n", mdEscape(d))
+	}
+	fmt.Fprintln(w, ">")
+	fmt.Fprintln(w, "> Re-scan both sides with the same airom build and ruleset for a comparison that means something.")
+	fmt.Fprintln(w)
+}
+
 func writeMDTestNote(w io.Writer, r *Result) {
 	if r.TestOnlySkipped > 0 {
 		fmt.Fprintf(w, "\n_%d test-scoped component(s) not compared (`--include-tests` to count them)._\n", r.TestOnlySkipped)
@@ -188,18 +215,23 @@ type jsonSummary struct {
 }
 
 type jsonDoc struct {
-	Old     docRef            `json:"old"`
-	New     docRef            `json:"new"`
-	Summary jsonSummary       `json:"summary"`
-	Added   []airom.Component `json:"added,omitempty"`
-	Removed []airom.Component `json:"removed,omitempty"`
-	Changed []Change          `json:"changed,omitempty"`
+	Old docRef `json:"old"`
+	New docRef `json:"new"`
+	// ProvenanceDrift is present only when the two documents came from
+	// different tooling. A machine consumer must be able to see that the
+	// delta is confounded without re-deriving it from tool metadata.
+	ProvenanceDrift []string          `json:"provenanceDrift,omitempty"`
+	Summary         jsonSummary       `json:"summary"`
+	Added           []airom.Component `json:"added,omitempty"`
+	Removed         []airom.Component `json:"removed,omitempty"`
+	Changed         []Change          `json:"changed,omitempty"`
 }
 
 func renderJSON(w io.Writer, r *Result) error {
 	doc := jsonDoc{
-		Old: docRef{Path: r.OldPath, Target: r.Old.Source.Target, Serial: r.Old.Serial, Timestamp: r.Old.Timestamp},
-		New: docRef{Path: r.NewPath, Target: r.New.Source.Target, Serial: r.New.Serial, Timestamp: r.New.Timestamp},
+		Old:             docRef{Path: r.OldPath, Target: r.Old.Source.Target, Serial: r.Old.Serial, Timestamp: r.Old.Timestamp},
+		New:             docRef{Path: r.NewPath, Target: r.New.Source.Target, Serial: r.New.Serial, Timestamp: r.New.Timestamp},
+		ProvenanceDrift: r.Drift,
 		Summary: jsonSummary{
 			Added: len(r.Added), Removed: len(r.Removed), Changed: len(r.Changed),
 			Unchanged: r.Unchanged, TestOnlySkipped: r.TestOnlySkipped,

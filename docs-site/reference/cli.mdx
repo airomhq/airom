@@ -161,6 +161,15 @@ evaluated over the added and changed components only — removals never trip the
 `compliance:` terms are rejected. Test-scoped components are excluded unless
 `--include-tests` is set.
 
+Both documents must come from the same tooling. `airom diff` compares the two `tool`
+blocks — binary version, ruleset version and hash, lifecycle catalog — and reports any
+mismatch as **⚠ Not comparable** in every format. A rule added between the two scans
+makes components appear that the PR never wrote; a rule removed makes them vanish. With
+`--fail-on` active a mismatch is a fatal error (exit 2) rather than a pass or a failure,
+the same refusal an unevaluable [`eol`](/concepts/eol)/[`cve`](/concepts/cve) gate gives:
+skipping the gate would be a false green and running it a false red. Scan base and head
+in one CI run and this never fires.
+
 ### airom detectors list
 
 List every detector with its selection status. Honors `--select` and `--rules`, so

@@ -253,6 +253,18 @@ want to appear, and a removal is that policy succeeding. `compliance:` terms are
 (they gate a scan's framework mapping, not a delta). Wrong-format input (CycloneDX, SARIF)
 is refused explicitly rather than diffed as empty.
 
+**Both documents must come from the same tooling.** A diff attributes its delta to
+the code, so `airom diff` compares the `tool` block of the two documents — binary
+version, ruleset version and hash, lifecycle catalog — and reports any mismatch as
+**⚠ Not comparable** in every format. A rule added between the two scans makes
+components appear that the PR never wrote; a rule removed makes them vanish. With
+`--fail-on` active a mismatch is a **fatal error (exit 2)**, the same refusal an
+unevaluable `eol`/`cve` gate gives: skipping the gate would be a false green and
+running it a false red, so the honest answer is "I cannot tell". Without a gate the
+diff still prints, carrying the caveat. Scan base and head in one CI run and this
+never fires.
+
+
 ```console
 $ airom diff old.json new.json
 $ airom diff base.json head.json --format markdown > aibom-diff.md
