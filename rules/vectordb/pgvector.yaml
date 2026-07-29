@@ -24,12 +24,34 @@ rules:
     claim: { name: "pgvector" }
     confidence: 0.7
 
-  # pgvector distance operators (<->, <=>, <#>).
+  # pgvector distance operators (<->, <=>, <#>) — inside SQL only.
+  #
+  # These three sequences are not rare outside Postgres: `<=>` is the spaceship
+  # operator in Ruby, Rust and PHP, and `A <-> B` is ordinary prose. Matching
+  # them bare made this the noisiest rule in the pack — a scan of one laptop
+  # attributed 437 occurrences to pgvector, the first of them in CPython's
+  # base64.py. Requiring a SQL keyword earlier in the same statement is the
+  # actual semantics: the operator only means pgvector inside a query.
   - id: pgvector/distance-op
     kind: vector-db
     provider: pgvector
     keywords: ["<->", "<=>", "<#>"]
-    pattern: '<(?:->|=>|#>)'
+    pattern: '(?i)\b(?:order\s+by|select|where)\b[^;\n]{0,120}<(?:->|=>|#>)'
     regions: [code, string]
     claim: { name: "pgvector" }
     confidence: 0.6
+
+  # The pgvector client API. Most Python projects never write the operator by
+  # hand — SQLAlchemy and Django expose it as a method, so tightening the
+  # operator rule above would otherwise leave the commonest usage undetected.
+  # These names are pgvector's own and carry no ambiguity, hence higher
+  # confidence than the operator.
+  - id: pgvector/distance-fn
+    kind: vector-db
+    provider: pgvector
+    keywords: ["l2_distance", "cosine_distance", "max_inner_product",
+               "l1_distance", "hamming_distance", "jaccard_distance"]
+    pattern: '\.(?:l2_distance|cosine_distance|max_inner_product|l1_distance|hamming_distance|jaccard_distance)\s*\('
+    regions: [code]
+    claim: { name: "pgvector" }
+    confidence: 0.75

@@ -33,3 +33,23 @@ pkg = "org.apache.commons.lang3"  # dotted, but not a bedrock vendor prefix
 
 # airom-ok: bedrock/runtime-call
 note = "call list_foundation_models to enumerate ids"
+
+# ── Regression: a dotted tail is not a model id ────────────────────────────
+# All of these were reported as Bedrock hosted LLMs by a scan of one laptop.
+# They are postMessage RPC names out of Claude Desktop's minified bundle.
+
+# airom-ok: bedrock/model-literal
+rpc1 = "anthropic.claude.usercontent.mcpapp.bridgetohost"
+
+# airom-ok: bedrock/model-literal
+rpc2 = "anthropic.claude.usercontent.sandbox.setcontent"
+
+# airom-ok: bedrock/model-literal
+host = "anthropic.com"                      # a domain, not a model
+
+# airom-ok: bedrock/model-literal
+helper = "anthropic.sdk.stainlesshelper"    # an internal class path
+
+# A short-form id with no version suffix is still a real Bedrock alias.
+# airom: bedrock/model-literal
+ALIAS = "anthropic.claude-haiku-4-5"

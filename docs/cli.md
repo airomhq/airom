@@ -2,7 +2,7 @@
 
 > **Status** — the command surface, config layering, the exit-code contract, and the
 > `--fail-on` grammar are implemented ([ARCHITECTURE.md §12](./ARCHITECTURE.md#12-cli),
-> decisions D15/D17), as are the full detector set, the 47 embedded rule packs (98 rules),
+> decisions D15/D17), as are the full detector set, the 49 embedded rule packs (102 rules),
 > the five output writers, and the `detectors`/`rules`/`dev` command groups.
 >
 > Source coverage: `fs` and `repo` are complete (local worktrees, plus remote clone via an

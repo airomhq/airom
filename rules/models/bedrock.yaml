@@ -13,7 +13,13 @@ rules:
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["anthropic.claude", "amazon.titan", "amazon.nova", "meta.llama",
                "mistral.", "cohere.command", "ai21."]
-    pattern: '["''](?P<model>(?:(?:us|eu|apac)\.)?(?:anthropic|amazon|meta|mistral|cohere|ai21)\.[\w.\-:]+)["'']'
+    # The tail must be hyphenated and dot-free. A Bedrock id is
+    # <vendor>.<hyphenated-family>[:<n>] — "anthropic.claude-3-5-sonnet-20240620-v1:0".
+    # Accepting any dotted tail made every quoted "anthropic.*" string a model:
+    # a scan of one laptop reported 15 hosted LLMs that were really postMessage
+    # RPC names out of a minified bundle ("anthropic.claude.usercontent.mcpapp.
+    # bridgetohost"), plus "anthropic.com" and "anthropic.sdk.stainlesshelper".
+    pattern: '["''](?P<model>(?:(?:us|eu|apac)\.)?(?:anthropic|amazon|meta|mistral|cohere|ai21)\.[a-z0-9][\w]*(?:-[\w]+)+(?::\d+)?)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85
