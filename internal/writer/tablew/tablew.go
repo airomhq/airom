@@ -751,6 +751,20 @@ func writeEOLTable(w io.Writer, comps []airom.Component) {
 	}
 }
 
+// VulnCell renders the CVE overlay as "<worst severity> (<count>)", or "-".
+// Exported alongside SummaryBox/BoxTable so internal/diff shows the same cell
+// for the same fact: two spellings of "critical (7)" would be a bug nobody
+// notices until a reader trusts the wrong one.
+func VulnCell(c airom.Component) string { return vulnCell(c) }
+
+// EOLCell renders the lifecycle overlay as "retired", "<n>d" until shutdown,
+// or "-". Exported for the same reason as VulnCell.
+func EOLCell(c airom.Component) string { return eolCell(c) }
+
+// Reportable answers whether a component carries an EOL claim worth a column
+// at all — an "unknown" state is the absence of a statement, not a finding.
+func Reportable(c airom.Component) bool { return eolReportable(c) }
+
 // vulnCell renders the CVE overlay for a component as "<top-severity> (<n>)"
 // — the highest CVSS bucket among its CVEs and the total count — or "-".
 func vulnCell(c airom.Component) string {

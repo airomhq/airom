@@ -246,6 +246,11 @@ One format to stdout, selected with `--format`:
 | `markdown` | CI — ready to post as a PR comment |
 | `json` | tooling — full component snapshots plus field-level changes |
 
+Added and removed components carry their overlays: a **RISK**, **VULN**, or **EOL** column
+appears when that section surfaces one, so a PR that introduces a retired model or a
+checkpoint that executes code on load says so in the row rather than only in the full scan.
+Clean deltas stay narrow — the columns are conditional, exactly as in the scan table.
+
 The gate flags work like scan's, evaluated over the **added and changed** components only:
 `--fail-on` names the AI delta you refuse to merge, `--exit-code N` alone fails on any
 added or changed component. Removals never trip the gate — a policy names AI you do not

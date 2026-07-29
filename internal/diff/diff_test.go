@@ -402,3 +402,92 @@ func TestDriftIsCarriedOnTheResult(t *testing.T) {
 		t.Error("a machine consumer must see the drift without re-deriving it")
 	}
 }
+
+func retired(c *airom.Component) {
+	shutdown := airom.Date{Year: 2024, Month: 11, Day: 6}
+	c.EOL = &airom.Lifecycle{State: airom.EOLRetired, Shutdown: &shutdown, Source: "x", SourceURL: "https://x"}
+}
+
+func risky(c *airom.Component) {
+	c.Risks = []airom.ArtifactRisk{{ID: airom.RiskUnsafeLoad, Severity: airom.RiskMedium}}
+}
+
+func vulnerable(c *airom.Component) {
+	c.Vulnerabilities = []airom.Vulnerability{
+		{ID: "CVE-1", Severity: airom.VulnHigh},
+		{ID: "CVE-2", Severity: airom.VulnCritical},
+	}
+}
+
+// TestAddedComponentsSurfaceTheirOverlays: the delta answered "what AI
+// appeared?" but not "is any of it dead or dangerous?", which is the question
+// a reviewer is actually holding. A PR adding a model retired since 2024
+// rendered as an ordinary row.
+func TestAddedComponentsSurfaceTheirOverlays(t *testing.T) {
+	oldInv := inv("old")
+	newInv := inv(
+		"new",
+		comp("airom:00000000000000aa", "hosted-llm", "claude-1.0", retired),
+		comp("airom:00000000000000bb", "framework", "torch", risky, vulnerable),
+	)
+	r := Compute(oldInv, newInv, false)
+
+	for _, tc := range []struct{ format, wants string }{
+		{"table", "RISK"},
+		{"table", "VULN"},
+		{"table", "EOL"},
+		{"table", "retired"},
+		{"table", "critical (2)"},
+		{"table", "medium (1)"},
+		{"markdown", "Lifecycle"},
+		{"markdown", "retired"},
+		{"markdown", "critical (2)"},
+	} {
+		var buf bytes.Buffer
+		if err := Render(&buf, tc.format, r); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(buf.String(), tc.wants) {
+			t.Errorf("%s output missing %q:\n%s", tc.format, tc.wants, buf.String())
+		}
+	}
+}
+
+// TestCleanDeltaStaysNarrow: overlay columns are conditional, so a PR that
+// adds an ordinary model does not pay for three empty columns.
+func TestCleanDeltaStaysNarrow(t *testing.T) {
+	r := Compute(inv("old"), inv("new", comp("airom:00000000000000aa", "hosted-llm", "gpt-4o")), false)
+	var buf bytes.Buffer
+	if err := Render(&buf, "table", r); err != nil {
+		t.Fatal(err)
+	}
+	for _, col := range []string{"RISK", "VULN", "EOL"} {
+		if strings.Contains(buf.String(), col) {
+			t.Errorf("no overlay in the delta, so no %s column:\n%s", col, buf.String())
+		}
+	}
+}
+
+// TestMarkdownTablesAreWellFormed: header, separator, and every row must carry
+// the same cell count. The separator is built with strings.Repeat, which
+// already emits the trailing delimiter — closing the row again silently
+// malforms the table in a PR comment.
+func TestMarkdownTablesAreWellFormed(t *testing.T) {
+	r := Compute(inv("old"), inv(
+		"new",
+		comp("airom:00000000000000aa", "hosted-llm", "claude-1.0", retired),
+	), false)
+	var buf bytes.Buffer
+	if err := Render(&buf, "markdown", r); err != nil {
+		t.Fatal(err)
+	}
+	widths := map[int]bool{}
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.HasPrefix(line, "|") {
+			widths[strings.Count(line, "|")] = true
+		}
+	}
+	if len(widths) != 1 {
+		t.Errorf("markdown rows disagree on cell count %v:\n%s", widths, buf.String())
+	}
+}

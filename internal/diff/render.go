@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/airomhq/airom/internal/writer/tablew"
@@ -64,16 +65,41 @@ func renderTable(w io.Writer, r *Result) {
 		if len(comps) == 0 {
 			return
 		}
+		// Overlay columns appear only when this section surfaces something, so
+		// a clean delta stays narrow — the same rule the scan table follows.
+		ov := overlaysIn(comps)
 		fmt.Fprintf(w, "\n%s (%d)\n", title, len(comps))
+		headers := []string{"KIND", "NAME", "VERSION", "PROVIDER", "CONF"}
+		if ov.risk {
+			headers = append(headers, "RISK")
+		}
+		if ov.vuln {
+			headers = append(headers, "VULN")
+		}
+		if ov.eol {
+			headers = append(headers, "EOL")
+		}
+		headers = append(headers, "LOCATION")
+
 		rows := make([][]string, 0, len(comps))
 		for i := range comps {
 			c := &comps[i]
-			rows = append(rows, []string{
-				string(c.Kind), c.Name, dash(optDisplay(c.Version)), dash(optDisplay(c.Provider)),
-				confidence(c.Confidence), dash(minLocation(c)),
-			})
+			row := []string{
+				string(c.Kind), c.Name, dash(optDisplay(c.Version)),
+				dash(optDisplay(c.Provider)), confidence(c.Confidence),
+			}
+			if ov.risk {
+				row = append(row, riskCell(c))
+			}
+			if ov.vuln {
+				row = append(row, tablew.VulnCell(*c))
+			}
+			if ov.eol {
+				row = append(row, tablew.EOLCell(*c))
+			}
+			rows = append(rows, append(row, dash(minLocation(c))))
 		}
-		tablew.BoxTable(w, []string{"KIND", "NAME", "VERSION", "PROVIDER", "CONF", "LOCATION"}, rows)
+		tablew.BoxTable(w, headers, rows)
 	}
 	section("Added", r.Added)
 	section("Removed", r.Removed)
@@ -93,6 +119,60 @@ func renderTable(w io.Writer, r *Result) {
 		}
 		tablew.BoxTable(w, []string{"KIND", "NAME", "FIELD", "OLD", "NEW"}, rows)
 	}
+}
+
+// overlays records which overlay columns a section needs.
+type overlays struct{ risk, vuln, eol bool }
+
+// overlaysIn reports the overlays present anywhere in a section. Without this
+// the delta answered "what AI appeared?" but not "is any of it dead or
+// dangerous?" — which is the question a reviewer is actually holding. A diff
+// that adds a retired model and renders it as an ordinary row has buried the
+// one fact that should decide the merge.
+func overlaysIn(comps []airom.Component) overlays {
+	var o overlays
+	for i := range comps {
+		c := &comps[i]
+		if len(c.Risks) > 0 {
+			o.risk = true
+		}
+		if len(c.Vulnerabilities) > 0 {
+			o.vuln = true
+		}
+		if tablew.Reportable(*c) {
+			o.eol = true
+		}
+	}
+	return o
+}
+
+// riskCell renders the artifact-risk overlay as "<worst severity> (<count>)".
+// The scan table carries risks in its summary panel rather than a column; a
+// diff has no such panel, and "this PR adds a checkpoint that executes code on
+// load" cannot be left to a format the reader has to ask for.
+func riskCell(c *airom.Component) string {
+	if len(c.Risks) == 0 {
+		return "-"
+	}
+	worst := c.Risks[0].Severity
+	for _, r := range c.Risks[1:] {
+		if riskRank(r.Severity) > riskRank(worst) {
+			worst = r.Severity
+		}
+	}
+	return fmt.Sprintf("%s (%d)", worst, len(c.Risks))
+}
+
+func riskRank(s airom.RiskSeverity) int {
+	switch s {
+	case airom.RiskHigh:
+		return 3
+	case airom.RiskMedium:
+		return 2
+	case airom.RiskLow:
+		return 1
+	}
+	return 0
 }
 
 func dash(s string) string {
@@ -125,18 +205,45 @@ func renderMarkdown(w io.Writer, r *Result) {
 		if len(comps) == 0 {
 			return
 		}
+		ov := overlaysIn(comps)
 		fmt.Fprintf(w, "\n### %s\n\n", title)
-		fmt.Fprintln(w, "| Kind | Name | Version | Provider | Confidence | Evidence |")
-		fmt.Fprintln(w, "|---|---|---|---|---|---|")
+
+		head := []string{"Kind", "Name", "Version", "Provider", "Confidence"}
+		if ov.risk {
+			head = append(head, "Risk")
+		}
+		if ov.vuln {
+			head = append(head, "Vulnerabilities")
+		}
+		if ov.eol {
+			head = append(head, "Lifecycle")
+		}
+		head = append(head, "Evidence")
+		fmt.Fprintf(w, "| %s |\n", strings.Join(head, " | "))
+		// Repeat already emits the trailing delimiter; adding another closes
+		// the row twice and malforms the table.
+		fmt.Fprintf(w, "|%s\n", strings.Repeat("---|", len(head)))
+
 		for i := range comps {
 			c := &comps[i]
 			loc := minLocation(c)
 			if loc != "" {
 				loc = "`" + loc + "`"
 			}
-			fmt.Fprintf(w, "| %s | %s | %s | %s | %s | %s |\n",
-				c.Kind, mdEscape(c.Name), dash(mdEscape(optDisplay(c.Version))),
-				dash(mdEscape(optDisplay(c.Provider))), confidence(c.Confidence), dash(mdEscape(loc)))
+			cells := []string{
+				string(c.Kind), mdEscape(c.Name), dash(mdEscape(optDisplay(c.Version))),
+				dash(mdEscape(optDisplay(c.Provider))), confidence(c.Confidence),
+			}
+			if ov.risk {
+				cells = append(cells, mdEscape(riskCell(c)))
+			}
+			if ov.vuln {
+				cells = append(cells, mdEscape(tablew.VulnCell(*c)))
+			}
+			if ov.eol {
+				cells = append(cells, mdEscape(tablew.EOLCell(*c)))
+			}
+			fmt.Fprintf(w, "| %s |\n", strings.Join(append(cells, dash(mdEscape(loc))), " | "))
 		}
 	}
 	section("Added", r.Added)

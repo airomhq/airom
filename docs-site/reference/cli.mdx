@@ -159,7 +159,7 @@ other formats are refused explicitly. `--format` selects one of `table` (default
 `markdown` (ready to post as a PR comment), or `json`. The gate flags work like scan's,
 evaluated over the added and changed components only — removals never trip the gate, and
 `compliance:` terms are rejected. Test-scoped components are excluded unless
-`--include-tests` is set.
+`--include-tests` is set. Added and removed components carry a **Risk**, **Vulnerabilities**, or **Lifecycle** column when that section surfaces one, so a PR introducing a retired model or a checkpoint that executes code on load says so in the row.
 
 Both documents must come from the same tooling. `airom diff` compares the two `tool`
 blocks — binary version, ruleset version and hash, lifecycle catalog — and reports any
