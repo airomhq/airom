@@ -75,7 +75,13 @@ so we can agree on the shape — those touch shared seams.
   golden update defeats the test.
 - Parsers of untrusted bytes must have a `Fuzz*` target. Run `make fuzz`
   locally; new crashers get minimized into `testdata/fuzz/` and committed as
-  regression seeds.
+  regression seeds. Two CI jobs exercise them, for different reasons: the
+  **Fuzz smoke** job gates every merge and is budgeted by exec count
+  (`FUZZ_TIME=50000x`) so it cannot fail on a timing race, while the nightly
+  **Fuzz campaign** gives each target its own job and a real time budget. A
+  campaign that finds something attaches the reproducer as a build artifact —
+  download it into the matching `testdata/fuzz/` directory and commit it, which
+  is what turns a one-off finding into a seed every `go test` replays.
 - Aim to cover the behavior you changed, not to hit a coverage number.
 
 ## Commits & pull requests

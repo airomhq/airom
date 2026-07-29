@@ -889,7 +889,7 @@ AIROM is a security tool whose parsers eat untrusted bytes; it must be hardened 
 | Schema conformance | Native output vs `schemas/airom-v1.schema.json`; CDX goldens vs official `bom-1.6.schema.json`; SARIF vs OASIS schema — in CI. |
 | Mapping round-trip | Fuzz-populated Inventory → native JSON → re-read → identical; CDX output parsed back to assert `docs/mapping.md` holds. |
 | Assembler properties | Merge order-independence (shuffle findings ⇒ same graph), confidence monotonicity, clamp, ID stability. |
-| Fuzzing | `go test -fuzz` corpora for all binary header parsers. |
+| Fuzzing | `go test -fuzz` corpora for all binary header parsers. A count-budgeted smoke job gates merges; a nightly campaign fuzzes each target in its own job on a time budget. |
 | Determinism | Byte-identical output at `--parallel 1` vs `16` (P7). |
 | Chaos | Inject random detector panics/errors; assert scan completion + Unknowns accounting (P6). |
 | Performance regression | Synthetic tree generator + synthetic layered image; assert throughput floors and an **RSS ceiling independent of input size** (P2); cached-rescan ≥10× floor. |

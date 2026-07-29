@@ -1,0 +1,114 @@
+name: Fuzz campaign
+
+# The deep counterpart to CI's Fuzz smoke job. The smoke job gates merges, so it
+# is budgeted by exec count and stays shallow on the fast targets; this is where
+# the parsers actually get hammered. Nothing waits on it, so it can afford both
+# the wall clock and the occasional inconclusive run.
+on:
+  schedule:
+    - cron: "17 3 * * *" # nightly, 03:17 UTC (off the hour: shared runners are busiest there)
+  workflow_dispatch:
+    inputs:
+      fuzztime:
+        description: "Per-target budget (Go -fuzztime syntax, e.g. 10m or 5000000x)"
+        required: false
+        default: "10m"
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.26"
+
+jobs:
+  # Enumerate targets rather than hard-coding them: a new Fuzz* function should
+  # start getting campaign time because it exists, not because someone
+  # remembered to edit this file. Same enumeration the Makefile's fuzz loop uses.
+  discover:
+    name: Discover fuzz targets
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - id: list
+        run: |
+          set -euo pipefail
+          entries=""
+          for pkg in $(go list ./...); do
+            for t in $(go test -list '^Fuzz' "$pkg" 2>/dev/null | grep '^Fuzz' || true); do
+              entries="${entries}{\"pkg\":\"${pkg}\",\"target\":\"${t}\"},"
+            done
+          done
+          if [ -z "$entries" ]; then
+            echo "::error::no Fuzz* targets found — the enumeration broke, which would silently retire the whole campaign"
+            exit 1
+          fi
+          echo "matrix={\"include\":[${entries%,}]}" >> "$GITHUB_OUTPUT"
+          echo "Found targets:"; echo "${entries%,}" | tr ',' '\n'
+
+  campaign:
+    name: ${{ matrix.target }}
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # one crashing parser must not cancel the others' campaigns
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    # One job per target, so a duration budget means what it says: every target
+    # gets the full budget in parallel, instead of the slowest one eating a
+    # shared allowance. FuzzNewFromTar manages ~170 execs/sec where FuzzTensorRT
+    # manages ~450,000 — no single exec count serves both.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Fuzz ${{ matrix.target }}
+        id: fuzz
+        env:
+          PKG: ${{ matrix.pkg }}
+          TARGET: ${{ matrix.target }}
+          FUZZTIME: ${{ github.event.inputs.fuzztime || '10m' }}
+        run: |
+          set -uo pipefail
+          go test -run '^$' -fuzz "^${TARGET}$" -fuzztime "$FUZZTIME" "$PKG" 2>&1 | tee /tmp/fuzz.log
+          rc=${PIPESTATUS[0]}
+          [ "$rc" -eq 0 ] && exit 0
+
+          # A genuine finding ALWAYS leaves a minimized reproducer in
+          # <pkg>/testdata/fuzz/<Target>/. Ask git rather than the exit code:
+          # a duration budget is a context deadline, and a worker still running
+          # when it fires makes the run exit non-zero with
+          # "context deadline exceeded" — a timing race that found nothing. That
+          # is precisely the flake that made the smoke job unreliable, and here
+          # it must not be reported as a crash either.
+          if [ -n "$(git status --porcelain -- '*testdata/fuzz*')" ]; then
+            echo "::error::${TARGET} found a crashing input — reproducer attached as an artifact"
+            exit 1
+          fi
+          if grep -q "context deadline exceeded" /tmp/fuzz.log; then
+            echo "::warning::${TARGET}: run ended on the fuzztime deadline with a worker mid-execution. No reproducer was written, so nothing was found."
+            exit 0
+          fi
+          echo "::error::${TARGET} failed without producing a reproducer — check the log (build failure, or a panic outside the fuzz body)"
+          exit 1
+
+      # Uploaded on failure only, and this is the whole point of the campaign:
+      # without it a reproducer lives and dies on the runner. Commit what lands
+      # here into testdata/fuzz/ — it becomes a permanent regression seed that
+      # every plain `go test` replays.
+      - name: Upload reproducer
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-reproducer-${{ matrix.target }}
+          path: "**/testdata/fuzz/**"
+          if-no-files-found: ignore
+          retention-days: 30
