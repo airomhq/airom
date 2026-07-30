@@ -120,8 +120,8 @@ var pypiCatalog = catalog{
 		"langchain-community": {kFramework, provLangChain, ""},
 		"llama-index":         {kFramework, provLlamaIdx, ""},
 		"haystack-ai":         {kFramework, provDeepset, ""},
-		"dspy-ai":             {kFramework, "", ""},
-		"crewai":              {kFramework, "", ""},
+		"dspy-ai":             {kFramework, "dspy", ""},
+		"crewai":              {kFramework, "crewai", ""},
 		// The provider on these must match the slug their rule pack claims.
 		// The assembler folds a manifest sighting into a code sighting by
 		// (provider, name), so leaving it empty here — as several older
@@ -141,8 +141,8 @@ var pypiCatalog = catalog{
 		"sentence-transformers": {kLibrary, provHF, ""},
 		"torch":                 {kFramework, "PyTorch", ""},
 		"tensorflow":            {kFramework, provGoogle, ""},
-		"vllm":                  {kFramework, "", ""},
-		"mlflow":                {kFramework, "", ""},
+		"vllm":                  {kFramework, "vllm", ""},
+		"mlflow":                {kFramework, "mlflow", ""},
 		"guidance":              {kFramework, "", ""},
 		"outlines":              {kFramework, "", ""},
 		"onnxruntime":           {kLibrary, provMicrosoft, ""},
@@ -165,7 +165,7 @@ var pypiCatalog = catalog{
 		"faiss-gpu":             {kVectorDB, provMeta, ""},
 		"pymilvus":              {kVectorDB, provMilvus, ""},
 		"redis":                 {kVectorDB, "Redis", ""},
-		"pgvector":              {kVectorDB, "", ""},
+		"pgvector":              {kVectorDB, "pgvector", ""},
 	},
 	prefixes: []prefixRule{
 		{"langchain-", aiPkg{kFramework, provLangChain, ""}},

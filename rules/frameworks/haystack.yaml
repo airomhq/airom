@@ -1,10 +1,10 @@
 # rules/frameworks/haystack.yaml — Haystack framework usage.
 pack: haystack
-version: 1
+version: 2
 rules:
   - id: haystack/import
     kind: framework
-    provider: haystack
+    provider: deepset
     languages: [python]
     keywords: ["haystack"]
     pattern: '\b(?:import|from)\s+haystack[\w.]*'
@@ -14,7 +14,7 @@ rules:
 
   - id: haystack/pipeline
     kind: framework
-    provider: haystack
+    provider: deepset
     languages: [python]
     keywords: ["Pipeline"]
     pattern: '\bPipeline\s*\('

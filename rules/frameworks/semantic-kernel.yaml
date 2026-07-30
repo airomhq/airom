@@ -1,11 +1,11 @@
 # rules/frameworks/semantic-kernel.yaml — Microsoft Semantic Kernel usage.
 pack: semantic-kernel
-version: 1
+version: 2
 rules:
   # Python module (semantic_kernel) or C# namespace (Microsoft.SemanticKernel).
   - id: semantic-kernel/import
     kind: framework
-    provider: semantic-kernel
+    provider: microsoft
     languages: [python, csharp]
     keywords: ["semantic_kernel", "Microsoft.SemanticKernel"]
     pattern: '(?:\b(?:import|from)\s+semantic_kernel[\w.]*|\busing\s+Microsoft\.SemanticKernel[\w.]*)'
@@ -16,7 +16,7 @@ rules:
   # Kernel builder construction (C# fluent API).
   - id: semantic-kernel/kernel-builder
     kind: framework
-    provider: semantic-kernel
+    provider: microsoft
     languages: [csharp]
     keywords: ["Kernel.CreateBuilder"]
     pattern: '\bKernel\.CreateBuilder\s*\('
