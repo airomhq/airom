@@ -12,7 +12,7 @@ AI Bill of Materials — agentic-stack
 ┌───────────┬──────────┬─────────┬──────────┬────────┬────────────────────┬──────────┐
 │ KIND      │ NAME     │ VERSION │ PROVIDER │ CONF   │ LOCATION           │ EVIDENCE │
 ├───────────┼──────────┼─────────┼──────────┼────────┼────────────────────┼──────────┤
-│ framework │ agno     │ 2.8.5   │ agno     │ 0.9875 │ requirements.txt:2 │ 4 occ    │
+│ framework │ agno     │ 2.8.5   │ agno     │ 0.9881 │ requirements.txt:2 │ 4 occ    │
 │ framework │ crawl4ai │ >=0.9.0 │ crawl4ai │ 0.9875 │ requirements.txt:3 │ 3 occ    │
 │ framework │ fastmcp  │ 3.4.5   │ fastmcp  │ 0.9875 │ requirements.txt:4 │ 3 occ    │
 │ framework │ mcp      │ 2.0.0   │ -        │ 0.95   │ requirements.txt:5 │ 1 occ    │

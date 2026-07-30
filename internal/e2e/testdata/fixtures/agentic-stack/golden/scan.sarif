@@ -275,7 +275,7 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
           },
           "locations": [
             {
@@ -298,7 +298,7 @@
           },
           "properties": {
             "airom:componentId": "airom:989de824357981e6",
-            "airom:confidence": 0.9875,
+            "airom:confidence": 0.9881,
             "airom:kind": "framework",
             "airom:occurrence.confidence": 0.95,
             "airom:provider": "agno",
@@ -310,7 +310,7 @@
           "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
           },
           "locations": [
             {
@@ -323,7 +323,7 @@
                   "startLine": 5,
                   "startColumn": 1,
                   "endLine": 5,
-                  "endColumn": 16,
+                  "endColumn": 10,
                   "snippet": {
                     "text": "from agno.agent import Agent"
                   }
@@ -336,9 +336,9 @@
           },
           "properties": {
             "airom:componentId": "airom:989de824357981e6",
-            "airom:confidence": 0.9875,
+            "airom:confidence": 0.9881,
             "airom:kind": "framework",
-            "airom:occurrence.confidence": 0.7,
+            "airom:occurrence.confidence": 0.75,
             "airom:provider": "agno",
             "airom:purl": "pkg:pypi/agno@2.8.5"
           }
@@ -348,7 +348,7 @@
           "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
           },
           "locations": [
             {
@@ -361,7 +361,7 @@
                   "startLine": 6,
                   "startColumn": 1,
                   "endLine": 6,
-                  "endColumn": 24,
+                  "endColumn": 10,
                   "snippet": {
                     "text": "from agno.models.openai import OpenAIChat"
                   }
@@ -374,9 +374,9 @@
           },
           "properties": {
             "airom:componentId": "airom:989de824357981e6",
-            "airom:confidence": 0.9875,
+            "airom:confidence": 0.9881,
             "airom:kind": "framework",
-            "airom:occurrence.confidence": 0.7,
+            "airom:occurrence.confidence": 0.75,
             "airom:provider": "agno",
             "airom:purl": "pkg:pypi/agno@2.8.5"
           }
@@ -386,7 +386,7 @@
           "ruleIndex": 2,
           "level": "note",
           "message": {
-            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
           },
           "locations": [
             {
@@ -412,7 +412,7 @@
           },
           "properties": {
             "airom:componentId": "airom:989de824357981e6",
-            "airom:confidence": 0.9875,
+            "airom:confidence": 0.9881,
             "airom:kind": "framework",
             "airom:occurrence.confidence": 0.75,
             "airom:provider": "agno",

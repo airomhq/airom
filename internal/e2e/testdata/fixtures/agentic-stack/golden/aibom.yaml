@@ -70,7 +70,7 @@ components:
       ecosystem: pypi
     purl: pkg:pypi/mcp@2.0.0
     version: 2.0.0
-  - confidence: 0.9875
+  - confidence: 0.988125
     evidence:
       identity:
         - confidence: 0.95
@@ -86,21 +86,21 @@ components:
             path: requirements.txt
           method: manifest-analysis
           snippet: agno==2.8.5
-        - confidence: 0.7
+        - confidence: 0.75
           detectorId: rules/agno/import
           location:
             column: 1
-            endColumn: 16
+            endColumn: 10
             endLine: 5
             line: 5
             path: src/server.py
           method: source-code-analysis
           snippet: from agno.agent import Agent
-        - confidence: 0.7
+        - confidence: 0.75
           detectorId: rules/agno/import
           location:
             column: 1
-            endColumn: 24
+            endColumn: 10
             endLine: 6
             line: 6
             path: src/server.py
