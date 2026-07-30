@@ -66,6 +66,45 @@ A glob that targets a directory prunes the directory itself, not just its conten
   </Accordion>
 </AccordionGroup>
 
+## Frozen applications
+
+A PyInstaller onefile executable is a blind spot with no partial answer: every
+module is compiled into a compressed PYZ appended to the bootloader, so there is
+no `.py`, no `.pyc`, and usually no `dist-info` anywhere on disk. Import rules
+and manifest detectors both find exactly nothing.
+
+AIROM reads the archive itself — the CArchive cookie at EOF, its table of
+contents, and the PYZ module list — and reports the AI packages inside. The
+version comes from whichever of three sources can answer, and the evidence says
+which:
+
+| Source | Confidence |
+| --- | --- |
+| A `dist-info` `METADATA` bundled into the archive | 0.97 |
+| A PEP 440 literal in the module's own `__version__` | 0.90 |
+| Neither — reported anyway, version unknown | 0.80 |
+
+That third row is deliberate. The package is demonstrably in the binary, and
+staying silent about it would read as absence. Some packages ship no metadata at
+all, so the `__version__` path is the only way they can ever be versioned.
+
+<Note>
+  No code object is ever unmarshaled. Only the handful of `marshal` types a PYZ
+  directory can contain are implemented, and everything else — `TYPE_CODE` above
+  all — is refused. Version strings are recovered from decompressed bytes
+  instead. `marshal` on untrusted input is a code-execution surface, and a
+  scanner that reads other people's executables must not be the thing that runs
+  them.
+</Note>
+
+<Warning>
+  This needs random access to seek to the end of the file, so it works on a
+  filesystem or repository scan but **not** on
+  [`airom image`](/scanning/container-images) or a tar stream, which are
+  consume-once. There the binary is recorded as an `Unknown` rather than
+  silently reported as containing no AI.
+</Warning>
+
 ## Bounding the scan
 
 Peak memory is a function of these caps, never of the size of the tree.
