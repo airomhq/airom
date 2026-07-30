@@ -10,7 +10,7 @@ AIROM is an open-source scanner that discovers AI assets — including models, p
 [![Go Reference](https://pkg.go.dev/badge/github.com/airomhq/airom.svg)](https://pkg.go.dev/github.com/airomhq/airom)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-> **v0.3.1.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested. Three overlays ride on top of the inventory — an **AI-native risk overlay** ([Risk detection](#risk-detection)), a **[CVE overlay](#cve-overlay)** (OSV.dev, on by default), and a **[model lifecycle overlay](#model-lifecycle-eol)** matching the hosted models you call against a curated, dated, sourced catalog of provider retirement announcements — plus **[compliance framework mapping](#compliance-mapping)**, **[test scope](#test-scope)** so fixtures do not masquerade as production AI, and a **signed rule-update channel**. This release is about **knowing which version you actually run**: AIROM now reads lockfiles and installed package metadata, and it no longer reports a dependency range as though it were a release. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
+> **v0.3.2.** Early but real: the pipeline, detectors, rule packs, and every writer are implemented and tested. Three overlays ride on top of the inventory — an **AI-native risk overlay** ([Risk detection](#risk-detection)), a **[CVE overlay](#cve-overlay)** (OSV.dev, on by default), and a **[model lifecycle overlay](#model-lifecycle-eol)** matching the hosted models you call against a curated, dated, sourced catalog of provider retirement announcements — plus **[compliance framework mapping](#compliance-mapping)**, **[test scope](#test-scope)** so fixtures do not masquerade as production AI, and a **signed rule-update channel**. This release is about **rules reaching you**: agno, Crawl4AI, and FastMCP are detected, the manifest catalog and the rule packs no longer disagree about a dependency, and a scan checks the signed channel for newer rules once a day. See [Project status](#project-status) for the honest ledger of what ships today versus what is deferred.
 
 ---
 
@@ -362,7 +362,7 @@ Rules can even declare relationships and capture generation parameters at the ca
 
 ## Project status
 
-AIROM is at **v0.3.1**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with three overlays (artifact risk, CVE, model lifecycle), compliance mapping, test-scope filtering, per-PR AIBOM diffing, lockfile and installed-metadata version resolution, and a signed rule-update channel added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
+AIROM is at **v0.3.2**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with three overlays (artifact risk, CVE, model lifecycle), compliance mapping, test-scope filtering, per-PR AIBOM diffing, lockfile and installed-metadata version resolution, and a signed rule-update channel — now checked automatically, once a day, outside CI — added on top. Early software — expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
 
 | Area | Status |
 |---|---|
