@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: sentence_transformers
+Summary: Embeddings, Retrieval, and Reranking. This summary is deliberately
+        folded across a continuation line, which RFC 822 allows and which the
+        parser must skip rather than mistake for a new header.
+Author: Nils Reimers
+Version: 3.0.1
+Requires-Python: >=3.8.0
+Description-Content-Type: text/markdown
+
+The installed name uses an underscore; PyPI normalization makes it
+sentence-transformers, which is the catalog key.

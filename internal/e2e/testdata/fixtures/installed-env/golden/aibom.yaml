@@ -1,82 +1,176 @@
 components:
-  - confidence: 0.8
-    evidence:
-      occurrences:
-        - confidence: 0.8
-          detectorId: gosrc/ast
-          location:
-            line: 7
-            path: main.go
-          method: ast-fingerprint
-          snippet: openai "github.com/sashabaranov/go-openai"
-    id: airom:cffbe1cb532342ef
-    kind: library
-    name: github.com/sashabaranov/go-openai
-    package:
-      ecosystem: golang
-  - confidence: 0.75
-    evidence:
-      occurrences:
-        - confidence: 0.75
-          detectorId: gosrc/ast
-          location:
-            line: 12
-            path: main.go
-          method: ast-fingerprint
-          snippet: model := "gpt-4o"
-          symbol: main
-    id: airom:d641d9eba24d3a58
-    kind: hosted-llm
-    name: gpt-4o
-    props:
-      - name: airom:model.id
-        value: gpt-4o
-  - confidence: 0
-    evidence: {}
-    id: airom:f7e06de2ad26950f
-    kind: application
-    name: go-openai
-  - confidence: 0.95
+  - confidence: 0.99
     evidence:
       identity:
-        - confidence: 0.95
+        - confidence: 0.97
           field: version
           methods:
             - manifest-analysis
-          value: v1.32.0
+          value: 0.5.3
+        - confidence: 0.97
+          field: name
+          methods:
+            - manifest-analysis
+          value: chromadb
       occurrences:
-        - confidence: 0.95
-          detectorId: manifest/gomod
+        - confidence: 0.7
+          detectorId: rules/chroma/import
           location:
-            line: 5
-            path: go.mod
+            column: 1
+            endColumn: 16
+            endLine: 9
+            line: 9
+            path: app/main.py
+          method: source-code-analysis
+          snippet: import chromadb
+        - confidence: 0.97
+          detectorId: manifest/pypi-installed
+          location:
+            line: 2
+            path: site-packages/chromadb.egg-info/PKG-INFO
           method: manifest-analysis
-          snippet: require github.com/sashabaranov/go-openai v1.32.0
-    id: airom:f96ee68bb40a8bb3
-    kind: library
-    name: github.com/sashabaranov/go-openai
+          snippet: 'Name: chromadb'
+    id: airom:3e3a9735550d6b44
+    kind: vector-db
+    name: chroma
     package:
-      ecosystem: golang
+      ecosystem: pypi
+    provider: chroma
+    version: 0.5.3
+  - confidence: 0.85
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: rules/openai/model-literal
+          fields:
+            model: gpt-4o-mini
+          location:
+            column: 9
+            endColumn: 28
+            endLine: 18
+            line: 18
+            path: app/main.py
+          method: source-code-analysis
+          snippet: model="gpt-4o-mini",
+    id: airom:65ad4ea6556c5aad
+    kind: hosted-llm
+    name: gpt-4o-mini
+    props:
+      - name: airom:model.provider
+        value: openai
+      - name: airom:model.id
+        value: gpt-4o-mini
     provider: openai
-    purl: pkg:golang/github.com/sashabaranov/go-openai@v1.32.0
-    version: v1.32.0
+  - confidence: 0.99
+    evidence:
+      identity:
+        - confidence: 0.97
+          field: version
+          methods:
+            - manifest-analysis
+          value: 0.2.16
+      occurrences:
+        - confidence: 0.7
+          detectorId: rules/langchain/import
+          location:
+            column: 1
+            endColumn: 17
+            endLine: 10
+            line: 10
+            path: app/main.py
+          method: source-code-analysis
+          snippet: import langchain
+        - confidence: 0.97
+          detectorId: manifest/pypi-installed
+          location:
+            line: 2
+            path: site-packages/langchain-0.2.16.dist-info/METADATA
+          method: manifest-analysis
+          snippet: 'Name: langchain'
+    id: airom:6ed15db34c48ea41
+    kind: framework
+    name: langchain
+    package:
+      ecosystem: pypi
+    provider: langchain
+    purl: pkg:pypi/langchain@0.2.16
+    version: 0.2.16
+  - confidence: 0.99
+    evidence:
+      identity:
+        - confidence: 0.97
+          field: version
+          methods:
+            - manifest-analysis
+          value: 1.40.0
+      occurrences:
+        - confidence: 0.7
+          detectorId: rules/openai/chat-call
+          fields:
+            model: gpt-4o-mini
+          location:
+            column: 18
+            endColumn: 43
+            endLine: 17
+            line: 17
+            path: app/main.py
+          method: source-code-analysis
+          snippet: resp = client.chat.completions.create(
+        - confidence: 0.97
+          detectorId: manifest/pypi-installed
+          location:
+            line: 2
+            path: site-packages/openai-1.40.0.dist-info/METADATA
+          method: manifest-analysis
+          snippet: 'Name: openai'
+    id: airom:a6ccf893ff130124
+    kind: library
+    name: openai
+    package:
+      ecosystem: pypi
+    provider: openai
+    purl: pkg:pypi/openai@1.40.0
+    version: 1.40.0
+  - confidence: 0
+    evidence: {}
+    id: airom:e827242fd464167e
+    kind: application
+    name: installed-env
 lifecycle: pre-build
-root: airom:f7e06de2ad26950f
+relationships:
+  - confidence: 0.7
+    evidence:
+      - confidence: 0.7
+        detectorId: rules/openai/chat-call
+        fields:
+          model: gpt-4o-mini
+        location:
+          column: 18
+          endColumn: 43
+          endLine: 17
+          line: 17
+          path: app/main.py
+        method: source-code-analysis
+        snippet: resp = client.chat.completions.create(
+    from: airom:a6ccf893ff130124
+    to: airom:65ad4ea6556c5aad
+    type: uses
+root: airom:e827242fd464167e
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
-  target: go-openai
+  target: installed-env
 stats:
-  contentBytes: 547
+  contentBytes: 1735
   detectors:
     - findings: 0
       id: dataset/file
       invocations: 0
       ns: 0
-    - findings: 2
+    - findings: 0
       id: gosrc/ast
-      invocations: 1
+      invocations: 0
       ns: 0
     - findings: 0
       id: infra/compose
@@ -90,9 +184,9 @@ stats:
       id: manifest/cargo
       invocations: 0
       ns: 0
-    - findings: 1
+    - findings: 0
       id: manifest/gomod
-      invocations: 1
+      invocations: 0
       ns: 0
     - findings: 0
       id: manifest/gradle
@@ -110,9 +204,9 @@ stats:
       id: manifest/nuget
       invocations: 0
       ns: 0
-    - findings: 0
+    - findings: 3
       id: manifest/pypi-installed
-      invocations: 0
+      invocations: 5
       ns: 0
     - findings: 0
       id: manifest/pypi-pyproject
@@ -174,15 +268,15 @@ stats:
       id: prompt/file
       invocations: 0
       ns: 0
-    - findings: 0
+    - findings: 4
       id: ruleengine
       invocations: 1
       ns: 0
   durationNs: 0
   filesFailed: 0
-  filesProcessed: 2
-  filesWalked: 2
-  headerBytes: 547
+  filesProcessed: 6
+  filesWalked: 6
+  headerBytes: 1997
   selection:
     - 'dataset/file: selected by "default"'
     - 'gosrc/ast: selected by "default"'

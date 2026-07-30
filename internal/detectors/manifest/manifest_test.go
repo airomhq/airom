@@ -11,6 +11,10 @@ func TestRequirements(t *testing.T) {
 	detectortest.Run(t, NewRequirements(), detectortest.Fixtures{Dir: "testdata/requirements"})
 }
 
+func TestInstalled(t *testing.T) {
+	detectortest.Run(t, NewInstalled(), detectortest.Fixtures{Dir: "testdata/installed"})
+}
+
 func TestPyProject(t *testing.T) {
 	detectortest.Run(t, NewPyProject(), detectortest.Fixtures{Dir: "testdata/pyproject"})
 }
@@ -45,7 +49,7 @@ func TestCSProj(t *testing.T) {
 func TestConstructorsImplementFileDetector(t *testing.T) {
 	dets := []detect.FileDetector{
 		NewRequirements(), NewPyProject(), NewPackageJSON(), NewGoMod(),
-		NewMaven(), NewGradle(), NewCargo(), NewCSProj(),
+		NewMaven(), NewGradle(), NewCargo(), NewCSProj(), NewInstalled(),
 	}
 	seen := map[string]bool{}
 	for _, d := range dets {

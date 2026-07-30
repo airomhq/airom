@@ -224,6 +224,10 @@ stats:
       invocations: 0
       ns: 0
     - findings: 0
+      id: manifest/pypi-installed
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: manifest/pypi-pyproject
       invocations: 0
       ns: 0
@@ -301,6 +305,7 @@ stats:
     - 'manifest/cargo: selected by "default"'
     - 'manifest/gomod: selected by "default"'
     - 'manifest/gradle: selected by "default"'
+    - 'manifest/pypi-installed: selected by "default"'
     - 'manifest/maven: selected by "default"'
     - 'manifest/npm: selected by "default"'
     - 'manifest/pypi-pyproject: selected by "default"'

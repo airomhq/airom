@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: numpy
+Version: 2.0.0
+Summary: Fundamental package for array computing in Python
+License: BSD-3-Clause
+Requires-Python: >=3.9
+
+Installed, parsed, and deliberately not reported: an AIBOM is not an SBOM.
+A real site-packages holds dozens of these, and the catalog gate is the
+only thing standing between a focused AI inventory and a dependency dump.

@@ -1,0 +1,23 @@
+AI Bill of Materials — installed-env
+
+┌─ Scan Summary ──────────────┐
+│ Target        installed-env │
+│ Components    4             │
+│ Relationships 1             │
+│ Files         6 scanned     │
+│                             │
+│ By Type                     │
+│   framework          1      │
+│   hosted-llm         1      │
+│   library            1      │
+│   vector-db          1      │
+└─────────────────────────────┘
+
+┌────────────┬─────────────┬─────────┬───────────┬──────┬────────────────┬──────────┐
+│ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF │ LOCATION       │ EVIDENCE │
+├────────────┼─────────────┼─────────┼───────────┼──────┼────────────────┼──────────┤
+│ framework  │ langchain   │ 0.2.16  │ langchain │ 0.99 │ app/main.py:10 │ 2 occ    │
+│ hosted-llm │ gpt-4o-mini │ -       │ openai    │ 0.85 │ app/main.py:18 │ 1 occ    │
+│ library    │ openai      │ 1.40.0  │ openai    │ 0.99 │ app/main.py:17 │ 2 occ    │
+│ vector-db  │ chroma      │ 0.5.3   │ chroma    │ 0.99 │ app/main.py:9  │ 2 occ    │
+└────────────┴─────────────┴─────────┴───────────┴──────┴────────────────┴──────────┘

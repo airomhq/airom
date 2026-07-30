@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: chromadb
+Version: 0.5.3
+Summary: Chroma.
+Home-page: https://github.com/chroma-core/chroma
+Author: Jeff Huber
+License: Apache-2.0
+
+The setuptools egg-info variant. Same header grammar, different filename
+and directory suffix — an editable or legacy install looks like this.

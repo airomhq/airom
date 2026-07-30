@@ -1,0 +1,261 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:00000000-0000-4000-8000-000000000000",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-01T12:00:00Z",
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "airom",
+          "version": "dev"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "airom:e827242fd464167e",
+      "type": "application",
+      "name": "installed-env",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0"
+        },
+        {
+          "name": "airom:kind",
+          "value": "application"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "airom:eol.catalog",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:rules.hash",
+        "value": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "name": "airom:rules.version",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:source.target",
+        "value": "installed-env"
+      },
+      {
+        "name": "airom:source.type",
+        "value": "dir"
+      },
+      {
+        "name": "airom:unknowns",
+        "value": "0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "airom:3e3a9735550d6b44",
+      "type": "application",
+      "name": "chroma",
+      "version": "0.5.3",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.99"
+        },
+        {
+          "name": "airom:kind",
+          "value": "vector-db"
+        },
+        {
+          "name": "airom:provider",
+          "value": "chroma"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.97,
+            "concludedValue": "0.5.3",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.97
+              }
+            ]
+          },
+          {
+            "field": "name",
+            "confidence": 0.97,
+            "concludedValue": "chromadb",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.97
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "app/main.py",
+            "line": 9,
+            "additionalContext": "import chromadb"
+          },
+          {
+            "location": "site-packages/chromadb.egg-info/PKG-INFO",
+            "line": 2,
+            "additionalContext": "Name: chromadb"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:65ad4ea6556c5aad",
+      "type": "machine-learning-model",
+      "name": "gpt-4o-mini",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.85"
+        },
+        {
+          "name": "airom:kind",
+          "value": "hosted-llm"
+        },
+        {
+          "name": "airom:model.id",
+          "value": "gpt-4o-mini"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "openai"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "app/main.py",
+            "line": 18,
+            "additionalContext": "model=\"gpt-4o-mini\","
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:6ed15db34c48ea41",
+      "type": "framework",
+      "name": "langchain",
+      "version": "0.2.16",
+      "purl": "pkg:pypi/langchain@0.2.16",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.99"
+        },
+        {
+          "name": "airom:kind",
+          "value": "framework"
+        },
+        {
+          "name": "airom:provider",
+          "value": "langchain"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.97,
+            "concludedValue": "0.2.16",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.97
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "app/main.py",
+            "line": 10,
+            "additionalContext": "import langchain"
+          },
+          {
+            "location": "site-packages/langchain-0.2.16.dist-info/METADATA",
+            "line": 2,
+            "additionalContext": "Name: langchain"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:a6ccf893ff130124",
+      "type": "library",
+      "name": "openai",
+      "version": "1.40.0",
+      "purl": "pkg:pypi/openai@1.40.0",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.99"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "openai"
+        },
+        {
+          "name": "airom:rel.uses",
+          "value": "airom:65ad4ea6556c5aad@0.7"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.97,
+            "concludedValue": "1.40.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.97
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "app/main.py",
+            "line": 17,
+            "additionalContext": "resp = client.chat.completions.create("
+          },
+          {
+            "location": "site-packages/openai-1.40.0.dist-info/METADATA",
+            "line": 2,
+            "additionalContext": "Name: openai"
+          }
+        ]
+      }
+    }
+  ]
+}

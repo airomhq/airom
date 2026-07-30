@@ -87,6 +87,54 @@ airom image --input img-arm64.tar
 airom image --input img.tar --ignore '**/site-packages/tests/**'
 ```
 
+## Versions come from installed metadata
+
+An image rarely ships the manifest it was built from. `requirements.txt` and
+`pyproject.toml` stay behind in the source repo; what lands in the image is
+`site-packages`. So AIROM reads the installed metadata directly —
+`<pkg>-<version>.dist-info/METADATA` (PEP 376) and `<pkg>.egg-info/PKG-INFO` —
+and that is the strongest version evidence there is. A manifest records the
+version that was *asked for* (`openai>=1.0`); installed metadata records the
+one that is *there*.
+
+```
+┌────────────┬─────────────┬─────────┬───────────┬──────┬────────────────┬──────────┐
+│ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF │ LOCATION       │ EVIDENCE │
+├────────────┼─────────────┼─────────┼───────────┼──────┼────────────────┼──────────┤
+│ framework  │ langchain   │ 0.2.16  │ langchain │ 0.99 │ app/main.py:10 │ 2 occ    │
+│ hosted-llm │ gpt-4o-mini │ -       │ openai    │ 0.85 │ app/main.py:18 │ 1 occ    │
+│ library    │ openai      │ 1.40.0  │ openai    │ 0.99 │ app/main.py:17 │ 2 occ    │
+│ vector-db  │ chroma      │ 0.5.3   │ chroma    │ 0.99 │ app/main.py:9  │ 2 occ    │
+└────────────┴─────────────┴─────────┴───────────┴──────┴────────────────┴──────────┘
+```
+
+Each of the three libraries carries **two** occurrences — the import in the
+application code and the metadata that pins its version — folded into one
+component, which is why `CONF` reads 0.99. `LOCATION` shows the code site;
+`airom scan --format json` lists both. Without the metadata half, the `VERSION`
+column is `-`.
+
+`gpt-4o-mini` has no version because a hosted model has no installed
+metadata to read; its lifecycle is covered by the [EOL overlay](/concepts/eol)
+instead.
+
+<Note>
+  This is what makes the [CVE overlay](/concepts/cve) useful on an image. A
+  component with no version can be listed but never matched against an advisory
+  database, so a version-less scan reports zero vulnerabilities no matter how
+  many the image actually has.
+</Note>
+
+An installed tree holds far more than AI packages. AIROM parses every
+`METADATA` it finds and reports only the ones its AI catalog recognizes — numpy,
+click, and certifi are read and dropped. An AIBOM is not an SBOM.
+
+The same applies to any installed environment on disk, not just images: a
+`docker cp`'d `site-packages`, an unpacked PyInstaller bundle, or a container
+filesystem mounted for inspection. Note that `.venv/` and `venv/` are
+[skipped by default](/scanning/filesystem), so scanning a *source* checkout
+still reads its manifest rather than its virtualenv.
+
 ## Known limitations
 
 <AccordionGroup>

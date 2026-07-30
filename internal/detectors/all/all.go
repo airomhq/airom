@@ -35,6 +35,7 @@ func Builtin() []detect.Detector {
 		manifest.NewCargo(),
 		manifest.NewGoMod(),
 		manifest.NewGradle(),
+		manifest.NewInstalled(),
 		manifest.NewMaven(),
 		manifest.NewPackageJSON(),
 		manifest.NewPyProject(),

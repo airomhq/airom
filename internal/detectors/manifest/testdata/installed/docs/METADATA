@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: openai
+Version: 6.6.6
+
+The right basename in the wrong directory. "METADATA" is an ordinary word,
+so the selector matches this file — the parent-directory guard is what
+rejects it. Without that guard, any file so named would be read as proof
+that a package is installed.

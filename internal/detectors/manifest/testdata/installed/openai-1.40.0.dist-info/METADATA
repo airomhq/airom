@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: openai
+Version: 1.40.0
+Summary: The official Python library for the openai API
+Home-page: https://github.com/openai/openai-python
+Author-Email: OpenAI <support@openai.com>
+License: Apache-2.0
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.7.1
+Requires-Dist: anyio<5,>=3.5.0
+Requires-Dist: httpx<1,>=0.23.0
+Description-Content-Type: text/markdown
+
+# OpenAI Python API library
+
+The long description begins after the blank line. It is often an entire
+README, and READMEs quote metadata all the time:
+
+Name: not-a-real-package
+Version: 99.99.99
+
+Neither of those must reach the catalog, and neither must overwrite the
+real Name and Version above.

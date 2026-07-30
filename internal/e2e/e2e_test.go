@@ -78,6 +78,12 @@ var goldenFixtures = []string{
 	// stay a real component. Golden-files the test-scope split across every
 	// format, including CycloneDX `scope: excluded`.
 	"test-scoped",
+	// A deployed environment: shipped code and a site-packages tree, with no
+	// manifest anywhere. Golden-files the one input where AIROM can report
+	// exact installed versions rather than declared ranges — and pins the two
+	// guards that keep it an AIBOM: the AI catalog (numpy stays out) and the
+	// .dist-info/.egg-info parent check (a stray docs/METADATA stays out).
+	"installed-env",
 }
 
 func fixtureDir(name string) string { return filepath.Join("testdata", "fixtures", name) }
