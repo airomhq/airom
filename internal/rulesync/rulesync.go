@@ -66,8 +66,10 @@ type Result struct {
 }
 
 // Update fetches, verifies, and installs a rule bundle into the cache, then
-// repoints current.json at it. It is the ONLY function here that touches the
-// network. On any error the cache is left as it was.
+// repoints current.json at it. On any error the cache is left as it was.
+//
+// This and latestVersion (via AutoUpdate) are the only functions here that
+// touch the network; Active never does.
 func Update(ctx context.Context, o Options) (*Result, error) {
 	if o.Offline {
 		return nil, ErrOffline

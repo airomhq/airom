@@ -67,6 +67,7 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 	fs.Bool("stats", false, "emit the full ScanStats block in the output")
 	fs.Bool("wide", false, "table: expand every file:line occurrence under each component")
 	fs.Bool("no-cached-rules", false, "ignore any fetched rule bundle; scan with the built-in packs")
+	fs.Bool("auto-update-rules", true, "check airom-rules for a newer bundle before scanning (at most once a day; skipped offline and in CI)")
 	fs.CountP("verbose", "v", "increase log verbosity (repeatable; -vv adds source locations)")
 	fs.BoolP("quiet", "q", false, "errors only")
 }

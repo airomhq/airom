@@ -24,9 +24,15 @@ airom fs .                   # this scan now uses it
     a network or a second install.
   </Step>
   <Step title="`rules update` fetches a bundle — explicitly">
-    Only this command touches the network. It resolves the release, verifies it,
-    and caches it under `<cache-dir>/rules/<version>`. A **scan never fetches**,
-    so a scan is reproducible: it uses whatever bundle is already cached.
+    It resolves the release, verifies it, and caches it under
+    `<cache-dir>/rules/<version>`. This is the deliberate, unthrottled path: it
+    fetches every time you ask, and can pin a version.
+  </Step>
+  <Step title="Scans also check once a day, unless told not to">
+    With `--auto-update-rules` (on by default) a scan checks for a newer bundle
+    before it resolves its rules — **at most once every 24 hours**, and never
+    under `--offline`, `--no-cached-rules`, or in CI. Verification is identical
+    to `rules update`, and a failed check keeps whatever you already have.
   </Step>
   <Step title="Scans prefer the cached bundle">
     Once cached, the bundle replaces the embedded packs as the base rule layer, and any lifecycle catalogs it carries overlay the embedded ones per provider.
@@ -46,14 +52,28 @@ airom rules update v1.2.0
 airom fs . -o cyclonedx=aibom.json
 ```
 
-Because a scan never fetches, the same cached bundle yields the same output every
-time. `rules update` is the one deliberate act that changes your ruleset.
+Auto-update stands down whenever a CI environment variable is set (`CI`,
+`GITHUB_ACTIONS`, `GITLAB_CI`, `JENKINS_URL`, and friends), so pipelines keep the
+property that matters to them: the same cached bundle yields the same output
+every time.
+
+<Warning>
+  That standdown is not a nicety. [`airom diff`](/reference/cli) **refuses** to
+  compare two AIBOMs produced by different rulesets — it will not blame a pull
+  request for a rule change — so a base scan and a head scan that straddle a
+  bundle release would fail the gate with nothing wrong in the code. A
+  `--fail-on` threshold has the same exposure: a stricter rule turns a green
+  build red with no commit behind it. Pin explicitly (`airom rules update
+  v1.2.0`) or pass `--auto-update-rules=false` anywhere the CI detection does
+  not fire.
+</Warning>
 
 ## Offline and air-gapped
 
 <Note>
-  A scan is offline by default — it never reaches the network for rules. Only
-  `rules update` does, and `--offline` refuses it before dialing.
+  `--offline` is an assertion, not a preference: it disables the auto-update
+  check before anything is dialed, and makes `rules update` refuse outright. A
+  scan then uses the cached bundle, or the embedded packs.
 </Note>
 
 ```bash

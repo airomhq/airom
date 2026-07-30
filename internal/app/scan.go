@@ -57,6 +57,10 @@ func buildCatalog(cfg *Config) (*engine.Catalog, *ruleengine.Matcher, string, er
 // runScanPipeline executes the full pipeline over an acquired source:
 // phase 1 (engine + dispatcher) → phase 2 (project detectors) → assembly.
 func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airom.Inventory, error) {
+	// Before the ruleset is resolved, so a bundle installed now is the one this
+	// scan actually uses rather than the next one.
+	autoUpdateNote := autoUpdateRules(ctx, cfg)
+
 	catalog, matcher, rulesVersion, err := buildCatalog(cfg)
 	if err != nil {
 		return nil, err
@@ -138,6 +142,9 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 		Duration:       out.Stats.Duration,
 		Selection:      sel.Explanation,
 		Detectors:      detStats,
+	}
+	if autoUpdateNote != "" {
+		stats.Warnings = append(stats.Warnings, autoUpdateNote)
 	}
 
 	// Stamp rule-pack provenance onto a per-scan copy of the tool identity (never

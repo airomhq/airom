@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/airomhq/airom/internal/eol"
@@ -31,14 +32,90 @@ func resolveRuleBase(cfg *Config) (fs.FS, string) {
 	if cfg.NoCachedRules {
 		return EmbeddedRules, "builtin"
 	}
-	dir := cfg.CacheDir
-	if dir == "" {
-		dir = DefaultCacheDir()
-	}
+	dir := cacheDirFor(cfg)
 	if bundle, version, ok := rulesync.Active(dir); ok {
 		return bundle, version
 	}
 	return EmbeddedRules, "builtin"
+}
+
+// cacheDirFor resolves the cache directory a scan reads rules and lifecycle
+// data from: the configured one, else the user default.
+//
+// Indirected through a var so the test binary can point it somewhere disposable.
+// Without that, whether these tests pass depends on whether the developer has
+// ever run `airom rules update` on the machine — a cached bundle overrides the
+// embedded packs, so the ruleset under test silently changes. Auto-update makes
+// a populated cache the normal state rather than the exception, which turns
+// that latent coupling into a routine one.
+var cacheDirFor = func(cfg *Config) string {
+	if cfg.CacheDir != "" {
+		return cfg.CacheDir
+	}
+	return DefaultCacheDir()
+}
+
+// ciEnvVars are the environment variables that mean "this is an automated
+// build". Auto-update stands down when any is set, because a pipeline needs
+// the OPPOSITE of freshness: two scans of the same commit must agree, `airom
+// diff` refuses across a ruleset change by design, and a --fail-on gate that
+// flips overnight with no commit behind it is a broken build, not a finding.
+var ciEnvVars = []string{
+	"CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER",
+	"GITHUB_ACTIONS", "GITLAB_CI", "JENKINS_URL", "TEAMCITY_VERSION",
+	"BUILDKITE", "CIRCLECI", "DRONE", "APPVEYOR", "TF_BUILD", "bamboo_buildKey",
+}
+
+// inCI reports whether this looks like an automated build.
+func inCI() bool {
+	for _, k := range ciEnvVars {
+		if v, ok := os.LookupEnv(k); ok && v != "" && !strings.EqualFold(v, "false") && v != "0" {
+			return true
+		}
+	}
+	return false
+}
+
+// autoUpdateRules refreshes the cached rule bundle before a scan resolves its
+// rules, at most once a day, and returns a line for the document when it
+// actually changed something.
+//
+// The returned note goes into the AIBOM rather than only to stderr on purpose.
+// An auto-update means this scan may disagree with yesterday's for reasons that
+// are not in the repository, and stderr is routinely discarded in CI — so the
+// artifact has to be able to explain itself. ToolInfo.RulesVersion already says
+// WHICH rules answered; this says they changed underneath you.
+//
+// Every failure is silent-but-for-a-debug-line: a scan must not fail because a
+// rules server was unreachable.
+func autoUpdateRules(ctx context.Context, cfg *Config) string {
+	switch {
+	case !cfg.AutoUpdateRules, cfg.Offline, cfg.NoCachedRules:
+		return ""
+	case inCI():
+		slog.Debug("rules auto-update skipped: CI environment detected")
+		return ""
+	}
+	dir := cacheDirFor(cfg)
+	res, err := rulesync.AutoUpdate(ctx, rulesync.AutoOptions{
+		Options: rulesync.Options{
+			CacheDir:              dir,
+			Source:                cfg.RulesSource,
+			InsecureSkipSignature: cfg.InsecureSkipSignature,
+		},
+	})
+	if err != nil || res == nil || !res.Updated {
+		return ""
+	}
+	from := res.From
+	if from == "" {
+		from = "built-in packs"
+	}
+	slog.Info("rules auto-updated", "from", from, "to", res.To)
+	return fmt.Sprintf(
+		"rules: auto-updated from %s to %s before this scan; results may differ from an earlier scan of the same tree (disable with --auto-update-rules=false)",
+		from, res.To,
+	)
 }
 
 // loadEOLCatalogFor picks the lifecycle catalog the same way resolveRuleBase
@@ -62,10 +139,7 @@ func loadEOLCatalogFor(cfg *Config) (cat *eol.Catalog, source, warn string, err 
 	if cfg.NoCachedRules {
 		return embedded, eol.SourceBuiltin, "", nil
 	}
-	dir := cfg.CacheDir
-	if dir == "" {
-		dir = DefaultCacheDir()
-	}
+	dir := cacheDirFor(cfg)
 	bundle, version, ok := rulesync.Active(dir)
 	if !ok {
 		return embedded, eol.SourceBuiltin, "", nil
@@ -123,12 +197,10 @@ func RulesList(cfg *Config) ([]ruleengine.EffectiveRule, error) {
 // RulesUpdate fetches, verifies, and caches a signed rule bundle from the
 // airom-rules release channel for `airom rules update` (Model B). version is
 // the positional argument ("" or "latest" → the newest release). It touches
-// the network; a scan never does.
+// the network, as does a scan when AutoUpdateRules is on (see autoUpdateRules);
+// nothing else in a scan does.
 func RulesUpdate(ctx context.Context, cfg *Config, version string) (*rulesync.Result, error) {
-	dir := cfg.CacheDir
-	if dir == "" {
-		dir = DefaultCacheDir()
-	}
+	dir := cacheDirFor(cfg)
 	return rulesync.Update(ctx, rulesync.Options{
 		CacheDir:              dir,
 		Version:               version,

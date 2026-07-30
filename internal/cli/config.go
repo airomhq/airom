@@ -38,6 +38,7 @@ var knownKeys = map[string]bool{
 	"trace": true, "stats": true, "verbose": true, "quiet": true,
 	"no-progress": true, "wide": true,
 	"no-cached-rules": true, "rules-source": true, "insecure-skip-signature": true,
+	"auto-update-rules": true,
 	// command-specific (image, k8s)
 	"input": true, "platform": true, "namespace": true,
 	"all-namespaces": true, "manifests": true, "parallel-images": true,
@@ -303,7 +304,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 
 	cveFlag := true // --cve defaults on; honored so an explicit false disables
 	var noCache, sarifStrict, offline, noCVE, noEOL, includeTests, stats, wide, quiet, noProgress, k8sAll, k8sParallelImages bool
-	var noCachedRules, insecureSkipSig bool
+	var noCachedRules, insecureSkipSig, autoUpdateRules bool
 	for key, dst := range map[string]*bool{
 		"no-cache":                &noCache,
 		"sarif-strict-kinds":      &sarifStrict,
@@ -315,6 +316,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		"stats":                   &stats,
 		"wide":                    &wide,
 		"no-cached-rules":         &noCachedRules,
+		"auto-update-rules":       &autoUpdateRules,
 		"insecure-skip-signature": &insecureSkipSig,
 		"quiet":                   &quiet,
 		"no-progress":             &noProgress,
@@ -378,6 +380,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		SARIFStrictKinds: sarifStrict,
 
 		NoCachedRules:         noCachedRules,
+		AutoUpdateRules:       autoUpdateRules,
 		RulesSource:           k.String("rules-source"),
 		InsecureSkipSignature: insecureSkipSig,
 

@@ -156,6 +156,12 @@ type Config struct {
 	RulesSource           string
 	InsecureSkipSignature bool
 
+	// AutoUpdateRules refreshes the cached bundle before a scan, at most once
+	// a day. The zero value is OFF on purpose: the CLI turns it on, so a test
+	// or an embedder that builds a Config directly never touches the network.
+	// Ignored under Offline, NoCachedRules, or a CI environment.
+	AutoUpdateRules bool
+
 	// CI policy (exit-code contract in docs/cli.md). Nil Policy = no gate:
 	// scan success always exits 0 regardless of findings.
 	Policy   *Policy
@@ -195,7 +201,15 @@ const (
 
 // DefaultCacheDir is <user cache dir>/airom, falling back to a temp-dir
 // location when the OS cache dir cannot be determined.
-func DefaultCacheDir() string {
+//
+// Indirected through a var so the test binary can redirect it. ApplyDefaults
+// copies this into Config.CacheDir, and a cached rule bundle OVERRIDES the
+// embedded packs — so without the seam, the ruleset a test scans with depends
+// on whether the developer has ever run `airom rules update`. Auto-update makes
+// that the normal state of a machine rather than a rare one.
+func DefaultCacheDir() string { return defaultCacheDir() }
+
+var defaultCacheDir = func() string {
 	base, err := os.UserCacheDir()
 	if err != nil {
 		return filepath.Join(os.TempDir(), "airom-cache")
