@@ -42,7 +42,7 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 | **Embedding models** | OpenAI, sentence-transformers, BGE/E5/MiniLM, Voyage, Cohere — hosted or local |
 | **Frameworks & SDKs** | LangChain, LlamaIndex, Haystack, DSPy, CrewAI, Agno, AutoGen, Semantic Kernel, Transformers, vLLM, MLflow, Crawl4AI, FastMCP, and the provider SDKs — from manifests *and* usage |
 | **Frozen applications** | PyInstaller onefile executables — the CArchive/PYZ module list read directly, so AI compiled into a single binary with no `.py`, `.pyc`, or dist-info on disk is still inventoried |
-| **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, pgvector, Redis, Elasticsearch, MongoDB Atlas |
+| **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, pgvector, Redis, Elasticsearch, MongoDB Atlas — including SQL schema/DDL (`vector`/`halfvec`/`sparsevec` columns, HNSW and IVFFlat indexes) and a server-side pgvector install read from its PostgreSQL extension control file |
 | **Prompts** | Prompt files (txt/md/yaml/jinja), `PromptTemplate`/`ChatPromptTemplate`/`system_prompt` patterns |
 | **Datasets** | CSV/JSONL/Parquet/Arrow signatures, `load_dataset()`, Kaggle and HF dataset references |
 | **Generation parameters** | temperature, top_p, top_k, max_tokens, seed, stop, reasoning effort, response format — bound to the model at the call site, with provenance |

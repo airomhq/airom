@@ -279,6 +279,8 @@
       "modelfilex/tflite: selected by \"default\"",
       "modelfilex/tensorrt: selected by \"default\"",
       "modelfilex/torch: selected by \"default\"",
+      "pgext/control: selected by \"default\"",
+      "pgext/module: selected by \"default\"",
       "project/adapter: selected by \"default\"",
       "project/configbind: selected by \"default\"",
       "project/hfdir: selected by \"default\"",
@@ -445,6 +447,18 @@
       },
       {
         "id": "modelfilex/torch",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "pgext/control",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "pgext/module",
         "invocations": 0,
         "findings": 0,
         "ns": 0

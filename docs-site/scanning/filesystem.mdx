@@ -105,6 +105,37 @@ all, so the `__version__` path is the only way they can ever be versioned.
   silently reported as containing no AI.
 </Warning>
 
+## Server-side database extensions
+
+A vector database is not always something a project imports. pgvector is a
+PostgreSQL extension: it shows up in DDL, and otherwise only as files the
+server installation left on disk. A host running it has no manifest entry and
+no import for a source rule to match.
+
+AIROM reads the extension's own control file — `share/extension/vector.control`
+— which names the version outright, and the loadable module beside it:
+
+| Evidence | Confidence | Supplies a version |
+| --- | --- | --- |
+| `<pg>/share/extension/vector.control` | 0.97 | yes, from `default_version` |
+| `<pg>/lib/vector.so` | 0.80 | no |
+| SQL DDL (`CREATE EXTENSION`, a vector column, an index) | 0.70–0.85 | no |
+
+All three fold into one component, so a host with the extension installed and a
+schema that uses it reports **pgvector 0.8.1** once, with every sighting behind
+it, rather than three partial findings.
+
+<Note>
+  `default_version` is the version **installed on disk**. A database created
+  before an upgrade keeps running the older one until `ALTER EXTENSION ...
+  UPDATE`, so the two can differ — the evidence string says so rather than
+  implying the running database was inspected.
+</Note>
+
+The module rule is path-anchored to PostgreSQL library directories on purpose.
+A file named `vector.so` anywhere else is far too generic to claim a database
+extension from.
+
 ## Bounding the scan
 
 Peak memory is a function of these caps, never of the size of the tree.

@@ -19,6 +19,8 @@ import (
 
 	"github.com/airomhq/airom/internal/detectors/modelfilex"
 
+	"github.com/airomhq/airom/internal/detectors/pgext"
+
 	"github.com/airomhq/airom/internal/detectors/project"
 
 	"github.com/airomhq/airom/internal/detectors/prompt"
@@ -56,6 +58,8 @@ func Builtin() []detect.Detector {
 		modelfilex.NewTFLite(),
 		modelfilex.NewTensorRT(),
 		modelfilex.NewTorch(),
+		pgext.NewControl(),
+		pgext.NewModule(),
 		project.NewAdapterLink(),
 		project.NewConfigBind(),
 		project.NewHFDir(),
