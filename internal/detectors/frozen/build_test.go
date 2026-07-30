@@ -12,16 +12,45 @@ import (
 // writing the format here keeps the test deterministic and makes the layout
 // this detector relies on explicit.
 
-// marshalDict encodes {name: (0, offset, length)} the way a PYZ directory does,
-// exercising the same short-ASCII / small-tuple / int types a real one uses.
-func marshalDict(entries map[string][2]int64) []byte {
+// marshalDirectory encodes the module directory the way PyInstaller actually
+// writes it: a LIST of (name, (typecode, offset, length)) pairs.
+//
+// It emitted a dict in its first version, because that is how the format is
+// usually described — and since the parser read a dict too, the pair agreed
+// with each other and disagreed with every real binary. The shape here was
+// checked against PyInstaller 6.21 output, and TestParsePYZAgainstRealArchive
+// keeps it honest with genuine bytes.
+func marshalDirectory(entries map[string][2]int64) []byte {
 	var b bytes.Buffer
-	b.WriteByte(mTypeDict)
+	b.WriteByte(mTypeList)
+	_ = binary.Write(&b, binary.LittleEndian, int32(len(entries)))
 	for name, posLen := range entries {
-		b.WriteByte(mTypeShortAscII) // interned short ascii key
+		b.WriteByte(mTypeSmallTuple) // (name, entry)
+		b.WriteByte(2)
+
+		b.WriteByte(mTypeShortAscII)
 		b.WriteByte(byte(len(name)))
 		b.WriteString(name)
 
+		b.WriteByte(mTypeSmallTuple) // (typecode, offset, length)
+		b.WriteByte(3)
+		for _, n := range []int64{0, posLen[0], posLen[1]} {
+			b.WriteByte(mTypeInt)
+			_ = binary.Write(&b, binary.LittleEndian, int32(n))
+		}
+	}
+	return b.Bytes()
+}
+
+// marshalDirectoryDict is the dict shape older writers use, kept so both
+// branches of directoryEntries are exercised.
+func marshalDirectoryDict(entries map[string][2]int64) []byte {
+	var b bytes.Buffer
+	b.WriteByte(mTypeDict)
+	for name, posLen := range entries {
+		b.WriteByte(mTypeShortAscII)
+		b.WriteByte(byte(len(name)))
+		b.WriteString(name)
 		b.WriteByte(mTypeSmallTuple)
 		b.WriteByte(3)
 		for _, n := range []int64{0, posLen[0], posLen[1]} {
@@ -29,7 +58,7 @@ func marshalDict(entries map[string][2]int64) []byte {
 			_ = binary.Write(&b, binary.LittleEndian, int32(n))
 		}
 	}
-	b.WriteByte(mTypeNull) // NULL key terminates the dict
+	b.WriteByte(mTypeNull)
 	return b.Bytes()
 }
 
@@ -65,7 +94,7 @@ func buildPYZ(t *testing.T, modules map[string][]byte) []byte {
 	_ = binary.Write(&out, binary.LittleEndian, uint32(0xa7_0d_0d_0a)) // a 3.13-ish pyc magic
 	_ = binary.Write(&out, binary.BigEndian, uint32(tocOff))
 	out.Write(body.Bytes())
-	out.Write(marshalDict(dir))
+	out.Write(marshalDirectory(dir))
 	return out.Bytes()
 }
 

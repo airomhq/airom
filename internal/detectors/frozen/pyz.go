@@ -71,13 +71,13 @@ func ParsePYZ(data []byte) (*PYZ, error) {
 	if err != nil {
 		return nil, fmt.Errorf("frozen: PYZ directory: %w", err)
 	}
-	dict, ok := v.(map[string]any)
-	if !ok {
-		return nil, errors.New("frozen: PYZ directory is not a dict")
+	entries, err := directoryEntries(v)
+	if err != nil {
+		return nil, err
 	}
 
-	p := &PYZ{PyMagic: pyMagic, byName: make(map[string]PYZModule, len(dict))}
-	for name, raw := range dict {
+	p := &PYZ{PyMagic: pyMagic, byName: make(map[string]PYZModule, len(entries))}
+	for name, raw := range entries {
 		tup, ok := raw.([]any)
 		if !ok || len(tup) < 3 {
 			continue
@@ -96,6 +96,38 @@ func ParsePYZ(data []byte) (*PYZ, error) {
 	}
 	sort.Slice(p.Modules, func(i, j int) bool { return p.Modules[i].Name < p.Modules[j].Name })
 	return p, nil
+}
+
+// directoryEntries normalizes the two shapes a PYZ directory takes.
+//
+// PyInstaller writes a LIST of (name, (typecode, offset, length)) pairs —
+// verified against a 6.21 build — while older writers and most descriptions of
+// the format use a dict keyed by name. Both are accepted, because reading only
+// the documented shape is what made this parser return nothing for every real
+// binary while passing a fixture that shared its assumption.
+func directoryEntries(v any) (map[string]any, error) {
+	switch t := v.(type) {
+	case map[string]any:
+		return t, nil
+	case []any:
+		out := make(map[string]any, len(t))
+		for _, item := range t {
+			pair, ok := item.([]any)
+			if !ok || len(pair) != 2 {
+				continue
+			}
+			name, ok := pair[0].(string)
+			if !ok {
+				continue
+			}
+			out[name] = pair[1]
+		}
+		if len(out) == 0 {
+			return nil, errors.New("frozen: PYZ directory list held no (name, entry) pairs")
+		}
+		return out, nil
+	}
+	return nil, fmt.Errorf("frozen: PYZ directory is a %T, want a list or dict", v)
 }
 
 // ── A minimal, deliberately incomplete marshal reader ──────────────────────
