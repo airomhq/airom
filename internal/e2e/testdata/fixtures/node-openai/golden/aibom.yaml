@@ -185,6 +185,10 @@ stats:
       invocations: 0
       ns: 0
     - findings: 0
+      id: frozen/pyinstaller
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: gosrc/ast
       invocations: 0
       ns: 0
@@ -315,6 +319,7 @@ stats:
   headerBytes: 588
   selection:
     - 'dataset/file: selected by "default"'
+    - 'frozen/pyinstaller: selected by "default"'
     - 'gosrc/ast: selected by "default"'
     - 'infra/compose: selected by "default"'
     - 'infra/dockerfile: selected by "default"'

@@ -266,6 +266,7 @@
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",
+      "frozen/pyinstaller: selected by \"default\"",
       "gosrc/ast: selected by \"default\"",
       "infra/compose: selected by \"default\"",
       "infra/dockerfile: selected by \"default\"",
@@ -301,6 +302,12 @@
     "detectors": [
       {
         "id": "dataset/file",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "frozen/pyinstaller",
         "invocations": 0,
         "findings": 0,
         "ns": 0

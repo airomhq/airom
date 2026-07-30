@@ -7,6 +7,8 @@ import (
 
 	"github.com/airomhq/airom/internal/detectors/dataset"
 
+	"github.com/airomhq/airom/internal/detectors/frozen"
+
 	"github.com/airomhq/airom/internal/detectors/gosrc"
 
 	"github.com/airomhq/airom/internal/detectors/infra"
@@ -28,6 +30,7 @@ import (
 func Builtin() []detect.Detector {
 	return []detect.Detector{
 		dataset.NewDataset(),
+		frozen.NewPyInstaller(),
 		gosrc.NewGoSource(),
 		infra.NewCompose(),
 		infra.NewDockerfile(),

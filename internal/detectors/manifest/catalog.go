@@ -126,9 +126,11 @@ var pypiCatalog = catalog{
 		// The assembler folds a manifest sighting into a code sighting by
 		// (provider, name), so leaving it empty here — as several older
 		// entries do — reports the dependency and its usage as two components.
-		"agno":     {kFramework, "agno", ""},
-		"phidata":  {kFramework, "agno", ""}, // agno's former name; still pinned in older projects
-		"crawl4ai": {kFramework, "crawl4ai", ""},
+		"agno":         {kFramework, "agno", ""},
+		"phidata":      {kFramework, "agno", ""}, // agno's former name; still pinned in older projects
+		"crawl4ai":     {kFramework, "crawl4ai", ""},
+		"firecrawl":    {kFramework, "firecrawl", ""},
+		"firecrawl-py": {kFramework, "firecrawl", "firecrawl"},
 		// fastmcp 3.x is a metapackage: the module ships in fastmcp-slim, so an
 		// installed-metadata or lockfile scan sees both names.
 		"fastmcp":               {kFramework, "fastmcp", ""},
@@ -170,6 +172,25 @@ var pypiCatalog = catalog{
 	prefixes: []prefixRule{
 		{"langchain-", aiPkg{kFramework, provLangChain, ""}},
 	},
+}
+
+// LookupPyPI resolves a PyPI distribution name to the AI identity AIROM
+// attributes to it, reporting ok=false for everything outside the curated
+// catalog.
+//
+// Exported because the catalog is the line between an AIBOM and an SBOM, and
+// more than one detector needs to stand on it. A frozen executable has no
+// manifest and no metadata — its module list is all there is — but "crawl4ai"
+// means the same thing there as in a requirements.txt, and an ungated module
+// list would inventory every top-level package a 197 MB binary happens to
+// bundle.
+func LookupPyPI(name string) (kind airom.ComponentKind, provider, canonical string, ok bool) {
+	key := normalizePyPI(name)
+	p, found := pypiCatalog.lookup(key)
+	if !found {
+		return "", "", "", false
+	}
+	return p.kind, p.provider, p.emitName(key), true
 }
 
 // ── npm (package.json) ─────────────────────────────────────────────────────
