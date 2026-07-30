@@ -85,41 +85,6 @@
       }
     },
     {
-      "id": "airom:856136cf16abcdf2",
-      "kind": "framework",
-      "name": "mcp",
-      "version": "2.0.0",
-      "purl": "pkg:pypi/mcp@2.0.0",
-      "package": {
-        "ecosystem": "pypi"
-      },
-      "confidence": 0.95,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "requirements.txt",
-              "line": 5
-            },
-            "detectorId": "manifest/pypi-requirements",
-            "method": "manifest-analysis",
-            "confidence": 0.95,
-            "snippet": "mcp==2.0.0"
-          }
-        ],
-        "identity": [
-          {
-            "field": "version",
-            "value": "2.0.0",
-            "confidence": 0.95,
-            "methods": [
-              "manifest-analysis"
-            ]
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:989de824357981e6",
       "kind": "framework",
       "name": "agno",
@@ -248,6 +213,42 @@
           {
             "field": "version",
             "value": "3.4.5",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:b8ff217b82fc34ca",
+      "kind": "framework",
+      "name": "mcp",
+      "version": "2.0.0",
+      "provider": "mcp",
+      "purl": "pkg:pypi/mcp@2.0.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.95,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 5
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "mcp==2.0.0"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "2.0.0",
             "confidence": 0.95,
             "methods": [
               "manifest-analysis"

@@ -133,9 +133,14 @@ var pypiCatalog = catalog{
 		"firecrawl-py": {kFramework, "firecrawl", "firecrawl"},
 		// fastmcp 3.x is a metapackage: the module ships in fastmcp-slim, so an
 		// installed-metadata or lockfile scan sees both names.
-		"fastmcp":               {kFramework, "fastmcp", ""},
-		"fastmcp-slim":          {kFramework, "fastmcp", ""},
-		"mcp":                   {kFramework, "", ""}, // the official Model Context Protocol SDK
+		"fastmcp":      {kFramework, "fastmcp", ""},
+		"fastmcp-slim": {kFramework, "fastmcp", ""},
+		// The provider must match the slug the mcp rule pack claims. It was left
+		// empty here because no EMBEDDED pack claims mcp — but the signed bundle
+		// ships one, so bundle users got the dependency and its usage as two
+		// separate components. The cross-check test only reads embedded packs,
+		// which is exactly why it did not catch this.
+		"mcp":                   {kFramework, "mcp", ""}, // the official Model Context Protocol SDK
 		"pyautogen":             {kFramework, provMicrosoft, ""},
 		"autogen":               {kFramework, provMicrosoft, ""},
 		"semantic-kernel":       {kFramework, provMicrosoft, ""},

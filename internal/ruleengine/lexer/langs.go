@@ -18,7 +18,17 @@ func buildConfigs() map[classify.Language]*langConfig {
 		quoted('\'', true, false),
 		quoted('`', true, true), // template literal: whole literal incl ${...} is String
 	}}
+	// SQL: `--` to end of line and `/* */` for comments; single quotes for
+	// string literals. Double quotes are quoted IDENTIFIERS, not strings, so
+	// they stay code — a column named "embedding" must still match a rule
+	// scoped to code.
+	sql := &langConfig{tokens: []tokenFn{
+		lineComment("--"),
+		blockComment(false),
+		quoted('\'', true, false),
+	}}
 	return map[classify.Language]*langConfig{
+		classify.LangSQL: sql,
 		classify.LangPython: {tokens: []tokenFn{
 			lineComment("#"),
 			pythonString,

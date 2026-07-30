@@ -106,6 +106,9 @@ var supportedLanguages = map[string]detect.Language{
 	"rust":       detect.LangRust,
 	"csharp":     detect.LangCSharp,
 	"kotlin":     detect.LangKotlin,
+	// A rule that declares no `languages:` unions over THIS table, so a
+	// language missing here is unreachable even after the classifier learns it.
+	"sql": detect.LangSQL,
 }
 
 var relTypes = map[string]airom.RelType{

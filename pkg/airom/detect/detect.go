@@ -32,6 +32,7 @@ const (
 	LangRust       Language = "rust"
 	LangCSharp     Language = "csharp"
 	LangKotlin     Language = "kotlin"
+	LangSQL        Language = "sql"
 	LangYAML       Language = "yaml"
 	LangJSON       Language = "json"
 	LangTOML       Language = "toml"
@@ -49,6 +50,10 @@ var extLanguages = map[string]Language{
 	".rs":   LangRust,
 	".cs":   LangCSharp,
 	".kt":   LangKotlin, ".kts": LangKotlin,
+	// Schema and migration files. A pgvector deployment declares itself
+	// entirely in DDL — CREATE EXTENSION, a vector-typed column, an HNSW
+	// index — and none of it is reachable if .sql is not a language.
+	".sql": LangSQL, ".ddl": LangSQL, ".psql": LangSQL, ".pgsql": LangSQL,
 	".yaml": LangYAML, ".yml": LangYAML,
 	".json": LangJSON,
 	".toml": LangTOML,

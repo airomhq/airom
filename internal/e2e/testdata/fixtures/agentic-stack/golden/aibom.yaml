@@ -47,29 +47,6 @@ components:
       ecosystem: pypi
     provider: crawl4ai
     versionConstraint: '>=0.9.0'
-  - confidence: 0.95
-    evidence:
-      identity:
-        - confidence: 0.95
-          field: version
-          methods:
-            - manifest-analysis
-          value: 2.0.0
-      occurrences:
-        - confidence: 0.95
-          detectorId: manifest/pypi-requirements
-          location:
-            line: 5
-            path: requirements.txt
-          method: manifest-analysis
-          snippet: mcp==2.0.0
-    id: airom:856136cf16abcdf2
-    kind: framework
-    name: mcp
-    package:
-      ecosystem: pypi
-    purl: pkg:pypi/mcp@2.0.0
-    version: 2.0.0
   - confidence: 0.988125
     evidence:
       identity:
@@ -168,6 +145,30 @@ components:
     provider: fastmcp
     purl: pkg:pypi/fastmcp@3.4.5
     version: 3.4.5
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 2.0.0
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 5
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: mcp==2.0.0
+    id: airom:b8ff217b82fc34ca
+    kind: framework
+    name: mcp
+    package:
+      ecosystem: pypi
+    provider: mcp
+    purl: pkg:pypi/mcp@2.0.0
+    version: 2.0.0
 lifecycle: pre-build
 root: airom:14f0893c734c4d89
 schemaVersion: "1"

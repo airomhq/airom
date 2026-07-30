@@ -241,40 +241,6 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "framework 'mcp' [2.0.0] detected (confidence 0.95)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "requirements.txt",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 5,
-                  "snippet": {
-                    "text": "mcp==2.0.0"
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "af8fd188dc62db4316145ceffc5fda1ab337a4231360bd8e7b46e73825398b72"
-          },
-          "properties": {
-            "airom:componentId": "airom:856136cf16abcdf2",
-            "airom:confidence": 0.95,
-            "airom:kind": "framework",
-            "airom:occurrence.confidence": 0.95,
-            "airom:purl": "pkg:pypi/mcp@2.0.0"
-          }
-        },
-        {
-          "ruleId": "manifest/pypi-requirements",
-          "ruleIndex": 0,
-          "level": "note",
-          "message": {
             "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
           },
           "locations": [
@@ -528,6 +494,41 @@
             "airom:occurrence.confidence": 0.75,
             "airom:provider": "fastmcp",
             "airom:purl": "pkg:pypi/fastmcp@3.4.5"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework 'mcp' [2.0.0] detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 5,
+                  "snippet": {
+                    "text": "mcp==2.0.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "127484e0ebe7816d81b43839a9f35e6d35878f4e51ded154a7b351d421a96580"
+          },
+          "properties": {
+            "airom:componentId": "airom:b8ff217b82fc34ca",
+            "airom:confidence": 0.95,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "mcp",
+            "airom:purl": "pkg:pypi/mcp@2.0.0"
           }
         }
       ]

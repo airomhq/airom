@@ -30,6 +30,7 @@ const (
 	LangRust       Language = "rust"
 	LangCSharp     Language = "csharp"
 	LangKotlin     Language = "kotlin"
+	LangSQL        Language = "sql"
 	LangYAML       Language = "yaml"
 	LangJSON       Language = "json"
 	LangTOML       Language = "toml"

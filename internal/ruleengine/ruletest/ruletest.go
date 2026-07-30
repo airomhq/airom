@@ -4,6 +4,7 @@
 // expected matches inline:
 //
 //	# airom: <rule-id>       ← the NEXT line MUST produce that rule's finding
+//	                          (`//` and `--` open a comment too)
 //	# airom-ok: <rule-id>    ← the NEXT line must NOT
 //
 // Comment syntax is the host language's ("#" or "//"). The harness also
@@ -54,7 +55,9 @@ func (r *Report) OK() bool {
 	return len(r.Failures) == 0 && len(r.RulesMissingPositive) == 0 && len(r.RulesMissingNegative) == 0
 }
 
-var annotationRe = regexp.MustCompile(`(?:#|//)\s*airom(-ok)?:\s*(\S+)`)
+// Comment openers a fixture can use. `--` is SQL's, without which a .sql
+// fixture's annotations are silently ignored and its rules read as untested.
+var annotationRe = regexp.MustCompile(`(?:#|//|--)\s*airom(-ok)?:\s*(\S+)`)
 
 // RunPackFile compiles one pack file and runs it against fixtures in
 // fixturesDir (typically <pack-dir>/testdata/<pack>/).

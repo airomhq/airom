@@ -486,7 +486,7 @@
         "Name": "mcp",
         "Group": "",
         "Version": "2.0.0",
-        "Provider": "",
+        "Provider": "mcp",
         "VersionConstraint": "",
         "Licenses": null,
         "Hashes": null,

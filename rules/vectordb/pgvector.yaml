@@ -2,7 +2,7 @@
 # SQL is language-agnostic (embedded in strings across host languages), so these
 # rules omit the language gate and match code+string regions.
 pack: pgvector
-version: 1
+version: 2
 rules:
   # CREATE EXTENSION vector (DDL, case-insensitive).
   - id: pgvector/create-extension
@@ -14,15 +14,41 @@ rules:
     claim: { name: "pgvector" }
     confidence: 0.7
 
-  # vector(N) column type.
+  # A vector-typed column. pgvector 0.7.0 added halfvec and sparsevec, and
+  # real deployments use them — on the host that prompted this, every embedding
+  # column is halfvec(1536), so a rule that knew only vector(N) reported the
+  # database as having no pgvector in it at all.
   - id: pgvector/vector-column
     kind: vector-db
     provider: pgvector
-    keywords: ["vector("]
-    pattern: '\bvector\s*\(\s*\d+\s*\)'
+    keywords: ["vector(", "halfvec(", "sparsevec(", "vector (", "halfvec (", "sparsevec ("]
+    pattern: '(?i)\b(?:half|sparse)?vec(?:tor)?\s*\(\s*\d+\s*\)'
     regions: [code, string]
     claim: { name: "pgvector" }
     confidence: 0.7
+
+  # Index DDL. Both access methods ship with pgvector and exist nowhere else in
+  # PostgreSQL, so naming one is unambiguous.
+  - id: pgvector/index-method
+    kind: vector-db
+    provider: pgvector
+    keywords: ["hnsw", "ivfflat", "HNSW", "IVFFLAT"]
+    pattern: '(?i)\busing\s+(?:hnsw|ivfflat)\b'
+    regions: [code, string]
+    claim: { name: "pgvector" }
+    confidence: 0.85
+
+  # Operator classes, which name the type and the distance together
+  # (halfvec_cosine_ops, vector_l2_ops, sparsevec_ip_ops, bit_hamming_ops…).
+  # These identifiers are pgvector's own and appear in no other extension.
+  - id: pgvector/opclass
+    kind: vector-db
+    provider: pgvector
+    keywords: ["_cosine_ops", "_l2_ops", "_ip_ops", "_l1_ops", "_hamming_ops", "_jaccard_ops"]
+    pattern: '(?i)\b(?:half|sparse)?vec(?:tor)?_(?:cosine|l2|ip|l1)_ops\b|\bbit_(?:hamming|jaccard)_ops\b'
+    regions: [code, string]
+    claim: { name: "pgvector" }
+    confidence: 0.85
 
   # pgvector distance operators (<->, <=>, <#>) — inside SQL only.
   #
