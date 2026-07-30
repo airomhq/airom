@@ -239,6 +239,10 @@ func compareComponents(oldC, newC *airom.Component) []FieldChange {
 	add("name", oldC.Name, newC.Name)
 	add("group", oldC.Group, newC.Group)
 	add("version", optDisplay(oldC.Version), optDisplay(newC.Version))
+	// A dependency going from a declared range to a resolved release (a
+	// lockfile landing) or back (one being deleted) changes what the AIBOM
+	// asserts, so it is a real delta rather than cosmetic.
+	add("versionConstraint", oldC.VersionConstraint, newC.VersionConstraint)
 	add("provider", optDisplay(oldC.Provider), optDisplay(newC.Provider))
 	add("purl", oldC.PURL, newC.PURL)
 	add("licenses", licensesKey(oldC.Licenses), licensesKey(newC.Licenses))

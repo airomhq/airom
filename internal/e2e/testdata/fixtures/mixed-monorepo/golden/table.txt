@@ -17,5 +17,5 @@ AI Bill of Materials — mixed-monorepo
 │ framework │ langchain │ 0.2.16  │ langchain │ 0.95 │ api/requirements.txt:1 │ 1 occ    │
 │ infra     │ ollama    │ -       │ -         │ 0.75 │ Dockerfile:1           │ 1 occ    │
 │ library   │ openai    │ 1.51.0  │ openai    │ 0.95 │ api/requirements.txt:2 │ 1 occ    │
-│ library   │ openai    │ 4.67.1  │ openai    │ 0.95 │ web/package.json:6     │ 1 occ    │
+│ library   │ openai    │ ^4.67.1 │ openai    │ 0.95 │ web/package.json:6     │ 1 occ    │
 └───────────┴───────────┴─────────┴───────────┴──────┴────────────────────────┴──────────┘

@@ -124,7 +124,7 @@ translation table. `config-analysis` is the sole exception.
 |---|---|---|
 | `source-code-analysis` | Pattern-matches source text. | `source-code-analysis` |
 | `ast-fingerprint` | Matches parsed syntax structure, not text. | `ast-fingerprint` |
-| `manifest-analysis` | Reads package manifests, and installed metadata (`.dist-info`, `.egg-info`). | `manifest-analysis` |
+| `manifest-analysis` | Reads package manifests, lockfiles, and installed metadata. See [versions](/concepts/versions). | `manifest-analysis` |
 | `binary-analysis` | Magic bytes plus header parse (GGUF, safetensors, ONNX). | `binary-analysis` |
 | `hash-comparison` | Digest match against known weights. | `hash-comparison` |
 | `config-analysis` | Reads YAML, TOML, env files, Dockerfiles. | `other` |

@@ -180,7 +180,7 @@
           "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "library 'openai' [4.67.1] detected (confidence 0.95)"
+            "text": "library 'openai' detected (confidence 0.95)"
           },
           "locations": [
             {
@@ -206,8 +206,7 @@
             "airom:confidence": 0.95,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
-            "airom:provider": "openai",
-            "airom:purl": "pkg:npm/openai@4.67.1"
+            "airom:provider": "openai"
           }
         }
       ]

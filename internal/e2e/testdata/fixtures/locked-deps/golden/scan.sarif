@@ -1,0 +1,335 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "airom",
+          "semanticVersion": "dev",
+          "informationUri": "https://github.com/airomhq/airom",
+          "rules": [
+            {
+              "id": "manifest/npm",
+              "name": "ManifestNpm",
+              "shortDescription": {
+                "text": "Components identified by the manifest/npm detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            },
+            {
+              "id": "manifest/npm-lock",
+              "name": "ManifestNpmLock",
+              "shortDescription": {
+                "text": "Components identified by the manifest/npm-lock detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            },
+            {
+              "id": "manifest/pypi-lock",
+              "name": "ManifestPypiLock",
+              "shortDescription": {
+                "text": "Components identified by the manifest/pypi-lock detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            },
+            {
+              "id": "manifest/pypi-requirements",
+              "name": "ManifestPypiRequirements",
+              "shortDescription": {
+                "text": "Components identified by the manifest/pypi-requirements detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            }
+          ],
+          "properties": {
+            "airom:eol.catalog": "builtin",
+            "airom:rules.hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "airom:rules.version": "builtin"
+          }
+        }
+      },
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "SRCROOT": {
+          "uri": "file:///locked-deps/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2026-08-01T12:00:00Z"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "vector-db 'chroma' detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 4,
+                  "snippet": {
+                    "text": "chromadb>=0.5.0,<0.6"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "0af788b5c182aa4ec2b90b8cbe8928f5889fff7bfcf35f3cb09af1b7af0a69cf"
+          },
+          "properties": {
+            "airom:componentId": "airom:3e3a9735550d6b44",
+            "airom:confidence": 0.95,
+            "airom:kind": "vector-db",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "chroma"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-lock",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.34.2] detected (confidence 0.96)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/poetry.lock",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 3,
+                  "snippet": {
+                    "text": "[[package]]"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "eaf60b9912ad186e2ec0427145012e16fd1d36a9fe53adc34a13d1683806b540"
+          },
+          "properties": {
+            "airom:componentId": "airom:65ac1a1b3af7edab",
+            "airom:confidence": 0.96,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.96,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:pypi/anthropic@0.34.2"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "library 'anthropic' [0.34.2] detected (confidence 0.96)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 3,
+                  "snippet": {
+                    "text": "anthropic>=0.34.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "5913cd9d05c14842000fca447bc277b0ce4d978960fc614c8d2ee443ebdb0533"
+          },
+          "properties": {
+            "airom:componentId": "airom:65ac1a1b3af7edab",
+            "airom:confidence": 0.96,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "anthropic",
+            "airom:purl": "pkg:pypi/anthropic@0.34.2"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [1.40.0] detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api/requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 2,
+                  "snippet": {
+                    "text": "openai==1.40.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "56569b407a000ebf0ff94381bfae3886e7b96ead038c349c204e302eb6b89c8e"
+          },
+          "properties": {
+            "airom:componentId": "airom:a6ccf893ff130124",
+            "airom:confidence": 0.95,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:pypi/openai@1.40.0"
+          }
+        },
+        {
+          "ruleId": "manifest/npm",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework '@langchain/core' detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "web/package.json",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 6,
+                  "snippet": {
+                    "text": "\"@langchain/core\": \"^0.2.0\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "a093e67225313def5b58aef16dfce9a3699a501897fe6a1ae671e700f622560d"
+          },
+          "properties": {
+            "airom:componentId": "airom:eefd674ef1a59b46",
+            "airom:confidence": 0.95,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "langchain"
+          }
+        },
+        {
+          "ruleId": "manifest/npm-lock",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [4.28.4] detected (confidence 0.96)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "web/package-lock.json",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 15,
+                  "snippet": {
+                    "text": "\"node_modules/openai\": {"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "4740f12f8a8d7c2d78d129beff5a81db4cf355a25f0d920de730e8f79ddc0890"
+          },
+          "properties": {
+            "airom:componentId": "airom:f16d02e10b6caf23",
+            "airom:confidence": 0.96,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.96,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:npm/openai@4.28.4"
+          }
+        },
+        {
+          "ruleId": "manifest/npm",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'openai' [4.28.4] detected (confidence 0.96)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "web/package.json",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 5,
+                  "snippet": {
+                    "text": "\"openai\": \"^4.20.0\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "d1336f256cd74c7c76dea769cbe8c652f3bbed56d7b78f3cabaf30e3f27ca1d3"
+          },
+          "properties": {
+            "airom:componentId": "airom:f16d02e10b6caf23",
+            "airom:confidence": 0.96,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:npm/openai@4.28.4"
+          }
+        }
+      ]
+    }
+  ]
+}

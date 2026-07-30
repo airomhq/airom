@@ -63,10 +63,10 @@ components:
     evidence:
       identity:
         - confidence: 0.95
-          field: version
+          field: versionConstraint
           methods:
             - manifest-analysis
-          value: 0.3.2
+          value: ^0.3.2
       occurrences:
         - confidence: 0.95
           detectorId: manifest/npm
@@ -81,8 +81,7 @@ components:
     package:
       ecosystem: npm
     provider: langchain
-    purl: pkg:npm/langchain@0.3.2
-    version: 0.3.2
+    versionConstraint: ^0.3.2
   - confidence: 0
     evidence: {}
     id: airom:bfa221b1fd6ea0d5
@@ -92,10 +91,10 @@ components:
     evidence:
       identity:
         - confidence: 0.95
-          field: version
+          field: versionConstraint
           methods:
             - manifest-analysis
-          value: 4.67.1
+          value: ^4.67.1
       occurrences:
         - confidence: 0.95
           detectorId: manifest/npm
@@ -123,16 +122,15 @@ components:
     package:
       ecosystem: npm
     provider: openai
-    purl: pkg:npm/openai@4.67.1
-    version: 4.67.1
+    versionConstraint: ^4.67.1
   - confidence: 0.95
     evidence:
       identity:
         - confidence: 0.95
-          field: version
+          field: versionConstraint
           methods:
             - manifest-analysis
-          value: 0.27.3
+          value: ^0.27.3
         - confidence: 0.95
           field: name
           methods:
@@ -152,8 +150,7 @@ components:
     package:
       ecosystem: npm
     provider: anthropic
-    purl: pkg:npm/%40anthropic-ai/sdk@0.27.3
-    version: 0.27.3
+    versionConstraint: ^0.27.3
 lifecycle: pre-build
 relationships:
   - confidence: 0.7
@@ -220,11 +217,27 @@ stats:
       invocations: 1
       ns: 0
     - findings: 0
+      id: manifest/npm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: manifest/nuget
       invocations: 0
       ns: 0
     - findings: 0
+      id: manifest/pipfile-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pnpm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: manifest/pypi-installed
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-lock
       invocations: 0
       ns: 0
     - findings: 0
@@ -233,6 +246,10 @@ stats:
       ns: 0
     - findings: 0
       id: manifest/pypi-requirements
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/yarn-lock
       invocations: 0
       ns: 0
     - findings: 0
@@ -308,8 +325,13 @@ stats:
     - 'manifest/pypi-installed: selected by "default"'
     - 'manifest/maven: selected by "default"'
     - 'manifest/npm: selected by "default"'
+    - 'manifest/npm-lock: selected by "default"'
+    - 'manifest/pipfile-lock: selected by "default"'
+    - 'manifest/pnpm-lock: selected by "default"'
+    - 'manifest/pypi-lock: selected by "default"'
     - 'manifest/pypi-pyproject: selected by "default"'
     - 'manifest/pypi-requirements: selected by "default"'
+    - 'manifest/yarn-lock: selected by "default"'
     - 'modelfile/gguf: selected by "default"'
     - 'modelfile/onnx: selected by "default"'
     - 'modelfile/safetensors: selected by "default"'

@@ -1,0 +1,336 @@
+components:
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: versionConstraint
+          methods:
+            - manifest-analysis
+          value: '>=0.5.0,<0.6'
+        - confidence: 0.95
+          field: name
+          methods:
+            - manifest-analysis
+          value: chromadb
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 4
+            path: api/requirements.txt
+          method: manifest-analysis
+          snippet: chromadb>=0.5.0,<0.6
+    id: airom:3e3a9735550d6b44
+    kind: vector-db
+    name: chroma
+    package:
+      ecosystem: pypi
+    provider: chroma
+    versionConstraint: '>=0.5.0,<0.6'
+  - confidence: 0.96
+    evidence:
+      identity:
+        - confidence: 0.96
+          field: version
+          methods:
+            - manifest-analysis
+          value: 0.34.2
+        - confidence: 0.95
+          field: versionConstraint
+          methods:
+            - manifest-analysis
+          value: '>=0.34.0'
+      occurrences:
+        - confidence: 0.96
+          detectorId: manifest/pypi-lock
+          location:
+            line: 3
+            path: api/poetry.lock
+          method: manifest-analysis
+          snippet: '[[package]]'
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 3
+            path: api/requirements.txt
+          method: manifest-analysis
+          snippet: anthropic>=0.34.0
+    id: airom:65ac1a1b3af7edab
+    kind: library
+    name: anthropic
+    package:
+      ecosystem: pypi
+    provider: anthropic
+    purl: pkg:pypi/anthropic@0.34.2
+    version: 0.34.2
+  - confidence: 0
+    evidence: {}
+    id: airom:7c7c4199feb6d991
+    kind: application
+    name: locked-deps
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 1.40.0
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 2
+            path: api/requirements.txt
+          method: manifest-analysis
+          snippet: openai==1.40.0
+    id: airom:a6ccf893ff130124
+    kind: library
+    name: openai
+    package:
+      ecosystem: pypi
+    provider: openai
+    purl: pkg:pypi/openai@1.40.0
+    version: 1.40.0
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: versionConstraint
+          methods:
+            - manifest-analysis
+          value: ^0.2.0
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/npm
+          location:
+            line: 6
+            path: web/package.json
+          method: manifest-analysis
+          snippet: '"@langchain/core": "^0.2.0",'
+    id: airom:eefd674ef1a59b46
+    kind: framework
+    name: '@langchain/core'
+    package:
+      ecosystem: npm
+    provider: langchain
+    versionConstraint: ^0.2.0
+  - confidence: 0.96
+    evidence:
+      identity:
+        - confidence: 0.96
+          field: version
+          methods:
+            - manifest-analysis
+          value: 4.28.4
+        - confidence: 0.95
+          field: versionConstraint
+          methods:
+            - manifest-analysis
+          value: ^4.20.0
+      occurrences:
+        - confidence: 0.96
+          detectorId: manifest/npm-lock
+          location:
+            line: 15
+            path: web/package-lock.json
+          method: manifest-analysis
+          snippet: '"node_modules/openai": {'
+        - confidence: 0.95
+          detectorId: manifest/npm
+          location:
+            line: 5
+            path: web/package.json
+          method: manifest-analysis
+          snippet: '"openai": "^4.20.0",'
+    id: airom:f16d02e10b6caf23
+    kind: library
+    name: openai
+    package:
+      ecosystem: npm
+    provider: openai
+    purl: pkg:npm/openai@4.28.4
+    version: 4.28.4
+lifecycle: pre-build
+root: airom:7c7c4199feb6d991
+schemaVersion: "1"
+serial: urn:uuid:00000000-0000-4000-8000-000000000000
+source:
+  kind: dir
+  target: locked-deps
+stats:
+  contentBytes: 1374
+  detectors:
+    - findings: 0
+      id: dataset/file
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: gosrc/ast
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/compose
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/dockerfile
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/cargo
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gomod
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gradle
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/maven
+      invocations: 0
+      ns: 0
+    - findings: 2
+      id: manifest/npm
+      invocations: 1
+      ns: 0
+    - findings: 1
+      id: manifest/npm-lock
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: manifest/nuget
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pipfile-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pnpm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-installed
+      invocations: 0
+      ns: 0
+    - findings: 1
+      id: manifest/pypi-lock
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-pyproject
+      invocations: 0
+      ns: 0
+    - findings: 3
+      id: manifest/pypi-requirements
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: manifest/yarn-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/gguf
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/onnx
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/safetensors
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/hdf5
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/savedmodel
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tensorrt
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tflite
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/torch
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: project/adapter
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/configbind
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/hfdir
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/raglink
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: prompt/file
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: ruleengine
+      invocations: 0
+      ns: 0
+  durationNs: 0
+  filesFailed: 0
+  filesProcessed: 4
+  filesWalked: 4
+  headerBytes: 1374
+  selection:
+    - 'dataset/file: selected by "default"'
+    - 'gosrc/ast: selected by "default"'
+    - 'infra/compose: selected by "default"'
+    - 'infra/dockerfile: selected by "default"'
+    - 'manifest/nuget: selected by "default"'
+    - 'manifest/cargo: selected by "default"'
+    - 'manifest/gomod: selected by "default"'
+    - 'manifest/gradle: selected by "default"'
+    - 'manifest/pypi-installed: selected by "default"'
+    - 'manifest/maven: selected by "default"'
+    - 'manifest/npm: selected by "default"'
+    - 'manifest/npm-lock: selected by "default"'
+    - 'manifest/pipfile-lock: selected by "default"'
+    - 'manifest/pnpm-lock: selected by "default"'
+    - 'manifest/pypi-lock: selected by "default"'
+    - 'manifest/pypi-pyproject: selected by "default"'
+    - 'manifest/pypi-requirements: selected by "default"'
+    - 'manifest/yarn-lock: selected by "default"'
+    - 'modelfile/gguf: selected by "default"'
+    - 'modelfile/onnx: selected by "default"'
+    - 'modelfile/safetensors: selected by "default"'
+    - 'modelfilex/hdf5: selected by "default"'
+    - 'modelfilex/savedmodel: selected by "default"'
+    - 'modelfilex/tflite: selected by "default"'
+    - 'modelfilex/tensorrt: selected by "default"'
+    - 'modelfilex/torch: selected by "default"'
+    - 'project/adapter: selected by "default"'
+    - 'project/configbind: selected by "default"'
+    - 'project/hfdir: selected by "default"'
+    - 'project/raglink: selected by "default"'
+    - 'prompt/file: selected by "default"'
+    - 'ruleengine: selected by "default"'
+timestamp: "2026-08-01T12:00:00Z"
+tool:
+  eolCatalog: builtin
+  name: airom
+  rulesHash: "0000000000000000000000000000000000000000000000000000000000000000"
+  rulesVersion: builtin
+  version: dev

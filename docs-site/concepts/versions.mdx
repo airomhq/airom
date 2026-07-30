@@ -1,0 +1,128 @@
+---
+title: "Versions"
+description: "Why AIROM separates a resolved release from a declared range, and where each one comes from."
+icon: "tag"
+---
+
+A manifest records the version that was **asked for**. A lockfile records the
+one the resolver **picked**. Installed metadata records the one that is
+**there**. Only the last two are facts, and AIROM reports them differently
+because the difference decides real outcomes.
+
+## The two answers
+
+<CodeGroup>
+```text title="Resolved"
+│ library   │ openai    │ 4.28.4  │ openai    │ 0.96 │
+```
+
+```text title="Declared"
+│ framework │ langchain │ ~0.2.0  │ langchain │ 0.95 │
+```
+</CodeGroup>
+
+The `VERSION` column prints a resolved release bare and a declared range
+verbatim. No legend is needed: anyone who reads a manifest already reads
+`~0.2.0` as a range and `4.28.4` as a version.
+
+What AIROM will **not** do is print `0.2.0` for `~0.2.0`. That is the range's
+lower bound, not a version anybody verified is installed — and printing it
+makes a guess indistinguishable from a fact.
+
+<Note>
+  In the lossless formats the two live in separate fields: `version` for a
+  resolved release, `versionConstraint` for a declared range. They are mutually
+  exclusive. CycloneDX has no slot for a range, so its `version` stays empty and
+  the constraint rides as the `airom:version.constraint` property.
+</Note>
+
+## Where a resolved version comes from
+
+Three sources can pin a component to one release. They outrank a manifest by
+confidence, so when a tree carries both, the resolved answer wins.
+
+| Source | Confidence | What it proves |
+| --- | --- | --- |
+| Installed metadata (`.dist-info`, `.egg-info`) | 0.97 | The release is **present** on disk |
+| Lockfile | 0.96 | The resolver **picked** this release |
+| Manifest with an exact pin (`==1.40.0`) | 0.95 | This release was **required** |
+
+Lockfiles read today:
+
+<CardGroup cols={2}>
+  <Card title="npm" icon="npm">
+    `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock` (classic and berry),
+    `pnpm-lock.yaml`
+  </Card>
+  <Card title="Python" icon="python">
+    `poetry.lock`, `uv.lock`, `Pipfile.lock`
+  </Card>
+</CardGroup>
+
+A lockfile holds the full transitive closure, which is deliberate: an AI package
+pulled in by something else is still AI running in your application, and it is
+exactly the kind you did not know you had. The AI catalog is what keeps this
+from becoming a dependency dump — a lockfile of two thousand packages yields
+the handful that are AI.
+
+## What counts as a range
+
+Whether a bare specifier means "exactly this" is an ecosystem question, and
+AIROM follows each ecosystem's own rule rather than guessing from the text.
+
+| Written | Ecosystem | Read as |
+| --- | --- | --- |
+| `openai==1.40.0` | PyPI | version `1.40.0` |
+| `openai>=1.40.0` | PyPI | constraint |
+| `"openai": "4.28.4"` | npm | version `4.28.4` |
+| `"openai": "^4.28.4"` | npm | constraint |
+| `openai = "1.40.0"` | Poetry | **constraint** — Poetry expands this to `^1.40.0` |
+| `async-openai = "0.23"` | Cargo | **constraint** — Cargo expands this to `^0.23` |
+| `v1.2.3` | Go | version — MVS resolves exactly |
+| `<version>0.35.0</version>` | Maven | version |
+
+## Why this matters more than the display
+
+A component with no resolved version **cannot be matched against an advisory
+database**. Version ranges are what OSV evaluates advisories *against*; there is
+no answer to "is `^4.20.0` vulnerable" that is not really a statement about some
+specific release.
+
+So AIROM does not ask, and says so rather than reporting a clean result:
+
+```text
+cve: 3 component(s) declare a version range and were not checked against
+OSV.dev; commit a lockfile or scan a deployed environment to resolve them
+```
+
+Reporting zero vulnerabilities against an unresolved range would be worse than
+useless — the lower bound is usually an old release, so it invents advisories
+already patched while hiding ones introduced later in the range.
+
+<Tip>
+  If your scan shows ranges where you expected versions, commit your lockfile.
+  Failing that, [scan the deployed artifact](/scanning/container-images) — a
+  container or virtualenv carries installed metadata, which is stronger evidence
+  than any lockfile.
+</Tip>
+
+## The manifest is still recorded
+
+Resolving a version does not erase what was asked for. Both claims stay in the
+component's identity evidence, so the document shows the range **and** the
+release it resolved to:
+
+```json
+"evidence": {
+  "identity": [
+    { "field": "version", "value": "4.28.4", "confidence": 0.96,
+      "methods": ["manifest-analysis"] },
+    { "field": "versionConstraint", "value": "^4.20.0", "confidence": 0.95,
+      "methods": ["manifest-analysis"] }
+  ]
+}
+```
+
+This is the same contested-identity mechanism described in
+[evidence](/concepts/evidence): nothing is silently dropped, and a consumer can
+always see which source won and what it beat.

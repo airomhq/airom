@@ -243,10 +243,9 @@ func writeTable(w io.Writer, comps []airom.Component, anyVuln, anyEOL bool) {
 
 	rows := make([][]string, 0, len(comps))
 	for _, c := range comps {
-		version, _ := c.Version.Value()
 		provider, _ := c.Provider.Value()
 		row := []string{
-			string(c.Kind), name(c), dash(version), dash(provider),
+			string(c.Kind), name(c), versionCell(c), dash(provider),
 			writer.FormatConfidence(c.Confidence),
 		}
 		if anyVuln {
@@ -500,6 +499,21 @@ func dash(s string) string {
 		return "-"
 	}
 	return s
+}
+
+// versionCell renders the VERSION column.
+//
+// A resolved release prints bare ("4.28.4"). When only a range was declared,
+// the range prints verbatim ("^4.20.0") — which needs no legend, since anyone
+// reading a manifest already reads "^4.20.0" as a range and "4.28.4" as a
+// version. Printing the range's lower bound instead would make the two
+// indistinguishable, which is the whole reason this column is not just
+// c.Version.
+func versionCell(c airom.Component) string {
+	if v, ok := c.Version.Value(); ok && strings.TrimSpace(v) != "" {
+		return v
+	}
+	return dash(c.VersionConstraint)
 }
 
 // truncate keeps the tail of an over-long value (paths are most legible from

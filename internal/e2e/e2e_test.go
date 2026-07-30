@@ -84,6 +84,12 @@ var goldenFixtures = []string{
 	// guards that keep it an AIBOM: the AI catalog (numpy stays out) and the
 	// .dist-info/.egg-info parent check (a stray docs/METADATA stays out).
 	"installed-env",
+	// Manifests and lockfiles side by side, so the version story is pinned in
+	// one table: openai resolves to 4.28.4 from the npm lockfile despite the
+	// manifest saying ^4.20.0, anthropic resolves from poetry.lock, and
+	// @langchain/core — declared but never locked — keeps its range instead of
+	// being reported as the release at its lower bound.
+	"locked-deps",
 }
 
 func fixtureDir(name string) string { return filepath.Join("testdata", "fixtures", name) }

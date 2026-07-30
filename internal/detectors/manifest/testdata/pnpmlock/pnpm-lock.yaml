@@ -1,0 +1,31 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+
+importers:
+  .:
+    dependencies:
+      openai:
+        specifier: ^4.20.0
+        version: 4.28.4
+
+packages:
+
+  '@langchain/core@0.2.18':
+    resolution: {integrity: sha512-fakefakefake==}
+    engines: {node: '>=18'}
+
+  express@4.19.2:
+    resolution: {integrity: sha512-fakefakefake==}
+
+  openai@4.28.4:
+    resolution: {integrity: sha512-fakefakefake==}
+    peerDependencies:
+      zod: ^3.23.8
+
+snapshots:
+
+  openai@4.28.4(zod@3.23.8):
+    dependencies:
+      zod: 3.23.8

@@ -47,7 +47,7 @@ func (d Requirements) DetectFile(_ context.Context, f *detect.File) ([]detect.Fi
 		if j := strings.Index(line, " #"); j >= 0 {
 			line = strings.TrimSpace(line[:j])
 		}
-		name, version := parsePEP508(line)
+		name, spec := parsePEP508(line)
 		if name == "" {
 			continue
 		}
@@ -56,7 +56,9 @@ func (d Requirements) DetectFile(_ context.Context, f *detect.File) ([]detect.Fi
 		if !ok {
 			continue
 		}
-		out = append(out, mkFinding(p, p.emitName(key), "", "pypi", version, i+1))
+		// A PEP 508 requirement with no operator names no version at all, so
+		// the bare case never arises here; ">=1.0" is a range and "==1.0" is not.
+		out = append(out, mkFindingSpec(p, p.emitName(key), "", "pypi", spec, true, i+1))
 	}
 	return out, nil
 }

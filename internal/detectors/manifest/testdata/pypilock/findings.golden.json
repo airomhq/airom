@@ -1,0 +1,126 @@
+{
+  "poetry.lock": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "1.40.0",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 3
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "sentence-transformers",
+        "Group": "",
+        "Version": "3.0.1",
+        "Provider": "Hugging Face",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 25
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    }
+  ],
+  "uv/uv.lock": [
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "0.5.3",
+        "Provider": "Chroma",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 4
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "langchain",
+        "Group": "",
+        "Version": "0.2.16",
+        "Provider": "LangChain",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 15
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    }
+  ]
+}

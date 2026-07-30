@@ -53,6 +53,18 @@ type ComponentClaim struct {
 	Version  string // raw version claim; "" = unknown (folding law, §9.1)
 	Provider string
 
+	// VersionConstraint is the declared specifier when the source names a
+	// RANGE rather than a release: "^4.20.0", ">=1.0,<2", a Cargo or Poetry
+	// bare string (both mean a caret range in their ecosystems).
+	//
+	// It is not a version and must never be set alongside Version. A manifest
+	// records what was asked for; only a lockfile, an installed distribution,
+	// or an exact pin records what is there. Reporting a range's lower bound
+	// in Version would state as fact a release nobody verified is present —
+	// and would hand that guess to the vulnerability matcher, which cannot
+	// tell the difference.
+	VersionConstraint string
+
 	Licenses         []airom.License
 	Hashes           []airom.Hash // e.g. digests parsed from a lockfile; the engine adds content hashes itself
 	DownloadLocation string

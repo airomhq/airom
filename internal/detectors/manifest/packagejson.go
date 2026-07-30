@@ -46,7 +46,8 @@ func (d PackageJSON) DetectFile(_ context.Context, f *detect.File) ([]detect.Fin
 			if !ok {
 				continue
 			}
-			out = append(out, mkFinding(p, p.emitName(dep.name), "", "npm", cleanVersion(dep.spec), dep.line))
+			// npm takes a bare version literally: "4.28.4" means exactly that.
+			out = append(out, mkFindingSpec(p, p.emitName(dep.name), "", "npm", dep.spec, true, dep.line))
 		}
 	}
 	return out, nil

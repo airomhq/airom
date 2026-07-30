@@ -1,0 +1,9 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "dependencies": {
+    "openai": "^4.20.0",
+    "@langchain/core": "^0.2.0",
+    "express": "^4.19.2"
+  }
+}

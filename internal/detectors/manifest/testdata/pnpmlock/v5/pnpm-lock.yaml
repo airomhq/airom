@@ -1,0 +1,15 @@
+lockfileVersion: 5.4
+
+packages:
+
+  /@langchain/core/0.2.18:
+    resolution: {integrity: sha512-fakefakefake==}
+    dev: false
+
+  /express/4.19.2:
+    resolution: {integrity: sha512-fakefakefake==}
+    dev: false
+
+  /openai/4.28.4:
+    resolution: {integrity: sha512-fakefakefake==}
+    dev: false

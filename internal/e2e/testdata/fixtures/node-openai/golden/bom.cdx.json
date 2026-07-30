@@ -137,8 +137,6 @@
       "bom-ref": "airom:74c94e76beb18249",
       "type": "framework",
       "name": "langchain",
-      "version": "0.3.2",
-      "purl": "pkg:npm/langchain@0.3.2",
       "properties": [
         {
           "name": "airom:confidence",
@@ -151,14 +149,18 @@
         {
           "name": "airom:provider",
           "value": "langchain"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "^0.3.2"
         }
       ],
       "evidence": {
         "identity": [
           {
-            "field": "version",
+            "field": "versionConstraint",
             "confidence": 0.95,
-            "concludedValue": "0.3.2",
+            "concludedValue": "^0.3.2",
             "methods": [
               {
                 "technique": "manifest-analysis",
@@ -180,8 +182,6 @@
       "bom-ref": "airom:f16d02e10b6caf23",
       "type": "library",
       "name": "openai",
-      "version": "4.67.1",
-      "purl": "pkg:npm/openai@4.67.1",
       "properties": [
         {
           "name": "airom:confidence",
@@ -198,14 +198,18 @@
         {
           "name": "airom:rel.uses",
           "value": "airom:14ac8720c7a8d1ef@0.7"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "^4.67.1"
         }
       ],
       "evidence": {
         "identity": [
           {
-            "field": "version",
+            "field": "versionConstraint",
             "confidence": 0.95,
-            "concludedValue": "4.67.1",
+            "concludedValue": "^4.67.1",
             "methods": [
               {
                 "technique": "manifest-analysis",
@@ -232,8 +236,6 @@
       "bom-ref": "airom:f9aed661fdbdcef2",
       "type": "library",
       "name": "anthropic",
-      "version": "0.27.3",
-      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
       "properties": [
         {
           "name": "airom:confidence",
@@ -246,14 +248,18 @@
         {
           "name": "airom:provider",
           "value": "anthropic"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "^0.27.3"
         }
       ],
       "evidence": {
         "identity": [
           {
-            "field": "version",
+            "field": "versionConstraint",
             "confidence": 0.95,
-            "concludedValue": "0.27.3",
+            "concludedValue": "^0.27.3",
             "methods": [
               {
                 "technique": "manifest-analysis",

@@ -1,0 +1,329 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:00000000-0000-4000-8000-000000000000",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-01T12:00:00Z",
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "airom",
+          "version": "dev"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "airom:7c7c4199feb6d991",
+      "type": "application",
+      "name": "locked-deps",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0"
+        },
+        {
+          "name": "airom:kind",
+          "value": "application"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "airom:eol.catalog",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:rules.hash",
+        "value": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "name": "airom:rules.version",
+        "value": "builtin"
+      },
+      {
+        "name": "airom:source.target",
+        "value": "locked-deps"
+      },
+      {
+        "name": "airom:source.type",
+        "value": "dir"
+      },
+      {
+        "name": "airom:unknowns",
+        "value": "0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "airom:3e3a9735550d6b44",
+      "type": "application",
+      "name": "chroma",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.95"
+        },
+        {
+          "name": "airom:kind",
+          "value": "vector-db"
+        },
+        {
+          "name": "airom:provider",
+          "value": "chroma"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "\u003e=0.5.0,\u003c0.6"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "versionConstraint",
+            "confidence": 0.95,
+            "concludedValue": "\u003e=0.5.0,\u003c0.6",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          },
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "concludedValue": "chromadb",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "api/requirements.txt",
+            "line": 4,
+            "additionalContext": "chromadb\u003e=0.5.0,\u003c0.6"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:65ac1a1b3af7edab",
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.34.2",
+      "purl": "pkg:pypi/anthropic@0.34.2",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.96"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "anthropic"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.96,
+            "concludedValue": "0.34.2",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.96
+              }
+            ]
+          },
+          {
+            "field": "versionConstraint",
+            "confidence": 0.95,
+            "concludedValue": "\u003e=0.34.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "api/poetry.lock",
+            "line": 3,
+            "additionalContext": "[[package]]"
+          },
+          {
+            "location": "api/requirements.txt",
+            "line": 3,
+            "additionalContext": "anthropic\u003e=0.34.0"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:a6ccf893ff130124",
+      "type": "library",
+      "name": "openai",
+      "version": "1.40.0",
+      "purl": "pkg:pypi/openai@1.40.0",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.95"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "openai"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.95,
+            "concludedValue": "1.40.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "api/requirements.txt",
+            "line": 2,
+            "additionalContext": "openai==1.40.0"
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:eefd674ef1a59b46",
+      "type": "framework",
+      "name": "@langchain/core",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.95"
+        },
+        {
+          "name": "airom:kind",
+          "value": "framework"
+        },
+        {
+          "name": "airom:provider",
+          "value": "langchain"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "^0.2.0"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "versionConstraint",
+            "confidence": 0.95,
+            "concludedValue": "^0.2.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "web/package.json",
+            "line": 6,
+            "additionalContext": "\"@langchain/core\": \"^0.2.0\","
+          }
+        ]
+      }
+    },
+    {
+      "bom-ref": "airom:f16d02e10b6caf23",
+      "type": "library",
+      "name": "openai",
+      "version": "4.28.4",
+      "purl": "pkg:npm/openai@4.28.4",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.96"
+        },
+        {
+          "name": "airom:kind",
+          "value": "library"
+        },
+        {
+          "name": "airom:provider",
+          "value": "openai"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "version",
+            "confidence": 0.96,
+            "concludedValue": "4.28.4",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.96
+              }
+            ]
+          },
+          {
+            "field": "versionConstraint",
+            "confidence": 0.95,
+            "concludedValue": "^4.20.0",
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95
+              }
+            ]
+          }
+        ],
+        "occurrences": [
+          {
+            "location": "web/package-lock.json",
+            "line": 15,
+            "additionalContext": "\"node_modules/openai\": {"
+          },
+          {
+            "location": "web/package.json",
+            "line": 5,
+            "additionalContext": "\"openai\": \"^4.20.0\","
+          }
+        ]
+      }
+    }
+  ]
+}

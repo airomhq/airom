@@ -1,0 +1,32 @@
+{
+    "_meta": {
+        "hash": {"sha256": "fake"},
+        "requires": {"python_version": "3.11"}
+    },
+    "default": {
+        "anthropic": {
+            "hashes": ["sha256:fake"],
+            "index": "pypi",
+            "version": "==0.34.2"
+        },
+        "certifi": {
+            "hashes": ["sha256:fake"],
+            "version": "==2024.7.4"
+        },
+        "openai": {
+            "hashes": ["sha256:fake"],
+            "index": "pypi",
+            "version": "==1.40.0"
+        }
+    },
+    "develop": {
+        "pytest": {
+            "hashes": ["sha256:fake"],
+            "version": "==8.3.2"
+        },
+        "tiktoken": {
+            "hashes": ["sha256:fake"],
+            "version": "==0.7.0"
+        }
+    }
+}

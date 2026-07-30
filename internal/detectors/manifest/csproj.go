@@ -76,7 +76,7 @@ func (d CSProj) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding,
 		if version == "" {
 			version = ref.VersionElem
 		}
-		out = append(out, mkFinding(p, p.emitName(name), "", "nuget", strings.TrimSpace(version), lineAt(content, off)))
+		out = append(out, mkFindingSpec(p, p.emitName(name), "", "nuget", version, true, lineAt(content, off)))
 	}
 	return out, nil
 }

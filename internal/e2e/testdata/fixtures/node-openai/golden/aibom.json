@@ -108,9 +108,8 @@
       "id": "airom:74c94e76beb18249",
       "kind": "framework",
       "name": "langchain",
-      "version": "0.3.2",
       "provider": "langchain",
-      "purl": "pkg:npm/langchain@0.3.2",
+      "versionConstraint": "^0.3.2",
       "package": {
         "ecosystem": "npm"
       },
@@ -130,8 +129,8 @@
         ],
         "identity": [
           {
-            "field": "version",
-            "value": "0.3.2",
+            "field": "versionConstraint",
+            "value": "^0.3.2",
             "confidence": 0.95,
             "methods": [
               "manifest-analysis"
@@ -151,9 +150,8 @@
       "id": "airom:f16d02e10b6caf23",
       "kind": "library",
       "name": "openai",
-      "version": "4.67.1",
       "provider": "openai",
-      "purl": "pkg:npm/openai@4.67.1",
+      "versionConstraint": "^4.67.1",
       "package": {
         "ecosystem": "npm"
       },
@@ -190,8 +188,8 @@
         ],
         "identity": [
           {
-            "field": "version",
-            "value": "4.67.1",
+            "field": "versionConstraint",
+            "value": "^4.67.1",
             "confidence": 0.95,
             "methods": [
               "manifest-analysis"
@@ -204,9 +202,8 @@
       "id": "airom:f9aed661fdbdcef2",
       "kind": "library",
       "name": "anthropic",
-      "version": "0.27.3",
       "provider": "anthropic",
-      "purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3",
+      "versionConstraint": "^0.27.3",
       "package": {
         "ecosystem": "npm"
       },
@@ -226,8 +223,8 @@
         ],
         "identity": [
           {
-            "field": "version",
-            "value": "0.27.3",
+            "field": "versionConstraint",
+            "value": "^0.27.3",
             "confidence": 0.95,
             "methods": [
               "manifest-analysis"
@@ -291,8 +288,13 @@
       "manifest/pypi-installed: selected by \"default\"",
       "manifest/maven: selected by \"default\"",
       "manifest/npm: selected by \"default\"",
+      "manifest/npm-lock: selected by \"default\"",
+      "manifest/pipfile-lock: selected by \"default\"",
+      "manifest/pnpm-lock: selected by \"default\"",
+      "manifest/pypi-lock: selected by \"default\"",
       "manifest/pypi-pyproject: selected by \"default\"",
       "manifest/pypi-requirements: selected by \"default\"",
+      "manifest/yarn-lock: selected by \"default\"",
       "modelfile/gguf: selected by \"default\"",
       "modelfile/onnx: selected by \"default\"",
       "modelfile/safetensors: selected by \"default\"",
@@ -364,13 +366,37 @@
         "ns": 0
       },
       {
+        "id": "manifest/npm-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
         "id": "manifest/nuget",
         "invocations": 0,
         "findings": 0,
         "ns": 0
       },
       {
+        "id": "manifest/pipfile-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pnpm-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
         "id": "manifest/pypi-installed",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-lock",
         "invocations": 0,
         "findings": 0,
         "ns": 0
@@ -383,6 +409,12 @@
       },
       {
         "id": "manifest/pypi-requirements",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/yarn-lock",
         "invocations": 0,
         "findings": 0,
         "ns": 0

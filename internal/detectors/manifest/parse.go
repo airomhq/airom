@@ -20,6 +20,71 @@ func cleanVersion(s string) string {
 	return strings.TrimSpace(s)
 }
 
+// versionSpec splits a declared dependency specifier into a resolved version
+// and a declared constraint. At most one is non-empty; both are empty when the
+// spec names no version at all.
+//
+// bareIsExact says what an operator-less spec means in the ecosystem, which is
+// not the same everywhere:
+//
+//	npm "4.28.4"       exactly 4.28.4          → bareIsExact
+//	go.mod v1.2.3      exactly v1.2.3 (MVS)    → bareIsExact
+//	Maven <version>    the named release       → bareIsExact
+//	Cargo "1.0"        ^1.0, i.e. >=1.0 <2.0   → NOT exact
+//	Poetry "1.40.0"    ^1.40.0                 → NOT exact
+//
+// Getting that wrong in either direction is a lie: calling a range exact
+// invents a version, and calling an exact pin a range discards a real one.
+func versionSpec(spec string, bareIsExact bool) (version, constraint string) {
+	s := strings.TrimSpace(spec)
+	if s == "" || s == "*" {
+		return "", ""
+	}
+	pinned := false
+	for _, op := range []string{"===", "==", "="} {
+		if r, ok := strings.CutPrefix(s, op); ok {
+			s, pinned = strings.TrimSpace(r), true
+			break
+		}
+	}
+	if !isPlainVersion(s) {
+		return "", strings.TrimSpace(spec)
+	}
+	if pinned || bareIsExact {
+		return s, ""
+	}
+	return "", strings.TrimSpace(spec)
+}
+
+// isPlainVersion reports whether s is a single concrete release token — no
+// operators, wildcards, alternatives, or dist-tags. "1.40.0" and "v1.2.3" are;
+// "^1.0", "1.2.x", ">=1 <2", and "latest" are not.
+func isPlainVersion(s string) bool {
+	if s == "" {
+		return false
+	}
+	i := 0
+	if s[0] == 'v' || s[0] == 'V' {
+		i = 1
+	}
+	if i >= len(s) || s[i] < '0' || s[i] > '9' {
+		return false
+	}
+	for j := i; j < len(s); j++ {
+		switch s[j] {
+		case '<', '>', '=', '~', '^', '*', '|', ',', ' ', '\t':
+			return false
+		}
+	}
+	// A wildcard segment is a range written without an operator.
+	for _, seg := range strings.Split(s, ".") {
+		if seg == "x" || seg == "X" {
+			return false
+		}
+	}
+	return true
+}
+
 // isNameByte reports whether c may appear in a package name (PEP 508 /
 // crate / distribution names).
 func isNameByte(c byte) bool {
@@ -33,9 +98,10 @@ func isNameByte(c byte) bool {
 }
 
 // parsePEP508 splits a PEP 508 requirement ("name[extras] op version ;
-// markers", or "name @ url") into its distribution name and a cleaned
-// version. It never allocates proportional to input beyond slicing.
-func parsePEP508(s string) (name, version string) {
+// markers", or "name @ url") into its distribution name and the RAW version
+// specifier — operators included, so the caller can tell "==1.2.3" from
+// ">=1.2.3". It never allocates proportional to input beyond slicing.
+func parsePEP508(s string) (name, spec string) {
 	s = strings.TrimSpace(s)
 	// Strip environment markers.
 	if i := strings.IndexByte(s, ';'); i >= 0 {
@@ -58,8 +124,7 @@ func parsePEP508(s string) (name, version string) {
 			rest = strings.TrimSpace(rest[j+1:])
 		}
 	}
-	version = cleanVersion(rest)
-	return name, version
+	return name, rest
 }
 
 // quotedStrings extracts every single- or double-quoted string literal on a

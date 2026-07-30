@@ -108,6 +108,13 @@ package versions at scan time," not "this dependency is safe." Advisories are pu
 continuously — re-run to re-check.
 </Warning>
 
+- **A declared range is not checked at all.** An advisory range is evaluated *against* a
+  release, so there is no answer to "is `^4.20.0` vulnerable" that is not really a claim
+  about some specific version. Components carrying only a
+  [declared range](/concepts/versions) are skipped and counted in a warning rather than
+  reported as clean — matching the range's lower bound would invent advisories already
+  patched while hiding ones introduced later in the range. Commit a lockfile, or scan a
+  deployed environment, to resolve them.
 - **A network failure is never fatal — with one deliberate exception.** If OSV is
   unreachable, the affected component simply carries no CVEs and a warning lands in the
   scan's `Stats.Warnings` (visible under `--stats`); the AIBOM is never held hostage to a

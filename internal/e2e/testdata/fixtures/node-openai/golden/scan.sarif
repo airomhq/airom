@@ -164,7 +164,7 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "framework 'langchain' [0.3.2] detected (confidence 0.95)"
+            "text": "framework 'langchain' detected (confidence 0.95)"
           },
           "locations": [
             {
@@ -190,8 +190,7 @@
             "airom:confidence": 0.95,
             "airom:kind": "framework",
             "airom:occurrence.confidence": 0.95,
-            "airom:provider": "langchain",
-            "airom:purl": "pkg:npm/langchain@0.3.2"
+            "airom:provider": "langchain"
           }
         },
         {
@@ -199,7 +198,7 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "library 'openai' [4.67.1] detected (confidence 0.985)"
+            "text": "library 'openai' detected (confidence 0.985)"
           },
           "locations": [
             {
@@ -225,8 +224,7 @@
             "airom:confidence": 0.985,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
-            "airom:provider": "openai",
-            "airom:purl": "pkg:npm/openai@4.67.1"
+            "airom:provider": "openai"
           }
         },
         {
@@ -234,7 +232,7 @@
           "ruleIndex": 3,
           "level": "note",
           "message": {
-            "text": "library 'openai' [4.67.1] detected (confidence 0.985)"
+            "text": "library 'openai' detected (confidence 0.985)"
           },
           "locations": [
             {
@@ -263,8 +261,7 @@
             "airom:confidence": 0.985,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.7,
-            "airom:provider": "openai",
-            "airom:purl": "pkg:npm/openai@4.67.1"
+            "airom:provider": "openai"
           }
         },
         {
@@ -272,7 +269,7 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "library 'anthropic' [0.27.3] detected (confidence 0.95)"
+            "text": "library 'anthropic' detected (confidence 0.95)"
           },
           "locations": [
             {
@@ -298,8 +295,7 @@
             "airom:confidence": 0.95,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
-            "airom:provider": "anthropic",
-            "airom:purl": "pkg:npm/%40anthropic-ai/sdk@0.27.3"
+            "airom:provider": "anthropic"
           }
         }
       ]

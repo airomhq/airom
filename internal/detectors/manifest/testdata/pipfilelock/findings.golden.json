@@ -1,0 +1,94 @@
+{
+  "Pipfile.lock": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "anthropic",
+        "Group": "",
+        "Version": "0.34.2",
+        "Provider": "Anthropic",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 7
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "1.40.0",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 16
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "tiktoken",
+        "Group": "",
+        "Version": "0.7.0",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 27
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    }
+  ]
+}

@@ -557,6 +557,15 @@ func (b *builder) properties(c *airom.Component) *[]cyclonedx.Property {
 		}
 	}
 
+	// A declared range, when nothing resolved a release. CycloneDX's own
+	// `version` is a single string with no room for "somewhere in this range",
+	// and filling it with the range's lower bound would make a guess
+	// indistinguishable from a fact — so the field stays empty (as does the
+	// purl) and the constraint is carried here instead of being dropped.
+	if c.VersionConstraint != "" {
+		p.add("airom:version.constraint", c.VersionConstraint)
+	}
+
 	// ReleaseTime — any component (§3.2).
 	if t, ok := c.ReleaseTime.Value(); ok {
 		p.add("airom:releaseTime", t.UTC().Format(time.RFC3339))

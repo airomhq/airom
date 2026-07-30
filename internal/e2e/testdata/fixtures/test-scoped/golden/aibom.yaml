@@ -409,11 +409,27 @@ stats:
       invocations: 0
       ns: 0
     - findings: 0
+      id: manifest/npm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: manifest/nuget
       invocations: 0
       ns: 0
     - findings: 0
+      id: manifest/pipfile-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pnpm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: manifest/pypi-installed
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-lock
       invocations: 0
       ns: 0
     - findings: 0
@@ -423,6 +439,10 @@ stats:
     - findings: 2
       id: manifest/pypi-requirements
       invocations: 1
+      ns: 0
+    - findings: 0
+      id: manifest/yarn-lock
+      invocations: 0
       ns: 0
     - findings: 0
       id: modelfile/gguf
@@ -497,8 +517,13 @@ stats:
     - 'manifest/pypi-installed: selected by "default"'
     - 'manifest/maven: selected by "default"'
     - 'manifest/npm: selected by "default"'
+    - 'manifest/npm-lock: selected by "default"'
+    - 'manifest/pipfile-lock: selected by "default"'
+    - 'manifest/pnpm-lock: selected by "default"'
+    - 'manifest/pypi-lock: selected by "default"'
     - 'manifest/pypi-pyproject: selected by "default"'
     - 'manifest/pypi-requirements: selected by "default"'
+    - 'manifest/yarn-lock: selected by "default"'
     - 'modelfile/gguf: selected by "default"'
     - 'modelfile/onnx: selected by "default"'
     - 'modelfile/safetensors: selected by "default"'

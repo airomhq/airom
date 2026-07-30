@@ -172,9 +172,24 @@ type Component struct {
 	Group    string        `json:"group,omitempty"` // org/namespace: "openai", "meta-llama"
 	Version  OptString     `json:"version,omitzero"`
 	Provider OptString     `json:"provider,omitzero"`
-	PURL     string        `json:"purl,omitempty"` // spec types ONLY; empty for hosted API models (D9)
-	Licenses []License     `json:"licenses,omitempty"`
-	Supplier *Party        `json:"supplier,omitempty"`
+
+	// VersionConstraint is the declared specifier ("^4.20.0", ">=1.0,<2") when
+	// no source resolved this component to a single release. It is mutually
+	// exclusive with Version: a range is not a version, and the difference
+	// decides real outcomes downstream.
+	//
+	// It keeps a definite version out of the purl, which is what stops the CVE
+	// overlay from matching advisories against a release nobody confirmed is
+	// installed — a range's lower bound would both invent vulnerabilities
+	// already patched and hide ones introduced later in the range.
+	//
+	// Stated in the document rather than dropped, because "unknown" and
+	// "somewhere at or above 4.20.0" are different answers, and a consumer
+	// reading the BOM should get the second one when that is what is known.
+	VersionConstraint string    `json:"versionConstraint,omitempty"`
+	PURL              string    `json:"purl,omitempty"` // spec types ONLY; empty for hosted API models (D9)
+	Licenses          []License `json:"licenses,omitempty"`
+	Supplier          *Party    `json:"supplier,omitempty"`
 
 	// Provenance & integrity
 	Hashes           []Hash    `json:"hashes,omitempty"` // always computed for local model files

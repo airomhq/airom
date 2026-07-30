@@ -263,3 +263,14 @@ func mkFinding(p aiPkg, name, group, ecosystem string, version string, line int)
 		},
 	}
 }
+
+// mkFindingSpec builds one manifest finding from a raw declared specifier,
+// routing it to Version or VersionConstraint per the ecosystem's bare-version
+// semantics (see versionSpec). Detectors that already hold a resolved version
+// — lockfiles, installed metadata, go.mod — call mkFinding directly.
+func mkFindingSpec(p aiPkg, name, group, ecosystem, spec string, bareIsExact bool, line int) detect.Finding {
+	version, constraint := versionSpec(spec, bareIsExact)
+	f := mkFinding(p, name, group, ecosystem, version, line)
+	f.Claim.VersionConstraint = constraint
+	return f
+}

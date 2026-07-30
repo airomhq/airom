@@ -15,6 +15,26 @@ func TestInstalled(t *testing.T) {
 	detectortest.Run(t, NewInstalled(), detectortest.Fixtures{Dir: "testdata/installed"})
 }
 
+func TestPackageLock(t *testing.T) {
+	detectortest.Run(t, NewPackageLock(), detectortest.Fixtures{Dir: "testdata/npmlock"})
+}
+
+func TestYarnLock(t *testing.T) {
+	detectortest.Run(t, NewYarnLock(), detectortest.Fixtures{Dir: "testdata/yarnlock"})
+}
+
+func TestPnpmLock(t *testing.T) {
+	detectortest.Run(t, NewPnpmLock(), detectortest.Fixtures{Dir: "testdata/pnpmlock"})
+}
+
+func TestPoetryLock(t *testing.T) {
+	detectortest.Run(t, NewPoetryLock(), detectortest.Fixtures{Dir: "testdata/pypilock"})
+}
+
+func TestPipfileLock(t *testing.T) {
+	detectortest.Run(t, NewPipfileLock(), detectortest.Fixtures{Dir: "testdata/pipfilelock"})
+}
+
 func TestPyProject(t *testing.T) {
 	detectortest.Run(t, NewPyProject(), detectortest.Fixtures{Dir: "testdata/pyproject"})
 }
@@ -50,6 +70,7 @@ func TestConstructorsImplementFileDetector(t *testing.T) {
 	dets := []detect.FileDetector{
 		NewRequirements(), NewPyProject(), NewPackageJSON(), NewGoMod(),
 		NewMaven(), NewGradle(), NewCargo(), NewCSProj(), NewInstalled(),
+		NewPackageLock(), NewYarnLock(), NewPnpmLock(), NewPoetryLock(), NewPipfileLock(),
 	}
 	seen := map[string]bool{}
 	for _, d := range dets {

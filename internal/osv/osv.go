@@ -77,14 +77,25 @@ func Enrich(ctx context.Context, inv *airom.Inventory, opts Options) int {
 	// Collect the queryable components (versioned package purls).
 	type job struct{ idx int }
 	var jobs []job
-	skipped := 0
+	skipped, unresolved := 0, 0
 	for i := range inv.Components {
-		if queryablePurl(inv.Components[i].PURL) {
-			if opts.SkipTestOnly && inv.Components[i].TestOnly {
+		c := &inv.Components[i]
+		if queryablePurl(c.PURL) {
+			if opts.SkipTestOnly && c.TestOnly {
 				skipped++
 				continue
 			}
 			jobs = append(jobs, job{i})
+			continue
+		}
+		// Declared as a range and never resolved: there is no version to ask
+		// OSV about. Counted so the absence of findings can be explained
+		// rather than read as an all-clear.
+		if c.VersionConstraint != "" && c.Package != nil && pkgEcosystems[c.Package.Ecosystem] {
+			if opts.SkipTestOnly && c.TestOnly {
+				continue // already accounted for by the test-scope warning
+			}
+			unresolved++
 		}
 	}
 	// The native and CycloneDX documents still CARRY these components, so an
@@ -97,6 +108,19 @@ func Enrich(ctx context.Context, inv *airom.Inventory, opts Options) int {
 			"cve: %d test-scoped component(s) were not checked against OSV.dev; re-run with --include-tests to check them",
 			skipped,
 		))
+	}
+	// The same reasoning, for the other reason a component goes unchecked. An
+	// advisory range cannot be evaluated against "^4.20.0" — every answer OSV
+	// could give would be about a release nobody has confirmed is installed.
+	// Saying so beats reporting zero vulnerabilities and letting that read as
+	// a clean bill of health.
+	if unresolved > 0 {
+		inv.Stats.Warnings = append(inv.Stats.Warnings, fmt.Sprintf(
+			"cve: %d component(s) declare a version range and were not checked against OSV.dev; commit a lockfile or scan a deployed environment to resolve them",
+			unresolved,
+		))
+	}
+	if skipped > 0 || unresolved > 0 {
 		sort.Strings(inv.Stats.Warnings)
 	}
 	if len(jobs) == 0 {

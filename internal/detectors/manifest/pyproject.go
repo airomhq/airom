@@ -88,7 +88,7 @@ func (d PyProject) DetectFile(_ context.Context, f *detect.File) ([]detect.Findi
 
 // pep508 turns a PEP 621 requirement string into a finding if recognized.
 func (PyProject) pep508(dep string, line int) (detect.Finding, bool) {
-	name, version := parsePEP508(dep)
+	name, spec := parsePEP508(dep)
 	if name == "" {
 		return detect.Finding{}, false
 	}
@@ -97,7 +97,7 @@ func (PyProject) pep508(dep string, line int) (detect.Finding, bool) {
 	if !ok {
 		return detect.Finding{}, false
 	}
-	return mkFinding(p, p.emitName(key), "", "pypi", version, line), true
+	return mkFindingSpec(p, p.emitName(key), "", "pypi", spec, true, line), true
 }
 
 // poetry turns a "name = spec" Poetry dependency line into a finding.
@@ -115,20 +115,26 @@ func (PyProject) poetry(line string, lineNo int) (detect.Finding, bool) {
 	if !found {
 		return detect.Finding{}, false
 	}
-	return mkFinding(p, p.emitName(norm), "", "pypi", poetryVersion(val), lineNo), true
+	// Poetry expands a bare string to a caret range: "1.40.0" means ^1.40.0,
+	// so it is a constraint, not a pin.
+	return mkFindingSpec(p, p.emitName(norm), "", "pypi", poetryVersion(val), false, lineNo), true
 }
 
-// poetryVersion extracts the version from a Poetry value: a bare string
-// ("^1.0") or an inline table ({ version = "^1.0", … }).
+// poetryVersion extracts the RAW version specifier from a Poetry or Cargo
+// value: a bare string ("^1.0") or an inline table ({ version = "^1.0", … }).
+//
+// The operator is deliberately preserved. Stripping it here would erase the
+// only signal that separates a pin from a range before the caller can act on
+// it — "^1.0" and "1.0" would arrive indistinguishable.
 func poetryVersion(val string) string {
 	v := strings.TrimSpace(val)
 	if strings.HasPrefix(v, "{") {
 		if k := strings.Index(v, "version"); k >= 0 {
-			return cleanVersion(firstQuoted(v[k:]))
+			return firstQuoted(v[k:])
 		}
 		return ""
 	}
-	return cleanVersion(firstQuoted(v))
+	return firstQuoted(v)
 }
 
 // splitKV splits "key = value" at the first '=', trimming surrounding space.

@@ -1,0 +1,21 @@
+version = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "chromadb"
+version = "0.5.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/fake", hash = "sha256:fake" }
+
+[[package]]
+name = "click"
+version = "8.1.7"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "langchain"
+version = "0.2.16"
+source = { registry = "https://pypi.org/simple" }
+
+[package.metadata]
+requires-dist = [{ name = "openai", specifier = ">=1.0.0" }]

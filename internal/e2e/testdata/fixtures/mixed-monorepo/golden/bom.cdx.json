@@ -181,8 +181,6 @@
       "bom-ref": "airom:f16d02e10b6caf23",
       "type": "library",
       "name": "openai",
-      "version": "4.67.1",
-      "purl": "pkg:npm/openai@4.67.1",
       "properties": [
         {
           "name": "airom:confidence",
@@ -195,14 +193,18 @@
         {
           "name": "airom:provider",
           "value": "openai"
+        },
+        {
+          "name": "airom:version.constraint",
+          "value": "^4.67.1"
         }
       ],
       "evidence": {
         "identity": [
           {
-            "field": "version",
+            "field": "versionConstraint",
             "confidence": 0.95,
-            "concludedValue": "4.67.1",
+            "concludedValue": "^4.67.1",
             "methods": [
               {
                 "technique": "manifest-analysis",

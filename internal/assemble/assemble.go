@@ -286,6 +286,11 @@ type draft struct {
 	versionClaims []airom.IdentityClaim
 	nameClaims    []airom.IdentityClaim
 
+	// constraintClaims are declared ranges, kept apart from versionClaims so
+	// a range can never win the version slot. They surface only when nothing
+	// resolved this component to a release.
+	constraintClaims []airom.IdentityClaim
+
 	provider         string
 	licenses         []airom.License
 	hashes           []airom.Hash
@@ -427,6 +432,12 @@ func (a *assembly) absorb(f detect.Finding) {
 				Methods: []airom.DetectionMethod{occ.Method},
 			})
 		}
+	}
+	if vc := strings.TrimSpace(f.Claim.VersionConstraint); vc != "" {
+		d.constraintClaims = append(d.constraintClaims, airom.IdentityClaim{
+			Field: "versionConstraint", Value: vc, Confidence: occ.Confidence,
+			Methods: []airom.DetectionMethod{occ.Method},
+		})
 	}
 
 	d.licenses = mergeLicenses(d.licenses, f.Claim.Licenses)
@@ -570,6 +581,7 @@ func (a *assembly) foldInto(dst *draft, srcs []*draft) {
 func (a *assembly) mergeDraft(dst, src *draft) {
 	dst.occs = append(dst.occs, src.occs...)
 	dst.versionClaims = append(dst.versionClaims, src.versionClaims...)
+	dst.constraintClaims = append(dst.constraintClaims, src.constraintClaims...)
 	dst.nameClaims = append(dst.nameClaims, src.nameClaims...)
 	dst.licenses = mergeLicenses(dst.licenses, src.licenses)
 	dst.hashes = mergeHashes(dst.hashes, src.hashes)
@@ -757,6 +769,17 @@ func (d *draft) finish() airom.Component {
 		sortClaims(d.versionClaims)
 		c.Version = airom.KnownString(d.versionClaims[0].Value)
 		c.Evidence.Identity = append(c.Evidence.Identity, dedupeClaims(d.versionClaims)...)
+	}
+	// A declared range is reported only when nothing resolved a release. Once
+	// a lockfile or an installed distribution has spoken, the range it was
+	// resolved FROM is history — but it stays in the identity evidence, so the
+	// document still shows what the manifest asked for.
+	if len(d.constraintClaims) > 0 {
+		sortClaims(d.constraintClaims)
+		if _, resolved := c.Version.Value(); !resolved {
+			c.VersionConstraint = d.constraintClaims[0].Value
+		}
+		c.Evidence.Identity = append(c.Evidence.Identity, dedupeClaims(d.constraintClaims)...)
 	}
 	if len(d.nameClaims) > 0 {
 		sortClaims(d.nameClaims)

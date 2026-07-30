@@ -1,0 +1,186 @@
+{
+  "npm-shrinkwrap.json": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "3.3.0",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 6
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "1.5.11",
+        "Provider": "Chroma",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 14
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    }
+  ],
+  "package-lock.json": [
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "4.28.4",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 15
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "@langchain/core",
+        "Group": "",
+        "Version": "0.2.18",
+        "Provider": "LangChain",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 20
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "vector-db",
+        "Name": "chromadb",
+        "Group": "",
+        "Version": "1.8.1",
+        "Provider": "Chroma",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 30
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai",
+        "Group": "",
+        "Version": "3.3.0",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "npm"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 40
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.96
+      },
+      "Relations": null
+    }
+  ]
+}

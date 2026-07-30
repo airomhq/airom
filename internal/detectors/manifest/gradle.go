@@ -47,7 +47,9 @@ func (d Gradle) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding,
 		if !matched {
 			continue
 		}
-		out = append(out, mkFinding(p, p.emitName(artifact), group, "maven", strings.TrimSpace(version), i+1))
+		// A Maven coordinate names a release; the resolver picks that one
+		// unless a transitive requirement forces higher.
+		out = append(out, mkFindingSpec(p, p.emitName(artifact), group, "maven", version, true, i+1))
 	}
 	return out, nil
 }

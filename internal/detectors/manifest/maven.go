@@ -69,7 +69,7 @@ func (d Maven) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, 
 		if !ok {
 			continue
 		}
-		out = append(out, mkFinding(p, p.emitName(artifact), group, "maven", mavenVersion(dep.Version), lineAt(content, off)))
+		out = append(out, mkFindingSpec(p, p.emitName(artifact), group, "maven", mavenVersion(dep.Version), true, lineAt(content, off)))
 	}
 	return out, nil
 }

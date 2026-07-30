@@ -1,0 +1,22 @@
+AI Bill of Materials — locked-deps
+
+┌─ Scan Summary ────────────┐
+│ Target        locked-deps │
+│ Components    5           │
+│ Files         4 scanned   │
+│                           │
+│ By Type                   │
+│   library            3    │
+│   framework          1    │
+│   vector-db          1    │
+└───────────────────────────┘
+
+┌───────────┬─────────────────┬──────────────┬───────────┬──────┬──────────────────────────┬──────────┐
+│ KIND      │ NAME            │ VERSION      │ PROVIDER  │ CONF │ LOCATION                 │ EVIDENCE │
+├───────────┼─────────────────┼──────────────┼───────────┼──────┼──────────────────────────┼──────────┤
+│ framework │ @langchain/core │ ^0.2.0       │ langchain │ 0.95 │ web/package.json:6       │ 1 occ    │
+│ library   │ anthropic       │ 0.34.2       │ anthropic │ 0.96 │ api/poetry.lock:3        │ 2 occ    │
+│ library   │ openai          │ 1.40.0       │ openai    │ 0.95 │ api/requirements.txt:2   │ 1 occ    │
+│ library   │ openai          │ 4.28.4       │ openai    │ 0.96 │ web/package-lock.json:15 │ 2 occ    │
+│ vector-db │ chroma          │ >=0.5.0,<0.6 │ chroma    │ 0.95 │ api/requirements.txt:4   │ 1 occ    │
+└───────────┴─────────────────┴──────────────┴───────────┴──────┴──────────────────────────┴──────────┘

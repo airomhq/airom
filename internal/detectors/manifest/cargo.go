@@ -61,7 +61,8 @@ func (d Cargo) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, 
 		if !matched {
 			continue
 		}
-		out = append(out, mkFinding(p, p.emitName(name), "", "cargo", poetryVersion(val), i+1))
+		// Cargo expands a bare string the same way Poetry does: "1.0" is ^1.0.
+		out = append(out, mkFindingSpec(p, p.emitName(name), "", "cargo", poetryVersion(val), false, i+1))
 	}
 	return out, nil
 }
