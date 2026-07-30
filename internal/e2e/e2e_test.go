@@ -90,6 +90,12 @@ var goldenFixtures = []string{
 	// @langchain/core — declared but never locked — keeps its range instead of
 	// being reported as the release at its lower bound.
 	"locked-deps",
+	// agno, crawl4ai, and fastmcp declared AND used. Pins two things that are
+	// easy to regress independently: each framework folds into ONE component
+	// carrying both the manifest version and the code sightings (an empty
+	// catalog provider silently splits it in two), and `from agnostic import`
+	// is not claimed as agno.
+	"agentic-stack",
 }
 
 func fixtureDir(name string) string { return filepath.Join("testdata", "fixtures", name) }

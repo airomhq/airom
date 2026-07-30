@@ -389,6 +389,126 @@
         "confidence": 0.95
       },
       "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "agno",
+        "Group": "",
+        "Version": "2.8.5",
+        "Provider": "agno",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 20
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "crawl4ai",
+        "Group": "",
+        "Version": "",
+        "Provider": "crawl4ai",
+        "VersionConstraint": "\u003e=0.9.0",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 21
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "fastmcp",
+        "Group": "",
+        "Version": "3.4.5",
+        "Provider": "fastmcp",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 22
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "framework",
+        "Name": "mcp",
+        "Group": "",
+        "Version": "2.0.0",
+        "Provider": "",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "pypi"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 23
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
     }
   ]
 }

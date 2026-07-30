@@ -1,0 +1,30 @@
+# rules/frameworks/agno.yaml — Agno agent framework usage.
+#
+# Note the `\b` after the module name. Without it, `agno[\w.]*` also matches
+# `agnostic`, which is a real and unrelated PyPI package — the same trap waits
+# for any short module prefix.
+pack: agno
+version: 1
+rules:
+  - id: agno/import
+    kind: framework
+    provider: agno
+    languages: [python]
+    keywords: ["agno"]
+    pattern: '\b(?:import|from)\s+agno\b[\w.]*'
+    regions: [code]
+    claim: { name: "agno" }
+    confidence: 0.7
+
+  # Binding a model provider through agno. Deliberately matched on the module
+  # path rather than the constructor: `Agent(` alone belongs to half a dozen
+  # agent frameworks and would claim agno in a CrewAI or AutoGen file.
+  - id: agno/model-binding
+    kind: framework
+    provider: agno
+    languages: [python]
+    keywords: ["agno.models"]
+    pattern: '\bfrom\s+agno\.models\.[\w.]+\s+import\b'
+    regions: [code]
+    claim: { name: "agno" }
+    confidence: 0.75

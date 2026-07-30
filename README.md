@@ -40,7 +40,7 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 | **Local model weights** | GGUF, safetensors, ONNX, Torch (pickle-zip), TensorFlow SavedModel, TensorRT, TFLite, HDF5 — magic bytes + header metadata (architecture, parameter count, quantization), never loaded or executed |
 | **Model directories & lineage** | Hugging Face model dirs (`config.json` + weights = one component), PEFT/LoRA adapters → `derived-from` base-model edges |
 | **Embedding models** | OpenAI, sentence-transformers, BGE/E5/MiniLM, Voyage, Cohere — hosted or local |
-| **Frameworks & SDKs** | LangChain, LlamaIndex, Haystack, DSPy, CrewAI, AutoGen, Semantic Kernel, Transformers, vLLM, MLflow, and the provider SDKs — from manifests *and* usage |
+| **Frameworks & SDKs** | LangChain, LlamaIndex, Haystack, DSPy, CrewAI, Agno, AutoGen, Semantic Kernel, Transformers, vLLM, MLflow, Crawl4AI, FastMCP, and the provider SDKs — from manifests *and* usage |
 | **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, pgvector, Redis, Elasticsearch, MongoDB Atlas |
 | **Prompts** | Prompt files (txt/md/yaml/jinja), `PromptTemplate`/`ChatPromptTemplate`/`system_prompt` patterns |
 | **Datasets** | CSV/JSONL/Parquet/Arrow signatures, `load_dataset()`, Kaggle and HF dataset references |

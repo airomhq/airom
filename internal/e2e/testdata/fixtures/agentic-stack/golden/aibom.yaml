@@ -1,0 +1,353 @@
+components:
+  - confidence: 0
+    evidence: {}
+    id: airom:14f0893c734c4d89
+    kind: application
+    name: agentic-stack
+  - confidence: 0.9875
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: versionConstraint
+          methods:
+            - manifest-analysis
+          value: '>=0.9.0'
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 3
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: crawl4ai>=0.9.0
+        - confidence: 0.7
+          detectorId: rules/crawl4ai/import
+          location:
+            column: 1
+            endColumn: 14
+            endLine: 7
+            line: 7
+            path: src/server.py
+          method: source-code-analysis
+          snippet: from crawl4ai import AsyncWebCrawler, BrowserConfig
+        - confidence: 0.75
+          detectorId: rules/crawl4ai/crawler
+          location:
+            column: 16
+            endColumn: 32
+            endLine: 16
+            line: 16
+            path: src/server.py
+          method: source-code-analysis
+          snippet: 'async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:'
+    id: airom:6d183e4ec227484e
+    kind: framework
+    name: crawl4ai
+    package:
+      ecosystem: pypi
+    provider: crawl4ai
+    versionConstraint: '>=0.9.0'
+  - confidence: 0.95
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 2.0.0
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 5
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: mcp==2.0.0
+    id: airom:856136cf16abcdf2
+    kind: framework
+    name: mcp
+    package:
+      ecosystem: pypi
+    purl: pkg:pypi/mcp@2.0.0
+    version: 2.0.0
+  - confidence: 0.9875
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 2.8.5
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 2
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: agno==2.8.5
+        - confidence: 0.7
+          detectorId: rules/agno/import
+          location:
+            column: 1
+            endColumn: 16
+            endLine: 5
+            line: 5
+            path: src/server.py
+          method: source-code-analysis
+          snippet: from agno.agent import Agent
+        - confidence: 0.7
+          detectorId: rules/agno/import
+          location:
+            column: 1
+            endColumn: 24
+            endLine: 6
+            line: 6
+            path: src/server.py
+          method: source-code-analysis
+          snippet: from agno.models.openai import OpenAIChat
+        - confidence: 0.75
+          detectorId: rules/agno/model-binding
+          location:
+            column: 1
+            endColumn: 31
+            endLine: 6
+            line: 6
+            path: src/server.py
+          method: source-code-analysis
+          snippet: from agno.models.openai import OpenAIChat
+    id: airom:989de824357981e6
+    kind: framework
+    name: agno
+    package:
+      ecosystem: pypi
+    provider: agno
+    purl: pkg:pypi/agno@2.8.5
+    version: 2.8.5
+  - confidence: 0.9875
+    evidence:
+      identity:
+        - confidence: 0.95
+          field: version
+          methods:
+            - manifest-analysis
+          value: 3.4.5
+      occurrences:
+        - confidence: 0.95
+          detectorId: manifest/pypi-requirements
+          location:
+            line: 4
+            path: requirements.txt
+          method: manifest-analysis
+          snippet: fastmcp==3.4.5
+        - confidence: 0.7
+          detectorId: rules/fastmcp/import
+          location:
+            column: 1
+            endColumn: 13
+            endLine: 8
+            line: 8
+            path: src/server.py
+          method: source-code-analysis
+          snippet: from fastmcp import FastMCP
+        - confidence: 0.75
+          detectorId: rules/fastmcp/server
+          location:
+            column: 7
+            endColumn: 15
+            endLine: 10
+            line: 10
+            path: src/server.py
+          method: source-code-analysis
+          snippet: mcp = FastMCP("research-server")
+    id: airom:a9c29d22c69110c7
+    kind: framework
+    name: fastmcp
+    package:
+      ecosystem: pypi
+    provider: fastmcp
+    purl: pkg:pypi/fastmcp@3.4.5
+    version: 3.4.5
+lifecycle: pre-build
+root: airom:14f0893c734c4d89
+schemaVersion: "1"
+serial: urn:uuid:00000000-0000-4000-8000-000000000000
+source:
+  kind: dir
+  target: agentic-stack
+stats:
+  contentBytes: 915
+  detectors:
+    - findings: 0
+      id: dataset/file
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: gosrc/ast
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/compose
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: infra/dockerfile
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/cargo
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gomod
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/gradle
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/maven
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/npm
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/npm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/nuget
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pipfile-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pnpm-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-installed
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: manifest/pypi-pyproject
+      invocations: 0
+      ns: 0
+    - findings: 4
+      id: manifest/pypi-requirements
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: manifest/yarn-lock
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/gguf
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/onnx
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfile/safetensors
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/hdf5
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/savedmodel
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tensorrt
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/tflite
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: modelfilex/torch
+      invocations: 0
+      ns: 0
+    - findings: 0
+      id: project/adapter
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/configbind
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/hfdir
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: project/raglink
+      invocations: 1
+      ns: 0
+    - findings: 0
+      id: prompt/file
+      invocations: 0
+      ns: 0
+    - findings: 7
+      id: ruleengine
+      invocations: 2
+      ns: 0
+  durationNs: 0
+  filesFailed: 0
+  filesProcessed: 3
+  filesWalked: 3
+  headerBytes: 915
+  selection:
+    - 'dataset/file: selected by "default"'
+    - 'gosrc/ast: selected by "default"'
+    - 'infra/compose: selected by "default"'
+    - 'infra/dockerfile: selected by "default"'
+    - 'manifest/nuget: selected by "default"'
+    - 'manifest/cargo: selected by "default"'
+    - 'manifest/gomod: selected by "default"'
+    - 'manifest/gradle: selected by "default"'
+    - 'manifest/pypi-installed: selected by "default"'
+    - 'manifest/maven: selected by "default"'
+    - 'manifest/npm: selected by "default"'
+    - 'manifest/npm-lock: selected by "default"'
+    - 'manifest/pipfile-lock: selected by "default"'
+    - 'manifest/pnpm-lock: selected by "default"'
+    - 'manifest/pypi-lock: selected by "default"'
+    - 'manifest/pypi-pyproject: selected by "default"'
+    - 'manifest/pypi-requirements: selected by "default"'
+    - 'manifest/yarn-lock: selected by "default"'
+    - 'modelfile/gguf: selected by "default"'
+    - 'modelfile/onnx: selected by "default"'
+    - 'modelfile/safetensors: selected by "default"'
+    - 'modelfilex/hdf5: selected by "default"'
+    - 'modelfilex/savedmodel: selected by "default"'
+    - 'modelfilex/tflite: selected by "default"'
+    - 'modelfilex/tensorrt: selected by "default"'
+    - 'modelfilex/torch: selected by "default"'
+    - 'project/adapter: selected by "default"'
+    - 'project/configbind: selected by "default"'
+    - 'project/hfdir: selected by "default"'
+    - 'project/raglink: selected by "default"'
+    - 'prompt/file: selected by "default"'
+    - 'ruleengine: selected by "default"'
+timestamp: "2026-08-01T12:00:00Z"
+tool:
+  eolCatalog: builtin
+  name: airom
+  rulesHash: "0000000000000000000000000000000000000000000000000000000000000000"
+  rulesVersion: builtin
+  version: dev

@@ -1,0 +1,31 @@
+# rules/frameworks/fastmcp.yaml — FastMCP (Model Context Protocol) server and
+# client usage.
+#
+# Two import paths reach the same framework: the standalone `fastmcp` package,
+# and `mcp.server.fastmcp` from the era when FastMCP v1 was vendored into the
+# official MCP SDK. Older projects still carry the second, so both are matched.
+pack: fastmcp
+version: 1
+rules:
+  - id: fastmcp/import
+    kind: framework
+    provider: fastmcp
+    languages: [python]
+    keywords: ["fastmcp"]
+    pattern: '\b(?:import|from)\s+(?:fastmcp|mcp\.server\.fastmcp)\b[\w.]*'
+    regions: [code]
+    claim: { name: "fastmcp" }
+    confidence: 0.7
+
+  # Constructing the server or client. An MCP server IS the AI surface — the
+  # tools it exposes are what a model gets to call — so this is worth its own
+  # sighting rather than resting on the import alone.
+  - id: fastmcp/server
+    kind: framework
+    provider: fastmcp
+    languages: [python]
+    keywords: ["FastMCP"]
+    pattern: '\bFastMCP\s*\('
+    regions: [code]
+    claim: { name: "fastmcp" }
+    confidence: 0.75

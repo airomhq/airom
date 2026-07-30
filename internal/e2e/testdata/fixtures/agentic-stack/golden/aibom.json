@@ -1,0 +1,496 @@
+{
+  "schemaVersion": "1",
+  "tool": {
+    "name": "airom",
+    "version": "dev",
+    "rulesVersion": "builtin",
+    "rulesHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "eolCatalog": "builtin"
+  },
+  "serial": "urn:uuid:00000000-0000-4000-8000-000000000000",
+  "timestamp": "2026-08-01T12:00:00Z",
+  "lifecycle": "pre-build",
+  "source": {
+    "kind": "dir",
+    "target": "agentic-stack"
+  },
+  "root": "airom:14f0893c734c4d89",
+  "components": [
+    {
+      "id": "airom:14f0893c734c4d89",
+      "kind": "application",
+      "name": "agentic-stack",
+      "confidence": 0,
+      "evidence": {}
+    },
+    {
+      "id": "airom:6d183e4ec227484e",
+      "kind": "framework",
+      "name": "crawl4ai",
+      "provider": "crawl4ai",
+      "versionConstraint": ">=0.9.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.9875,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 3
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "crawl4ai>=0.9.0"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 7,
+              "endLine": 7,
+              "column": 1,
+              "endColumn": 14
+            },
+            "detectorId": "rules/crawl4ai/import",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "from crawl4ai import AsyncWebCrawler, BrowserConfig"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 16,
+              "endLine": 16,
+              "column": 16,
+              "endColumn": 32
+            },
+            "detectorId": "rules/crawl4ai/crawler",
+            "method": "source-code-analysis",
+            "confidence": 0.75,
+            "snippet": "async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:"
+          }
+        ],
+        "identity": [
+          {
+            "field": "versionConstraint",
+            "value": ">=0.9.0",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:856136cf16abcdf2",
+      "kind": "framework",
+      "name": "mcp",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/mcp@2.0.0",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.95,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 5
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "mcp==2.0.0"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "2.0.0",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:989de824357981e6",
+      "kind": "framework",
+      "name": "agno",
+      "version": "2.8.5",
+      "provider": "agno",
+      "purl": "pkg:pypi/agno@2.8.5",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.9875,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 2
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "agno==2.8.5"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 5,
+              "endLine": 5,
+              "column": 1,
+              "endColumn": 16
+            },
+            "detectorId": "rules/agno/import",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "from agno.agent import Agent"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 6,
+              "endLine": 6,
+              "column": 1,
+              "endColumn": 24
+            },
+            "detectorId": "rules/agno/import",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "from agno.models.openai import OpenAIChat"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 6,
+              "endLine": 6,
+              "column": 1,
+              "endColumn": 31
+            },
+            "detectorId": "rules/agno/model-binding",
+            "method": "source-code-analysis",
+            "confidence": 0.75,
+            "snippet": "from agno.models.openai import OpenAIChat"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "2.8.5",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "airom:a9c29d22c69110c7",
+      "kind": "framework",
+      "name": "fastmcp",
+      "version": "3.4.5",
+      "provider": "fastmcp",
+      "purl": "pkg:pypi/fastmcp@3.4.5",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.9875,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "requirements.txt",
+              "line": 4
+            },
+            "detectorId": "manifest/pypi-requirements",
+            "method": "manifest-analysis",
+            "confidence": 0.95,
+            "snippet": "fastmcp==3.4.5"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 8,
+              "endLine": 8,
+              "column": 1,
+              "endColumn": 13
+            },
+            "detectorId": "rules/fastmcp/import",
+            "method": "source-code-analysis",
+            "confidence": 0.7,
+            "snippet": "from fastmcp import FastMCP"
+          },
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 10,
+              "endLine": 10,
+              "column": 7,
+              "endColumn": 15
+            },
+            "detectorId": "rules/fastmcp/server",
+            "method": "source-code-analysis",
+            "confidence": 0.75,
+            "snippet": "mcp = FastMCP(\"research-server\")"
+          }
+        ],
+        "identity": [
+          {
+            "field": "version",
+            "value": "3.4.5",
+            "confidence": 0.95,
+            "methods": [
+              "manifest-analysis"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "stats": {
+    "filesWalked": 3,
+    "filesProcessed": 3,
+    "filesFailed": 0,
+    "headerBytes": 915,
+    "contentBytes": 915,
+    "durationNs": 0,
+    "selection": [
+      "dataset/file: selected by \"default\"",
+      "gosrc/ast: selected by \"default\"",
+      "infra/compose: selected by \"default\"",
+      "infra/dockerfile: selected by \"default\"",
+      "manifest/nuget: selected by \"default\"",
+      "manifest/cargo: selected by \"default\"",
+      "manifest/gomod: selected by \"default\"",
+      "manifest/gradle: selected by \"default\"",
+      "manifest/pypi-installed: selected by \"default\"",
+      "manifest/maven: selected by \"default\"",
+      "manifest/npm: selected by \"default\"",
+      "manifest/npm-lock: selected by \"default\"",
+      "manifest/pipfile-lock: selected by \"default\"",
+      "manifest/pnpm-lock: selected by \"default\"",
+      "manifest/pypi-lock: selected by \"default\"",
+      "manifest/pypi-pyproject: selected by \"default\"",
+      "manifest/pypi-requirements: selected by \"default\"",
+      "manifest/yarn-lock: selected by \"default\"",
+      "modelfile/gguf: selected by \"default\"",
+      "modelfile/onnx: selected by \"default\"",
+      "modelfile/safetensors: selected by \"default\"",
+      "modelfilex/hdf5: selected by \"default\"",
+      "modelfilex/savedmodel: selected by \"default\"",
+      "modelfilex/tflite: selected by \"default\"",
+      "modelfilex/tensorrt: selected by \"default\"",
+      "modelfilex/torch: selected by \"default\"",
+      "project/adapter: selected by \"default\"",
+      "project/configbind: selected by \"default\"",
+      "project/hfdir: selected by \"default\"",
+      "project/raglink: selected by \"default\"",
+      "prompt/file: selected by \"default\"",
+      "ruleengine: selected by \"default\""
+    ],
+    "detectors": [
+      {
+        "id": "dataset/file",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "gosrc/ast",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "infra/compose",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "infra/dockerfile",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/cargo",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/gomod",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/gradle",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/maven",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/npm",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/npm-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/nuget",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pipfile-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pnpm-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-installed",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-pyproject",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "manifest/pypi-requirements",
+        "invocations": 1,
+        "findings": 4,
+        "ns": 0
+      },
+      {
+        "id": "manifest/yarn-lock",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/gguf",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/onnx",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfile/safetensors",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/hdf5",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/savedmodel",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/tensorrt",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/tflite",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "modelfilex/torch",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/adapter",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/configbind",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/hfdir",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "project/raglink",
+        "invocations": 1,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "prompt/file",
+        "invocations": 0,
+        "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "ruleengine",
+        "invocations": 2,
+        "findings": 7,
+        "ns": 0
+      }
+    ]
+  }
+}

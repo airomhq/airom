@@ -1,0 +1,536 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "airom",
+          "semanticVersion": "dev",
+          "informationUri": "https://github.com/airomhq/airom",
+          "rules": [
+            {
+              "id": "manifest/pypi-requirements",
+              "name": "ManifestPypiRequirements",
+              "shortDescription": {
+                "text": "Components identified by the manifest/pypi-requirements detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "manifest-analysis"
+              }
+            },
+            {
+              "id": "rules/agno/import",
+              "name": "RulesAgnoImport",
+              "shortDescription": {
+                "text": "Components identified by the rules/agno/import detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/agno/model-binding",
+              "name": "RulesAgnoModelBinding",
+              "shortDescription": {
+                "text": "Components identified by the rules/agno/model-binding detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/crawl4ai/crawler",
+              "name": "RulesCrawl4aiCrawler",
+              "shortDescription": {
+                "text": "Components identified by the rules/crawl4ai/crawler detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/crawl4ai/import",
+              "name": "RulesCrawl4aiImport",
+              "shortDescription": {
+                "text": "Components identified by the rules/crawl4ai/import detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/fastmcp/import",
+              "name": "RulesFastmcpImport",
+              "shortDescription": {
+                "text": "Components identified by the rules/fastmcp/import detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            },
+            {
+              "id": "rules/fastmcp/server",
+              "name": "RulesFastmcpServer",
+              "shortDescription": {
+                "text": "Components identified by the rules/fastmcp/server detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "source-code-analysis"
+              }
+            }
+          ],
+          "properties": {
+            "airom:eol.catalog": "builtin",
+            "airom:rules.hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "airom:rules.version": "builtin"
+          }
+        }
+      },
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "SRCROOT": {
+          "uri": "file:///agentic-stack/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2026-08-01T12:00:00Z"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework 'crawl4ai' detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 3,
+                  "snippet": {
+                    "text": "crawl4ai>=0.9.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "3a62ffb36031444eb16612cbba3c521b646b8c759cba25b0337a73ea53f25da5"
+          },
+          "properties": {
+            "airom:componentId": "airom:6d183e4ec227484e",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "crawl4ai"
+          }
+        },
+        {
+          "ruleId": "rules/crawl4ai/import",
+          "ruleIndex": 4,
+          "level": "note",
+          "message": {
+            "text": "framework 'crawl4ai' detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 1,
+                  "endLine": 7,
+                  "endColumn": 14,
+                  "snippet": {
+                    "text": "from crawl4ai import AsyncWebCrawler, BrowserConfig"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "b3023c58ab197fd32f4da1f0fdd6c0264a16e8cb7312a8d7a364136f942a5248"
+          },
+          "properties": {
+            "airom:componentId": "airom:6d183e4ec227484e",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "crawl4ai"
+          }
+        },
+        {
+          "ruleId": "rules/crawl4ai/crawler",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "framework 'crawl4ai' detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 16,
+                  "startColumn": 16,
+                  "endLine": 16,
+                  "endColumn": 32,
+                  "snippet": {
+                    "text": "async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "43345e7c05b267726c6251e66d025cf9c9b6a86b64bc74d3ddcd73828cac1132"
+          },
+          "properties": {
+            "airom:componentId": "airom:6d183e4ec227484e",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.75,
+            "airom:provider": "crawl4ai"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework 'mcp' [2.0.0] detected (confidence 0.95)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 5,
+                  "snippet": {
+                    "text": "mcp==2.0.0"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "af8fd188dc62db4316145ceffc5fda1ab337a4231360bd8e7b46e73825398b72"
+          },
+          "properties": {
+            "airom:componentId": "airom:856136cf16abcdf2",
+            "airom:confidence": 0.95,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:purl": "pkg:pypi/mcp@2.0.0"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 2,
+                  "snippet": {
+                    "text": "agno==2.8.5"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "430030fec58af9fd770f56631bbe436dae6f52cb2abf81d607c1595afbd1f149"
+          },
+          "properties": {
+            "airom:componentId": "airom:989de824357981e6",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "agno",
+            "airom:purl": "pkg:pypi/agno@2.8.5"
+          }
+        },
+        {
+          "ruleId": "rules/agno/import",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 1,
+                  "endLine": 5,
+                  "endColumn": 16,
+                  "snippet": {
+                    "text": "from agno.agent import Agent"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "28a756589d5a93591bfe487ad85fd037565ade98091e73245a5e24524322d695"
+          },
+          "properties": {
+            "airom:componentId": "airom:989de824357981e6",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "agno",
+            "airom:purl": "pkg:pypi/agno@2.8.5"
+          }
+        },
+        {
+          "ruleId": "rules/agno/import",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 1,
+                  "endLine": 6,
+                  "endColumn": 24,
+                  "snippet": {
+                    "text": "from agno.models.openai import OpenAIChat"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "28a756589d5a93591bfe487ad85fd037565ade98091e73245a5e24524322d695"
+          },
+          "properties": {
+            "airom:componentId": "airom:989de824357981e6",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "agno",
+            "airom:purl": "pkg:pypi/agno@2.8.5"
+          }
+        },
+        {
+          "ruleId": "rules/agno/model-binding",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "framework 'agno' [2.8.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 1,
+                  "endLine": 6,
+                  "endColumn": 31,
+                  "snippet": {
+                    "text": "from agno.models.openai import OpenAIChat"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "5a5f47d2a2f0e238d0bc9fd265193d9d01d21ef5e64f5591729709b030c92bbb"
+          },
+          "properties": {
+            "airom:componentId": "airom:989de824357981e6",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.75,
+            "airom:provider": "agno",
+            "airom:purl": "pkg:pypi/agno@2.8.5"
+          }
+        },
+        {
+          "ruleId": "manifest/pypi-requirements",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "framework 'fastmcp' [3.4.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 4,
+                  "snippet": {
+                    "text": "fastmcp==3.4.5"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "aaeffcefcb20782bfa00bc749ff5ccad7c9a3fc5d62db5ae6a0a113f87ace431"
+          },
+          "properties": {
+            "airom:componentId": "airom:a9c29d22c69110c7",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "fastmcp",
+            "airom:purl": "pkg:pypi/fastmcp@3.4.5"
+          }
+        },
+        {
+          "ruleId": "rules/fastmcp/import",
+          "ruleIndex": 5,
+          "level": "note",
+          "message": {
+            "text": "framework 'fastmcp' [3.4.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 1,
+                  "endLine": 8,
+                  "endColumn": 13,
+                  "snippet": {
+                    "text": "from fastmcp import FastMCP"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "22fd0d172b2f850b47c53e896ac18c4e0019b2b13470b46228ae4f07681f4b06"
+          },
+          "properties": {
+            "airom:componentId": "airom:a9c29d22c69110c7",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.7,
+            "airom:provider": "fastmcp",
+            "airom:purl": "pkg:pypi/fastmcp@3.4.5"
+          }
+        },
+        {
+          "ruleId": "rules/fastmcp/server",
+          "ruleIndex": 6,
+          "level": "note",
+          "message": {
+            "text": "framework 'fastmcp' [3.4.5] detected (confidence 0.9875)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 15,
+                  "snippet": {
+                    "text": "mcp = FastMCP(\"research-server\")"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "1e08c402eece8e2440c53f9b11ce1820885fb2971e13288cbd3fe6c8bf9c182b"
+          },
+          "properties": {
+            "airom:componentId": "airom:a9c29d22c69110c7",
+            "airom:confidence": 0.9875,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.75,
+            "airom:provider": "fastmcp",
+            "airom:purl": "pkg:pypi/fastmcp@3.4.5"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -115,13 +115,25 @@ func normalizePyPI(name string) string {
 
 var pypiCatalog = catalog{
 	exact: map[string]aiPkg{
-		"langchain":             {kFramework, provLangChain, ""},
-		"langchain-core":        {kFramework, provLangChain, ""},
-		"langchain-community":   {kFramework, provLangChain, ""},
-		"llama-index":           {kFramework, provLlamaIdx, ""},
-		"haystack-ai":           {kFramework, provDeepset, ""},
-		"dspy-ai":               {kFramework, "", ""},
-		"crewai":                {kFramework, "", ""},
+		"langchain":           {kFramework, provLangChain, ""},
+		"langchain-core":      {kFramework, provLangChain, ""},
+		"langchain-community": {kFramework, provLangChain, ""},
+		"llama-index":         {kFramework, provLlamaIdx, ""},
+		"haystack-ai":         {kFramework, provDeepset, ""},
+		"dspy-ai":             {kFramework, "", ""},
+		"crewai":              {kFramework, "", ""},
+		// The provider on these must match the slug their rule pack claims.
+		// The assembler folds a manifest sighting into a code sighting by
+		// (provider, name), so leaving it empty here — as several older
+		// entries do — reports the dependency and its usage as two components.
+		"agno":     {kFramework, "agno", ""},
+		"phidata":  {kFramework, "agno", ""}, // agno's former name; still pinned in older projects
+		"crawl4ai": {kFramework, "crawl4ai", ""},
+		// fastmcp 3.x is a metapackage: the module ships in fastmcp-slim, so an
+		// installed-metadata or lockfile scan sees both names.
+		"fastmcp":               {kFramework, "fastmcp", ""},
+		"fastmcp-slim":          {kFramework, "fastmcp", ""},
+		"mcp":                   {kFramework, "", ""}, // the official Model Context Protocol SDK
 		"pyautogen":             {kFramework, provMicrosoft, ""},
 		"autogen":               {kFramework, provMicrosoft, ""},
 		"semantic-kernel":       {kFramework, provMicrosoft, ""},
@@ -179,6 +191,7 @@ var npmCatalog = catalog{
 		"weaviate-ts-client":          {kVectorDB, provWeaviate, ""},
 		"onnxruntime-node":            {kLibrary, provMicrosoft, ""},
 		"@xenova/transformers":        {kFramework, provHF, ""},
+		"@modelcontextprotocol/sdk":   {kFramework, "", ""},
 	},
 	prefixes: []prefixRule{
 		{"@langchain/", aiPkg{kFramework, provLangChain, ""}},

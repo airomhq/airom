@@ -1,0 +1,29 @@
+# rules/frameworks/crawl4ai.yaml — Crawl4AI (LLM-oriented crawler) usage.
+#
+# Kind is `framework` rather than `library`: crawl4ai does not just fetch pages,
+# it runs LLM extraction strategies over them, so it is part of the AI pipeline
+# an AIBOM is asked about rather than a transport dependency.
+pack: crawl4ai
+version: 1
+rules:
+  - id: crawl4ai/import
+    kind: framework
+    provider: crawl4ai
+    languages: [python]
+    keywords: ["crawl4ai"]
+    pattern: '\b(?:import|from)\s+crawl4ai\b[\w.]*'
+    regions: [code]
+    claim: { name: "crawl4ai" }
+    confidence: 0.7
+
+  # The crawler object. `AsyncWebCrawler` is distinctive enough to stand alone,
+  # unlike the generic names other packs have to avoid.
+  - id: crawl4ai/crawler
+    kind: framework
+    provider: crawl4ai
+    languages: [python]
+    keywords: ["AsyncWebCrawler"]
+    pattern: '\bAsyncWebCrawler\s*\('
+    regions: [code]
+    claim: { name: "crawl4ai" }
+    confidence: 0.75

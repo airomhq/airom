@@ -1,0 +1,9 @@
+# An agentic stack: agent framework, LLM-oriented crawler, MCP server.
+agno==2.8.5
+crawl4ai>=0.9.0
+fastmcp==3.4.5
+mcp==2.0.0
+
+# non-AI dependencies (must NOT appear in the AIBOM)
+requests==2.32.3
+uvicorn==0.30.6
