@@ -1,0 +1,27 @@
+# rules/frameworks/metagpt.yaml — metagpt usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: metagpt
+version: 1
+rules:
+  - id: metagpt/import
+    kind: framework
+    provider: metagpt
+    languages: [python]
+    keywords: ["metagpt"]
+    pattern: '\b(?:import|from)\s+metagpt\b'
+    regions: [code]
+    claim: { name: "metagpt" }
+    confidence: 0.7
+
+  # MetaGPT's Team/company objects.
+  - id: metagpt/construct
+    kind: framework
+    provider: metagpt
+    languages: [python]
+    keywords: ["MetaGPT"]
+    pattern: '\b(?:Team|SoftwareCompany)\s*\(\s*\)?'
+    regions: [code]
+    claim: { name: "metagpt" }
+    confidence: 0.75

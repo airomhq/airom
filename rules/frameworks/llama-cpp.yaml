@@ -1,0 +1,27 @@
+# rules/frameworks/llama-cpp.yaml — llama-cpp usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: llama-cpp
+version: 1
+rules:
+  - id: llama-cpp/import
+    kind: framework
+    provider: llama-cpp
+    languages: [python]
+    keywords: ["llama_cpp"]
+    pattern: '\b(?:import|from)\s+llama_cpp\b'
+    regions: [code]
+    claim: { name: "llama-cpp" }
+    confidence: 0.7
+
+  # The Llama class is llama-cpp-python's entrypoint.
+  - id: llama-cpp/construct
+    kind: framework
+    provider: llama-cpp
+    languages: [python]
+    keywords: ["Llama("]
+    pattern: '\bLlama\s*\('
+    regions: [code]
+    claim: { name: "llama-cpp" }
+    confidence: 0.75

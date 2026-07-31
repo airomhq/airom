@@ -1,0 +1,27 @@
+# rules/frameworks/unsloth.yaml — unsloth usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: unsloth
+version: 1
+rules:
+  - id: unsloth/import
+    kind: framework
+    provider: unsloth
+    languages: [python]
+    keywords: ["unsloth"]
+    pattern: '\b(?:import|from)\s+unsloth\b'
+    regions: [code]
+    claim: { name: "unsloth" }
+    confidence: 0.7
+
+  # unsloth's patched model loader, which is what makes a training run unsloth's.
+  - id: unsloth/construct
+    kind: framework
+    provider: unsloth
+    languages: [python]
+    keywords: ["FastLanguageModel"]
+    pattern: '\bFastLanguageModel\b'
+    regions: [code]
+    claim: { name: "unsloth" }
+    confidence: 0.75

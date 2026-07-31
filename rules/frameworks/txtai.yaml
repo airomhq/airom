@@ -1,0 +1,28 @@
+# rules/frameworks/txtai.yaml — txtai usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: txtai
+version: 1
+rules:
+  - id: txtai/import
+    kind: framework
+    provider: txtai
+    languages: [python]
+    keywords: ["txtai"]
+    pattern: '\b(?:import|from)\s+txtai\b'
+    regions: [code]
+    claim: { name: "txtai" }
+    confidence: 0.7
+
+  # txtai's Embeddings/RAG constructors, keyed on their config argument so the
+  # very generic class names cannot match on their own.
+  - id: txtai/construct
+    kind: framework
+    provider: txtai
+    languages: [python]
+    keywords: ["Embeddings("]
+    pattern: '\b(?:Embeddings|RAG)\s*\(\s*(?:\{|path=|content=)'
+    regions: [code]
+    claim: { name: "txtai" }
+    confidence: 0.75

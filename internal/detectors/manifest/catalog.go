@@ -140,7 +140,35 @@ var pypiCatalog = catalog{
 		// ships one, so bundle users got the dependency and its usage as two
 		// separate components. The cross-check test only reads embedded packs,
 		// which is exactly why it did not catch this.
-		"mcp":                   {kFramework, "mcp", ""}, // the official Model Context Protocol SDK
+		"mcp": {kFramework, "mcp", ""}, // the official Model Context Protocol SDK
+		// ── Agent and application frameworks ───────────────────────────────
+		"camel-ai":         {kFramework, "camel-ai", "camel"}, // imports as `camel`
+		"metagpt":          {kFramework, "metagpt", ""},
+		"langroid":         {kFramework, "langroid", ""},
+		"llmware":          {kFramework, "llmware", ""},
+		"txtai":            {kFramework, "txtai", ""},
+		"gpt-researcher":   {kFramework, "gpt-researcher", ""},
+		"open-interpreter": {kFramework, "open-interpreter", ""},
+		"letta":            {kFramework, "letta", ""},
+		"memgpt":           {kFramework, "letta", ""}, // MemGPT's former name; frozen at 0.2.0
+		"mindsdb":          {kFramework, "mindsdb", ""},
+		"ludwig":           {kFramework, "ludwig", ""},
+
+		// ── Local inference runtimes ───────────────────────────────────────
+		"llama-cpp-python": {kFramework, "llama-cpp", "llama-cpp"}, // imports as `llama_cpp`
+		"gpt4all":          {kFramework, "nomic", ""},
+		"exllamav2":        {kFramework, "exllama", ""},
+		"fschat":           {kFramework, "lmsys", ""},
+		"ollama":           {kLibrary, provOllama, ""},
+
+		// ── Training and finetuning ────────────────────────────────────────
+		"deepspeed":  {kFramework, provMicrosoft, ""},
+		"unsloth":    {kFramework, "unsloth", ""},
+		"colossalai": {kFramework, "colossalai", ""},
+
+		// ── LLM observability ──────────────────────────────────────────────
+		"lunary": {kLibrary, "lunary", ""},
+
 		"pyautogen":             {kFramework, provMicrosoft, ""},
 		"autogen":               {kFramework, provMicrosoft, ""},
 		"semantic-kernel":       {kFramework, provMicrosoft, ""},
@@ -172,6 +200,7 @@ var pypiCatalog = catalog{
 		"faiss-gpu":             {kVectorDB, provMeta, ""},
 		"pymilvus":              {kVectorDB, provMilvus, ""},
 		"redis":                 {kVectorDB, "Redis", ""},
+		"deeplake":              {kVectorDB, "activeloop", ""},
 		"pgvector":              {kVectorDB, "pgvector", ""},
 	},
 	prefixes: []prefixRule{

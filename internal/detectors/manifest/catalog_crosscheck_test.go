@@ -236,3 +236,87 @@ func quoteOrDash(s string) string {
 	}
 	return `"` + s + `"`
 }
+
+// TestNoOrphanedNameBetweenCatalogAndRules catches the other half of the same
+// defect class, which the check above structurally cannot see.
+//
+// That one pairs a catalog entry with a rule pack by canonical NAME, so when the
+// two disagree about the name they are never paired and the mismatch is
+// invisible — exactly what happened to camel-ai (which imports as `camel`) and
+// llama-cpp-python (`llama_cpp`), each reported as two components.
+//
+// The signal has to be narrow. "Same provider" alone is far too loose: Microsoft
+// owns autogen, semantic-kernel, deepspeed and onnxruntime, and a Go client for
+// OpenAI is a genuinely different component from the Python SDK — those must not
+// fold and flagging them would make this check noise. What actually indicates a
+// missed alias is a shared provider AND one name being a prefix of the other,
+// which is what a distribution-versus-module naming difference looks like.
+func TestNoOrphanedNameBetweenCatalogAndRules(t *testing.T) {
+	rules := loadRuleClaims(t)
+	byProvider := map[string]map[string]bool{}
+	for _, r := range rules {
+		prov := strings.ToLower(r.provider)
+		if prov == "" {
+			continue
+		}
+		if byProvider[prov] == nil {
+			byProvider[prov] = map[string]bool{}
+		}
+		byProvider[prov][canonicalName(t, r.finding())] = true
+	}
+
+	for _, e := range catalogEntries() {
+		// pypi only: the rule packs claim Python module names, and a Go or
+		// Cargo client is a genuinely different component from the Python
+		// package — those never fold, correctly, whatever they are called.
+		prov := strings.ToLower(e.pkg.provider)
+		if e.ecosystem != "pypi" || prov == "" || len(byProvider[prov]) == 0 {
+			continue
+		}
+		got := canonicalName(t, e.finding())
+		if byProvider[prov][got] {
+			continue // already agree
+		}
+		for ruleName := range byProvider[prov] {
+			if !relatedNames(got, ruleName) {
+				continue
+			}
+			t.Errorf(
+				"catalog %q (%s) emits %q while its rule pack names it %q — the two are the same "+
+					"project under a distribution-versus-module name, so they will not fold and the "+
+					"dependency and its usage report as two components. Set the catalog entry's canon.",
+				e.key, e.ecosystem, got, ruleName,
+			)
+		}
+	}
+}
+
+// relatedNames reports whether two component names are the same project under a
+// distribution-versus-module spelling.
+//
+// The test is narrow on purpose, because two earlier and looser versions of it
+// were wrong in both directions. "Same provider" flagged every Microsoft project
+// against every other. "One name is a prefix of the other" then flagged
+// langchain-core against langchain and fastmcp-slim against fastmcp — sibling
+// distributions that are genuinely separate components and must NOT fold.
+//
+// What is left is the actual pattern: a distribution that differs from its
+// module only by an ecosystem suffix. camel-ai imports as camel;
+// llama-cpp-python imports as llama_cpp; firecrawl-py imports as firecrawl.
+// "-core", "-community" and "-slim" are not in that list, and are not suffixes
+// of that kind.
+func relatedNames(distribution, module string) bool {
+	norm := func(s string) string {
+		return strings.NewReplacer("_", "-", ".", "-").Replace(strings.ToLower(s))
+	}
+	d, m := norm(distribution), norm(module)
+	if d == "" || m == "" || d == m {
+		return false
+	}
+	for _, suffix := range []string{"-ai", "-python", "-py", "-js", "-ts", "-sdk"} {
+		if d == m+suffix {
+			return true
+		}
+	}
+	return false
+}

@@ -1,0 +1,27 @@
+# rules/frameworks/gpt4all.yaml — gpt4all usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: gpt4all
+version: 1
+rules:
+  - id: gpt4all/import
+    kind: framework
+    provider: nomic
+    languages: [python]
+    keywords: ["gpt4all"]
+    pattern: '\b(?:import|from)\s+gpt4all\b'
+    regions: [code]
+    claim: { name: "gpt4all" }
+    confidence: 0.7
+
+  # GPT4All is the runtime's own class name.
+  - id: gpt4all/construct
+    kind: framework
+    provider: nomic
+    languages: [python]
+    keywords: ["GPT4All("]
+    pattern: '\bGPT4All\s*\('
+    regions: [code]
+    claim: { name: "gpt4all" }
+    confidence: 0.75

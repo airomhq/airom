@@ -1,0 +1,29 @@
+# rules/frameworks/letta.yaml — letta usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+# The legacy `memgpt` module is matched too: MemGPT was renamed to Letta and
+# older projects still import the old name.
+pack: letta
+version: 1
+rules:
+  - id: letta/import
+    kind: framework
+    provider: letta
+    languages: [python]
+    keywords: ["letta"]
+    pattern: '\b(?:import|from)\s+(?:letta|memgpt)\b'
+    regions: [code]
+    claim: { name: "letta" }
+    confidence: 0.7
+
+  # Letta's client. The legacy `memgpt` module is matched by the import rule.
+  - id: letta/construct
+    kind: framework
+    provider: letta
+    languages: [python]
+    keywords: ["LettaClient"]
+    pattern: '\bLettaClient\s*\(|\bcreate_client\s*\('
+    regions: [code]
+    claim: { name: "letta" }
+    confidence: 0.75

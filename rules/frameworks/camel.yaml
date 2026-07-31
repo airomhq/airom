@@ -1,0 +1,27 @@
+# rules/frameworks/camel.yaml — camel usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: camel
+version: 1
+rules:
+  - id: camel/import
+    kind: framework
+    provider: camel-ai
+    languages: [python]
+    keywords: ["camel"]
+    pattern: '\b(?:import|from)\s+camel\b'
+    regions: [code]
+    claim: { name: "camel" }
+    confidence: 0.7
+
+  # CAMEL's role-playing society is its distinctive construct.
+  - id: camel/construct
+    kind: framework
+    provider: camel-ai
+    languages: [python]
+    keywords: ["RolePlaying"]
+    pattern: '\bChatAgent\s*\(|\bRolePlaying\s*\('
+    regions: [code]
+    claim: { name: "camel" }
+    confidence: 0.75

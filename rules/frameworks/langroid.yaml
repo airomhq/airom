@@ -1,0 +1,27 @@
+# rules/frameworks/langroid.yaml — langroid usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: langroid
+version: 1
+rules:
+  - id: langroid/import
+    kind: framework
+    provider: langroid
+    languages: [python]
+    keywords: ["langroid"]
+    pattern: '\b(?:import|from)\s+langroid\b'
+    regions: [code]
+    claim: { name: "langroid" }
+    confidence: 0.7
+
+  # langroid's agent entrypoint.
+  - id: langroid/construct
+    kind: framework
+    provider: langroid
+    languages: [python]
+    keywords: ["ChatAgent"]
+    pattern: '\bChatAgent(?:Config)?\s*\('
+    regions: [code]
+    claim: { name: "langroid" }
+    confidence: 0.75

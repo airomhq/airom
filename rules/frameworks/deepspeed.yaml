@@ -1,0 +1,27 @@
+# rules/frameworks/deepspeed.yaml — deepspeed usage.
+#
+# The `\b` after the module name is not decoration: without it a prefix match
+# also claims any longer module starting with the same letters.
+pack: deepspeed
+version: 1
+rules:
+  - id: deepspeed/import
+    kind: framework
+    provider: microsoft
+    languages: [python]
+    keywords: ["deepspeed"]
+    pattern: '\b(?:import|from)\s+deepspeed\b'
+    regions: [code]
+    claim: { name: "deepspeed" }
+    confidence: 0.7
+
+  # The call that puts a training loop under DeepSpeed.
+  - id: deepspeed/construct
+    kind: framework
+    provider: microsoft
+    languages: [python]
+    keywords: ["deepspeed.initialize"]
+    pattern: '\bdeepspeed\.initialize\s*\('
+    regions: [code]
+    claim: { name: "deepspeed" }
+    confidence: 0.75
