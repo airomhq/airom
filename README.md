@@ -40,7 +40,8 @@ That evidence is emitted as CycloneDX 1.6 `evidence.identity[]` + `evidence.occu
 | **Local model weights** | GGUF, safetensors, ONNX, Torch (pickle-zip), TensorFlow SavedModel, TensorRT, TFLite, HDF5 — magic bytes + header metadata (architecture, parameter count, quantization), never loaded or executed |
 | **Model directories & lineage** | Hugging Face model dirs (`config.json` + weights = one component), PEFT/LoRA adapters → `derived-from` base-model edges |
 | **Embedding models** | OpenAI, sentence-transformers, BGE/E5/MiniLM, Voyage, Cohere — hosted or local |
-| **Frameworks & SDKs** | LangChain, LlamaIndex, Haystack, DSPy, CrewAI, Agno, AutoGen, Semantic Kernel, Transformers, vLLM, MLflow, Crawl4AI, FastMCP, and the provider SDKs — from manifests *and* usage |
+| **Frameworks & SDKs** | LangChain, LlamaIndex, Haystack, DSPy, CrewAI, Agno, AutoGen, Semantic Kernel, CAMEL, MetaGPT, Langroid, LLMware, txtai, Letta, GPT Researcher, Transformers, MLflow, Crawl4AI, FastMCP, and the provider SDKs — from manifests *and* usage |
+| **Local inference & training** | vLLM, llama.cpp (`llama-cpp-python`), GPT4All, ExLlamaV2, FastChat, Ollama; DeepSpeed, Unsloth, Colossal-AI for training and finetuning |
 | **Frozen applications** | PyInstaller onefile executables — the CArchive/PYZ module list read directly, so AI compiled into a single binary with no `.py`, `.pyc`, or dist-info on disk is still inventoried |
 | **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, pgvector, Redis, Elasticsearch, MongoDB Atlas — including SQL schema/DDL (`vector`/`halfvec`/`sparsevec` columns, HNSW and IVFFlat indexes) and a server-side pgvector install read from its PostgreSQL extension control file |
 | **Prompts** | Prompt files (txt/md/yaml/jinja), `PromptTemplate`/`ChatPromptTemplate`/`system_prompt` patterns |

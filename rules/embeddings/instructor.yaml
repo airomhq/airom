@@ -1,4 +1,8 @@
-# rules/embeddings/instructor.yaml — INSTRUCTOR instruction-tuned embedding models.
+# rules/embeddings/instructor.yaml — INSTRUCTOR instruction-tuned embedding
+# models (hkunlp/instructor-*). Not to be confused with the unrelated
+# `instructor` structured-output LLM library, which is a different project
+# that happens to share the name; the signed rule bundle carries this pack as
+# `instructor-embedding` so both can ship side by side.
 pack: instructor
 version: 1
 rules:
