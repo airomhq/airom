@@ -1,0 +1,57 @@
+# Builds the documentation site and keeps it publishable, without publishing it.
+#
+# The site is NOT hosted anywhere yet. This workflow exists so that (a) a broken
+# docs change fails on the pull request that made it rather than at deploy time,
+# and (b) the static bundle is one download away whenever a host is chosen — the
+# publish step is then a few lines added to the end of this file.
+#
+# Serving note for whoever wires that up: `mint export` emits ABSOLUTE asset
+# paths, and the Next.js runtime builds chunk URLs from an empty assetPrefix
+# that `mint export` gives no way to set. The site therefore has to be served
+# from a domain ROOT — an org GitHub Pages site or a custom domain. A project
+# Pages path like /airom/ renders the first page and then fails to load chunks.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs-site/**", ".github/workflows/docs.yml"]
+  pull_request:
+    paths: ["docs-site/**", ".github/workflows/docs.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate and export
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Mintlify does not support Node 25+; pin to the current LTS rather than
+      # letting the runner's default drift into an unsupported major.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # Strict: fails on warnings as well as errors.
+      - name: Validate
+        working-directory: docs-site
+        run: npx --yes mint@latest validate
+
+      - name: Check links
+        working-directory: docs-site
+        run: npx --yes mint@latest broken-links
+
+      - name: Export static site
+        working-directory: docs-site
+        run: npx --yes mint@latest export --output dist.zip
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-site
+          path: docs-site/dist.zip
+          retention-days: 14

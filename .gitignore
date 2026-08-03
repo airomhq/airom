@@ -42,6 +42,9 @@ go.work.sum
 # `mint dev` local preview cache/build output; the .mdx sources ARE tracked.
 /docs-site/.mintlify/
 /docs-site/node_modules/
+# `mint export` output — a ~13 MB build artifact, produced by CI, never committed.
+/docs-site/export.zip
+/docs-site/dist/
 
 # ── Nested airom-rules checkout ──────────────────────────────────────────────
 # The airom-rules repo (github.com/airomhq/airom-rules) may be checked out here

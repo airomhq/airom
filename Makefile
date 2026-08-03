@@ -110,6 +110,20 @@ bench: ## Run the tracked benchmarks (throughput, assembly) — not asserted, fo
 test-heavy: ## Run the heavy perf trees (10x files + a 200 MB model file); slow, no -race
 	AIROM_PERF_HEAVY=1 go test -run 'Heavy|BigFile' ./internal/perf/...
 
+.PHONY: docs
+docs: ## Serve the documentation site locally with hot reload (needs Node 24; 25+ is unsupported by Mintlify)
+	cd docs-site && npx --yes mint@latest dev
+
+.PHONY: docs-check
+docs-check: ## Validate the docs strictly and check every link — what CI runs
+	cd docs-site && npx --yes mint@latest validate && npx --yes mint@latest broken-links
+
+.PHONY: docs-export
+docs-export: ## Build the static site into docs-site/export.zip (gitignored)
+	cd docs-site && npx --yes mint@latest export
+	@echo "Built docs-site/export.zip — serve its contents from a domain ROOT;"
+	@echo "asset paths are absolute, so a /subpath/ deployment breaks chunk loading."
+
 clean: ## Remove build artifacts, coverage output, and dist/
 	rm -f $(BINARY) $(BINARY).exe coverage.out coverage.html
 	rm -rf dist/ tmp/
