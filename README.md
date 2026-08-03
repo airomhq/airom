@@ -97,6 +97,7 @@ no claim rather than a quiet "supported".
 | [CVE overlay](docs/cve.md) | Your AI dependencies against OSV.dev, with real CVSS scores and a fail-closed gate. On by default. |
 | [Model lifecycle](docs/eol.md) | Hosted models matched against a dated, sourced catalog of provider retirement announcements. |
 | [Compliance mapping](docs/compliance.md) | NIST AI RMF and OWASP Agentic controls as CycloneDX attestations — met/gap/manual, no invented scores. |
+| [VEX export](docs/cli.md) | An OpenVEX document over the CVE overlay, for consumers that ingest VEX. Only ever asserts `affected` — a scanner has no basis for an all-clear. |
 | [AIBOM diff](docs/cli.md) | The semantic delta between two scans, so AI becomes a per-PR control. |
 | [Test scope](docs-site/concepts/test-scope.mdx) | Fixtures and test trees are recorded but kept out of the default view. |
 | [Signed rule updates](docs-site/rules/updates.mdx) | New frameworks reach you without a new binary, over an ed25519-verified channel. |

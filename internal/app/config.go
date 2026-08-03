@@ -32,7 +32,7 @@ const (
 // (reconciled in Phase 7).
 type OutputFormat string
 
-// The five v1 writer formats (§11); SPDX is a reserved v2 slot.
+// The v1 writer formats (§11); SPDX is a reserved v2 slot.
 const (
 	FormatTable      OutputFormat = "table"
 	FormatJSON       OutputFormat = "json"
@@ -40,6 +40,7 @@ const (
 	FormatSARIF      OutputFormat = "sarif"
 	FormatYAML       OutputFormat = "yaml"
 	FormatCompliance OutputFormat = "compliance"
+	FormatVEX        OutputFormat = "vex"
 )
 
 // Formats lists every valid output format, sorted, for error messages and
@@ -48,6 +49,7 @@ func Formats() []string {
 	fs := []string{
 		string(FormatTable), string(FormatJSON), string(FormatCycloneDX),
 		string(FormatSARIF), string(FormatYAML), string(FormatCompliance),
+		string(FormatVEX),
 	}
 	sort.Strings(fs)
 	return fs
@@ -72,6 +74,8 @@ func ParseFormat(s string) (OutputFormat, error) {
 		return FormatYAML, nil
 	case FormatCompliance:
 		return FormatCompliance, nil
+	case FormatVEX:
+		return FormatVEX, nil
 	default:
 		return "", fmt.Errorf("unknown output format %q (valid: %s)", s, strings.Join(Formats(), ", "))
 	}

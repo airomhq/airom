@@ -13,6 +13,7 @@ import (
 	_ "github.com/airomhq/airom/internal/writer/nativejson"
 	_ "github.com/airomhq/airom/internal/writer/sarifw"
 	_ "github.com/airomhq/airom/internal/writer/tablew"
+	_ "github.com/airomhq/airom/internal/writer/vexw"
 	_ "github.com/airomhq/airom/internal/writer/yamlw"
 )
 
@@ -24,6 +25,7 @@ var formatNames = map[OutputFormat]string{
 	FormatSARIF:      "sarif",
 	FormatYAML:       "yaml",
 	FormatCompliance: "compliance",
+	FormatVEX:        "vex",
 }
 
 // emit renders the assembled inventory to every configured output
