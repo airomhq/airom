@@ -1,6 +1,6 @@
 ---
 title: "Output Formats"
-description: "The five AIROM output formats, and how to emit several of them from one scan."
+description: "The AIROM output formats, and how to emit several of them from one scan."
 icon: "file-output"
 ---
 
@@ -19,6 +19,34 @@ carry. One scan, every format, no drift between them.
 | SARIF | `sarif` | No | Code scanning UIs. See [/output/sarif](/output/sarif). |
 | YAML | `yaml` | Yes | The same content as `json`, shaped for human review and diffs. |
 | Compliance report | `compliance` | No | A Markdown report of `--compliance` results. See [/concepts/compliance](/concepts/compliance). |
+| OpenVEX | `vex` | No | Consumers that ingest VEX. Every statement is `affected` — see below. |
+| SPDX | `spdx` | No | SPDX 3.0.1 JSON-LD with the AI, Dataset, Software, and Security profiles. The lossiest format — see below. |
+
+## VEX and SPDX
+
+`vex` emits an [OpenVEX](https://openvex.dev) 0.2.0 document over the CVE
+overlay. Every statement is `affected`, and `not_affected` is unreachable by
+construction: AIROM does no reachability analysis, so it knows a component is
+present at a version an advisory lists as vulnerable and nothing more. An
+all-clear it cannot justify is the one output that would make you stop looking.
+The upstream fixed version goes in `action_statement`, never a `fixed` status —
+that would assert *your* product is remediated when it is still running the
+vulnerable release.
+
+`spdx` emits an [SPDX 3.0.1](https://spdx.github.io/spdx-spec/v3.0.1/) JSON-LD
+graph. Take it when your downstream tooling ingests SPDX — and know what you are
+giving up. It is the lossiest format AIROM emits, and the loss lands squarely on
+the thing AIROM exists to record: **SPDX 3.0.1 has no slot for an occurrence**,
+so no `file:line` evidence survives. Each package states its occurrence *count*
+in a comment so you know what you are missing, but if you need the evidence
+itself, take CycloneDX or native JSON.
+
+What it does carry: models as `ai_AIPackage`, datasets as
+`dataset_DatasetPackage`, suppliers as `Organization` elements, licenses as
+`hasDeclaredLicense` edges, model retirement as `validUntilTime`, and both
+overlays through the Security profile. Required fields on the AI and Dataset
+classes follow SPDX's `NOASSERTION` discipline rather than being omitted — a
+consumer can tell "we looked and do not know" from "this tool never looked".
 
 <Note>
 `json` and `yaml` are the two lossless formats — they carry the whole

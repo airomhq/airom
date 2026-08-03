@@ -821,9 +821,13 @@ SARIF to file in one scan).
 - **table** — `KIND | NAME | VERSION | PROVIDER | CONF | EVIDENCE` (evidence rendered as
   `n occ`); TTY-aware; a wide mode (`writer.Options.TableWide`) expands per-component
   file:line lists.
-- **spdx-3.0.1 AI profile** — reserved v2 slot. The model already carries the graph,
-  tri-states, and `ai_*` field homes; the writer lands as one package with zero core
-  changes — that asymmetry is the acceptance test for this architecture.
+- **vex** — OpenVEX 0.2.0 over the CVE overlay. Every statement is `affected` by
+  construction: no reachability analysis means no grounds for `not_affected`.
+- **spdx** — SPDX 3.0.1 JSON-LD (AI, Dataset, Software, Security profiles). Landed as one
+  package (`internal/writer/spdxw`) with **zero core changes** — the model already carried
+  the element graph, the tri-states, and the `ai_*` field homes. That asymmetry was the
+  stated acceptance test for this architecture, and it held. The lossiest writer: SPDX 3.0.1
+  has no slot for an `Occurrence`, so evidence does not survive it.
 
 `docs/mapping.md` holds the master field-mapping table (internal → CDX path → SPDX path →
 SARIF path) and is **enforced by a round-trip test**; CDX and SARIF goldens are validated
@@ -926,8 +930,9 @@ ns + invocations) into the Inventory — maintainers triage detector #217 with d
 
 ## 16. Explicitly deferred to v2 (reserved slots, zero model changes required)
 
-1. **SPDX 3.0.1 AI-profile writer** — model already graph + tri-state; near-zero ecosystem
-   ingestion today. One new package later.
+1. ~~**SPDX 3.0.1 AI-profile writer**~~ — **shipped**, as `internal/writer/spdxw` (`-o spdx`).
+   Landed exactly as predicted: one new package, zero changes to the domain model, the
+   pipeline, or any other writer.
 2. **Attestation verification** (Sigstore / SLSA / in-toto) — `AttestationRef` +
    `MethodAttestation` + `Verified TriState` exist now; v1 records discovered attestation
    files, v2 verifies (the only non-hash path to confidence 1.0).
@@ -936,8 +941,10 @@ ns + invocations) into the Inventory — maintainers triage detector #217 with d
 4. **wazero-WASM tree-sitter precision layer** — behind the existing `FileDetector` seam;
    gated on the oracle scoreboard.
 5. **Remote/OCI rule registry** — needs signing + trust policy; pairs with attestation work.
-6. **Server mode, shared remote cache, SBOM ingestion/merge, Dependency-Track push, VEX** —
-   all consumers of the frozen native format; the cache API is already remote-shaped.
+6. **Server mode, shared remote cache, SBOM ingestion/merge, Dependency-Track push** — all
+   consumers of the frozen native format; the cache API is already remote-shaped. (VEX was
+   on this list and shipped early as `internal/writer/vexw`, for the same reason SPDX did:
+   it needed nothing but the graph.)
 7. **Out-of-process plugins** — YAML packs absorb the "add a provider" long tail; don't
    freeze a protocol before the in-proc API survives third-party use.
 8. **Git-history scanning, VM images, runtime probing** (querying a live Ollama) — each is a

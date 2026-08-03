@@ -1,0 +1,120 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "@id": "_:creationInfo",
+      "created": "2026-08-01T12:00:00Z",
+      "createdBy": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+      ],
+      "createdUsing": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+      ],
+      "specVersion": "3.0.1",
+      "type": "CreationInfo"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "type": "SoftwareAgent"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "software_packageVersion": "dev",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "type": "Tool"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "langchain",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-langchain",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "openai",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "Organization"
+    },
+    {
+      "comment": "airom:service.endpoint 11434; airom:confidence 0.75; airom:evidence 1 occurrence(s); airom:kind infra",
+      "creationInfo": "_:creationInfo",
+      "name": "ollama",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#53f987ae810a0674",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/langchain@0.2.16",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "langchain",
+      "software_packageVersion": "0.2.16",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#6ed15db34c48ea41",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-langchain",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/openai@1.51.0",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "openai",
+      "software_packageVersion": "1.51.0",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "mixed-monorepo",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#c4cea838751d80a9",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:versionConstraint ^4.67.1; airom:package.ecosystem npm; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "name": "openai",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
+      "creationInfo": "_:creationInfo",
+      "element": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#53f987ae810a0674",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#6ed15db34c48ea41",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#c4cea838751d80a9",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23"
+      ],
+      "rootElement": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#c4cea838751d80a9"
+      ],
+      "software_sbomType": [
+        "build"
+      ],
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "type": "software_Sbom"
+    }
+  ]
+}

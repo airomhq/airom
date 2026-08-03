@@ -1,0 +1,141 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "@id": "_:creationInfo",
+      "created": "2026-08-01T12:00:00Z",
+      "createdBy": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+      ],
+      "createdUsing": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+      ],
+      "specVersion": "3.0.1",
+      "type": "CreationInfo"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "type": "SoftwareAgent"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "software_packageVersion": "dev",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "type": "Tool"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "agno",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-agno",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "crawl4ai",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-crawl4ai",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "fastmcp",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-fastmcp",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "mcp",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-mcp",
+      "type": "Organization"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "agentic-stack",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:versionConstraint >=0.9.0; airom:package.ecosystem pypi; airom:confidence 0.988; airom:evidence 3 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "name": "crawl4ai",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#6d183e4ec227484e",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-crawl4ai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.988; airom:evidence 4 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/agno@2.8.5",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "agno",
+      "software_packageVersion": "2.8.5",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#989de824357981e6",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-agno",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.988; airom:evidence 3 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/fastmcp@3.4.5",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "fastmcp",
+      "software_packageVersion": "3.4.5",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a9c29d22c69110c7",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-fastmcp",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/mcp@2.0.0",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "mcp",
+      "software_packageVersion": "2.0.0",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#b8ff217b82fc34ca",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-mcp",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
+      "creationInfo": "_:creationInfo",
+      "element": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#6d183e4ec227484e",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#989de824357981e6",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a9c29d22c69110c7",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#b8ff217b82fc34ca"
+      ],
+      "rootElement": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89"
+      ],
+      "software_sbomType": [
+        "build"
+      ],
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "type": "software_Sbom"
+    }
+  ]
+}

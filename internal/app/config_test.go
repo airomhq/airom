@@ -4,6 +4,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/airomhq/airom/internal/writer"
 )
 
 func validConfig() *Config {
@@ -148,12 +150,34 @@ func TestValidate(t *testing.T) {
 }
 
 func TestParseFormat(t *testing.T) {
-	for _, ok := range []string{"table", "JSON", " cyclonedx ", "sarif", "yaml"} {
+	for _, ok := range []string{"table", "JSON", " cyclonedx ", "sarif", "yaml", "vex", "spdx"} {
 		if _, err := ParseFormat(ok); err != nil {
 			t.Errorf("ParseFormat(%q) unexpected error: %v", ok, err)
 		}
 	}
-	if _, err := ParseFormat("spdx"); err == nil {
-		t.Error("ParseFormat(spdx): want error (v2 format), got nil")
+	if _, err := ParseFormat("parquet"); err == nil {
+		t.Error("ParseFormat(parquet): want an error for an unknown format, got nil")
+	}
+}
+
+// TestEveryFormatHasAWriter enforces the sync that config.go's OutputFormat
+// comment asserts but nothing previously checked: the CLI-facing enum and the
+// writer registry are two lists that have to agree. A format accepted by
+// ParseFormat with no registered writer fails at emit time, after the whole
+// scan has run — the most expensive moment to discover a typo.
+func TestEveryFormatHasAWriter(t *testing.T) {
+	for _, name := range Formats() {
+		f, err := ParseFormat(name)
+		if err != nil {
+			t.Fatalf("Formats() lists %q but ParseFormat rejects it: %v", name, err)
+		}
+		registryName, ok := formatNames[f]
+		if !ok {
+			t.Errorf("format %q has no entry in formatNames", name)
+			continue
+		}
+		if _, err := writer.New(registryName, writer.Options{}); err != nil {
+			t.Errorf("format %q maps to writer %q, which is not registered: %v", name, registryName, err)
+		}
 	}
 }

@@ -1,0 +1,228 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "@id": "_:creationInfo",
+      "created": "2026-08-01T12:00:00Z",
+      "createdBy": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+      ],
+      "createdUsing": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+      ],
+      "specVersion": "3.0.1",
+      "type": "CreationInfo"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "type": "SoftwareAgent"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "software_packageVersion": "dev",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "type": "Tool"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "anthropic",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "openai",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "Organization"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:param.max_tokens 64; airom:model.provider anthropic; airom:model.id claude-sonnet-4-6; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "claude-sonnet-4-6",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#0b7828a4ff243920",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "ai_AIPackage"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:eol deprecated; shutdown 2026-10-23; replacement gpt-5.6-sol; https://developers.openai.com/api/docs/deprecations; airom:model.provider openai; airom:model.id gpt-4-turbo; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "gpt-4-turbo",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#1b13aab20f840ad4",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "ai_AIPackage",
+      "validUntilTime": "2026-10-23T00:00:00Z"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.986; airom:evidence 3 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/anthropic@0.39.0",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "anthropic",
+      "software_packageVersion": "0.39.0",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:confidence 0.525; airom:evidence 2 occurrence(s); airom:kind ai-config",
+      "creationInfo": "_:creationInfo",
+      "name": "max_tokens",
+      "software_primaryPurpose": "configuration",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:eol deprecated; shutdown 2026-08-05; replacement claude-opus-4-8; https://platform.claude.com/docs/en/docs/about-claude/model-deprecations; airom:param.max_tokens 64; airom:model.provider anthropic; airom:model.id claude-opus-4-1-20250805; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "claude-opus-4-1-20250805",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#76a548bfe1b671c7",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "ai_AIPackage",
+      "validUntilTime": "2026-08-05T00:00:00Z"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:param.max_tokens 64; airom:model.provider openai; airom:model.id gpt-4o; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "gpt-4o",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "ai_AIPackage"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.986; airom:evidence 4 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:pypi/openai@1.51.0",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "openai",
+      "software_packageVersion": "1.51.0",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "eol-models",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:eol retired; shutdown 2025-06-06; replacement gpt-4o; https://developers.openai.com/api/docs/deprecations; airom:model.provider openai; airom:model.id gpt-4-32k; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "gpt-4-32k",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "ai_AIPackage",
+      "validUntilTime": "2025-06-06T00:00:00Z"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-0",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#0b7828a4ff243920"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-1",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#76a548bfe1b671c7"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-2",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#1b13aab20f840ad4"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-3",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-4",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
+      "creationInfo": "_:creationInfo",
+      "element": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#0b7828a4ff243920",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#1b13aab20f840ad4",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#76a548bfe1b671c7",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f"
+      ],
+      "rootElement": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576"
+      ],
+      "software_sbomType": [
+        "build"
+      ],
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "type": "software_Sbom"
+    }
+  ]
+}

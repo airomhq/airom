@@ -1,0 +1,133 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "@id": "_:creationInfo",
+      "created": "2026-08-01T12:00:00Z",
+      "createdBy": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+      ],
+      "createdUsing": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+      ],
+      "specVersion": "3.0.1",
+      "type": "CreationInfo"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "type": "SoftwareAgent"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "airom",
+      "software_packageVersion": "dev",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "type": "Tool"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "anthropic",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "langchain",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-langchain",
+      "type": "Organization"
+    },
+    {
+      "creationInfo": "_:creationInfo",
+      "name": "openai",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "Organization"
+    },
+    {
+      "comment": "airom:releaseTime NOASSERTION; airom:param.max_tokens 512; airom:model.provider anthropic; airom:model.id claude-sonnet-4-5; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
+      "creationInfo": "_:creationInfo",
+      "name": "claude-sonnet-4-5",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14ac8720c7a8d1ef",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "ai_AIPackage"
+    },
+    {
+      "comment": "airom:confidence 0.5; airom:evidence 1 occurrence(s); airom:kind ai-config",
+      "creationInfo": "_:creationInfo",
+      "name": "max_tokens",
+      "software_primaryPurpose": "configuration",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:versionConstraint ^0.3.2; airom:package.ecosystem npm; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "name": "langchain",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#74c94e76beb18249",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-langchain",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "node-openai",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:versionConstraint ^4.67.1; airom:package.ecosystem npm; airom:confidence 0.985; airom:evidence 2 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "name": "openai",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:versionConstraint ^0.27.3; airom:package.ecosystem npm; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
+      "creationInfo": "_:creationInfo",
+      "name": "anthropic",
+      "software_primaryPurpose": "library",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f9aed661fdbdcef2",
+      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:rel.uses; airom:rel.confidence 0.7",
+      "creationInfo": "_:creationInfo",
+      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23",
+      "relationshipType": "other",
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-0",
+      "to": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14ac8720c7a8d1ef"
+      ],
+      "type": "Relationship"
+    },
+    {
+      "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
+      "creationInfo": "_:creationInfo",
+      "element": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#14ac8720c7a8d1ef",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#74c94e76beb18249",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23",
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f9aed661fdbdcef2"
+      ],
+      "rootElement": [
+        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5"
+      ],
+      "software_sbomType": [
+        "build"
+      ],
+      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "type": "software_Sbom"
+    }
+  ]
+}

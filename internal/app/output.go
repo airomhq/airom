@@ -12,6 +12,7 @@ import (
 	_ "github.com/airomhq/airom/internal/writer/compliancew"
 	_ "github.com/airomhq/airom/internal/writer/nativejson"
 	_ "github.com/airomhq/airom/internal/writer/sarifw"
+	_ "github.com/airomhq/airom/internal/writer/spdxw"
 	_ "github.com/airomhq/airom/internal/writer/tablew"
 	_ "github.com/airomhq/airom/internal/writer/vexw"
 	_ "github.com/airomhq/airom/internal/writer/yamlw"
@@ -26,6 +27,7 @@ var formatNames = map[OutputFormat]string{
 	FormatYAML:       "yaml",
 	FormatCompliance: "compliance",
 	FormatVEX:        "vex",
+	FormatSPDX:       "spdx",
 }
 
 // emit renders the assembled inventory to every configured output

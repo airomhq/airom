@@ -61,9 +61,11 @@ var goldenFormats = []struct{ format, file string }{
 	{"sarif", "scan.sarif"},
 	{"yaml", "aibom.yaml"},
 	{"table", "table.txt"},
+	{"vex", "openvex.json"},
+	{"spdx", "bom.spdx.json"},
 }
 
-// goldenFixtures are the repositories golden-filed across all five formats.
+// goldenFixtures are the repositories golden-filed across every format.
 var goldenFixtures = []string{
 	"python-langchain-rag",
 	"node-openai",
@@ -205,8 +207,8 @@ func checkGolden(t *testing.T, path string, got []byte) {
 	}
 }
 
-// TestGoldenFixtures scans every fixture and byte-compares all five rendered
-// formats against their committed goldens — the core end-to-end contract.
+// TestGoldenFixtures scans every fixture and byte-compares every rendered
+// format against its committed golden — the core end-to-end contract.
 func TestGoldenFixtures(t *testing.T) {
 	for _, name := range goldenFixtures {
 		t.Run(name, func(t *testing.T) {
@@ -319,6 +321,89 @@ func TestCrossFormatConsistency(t *testing.T) {
 	if diff := multisetDiff(nativeNames, multiset(cdxNames)); diff != "" {
 		t.Errorf("component-name sets diverge between native json and cyclonedx:\n%s", diff)
 	}
+}
+
+// TestSPDXGraphIsClosed proves on real scans what the writer's unit tests prove
+// on synthetic ones: every IRI an SPDX element points at is an element the
+// document actually declares. A dangling reference is invisible by eye and
+// invisible to a byte-comparison golden — the document stays well-formed JSON
+// and every field looks plausible — but it is an invalid SPDX graph, and the
+// first draft of this writer shipped exactly that (Agent IRIs minted for
+// suppliers, no Agent elements emitted).
+//
+// It also checks the direction that the CycloneDX cross-format test cannot:
+// CDX hoists the scan root out of components[] into metadata.component, while
+// SPDX's software_Sbom.rootElement is a REFERENCE, so the root must remain a
+// graph element here.
+func TestSPDXGraphIsClosed(t *testing.T) {
+	for _, name := range goldenFixtures {
+		t.Run(name, func(t *testing.T) {
+			inv := scanNormalized(t, name, nil)
+
+			var doc struct {
+				Graph []map[string]any `json:"@graph"`
+			}
+			if err := json.Unmarshal(renderFormat(t, "spdx", inv), &doc); err != nil {
+				t.Fatalf("parse spdx: %v", err)
+			}
+
+			declared := make(map[string]bool, len(doc.Graph))
+			pkgNames := []string{}
+			for _, e := range doc.Graph {
+				for _, key := range []string{"spdxId", "@id"} {
+					if id, ok := e[key].(string); ok {
+						declared[id] = true
+					}
+				}
+				switch e["type"] {
+				case "software_Package", "ai_AIPackage", "dataset_DatasetPackage":
+					n, _ := e["name"].(string)
+					pkgNames = append(pkgNames, n)
+				}
+			}
+
+			// Every component becomes exactly one package element — including
+			// the root, unlike CycloneDX.
+			if diff := multisetDiff(multiset(componentNamesSlice(inv)), multiset(pkgNames)); diff != "" {
+				t.Errorf("component-name sets diverge between native json and spdx:\n%s", diff)
+			}
+
+			const noAssertionElement = "https://spdx.org/rdf/3.0.1/terms/Core/NoAssertionElement"
+			refFields := []string{
+				"suppliedBy", "originatedBy", "from", "to",
+				"createdBy", "createdUsing", "creationInfo", "rootElement", "element",
+			}
+			for _, e := range doc.Graph {
+				for _, f := range refFields {
+					for _, ref := range spdxRefs(e[f]) {
+						if ref == noAssertionElement {
+							continue // a defined SPDX individual, not a document element
+						}
+						if !declared[ref] {
+							t.Errorf("%v.%s → %q, which is not declared in @graph", e["spdxId"], f, ref)
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
+// spdxRefs flattens a field that may hold one IRI or a list of them.
+func spdxRefs(v any) []string {
+	switch t := v.(type) {
+	case string:
+		return []string{t}
+	case []any:
+		out := make([]string, 0, len(t))
+		for _, x := range t {
+			if s, ok := x.(string); ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	}
+	return nil
 }
 
 // ── small helpers ───────────────────────────────────────────────────────────

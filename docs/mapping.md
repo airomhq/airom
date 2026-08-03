@@ -20,11 +20,18 @@ Change discipline:
   registry (§6.5 below) **must update this file in the same PR**.
 - The **native JSON** column is the lossless reference format; every other format is allowed
   to be lossy *only* where a cell below explicitly says so.
-- The **SPDX 3.0.1** column is the design target for the v2 writer (ARCHITECTURE §16.1). Rows
+- The **SPDX 3.0.1** column is **implemented** by `internal/writer/spdxw` (`-o spdx`); it was
+  the design target for the v2 writer (ARCHITECTURE §16.1) until that writer landed. Rows
   marked ▲ use vocabulary values beyond the subset schema-verified during research
   (`trainedOn`, `testedOn`, `hasInput`, `hasOutput`, `contains`, `dependsOn`, `generates`);
-  they are re-verified against the published 3.0.1 vocabulary when that writer lands, with
-  `relationshipType: "other"` + element `comment` as the defined fallback.
+  the writer emits them as written here, with `relationshipType: "other"` + element `comment`
+  as the defined fallback for the types that have no SPDX equivalent at all.
+- SPDX is the **lossiest** format AIROM emits, and the loss is concentrated in exactly the
+  thing AIROM exists to record: there is no home for an `Occurrence`, so no `file:line`
+  evidence survives. Rather than let a reader mistake that silence for absence, every field
+  with no SPDX slot is written into the element `comment` under an `airom:` prefix. That is
+  not a real mapping and no consumer will parse it — it is P6 applied to a format that cannot
+  carry the data.
 
 ## 2. How to read the tables
 
@@ -61,14 +68,14 @@ Conventions used throughout:
 | `SchemaVersion` | — (implied by `bomFormat` + `specVersion`) | — (implied by `CreationInfo.specVersion: "3.0.1"`) | — (implied by `version: "2.1.0"`) | `schemaVersion` *(native)* |
 | `Tool` (name, version) | `metadata.tools.components[]` `{type: "application", name, version}` *(native)* | `CreationInfo.createdUsing` → `Tool` element *(native)* | `runs[].tool.driver.{name, semanticVersion, informationUri}` *(native)* | `tool.{name, version}` |
 | `Tool.Commit` | `metadata.properties[]` `airom:tool.commit` *(prop)* | `Tool` element `comment` | `runs[].tool.driver.properties["airom:tool.commit"]` *(prop)* | `tool.commit` |
-| `Serial` (a full `urn:uuid:<uuid>` URN) | `serialNumber` = `Serial` verbatim *(native; already a `urn:uuid:` URN — a bare UUID is prefixed for hand-built inventories)* | seeds the `SpdxDocument` `spdxId` / document namespace: `https://airom.dev/spdxdocs/<Serial>` (IRI prefix finalized with the v2 writer) | — | `serial` |
+| `Serial` (a full `urn:uuid:<uuid>` URN) | `serialNumber` = `Serial` verbatim *(native; already a `urn:uuid:` URN — a bare UUID is prefixed for hand-built inventories)* | seeds the document namespace: `https://github.com/airomhq/airom/spdxdocs/<Serial-UUID>#` *(native; the prefix is deliberately NOT `airom.dev`, an unregistered domain — an SPDX namespace never has to resolve, which is exactly why minting one under a name the project does not own is easy to do and wrong to do)* | — | `serial` |
 | `Timestamp` (RFC 3339 UTC, injectable clock) | `metadata.timestamp` *(native)* | `CreationInfo.created` *(native)* | `runs[].invocations[].endTimeUtc` *(native)* | `timestamp` |
 | `Lifecycle` (`"pre-build"` \| `"post-build"`) | `metadata.lifecycles[].phase` *(native — same enum values; never `discovery`, which CDX defines as network discovery)* | *(lossy)* `software_Sbom` element `comment` | — | `lifecycle` |
 | `Source.Type` (`dir` \| `repo` \| `image` \| `k8s`) | `metadata.properties[]` `airom:source.type` *(prop)* | — | — | `source.type` |
 | `Source` target (path / ref / image digest) | `airom:source.target`, `airom:source.digest` *(prop)* | — | `runs[].originalUriBaseIds.SRCROOT.uri` (`file:///…/` form; path targets only) | `source.target`, `source.digest` |
 | `Source` git provenance (remote, commit, dirty) | `airom:source.git.remote`, `airom:source.git.commit`, `airom:source.git.dirty` *(prop)* | — | `runs[].versionControlProvenance[].{repositoryUri, revisionId}`; dirty flag — *(lossy)* | `source.git.{remote, commit, dirty}` |
 | `Source` k8s context | `airom:source.k8s.context` *(prop)* | — | — | `source.k8sContext` |
-| `Root` | `metadata.component` (`type: "application"`, `bom-ref` = Root ID); root is **not** duplicated in `components[]` | `software_Sbom.rootElement` | — | `root` |
+| `Root` | `metadata.component` (`type: "application"`, `bom-ref` = Root ID); root is **not** duplicated in `components[]` | `software_Sbom.rootElement` — a REFERENCE, so unlike CycloneDX the root **is** emitted as a graph element; excluding it would leave a dangling pointer | — | `root` |
 | `Components` | `components[]` *(native)* | `@graph` elements (one per component + shared `CreationInfo`) | `results[]` — **one result per Occurrence**, not per component (§7.3) | `components[]` |
 | `Relationships` | see §3.10 — `dependencies[]` / `modelCard…datasets[].ref` / `airom:rel.*` | `Relationship` elements `{from, to[], relationshipType}` | — | `relationships[]` |
 | `Unknowns` | *(lossy)* count only: `metadata.properties[]` `airom:unknowns` | — | `runs[].invocations[].toolExecutionNotifications[]` (§3.11) | `unknowns[]` *(native)* |
@@ -78,7 +85,7 @@ Conventions used throughout:
 
 | Internal (§5) | CycloneDX 1.6 | SPDX 3.0.1 (v2) | SARIF 2.1.0 | Native JSON |
 |---|---|---|---|---|
-| `ID` (`"airom:" + hex(sha256(CanonicalKey))[:16]`) | `bom-ref` *(native; never starts with `urn:cdx:` by construction)* | `spdxId` = `https://airom.dev/spdxdocs/<Serial>#<ID-hex>` | input to `partialFingerprints` (§7.2) + `result.properties["airom:componentId"]` *(prop)* | `id` |
+| `ID` (`"airom:" + hex(sha256(CanonicalKey))[:16]`) | `bom-ref` *(native; never starts with `urn:cdx:` by construction)* | `spdxId` = `https://github.com/airomhq/airom/spdxdocs/<Serial-UUID>#<ID-hex>` | input to `partialFingerprints` (§7.2) + `result.properties["airom:componentId"]` *(prop)* | `id` |
 | `Kind` | `type` per §4 kind table, **plus** `properties[]` `airom:kind` on every component — the exact kind always survives the coarser CDX enum *(prop)* | element class + `software_primaryPurpose` per §4 | `result.properties["airom:kind"]` *(prop)* | `kind` |
 | `Name` | `name` *(native)* | `name` *(native)* | `message.text` (headline) | `name` |
 | `Group` | `group` *(native)* | — *(lossy: SPDX 3.0.1 packages have no group/namespace slot; retained in native + CDX)* | `message.text` | `group` |
@@ -266,6 +273,27 @@ these properties back and asserts graph equality modulo edge evidence.
 
 The single SARIF invocation object carries `executionSuccessful: true` (a completed scan with
 Unknowns is a successful scan — P6) alongside `endTimeUtc` (§3.1).
+
+### 3.12 Overlays and scope
+
+These `Component` fields postdate the original §3.2 table (they arrived with the risk, CVE,
+EOL, and test-scope overlays). Their homes are normative here, same as everything above.
+
+| Internal (§5) | CycloneDX 1.6 | SPDX 3.0.1 | OpenVEX 0.2.0 | SARIF 2.1.0 | Native JSON |
+|---|---|---|---|---|---|
+| `VersionConstraint` (declared range) | `properties[]` `airom:version.constraint` *(prop)*; **never** `version`, and no version in the `purl` | element `comment` `airom:versionConstraint <range>`; **never** `software_packageVersion` — on a class where that field is required it is `NOASSERTION` and the range goes to the comment | — | — | `versionConstraint` |
+| `TestOnly` | `scope: "excluded"` *(native)* | element `comment` `airom:testOnly true` *(lossy — SPDX has no scope; stated because a consumer who reads a fixture as a production dependency draws exactly the wrong conclusion)* | — | component hidden from `results[]` unless `--include-tests` | `testOnly` |
+| `Risks[]` (AIROM's own structural findings) | `vulnerabilities[]` with `ratings[].method: "other"` and `source.name: "airom"` | `security_Vulnerability` element + a **plain** `Relationship` `hasAssociatedVulnerability` (package → vulnerability, Core's direction). Deliberately **not** a `security_Vex…` assessment: a risk is suspicion with evidence, never a verdict, and publishing it as a VEX claim turns a lead into an accusation | — *(a VEX document states affectedness, which a structural risk does not assert)* | security results, `level` per severity (§7.1) | `risks[]` |
+| `Vulnerabilities[]` (CVE overlay) | `vulnerabilities[]` with a real CVSSv3 `ratings[]` | `security_Vulnerability` element + `security_VexAffectedVulnAssessmentRelationship` (vulnerability → package — the security profile **inverts** Core's direction for assessment subclasses). Status is always affected; `Fixed` becomes `security_actionStatement`, never a `fixed` assessment | one `statements[]` entry, `status: "affected"`; `Fixed` → `action_statement` | security results | `vulnerabilities[]` |
+| `EOL` (`*Lifecycle`) | `properties[]` `airom:eol.{state, shutdownDate, announcedDate, daysRemaining, replacement, replacementState, source, sourceUrl, verified}` *(prop)* | `validUntilTime` = `Shutdown` at `T00:00:00Z` (Core's "do not use after" instant is exactly a provider shutdown date) + element `comment` carrying state, replacement, and the source URL | — | `result.properties["airom:eol.state"]` *(prop)* | `eol` |
+| `Licenses[]` | `licenses[]` (§3.2) | `simplelicensing_LicenseExpression` element + `hasDeclaredLicense` relationship; one element per distinct expression, shared by every package that declares it | — | — | `licenses[]` |
+
+**Why `not_affected` and `fixed` are unreachable in both VEX-bearing formats:** AIROM performs
+no reachability analysis. It knows a component is present at a version an advisory lists as
+vulnerable, and nothing more. A `not_affected` from it would be an unfounded all-clear — the
+one output that makes a consumer stop looking — and `fixed` asserts *this product* has
+remediated the issue, the opposite of `Vulnerability.Fixed`, which names an available upstream
+release the scanned tree is not running.
 
 ---
 
