@@ -38,15 +38,6 @@ go.work.sum
 # ── OS noise ─────────────────────────────────────────────────────────────────
 .DS_Store
 
-# ── Documentation site (Mintlify) ────────────────────────────────────────────
-# `mint dev` local preview cache/build output; the .mdx sources ARE tracked.
-/docs-site/.mintlify/
-/docs-site/node_modules/
-# `mint export` output and the unpacked site it becomes (~50 MB). Produced by
-# docs-site/build.sh in CI and on Vercel; never committed.
-/docs-site/export.zip
-/docs-site/dist/
-
 # ── Nested airom-rules checkout ──────────────────────────────────────────────
 # The airom-rules repo (github.com/airomhq/airom-rules) may be checked out here
 # for local rule-channel maintenance. It is its OWN git repo — never track it

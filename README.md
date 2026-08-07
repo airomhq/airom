@@ -40,8 +40,8 @@ That's it. One static binary, no runtime, no daemon, no account.
 └──────────────────┴────────────────────────┴─────────┴─────────────┴───────┴────────────────────┴──────────┘
 ```
 
-More ways to install and run: **[installation](docs-site/installation.mdx)** ·
-**[quickstart](docs-site/quickstart.mdx)** · **[CLI reference](docs/cli.md)**
+More ways to install and run: **[installation](https://docs.airom.dev/installation)** ·
+**[quickstart](https://docs.airom.dev/quickstart)** · **[CLI reference](docs/cli.md)**
 
 ## Common commands
 
@@ -98,10 +98,10 @@ no claim rather than a quiet "supported".
 | [Model lifecycle](docs/eol.md) | Hosted models matched against a dated, sourced catalog of provider retirement announcements. |
 | [Compliance mapping](docs/compliance.md) | NIST AI RMF and OWASP Agentic controls as CycloneDX attestations — met/gap/manual, no invented scores. |
 | [VEX export](docs/cli.md) | An OpenVEX document over the CVE overlay, for consumers that ingest VEX. Only ever asserts `affected` — a scanner has no basis for an all-clear. |
-| [SPDX 3.0.1](docs-site/output/formats.mdx) | A JSON-LD graph with the AI, Dataset, Software, and Security profiles. Lossiest format: SPDX has no slot for `file:line` evidence, and the document says so rather than letting you assume there was none. |
+| [SPDX 3.0.1](https://docs.airom.dev/output/formats) | A JSON-LD graph with the AI, Dataset, Software, and Security profiles. Lossiest format: SPDX has no slot for `file:line` evidence, and the document says so rather than letting you assume there was none. |
 | [AIBOM diff](docs/cli.md) | The semantic delta between two scans, so AI becomes a per-PR control. |
-| [Test scope](docs-site/concepts/test-scope.mdx) | Fixtures and test trees are recorded but kept out of the default view. |
-| [Signed rule updates](docs-site/rules/updates.mdx) | New frameworks reach you without a new binary, over an ed25519-verified channel. |
+| [Test scope](https://docs.airom.dev/concepts/test-scope) | Fixtures and test trees are recorded but kept out of the default view. |
+| [Signed rule updates](https://docs.airom.dev/rules/updates) | New frameworks reach you without a new binary, over an ed25519-verified channel. |
 
 ## In CI
 
@@ -114,7 +114,7 @@ no claim rather than a quiet "supported".
 
 Findings land as GitHub Code Scanning alerts on the pull request that introduced
 them. See **[exit codes](docs/cli.md#exit-code-contract)** and
-**[GitHub Actions](docs-site/ci/github-actions.mdx)**.
+**[GitHub Actions](https://docs.airom.dev/ci/github-actions)**.
 
 ## Extending it
 
@@ -164,9 +164,14 @@ Report vulnerabilities privately via a GitHub security advisory — see
 ## Documentation
 
 - **[docs/cli.md](docs/cli.md)** — every command, flag, and exit code
-- **[docs-site/](docs-site/)** — installation, concepts, output formats, CI recipes
+- **[docs.airom.dev](https://docs.airom.dev)** — installation, concepts, output formats, CI recipes
+  (source: [airomhq/airom-web](https://github.com/airomhq/airom-web))
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — design and decision log
 - **[docs/rule-schema.md](docs/rule-schema.md)** — the rule-pack YAML reference
+- **[docs/RELEASING.md](docs/RELEASING.md)** — cutting a release (it spans two repos)
+
+The documentation site and the landing page are built from
+**[airomhq/airom-web](https://github.com/airomhq/airom-web)**.
 
 ## Contributing
 

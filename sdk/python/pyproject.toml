@@ -36,7 +36,7 @@ dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/airomhq/airom"
-Documentation = "https://github.com/airomhq/airom/tree/main/docs-site"
+Documentation = "https://docs.airom.dev"
 Source = "https://github.com/airomhq/airom"
 Issues = "https://github.com/airomhq/airom/issues"
 
