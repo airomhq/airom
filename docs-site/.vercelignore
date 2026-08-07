@@ -1,0 +1,7 @@
+# Build output and its intermediate zip. Vercel runs build.sh itself, so
+# uploading a local dist/ (~50 MB) as source would be both wasted transfer and
+# a stale copy of the thing about to be rebuilt.
+dist/
+export.zip
+.mintlify/
+node_modules/

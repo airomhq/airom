@@ -60,14 +60,20 @@ unzip -q "$zip" -d dist
 # belong in a published site.
 rm -rf dist/dist
 rm -f dist/build.sh dist/export.zip dist/vercel.json dist/package.json \
-      dist/package-lock.json dist/README.md dist/.gitignore \
+      dist/package-lock.json dist/README.md \
       dist/serve.js "dist/Start Docs.command" "dist/Start Docs.bat"
+# Every dotfile at the site root. The first deploy published .vercelignore
+# because the guard below named .git* specifically and nothing else — a
+# denylist of exact names is only ever as complete as the last thing that got
+# caught. A dotfile at the root of a static site is never something Mintlify
+# meant to publish, so match the shape instead of the name.
+find dist -maxdepth 1 -name '.*' ! -name '.' -exec rm -rf {} +
 
-# Assert it, rather than trusting the list above to stay complete: if a future
-# mint version sweeps in something new, this fails the build instead of
+# Assert it, rather than trusting the removals above to stay complete: if a
+# future mint version sweeps in something new, this fails the build instead of
 # publishing it.
 leaked=$(find dist -maxdepth 1 \( -name "*.sh" -o -name "*.zip" -o -name "vercel.json" \
-  -o -name "package*.json" -o -name ".git*" \) -print)
+  -o -name "package*.json" -o -name ".*" ! -name "." \) -print)
 if [ -n "$leaked" ]; then
   echo "error: project files leaked into the published site:" >&2
   echo "$leaked" >&2

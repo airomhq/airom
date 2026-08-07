@@ -3,6 +3,11 @@
 The static site served at **https://airom.dev**. The documentation is a separate
 deployment at **https://docs.airom.dev** (built from [`../docs-site`](../docs-site)).
 
+Both are Vercel projects under the `airom` team: `airom-www` (root directory
+`www`) and `airom-docs` (root directory `docs-site`). Deploys are CLI-driven
+(`vercel deploy --prod`) until the GitHub connection is added to the Vercel
+account — after that, pushes to `main` deploy on their own.
+
 ## Why they are two sites
 
 Not preference — a constraint. `mint export` emits **absolute** asset paths
