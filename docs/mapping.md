@@ -68,7 +68,7 @@ Conventions used throughout:
 | `SchemaVersion` | — (implied by `bomFormat` + `specVersion`) | — (implied by `CreationInfo.specVersion: "3.0.1"`) | — (implied by `version: "2.1.0"`) | `schemaVersion` *(native)* |
 | `Tool` (name, version) | `metadata.tools.components[]` `{type: "application", name, version}` *(native)* | `CreationInfo.createdUsing` → `Tool` element *(native)* | `runs[].tool.driver.{name, semanticVersion, informationUri}` *(native)* | `tool.{name, version}` |
 | `Tool.Commit` | `metadata.properties[]` `airom:tool.commit` *(prop)* | `Tool` element `comment` | `runs[].tool.driver.properties["airom:tool.commit"]` *(prop)* | `tool.commit` |
-| `Serial` (a full `urn:uuid:<uuid>` URN) | `serialNumber` = `Serial` verbatim *(native; already a `urn:uuid:` URN — a bare UUID is prefixed for hand-built inventories)* | seeds the document namespace: `https://github.com/airomhq/airom/spdxdocs/<Serial-UUID>#` *(native; the prefix is deliberately NOT `airom.dev`, an unregistered domain — an SPDX namespace never has to resolve, which is exactly why minting one under a name the project does not own is easy to do and wrong to do)* | — | `serial` |
+| `Serial` (a full `urn:uuid:<uuid>` URN) | `serialNumber` = `Serial` verbatim *(native; already a `urn:uuid:` URN — a bare UUID is prefixed for hand-built inventories)* | seeds the document namespace: `https://airom.dev/spdxdocs/<Serial-UUID>#` *(native; an SPDX namespace is an identifier that nothing dereferences — which is exactly why it must be a name the project controls, or every id it mints squats on someone else's identity. v0.3.6 shipped under `github.com/airomhq/airom` because `airom.dev` was then unregistered; the project owns it as of v0.3.7)* | — | `serial` |
 | `Timestamp` (RFC 3339 UTC, injectable clock) | `metadata.timestamp` *(native)* | `CreationInfo.created` *(native)* | `runs[].invocations[].endTimeUtc` *(native)* | `timestamp` |
 | `Lifecycle` (`"pre-build"` \| `"post-build"`) | `metadata.lifecycles[].phase` *(native — same enum values; never `discovery`, which CDX defines as network discovery)* | *(lossy)* `software_Sbom` element `comment` | — | `lifecycle` |
 | `Source.Type` (`dir` \| `repo` \| `image` \| `k8s`) | `metadata.properties[]` `airom:source.type` *(prop)* | — | — | `source.type` |
@@ -85,7 +85,7 @@ Conventions used throughout:
 
 | Internal (§5) | CycloneDX 1.6 | SPDX 3.0.1 (v2) | SARIF 2.1.0 | Native JSON |
 |---|---|---|---|---|
-| `ID` (`"airom:" + hex(sha256(CanonicalKey))[:16]`) | `bom-ref` *(native; never starts with `urn:cdx:` by construction)* | `spdxId` = `https://github.com/airomhq/airom/spdxdocs/<Serial-UUID>#<ID-hex>` | input to `partialFingerprints` (§7.2) + `result.properties["airom:componentId"]` *(prop)* | `id` |
+| `ID` (`"airom:" + hex(sha256(CanonicalKey))[:16]`) | `bom-ref` *(native; never starts with `urn:cdx:` by construction)* | `spdxId` = `https://airom.dev/spdxdocs/<Serial-UUID>#<ID-hex>` | input to `partialFingerprints` (§7.2) + `result.properties["airom:componentId"]` *(prop)* | `id` |
 | `Kind` | `type` per §4 kind table, **plus** `properties[]` `airom:kind` on every component — the exact kind always survives the coarser CDX enum *(prop)* | element class + `software_primaryPurpose` per §4 | `result.properties["airom:kind"]` *(prop)* | `kind` |
 | `Name` | `name` *(native)* | `name` *(native)* | `message.text` (headline) | `name` |
 | `Group` | `group` *(native)* | — *(lossy: SPDX 3.0.1 packages have no group/namespace slot; retained in native + CDX)* | `message.text` | `group` |

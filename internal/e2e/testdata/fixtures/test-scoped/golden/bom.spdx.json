@@ -5,10 +5,10 @@
       "@id": "_:creationInfo",
       "created": "2026-08-01T12:00:00Z",
       "createdBy": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
       ],
       "createdUsing": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
       ],
       "specVersion": "3.0.1",
       "type": "CreationInfo"
@@ -16,26 +16,26 @@
     {
       "creationInfo": "_:creationInfo",
       "name": "airom",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
       "type": "SoftwareAgent"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "airom",
       "software_packageVersion": "dev",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
       "type": "Tool"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "anthropic",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
       "type": "Organization"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "openai",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "Organization"
     },
     {
@@ -45,8 +45,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
       "type": "ai_AIPackage",
       "validUntilTime": "2024-11-06T00:00:00Z"
     },
@@ -63,8 +63,8 @@
       "name": "anthropic",
       "software_packageVersion": "0.34.0",
       "software_primaryPurpose": "library",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-anthropic",
       "type": "software_Package"
     },
     {
@@ -74,8 +74,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "ai_AIPackage"
     },
     {
@@ -85,8 +85,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "ai_AIPackage"
     },
     {
@@ -102,8 +102,8 @@
       "name": "openai",
       "software_packageVersion": "1.40.0",
       "software_primaryPurpose": "library",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "software_Package"
     },
     {
@@ -113,8 +113,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "ai_AIPackage",
       "validUntilTime": "2025-06-06T00:00:00Z"
     },
@@ -123,50 +123,50 @@
       "creationInfo": "_:creationInfo",
       "name": "test-scoped",
       "software_primaryPurpose": "application",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77",
       "type": "software_Package"
     },
     {
       "comment": "airom:rel.uses; airom:rel.confidence 0.7",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
       "relationshipType": "other",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-0",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-0",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:rel.uses; airom:rel.confidence 0.91",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
       "relationshipType": "other",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-1",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-1",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:rel.uses; airom:rel.confidence 0.7",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
       "relationshipType": "other",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-2",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-2",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:rel.uses; airom:rel.confidence 0.7",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
       "relationshipType": "other",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-3",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Relationship-3",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f"
       ],
       "type": "Relationship"
     },
@@ -174,21 +174,21 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#36fd9d7d8704ef27",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ad4ea6556c5aad",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77"
       ],
       "rootElement": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f465180fc8f3da77"
       ],
       "software_sbomType": [
         "build"
       ],
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
       "type": "software_Sbom"
     }
   ]

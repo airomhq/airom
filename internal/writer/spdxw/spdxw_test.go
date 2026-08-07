@@ -133,7 +133,7 @@ func TestDocumentShape(t *testing.T) {
 	if len(sbom) != 1 {
 		t.Fatalf("want exactly one software_Sbom, got %d", len(sbom))
 	}
-	if got := sbom[0]["rootElement"]; fmt.Sprint(got) != "[https://github.com/airomhq/airom/spdxdocs/11111111-2222-3333-4444-555555555555#0000000000000001]" {
+	if got := sbom[0]["rootElement"]; fmt.Sprint(got) != "[https://airom.dev/spdxdocs/11111111-2222-3333-4444-555555555555#0000000000000001]" {
 		t.Errorf("rootElement = %v", got)
 	}
 	if n := len(sbom[0]["element"].([]any)); n != 3 {
@@ -147,23 +147,43 @@ func TestDocumentShape(t *testing.T) {
 // pointer to an element the document never declared.
 func TestRootIsAGraphElement(t *testing.T) {
 	g := read(t, inventory())
-	rootIRI := "https://github.com/airomhq/airom/spdxdocs/11111111-2222-3333-4444-555555555555#0000000000000001"
+	rootIRI := "https://airom.dev/spdxdocs/11111111-2222-3333-4444-555555555555#0000000000000001"
 	if g.byID[rootIRI] == nil {
 		t.Fatal("software_Sbom.rootElement points at an element that is not in @graph")
 	}
 }
 
-// TestNamespaceIsNotAnUnownedDomain: mapping.md's illustrative example mints
-// identifiers under airom.dev, a domain the project does not own. An SPDX
-// namespace never has to resolve, which is exactly why minting under someone
-// else's name is easy to do and wrong to do.
-func TestNamespaceIsNotAnUnownedDomain(t *testing.T) {
+// TestNamespaceIsAProjectOwnedName. An SPDX namespace is an identifier, not a
+// URL: nothing dereferences it and the document is valid whether or not the
+// host resolves. That is why the choice needs care rather than less — the one
+// thing it must not be is a name somebody else controls, because then every
+// identifier AIROM mints is squatting on an identity that is not its to
+// assign.
+//
+// v0.3.6 shipped under github.com/airomhq/airom for that reason: airom.dev was
+// then unregistered. The project now owns airom.dev, so the namespace is both
+// a name it controls and the one mapping.md §3.1 specified from the start.
+//
+// If this ever needs changing again, note what it costs: the namespace is a
+// prefix of the spdxId of every element in every document, so moving it
+// rewrites the identity of everything AIROM has ever emitted in this format.
+func TestNamespaceIsAProjectOwnedName(t *testing.T) {
+	const want = "https://airom.dev/spdxdocs/"
+	if docNamespace != want {
+		t.Errorf("docNamespace = %q, want %q", docNamespace, want)
+	}
+
 	var buf bytes.Buffer
 	if err := New(writer.Options{}).Write(&buf, inventory()); err != nil {
 		t.Fatal(err)
 	}
-	if bytes.Contains(buf.Bytes(), []byte("airom.dev")) {
-		t.Error("document mints identifiers under airom.dev, which nobody owns")
+	if !bytes.Contains(buf.Bytes(), []byte(want)) {
+		t.Errorf("no element is identified under %s", want)
+	}
+	// Nothing may be left minting under the old prefix: a document carrying
+	// both would give two identities to one scan.
+	if bytes.Contains(buf.Bytes(), []byte("github.com/airomhq/airom/spdxdocs")) {
+		t.Error("document still mints identifiers under the pre-v0.3.7 namespace")
 	}
 }
 

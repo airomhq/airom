@@ -62,15 +62,19 @@ const (
 	// CreationInfo keeps the graph small and is what §3.1 specifies.
 	creationInfoRef = "_:creationInfo"
 
-	// docNamespace is the IRI prefix for element identifiers. mapping.md left
-	// this "finalized with the v2 writer", so it is finalized here.
+	// docNamespace is the IRI prefix for element identifiers, as mapping.md
+	// §3.1 specifies.
 	//
-	// It deliberately does NOT use airom.dev, which mapping.md's example shows:
-	// that domain is unregistered and belongs to nobody, and minting
-	// identifiers under a namespace the project does not control is bad
-	// practice even though an SPDX namespace is an identifier that never has
-	// to resolve.
-	docNamespace = "https://github.com/airomhq/airom/spdxdocs/"
+	// An SPDX namespace is an identifier, not a URL — nothing dereferences it,
+	// and a document is valid whether or not the host resolves. That is
+	// precisely why the choice deserves care rather than less: the one thing
+	// it must not be is a name somebody else controls, because then the
+	// identifiers AIROM mints are squatting on an identity that is not its to
+	// assign. The writer shipped in v0.3.6 under github.com/airomhq/airom for
+	// exactly that reason, airom.dev being unregistered at the time. The
+	// project now owns airom.dev, so this is both the name it controls and the
+	// one mapping.md drew from the start.
+	docNamespace = "https://airom.dev/spdxdocs/"
 )
 
 // Writer renders an Inventory as SPDX 3.0.1 JSON-LD.

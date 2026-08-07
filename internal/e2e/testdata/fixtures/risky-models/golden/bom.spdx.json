@@ -5,10 +5,10 @@
       "@id": "_:creationInfo",
       "created": "2026-08-01T12:00:00Z",
       "createdBy": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom"
       ],
       "createdUsing": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom"
       ],
       "specVersion": "3.0.1",
       "type": "CreationInfo"
@@ -16,32 +16,32 @@
     {
       "creationInfo": "_:creationInfo",
       "name": "airom",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-airom",
       "type": "SoftwareAgent"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "airom",
       "software_packageVersion": "dev",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Tool-airom",
       "type": "Tool"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "local",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "Organization"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "openai",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "Organization"
     },
     {
       "creationInfo": "_:creationInfo",
       "name": "pytorch",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-pytorch",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-pytorch",
       "type": "Organization"
     },
     {
@@ -58,8 +58,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "ai_AIPackage",
       "verifiedUsing": [
         {
@@ -83,8 +83,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "ai_AIPackage",
       "verifiedUsing": [
         {
@@ -108,8 +108,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "ai_AIPackage",
       "verifiedUsing": [
         {
@@ -132,8 +132,8 @@
       "name": "openai",
       "software_packageVersion": "1.51.0",
       "software_primaryPurpose": "library",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "software_Package"
     },
     {
@@ -141,7 +141,7 @@
       "creationInfo": "_:creationInfo",
       "name": "risky-models",
       "software_primaryPurpose": "application",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
       "type": "software_Package"
     },
     {
@@ -157,8 +157,8 @@
       "name": "torch",
       "software_packageVersion": "2.1.0",
       "software_primaryPurpose": "framework",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-pytorch",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-pytorch",
       "type": "software_Package"
     },
     {
@@ -175,8 +175,8 @@
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550",
-      "suppliedBy": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "ai_AIPackage",
       "verifiedUsing": [
         {
@@ -191,7 +191,7 @@
       "creationInfo": "_:creationInfo",
       "description": "The GGUF tokenizer.chat_template contains Jinja sandbox-escape gadgets; rendering a prompt with it can execute code. Found: __globals__, os.popen.",
       "name": "AIROM-RISK-GGUF-TEMPLATE",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-0-airom-risk-gguf-template",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-0-airom-risk-gguf-template",
       "summary": "Unsafe GGUF chat template",
       "type": "security_Vulnerability"
     },
@@ -200,7 +200,7 @@
       "creationInfo": "_:creationInfo",
       "description": "A Keras model config declares a Lambda layer, which marshals arbitrary Python that executes when the model is loaded. Found: Lambda.",
       "name": "AIROM-RISK-KERAS-LAMBDA",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda",
       "summary": "Keras Lambda layer",
       "type": "security_Vulnerability"
     },
@@ -209,7 +209,7 @@
       "creationInfo": "_:creationInfo",
       "description": "The SavedModel graph contains a PyFunc-family op, which invokes arbitrary Python during inference. Found: PyFunc.",
       "name": "AIROM-RISK-SAVEDMODEL-PYFUNC",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc",
       "summary": "SavedModel Python-callback op",
       "type": "security_Vulnerability"
     },
@@ -218,7 +218,7 @@
       "creationInfo": "_:creationInfo",
       "description": "A source call site deserializes a model through an unsafe path (e.g. torch.load with weights_only=False); a malicious checkpoint would execute code on load.",
       "name": "AIROM-RISK-UNSAFE-LOAD",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load",
       "summary": "Unsafe model deserialization",
       "type": "security_Vulnerability"
     },
@@ -227,62 +227,62 @@
       "creationInfo": "_:creationInfo",
       "description": "A pickle GLOBAL resolves to a code-execution callable; loading this artifact runs code before any model is produced. Found: os.system.",
       "name": "AIROM-RISK-PICKLE-IMPORT",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import",
       "summary": "Unsafe pickle import",
       "type": "security_Vulnerability"
     },
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-0",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-0",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-0-airom-risk-gguf-template"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-0-airom-risk-gguf-template"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-1",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-1",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-2",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-2",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-3",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-3",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load"
       ],
       "type": "Relationship"
     },
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-4",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-4",
       "to": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import"
       ],
       "type": "Relationship"
     },
@@ -290,21 +290,21 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550"
       ],
       "rootElement": [
-        "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51"
       ],
       "software_sbomType": [
         "build"
       ],
-      "spdxId": "https://github.com/airomhq/airom/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#SBOM",
       "type": "software_Sbom"
     }
   ]
