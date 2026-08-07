@@ -1,0 +1,14 @@
+{
+  "name": "airom-docs",
+  "private": true,
+  "description": "The AIROM documentation site (Mintlify). Built by build.sh into ./dist.",
+  "scripts": {
+    "dev": "npx --yes mint@latest dev",
+    "build": "bash build.sh",
+    "validate": "npx --yes mint@latest validate",
+    "broken-links": "npx --yes mint@latest broken-links"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

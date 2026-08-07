@@ -1,15 +1,14 @@
-# Builds the documentation site and keeps it publishable, without publishing it.
+# Validates the documentation site and proves it still builds.
 #
-# The site is NOT hosted anywhere yet. This workflow exists so that (a) a broken
-# docs change fails on the pull request that made it rather than at deploy time,
-# and (b) the static bundle is one download away whenever a host is chosen — the
-# publish step is then a few lines added to the end of this file.
+# Hosting is Vercel's job, not this workflow's: the docs-site project deploys
+# docs.airom.dev from `docs-site/` on every push to main and gives every pull
+# request a preview URL. This workflow exists so a broken docs change fails on
+# the PR that made it — with the strict validator and the link checker, which
+# Vercel does not run — rather than deploying green and reading wrong.
 #
-# Serving note for whoever wires that up: `mint export` emits ABSOLUTE asset
-# paths, and the Next.js runtime builds chunk URLs from an empty assetPrefix
-# that `mint export` gives no way to set. The site therefore has to be served
-# from a domain ROOT — an org GitHub Pages site or a custom domain. A project
-# Pages path like /airom/ renders the first page and then fails to load chunks.
+# The build step deliberately shells out to the SAME docs-site/build.sh that
+# Vercel runs. Two copies of the build would drift, and the copy CI checks would
+# stop being the copy that ships.
 name: Docs
 
 on:
@@ -25,13 +24,14 @@ permissions:
 
 jobs:
   build:
-    name: Validate and export
+    name: Validate and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      # Mintlify does not support Node 25+; pin to the current LTS rather than
-      # letting the runner's default drift into an unsupported major.
+      # Mintlify refuses to run on Node 25+. docs-site/package.json pins
+      # engines.node to 24.x for Vercel; this pins the same major here so the
+      # two builds cannot diverge on the one thing that hard-fails.
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -45,13 +45,13 @@ jobs:
         working-directory: docs-site
         run: npx --yes mint@latest broken-links
 
-      - name: Export static site
+      - name: Build the static site
         working-directory: docs-site
-        run: npx --yes mint@latest export --output dist.zip
+        run: bash build.sh
 
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: docs-site
-          path: docs-site/dist.zip
+          path: docs-site/dist
           retention-days: 14
