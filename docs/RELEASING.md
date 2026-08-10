@@ -11,10 +11,10 @@ Four here, one in [airomhq/airom-web](https://github.com/airomhq/airom-web):
 
 | Repo | File | Form |
 |---|---|---|
-| airom | `sdk/python/src/airom/__init__.py` | `__version__ = "0.3.6"` |
-| airom | `sdk/python/README.md` | `airom 0.3.6` |
-| airom | `README.md` | `**v0.3.6** — early but real.` |
-| airom | `docs/project-status.md` | `AIROM is at **v0.3.6**` |
+| airom | `sdk/python/src/airom/__init__.py` | `__version__ = "<version>"` |
+| airom | `sdk/python/README.md` | `airom <version>` |
+| airom | `README.md` | `**v<version>** — early but real.` |
+| airom | `docs/project-status.md` | `AIROM is at **v<version>**` |
 | **airom-web** | `docs-site/installation.mdx` | **twice**: the callout and `@latest resolves to…` |
 
 Not the Go binary: its version comes from the tag at build time via ldflags
