@@ -13,7 +13,7 @@ Four here, one in [airomhq/airom-web](https://github.com/airomhq/airom-web):
 |---|---|---|
 | airom | `sdk/python/src/airom/__init__.py` | `__version__ = "<version>"` |
 | airom | `sdk/python/README.md` | `airom <version>` |
-| airom | `README.md` | `**v<version>** — early but real.` |
+| airom | `README.md` | `**v<version>**, early but real.` |
 | airom | `docs/project-status.md` | `AIROM is at **v<version>**` |
 | **airom-web** | `docs-site/installation.mdx` | **twice**: the callout and `@latest resolves to…` |
 
@@ -21,9 +21,9 @@ Not the Go binary: its version comes from the tag at build time via ldflags
 (see the `LDFLAGS` block in the `Makefile`), so there is no version constant to
 edit in Go.
 
-Historical mentions of an older version in prose — `docs/mapping.md` explaining
-why the SPDX namespace changed in v0.3.7, release notes, changelog entries —
-are **not** bumped. They describe what a specific version did.
+Historical mentions of an older version in prose are **not** bumped. That covers
+`docs/mapping.md` explaining why the SPDX namespace changed in v0.3.7, release
+notes, and changelog entries. They describe what a specific version did.
 
 ## Checklist
 
@@ -37,7 +37,7 @@ are **not** bumped. They describe what a specific version did.
 
    Read each hit. Anything left should be deliberate history, not an oversight.
 
-3. **Bump `docs-site/installation.mdx` in airom-web** — both occurrences — and
+3. **Bump `docs-site/installation.mdx` in airom-web**, both occurrences, and
    push. This is the step the split made easy to forget.
 
 4. **Full sweep here.**
@@ -60,7 +60,7 @@ are **not** bumped. They describe what a specific version did.
    git tag -a v0.3.7 -m "..." && git push origin v0.3.7
    ```
 
-7. **Verify what actually shipped** — not that the workflow went green, but
+7. **Verify what actually shipped.** Not that the workflow went green, but
    that the artifact is right:
 
    ```bash
@@ -81,5 +81,5 @@ are **not** bumped. They describe what a specific version did.
 
 [airomhq/airom-rules](https://github.com/airomhq/airom-rules) has its own
 version and its own cadence. Rule and lifecycle-catalog changes reach users
-through the signed update channel without a new scanner release — that is the
+through the signed update channel without a new scanner release. That is the
 point of the channel. Only bump the scanner when scanner code changed.

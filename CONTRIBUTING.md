@@ -1,6 +1,6 @@
 # Contributing to AIROM
 
-Thanks for your interest in AIROM — the AIBOM scanner for AI assets. This guide
+Thanks for your interest in AIROM, the AIBOM scanner for AI assets. This guide
 covers how to get set up, the conventions we hold to, and the most common
 contribution: adding a detector.
 
@@ -19,12 +19,12 @@ make lint       # golangci-lint (config: .golangci.yml)
 make help       # list every target
 ```
 
-There is no CGO and no external toolchain — a clean Go install is enough.
+There is no CGO and no external toolchain, so a clean Go install is enough.
 
 ## The design in one paragraph
 
 AIROM reads untrusted inputs once, decides what to parse before reading, and
-emits **claims about evidence** — never bare components. The full design,
+emits **claims about evidence**, never bare components. The full design,
 including the eight invariants (P1–P8) and the field-mapping law, lives in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
 [`docs/mapping.md`](docs/mapping.md). Read `ARCHITECTURE.md` §1–§6 before making
@@ -34,7 +34,7 @@ A few load-bearing rules a linter can't fully catch:
 
 - **Import direction (§4).** `pkg/airom` is the public core and imports nothing
   from `internal/`. `pkg/airom` and `pkg/airom/detect` stay standard-library
-  only. The `depguard` rules in `.golangci.yml` enforce this — if `make lint`
+  only. The `depguard` rules in `.golangci.yml` enforce this. If `make lint`
   complains about an import, that's the law talking, not a nit.
 - **Writers are pure (P5).** Output writers transform an `Inventory` into bytes
   with no I/O or clock access. Determinism (P7) is tested with golden files.
@@ -45,7 +45,7 @@ A few load-bearing rules a linter can't fully catch:
 ## Adding a detector
 
 This is the path most contributions take. Detectors are **declarative rule
-packs**, not hand-written Go — one rule per detector, keyed on evidence.
+packs**, not hand-written Go: one rule per detector, keyed on evidence.
 
 1. **Identify the evidence.** What unambiguously signals this asset? File names
    or extensions, import/package paths, config keys, magic bytes. If you can't
@@ -53,7 +53,7 @@ packs**, not hand-written Go — one rule per detector, keyed on evidence.
 2. **Write the rule pack** under the appropriate rules directory as YAML. Follow
    an existing pack of the same shape as a template; keep it to one detector.
 3. **Add a fixture** with inline annotations under the pack's `testdata/`. The
-   fixture is both the example and the test — it asserts what the detector
+   fixture is both the example and the test. It asserts what the detector
    claims and at what confidence.
 4. **Register it:** `go generate ./...` regenerates
    `internal/detectors/all`. Commit the regenerated file; CI fails if it's
@@ -64,14 +64,14 @@ packs**, not hand-written Go — one rule per detector, keyed on evidence.
 6. `make test && make lint`, then open the PR.
 
 For new **sources** (image, k8s, …) or **output formats**, open an issue first
-so we can agree on the shape — those touch shared seams.
+so we can agree on the shape, because those touch shared seams.
 
 ## Testing
 
 - Everything runs under `-race` (`make test`). New concurrency must be
   race-clean.
 - Output changes are golden-tested. Re-record intentionally with
-  `make golden`, then **review the diff** before committing — an unreviewed
+  `make golden`, then **review the diff** before committing. An unreviewed
   golden update defeats the test.
 - Parsers of untrusted bytes must have a `Fuzz*` target. Run `make fuzz`
   locally; new crashers get minimized into `testdata/fuzz/` and committed as
@@ -79,7 +79,7 @@ so we can agree on the shape — those touch shared seams.
   **Fuzz smoke** job gates every merge and is budgeted by exec count
   (`FUZZ_TIME=50000x`) so it cannot fail on a timing race, while the nightly
   **Fuzz campaign** gives each target its own job and a real time budget. A
-  campaign that finds something attaches the reproducer as a build artifact —
+  campaign that finds something attaches the reproducer as a build artifact,
   download it into the matching `testdata/fuzz/` directory and commit it, which
   is what turns a one-off finding into a seed every `go test` replays.
 - Aim to cover the behavior you changed, not to hit a coverage number.
@@ -91,7 +91,7 @@ so we can agree on the shape — those touch shared seams.
   optional (`feat(detect): …`). The changelog is generated from these.
 - Keep PRs focused and reviewable. A small change with tests lands faster than a
   sprawling one.
-- Fill out the PR checklist honestly — it's the same gate CI runs.
+- Fill out the PR checklist honestly. It is the same gate CI runs.
 - Rebase on `main` rather than merging it back in; keep history linear.
 
 ## Reporting bugs & vulnerabilities
@@ -99,7 +99,7 @@ so we can agree on the shape — those touch shared seams.
 - Functional bugs: open an issue with the input (or a minimized version) and the
   output. See the bug template.
 - **Security issues: do not open a public issue.** Follow
-  [SECURITY.md](SECURITY.md) — private advisory or email.
+  [SECURITY.md](SECURITY.md): private advisory or email.
 
 ## License
 

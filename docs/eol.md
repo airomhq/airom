@@ -4,12 +4,12 @@ AIROM's other overlays answer questions about risk. This one answers a question
 about **time**: *what in this stack stops working, when, and what do I move to?*
 
 A hosted model's retirement is unlike any other finding AIROM makes. A CVE is a
-risk you weigh — severity, exploitability, whether the path is reachable. A
+risk you weigh on severity, exploitability, and whether the path is reachable. A
 retired model is a **calendar fact with a hard consequence**: on the shutdown
 date the provider's API stops answering and the application breaks, patched or
 not. Nothing about your code changes; the ground moves.
 
-The overlay is **on by default** and needs no network — the catalog ships inside
+The overlay is **on by default** and needs no network, because the catalog ships inside
 the binary, so it works under `--offline`. Disable it with `--no-eol`.
 
 ## What it does
@@ -43,7 +43,7 @@ each claim came from, and when a maintainer last checked it.
 | `retired` | The shutdown date has passed. Calls fail **today**. |
 | `deprecated` | Retirement announced, still served. A deadline. |
 | `supported` | The provider lists it as current. |
-| `unknown` | **No catalog record — no claim.** Not "safe". |
+| `unknown` | **No catalog record, so no claim.** Not "safe". |
 
 `retired` is derived at scan time from the shutdown date, not stored, so a
 curated record stays truthful as time passes: a `deprecated` entry becomes
@@ -56,8 +56,8 @@ strict:
 
 - **Every record is transcribed** from the provider's own deprecation page,
   carrying that URL and the date a maintainer verified it. A catalog file
-  missing either is rejected at load. Nothing is inferred from naming patterns —
-  a `-preview` suffix or a date-stamped id is not evidence of anything.
+  missing either is rejected at load. Nothing is inferred from naming patterns.
+  A `-preview` suffix or a date-stamped id is not evidence of anything.
 - **Absence is not health.** A model the catalog does not cover gets no record
   at all. `unknown` means "nobody has curated this", never "this is fine".
 - **Matching is exact**, case-folded, with explicit aliases only. No prefix or
@@ -66,12 +66,12 @@ strict:
   publish their *own* schedules for the same weights, so their provider keys
   deliberately do not match these records.
 - **Migration advice carries the target's state.** Providers point a deprecation
-  at whatever was current when they wrote it, then deprecate that too — so the
+  at whatever was current when they wrote it, then deprecate that too, so the
   output says `gpt-5.1-chat-latest (retired)` rather than sending you onto a
   model that is already gone.
 - **Staleness is visible.** If the least-recently-verified provider is more than
   90 days old, the scan says so in `Stats.Warnings` rather than quietly serving
-  data that may have moved — and it names the lever that actually refreshes
+  data that may have moved, and it names the lever that actually refreshes
   *this* catalog (see below).
 
 ## How it appears in output
@@ -79,9 +79,9 @@ strict:
 | Format | Where |
 |--------|-------|
 | Table | an `EOL` column (`retired` / `87d`), a `Model lifecycle` summary block, and the detail table above. |
-| CycloneDX | component `properties`: `airom:eol.state`, `airom:eol.announcedDate`, `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`, `airom:eol.replacementState`, plus `source`/`sourceUrl`/`verified`. The document-level `airom:eol.catalog` names which catalog answered. **Not** `vulnerabilities[]` — see below. |
-| SARIF | an `eol/<provider>/<model>` rule (`error` retired, `warning` deprecated) whose single result carries **every** call-site location — unlike a CVE (one version pin), the model literal has to change in each one. |
-| Native JSON / YAML | `component.eol` — the full `Lifecycle` record. |
+| CycloneDX | component `properties`: `airom:eol.state`, `airom:eol.announcedDate`, `airom:eol.shutdownDate`, `airom:eol.daysRemaining`, `airom:eol.replacement`, `airom:eol.replacementState`, plus `source`/`sourceUrl`/`verified`. The document-level `airom:eol.catalog` names which catalog answered. **Not** `vulnerabilities[]`; see below. |
+| SARIF | an `eol/<provider>/<model>` rule (`error` retired, `warning` deprecated) whose single result carries **every** call-site location. Unlike a CVE (one version pin), the model literal has to change in each one. |
+| Native JSON / YAML | `component.eol`, the full `Lifecycle` record. |
 | `--fail-on` | `eol`, `eol:retired`, `eol:deprecated`, `eol:before:<date>`. |
 
 ### Why not `vulnerabilities[]`
@@ -96,7 +96,7 @@ not a vulnerability.
 ## The CI gate
 
 ```bash
-airom fs . --exit-code 1 --fail-on "eol:retired"           # already broken — block
+airom fs . --exit-code 1 --fail-on "eol:retired"           # already past its retirement date
 airom fs . --exit-code 1 --fail-on "eol"                   # any announced retirement
 airom fs . --exit-code 1 --fail-on "eol:before:2027-01-01" # dies before the next release train
 ```
@@ -107,20 +107,20 @@ airom fs . --exit-code 1 --fail-on "eol:before:2027-01-01" # dies before the nex
 `eol:before:<YYYY-MM-DD>` is the planning gate, and the one worth putting in a
 release checklist: *"fail if anything we ship depends on a model that dies
 before our next train leaves."* `before:D` means "not still serving on D", so a model shutting down exactly on D
-matches — the tool already calls that day retired, and the gate must agree. A
+matches, because the tool already calls that day retired, and the gate must agree. A
 retired model matches any date (it is already gone, dated or not); only an
 **undated deprecation** matches nothing, because it cannot answer the question
 without inventing a deadline the provider never announced.
 
 Gating on a state that is not a finding (`eol:supported`, `eol:unknown`) is a
 usage error, as is gating on `eol` while `--no-eol` is set, or `&`-combining an
-`eol` selector with a `cve` one — lifecycle applies to hosted models and CVEs to
+`eol` selector with a `cve` one, because lifecycle applies to hosted models and CVEs to
 versioned packages, so no single component is both. All of these are rejected at
 parse time: a gate that can only ever pass is worse than no gate.
 
 ## Coverage
 
-The catalog seeds **OpenAI** and **Anthropic** — the two providers whose
+The catalog seeds **OpenAI** and **Anthropic**, the two providers whose
 deprecation pages publish structured, dated schedules. It is deliberately not a
 list of every model in existence: each record is hand-verified, and the cost of
 that discipline is coverage. A model outside it reports `unknown`, which is the
@@ -143,13 +143,13 @@ schedule, so the catalog is delivered two ways:
 The two are merged **per provider**: a bundle shipping `eol/openai.yaml` alone
 says "here is newer OpenAI data", not "Anthropic no longer has retirement
 dates", so untouched providers keep their embedded records. Within a provider
-the bundle wins entirely — that file is the unit a maintainer edits and
+the bundle wins entirely, because that file is the unit a maintainer edits and
 re-verifies. `--no-cached-rules` pins the scan to the embedded catalog.
 
 The bundle is ed25519-verified like the rule packs, so a fresher catalog does not
 mean a less trusted one. A bundle whose catalog is malformed is ignored, with a
 warning **in the scan output** (`Stats.Warnings`, not just stderr), and the
-embedded catalog is used — a bad publish must not be worse than an old binary,
+embedded catalog is used. A bad publish must not be worse than an old binary,
 and must not be silent either.
 
 The staleness warning names whichever lever applies, so it never sends you in a
@@ -161,5 +161,5 @@ $ airom rules lint eol/openai.yaml
 eol/openai.yaml: OK (model lifecycle catalog: openai, 52 model(s))
 ```
 
-The same command lints rule packs — one contract check for anything the bundle
+The same command lints rule packs, giving one contract check for anything the bundle
 carries.

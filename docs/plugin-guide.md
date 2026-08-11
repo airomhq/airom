@@ -2,17 +2,17 @@
 
 This guide walks both ways of extending AIROM's detection surface, end to end:
 
-- **Path A — a declarative rule pack (YAML).** No Go. This covers ~80 % of the detection
+- **Path A, a declarative rule pack (YAML).** No Go. This covers ~80 % of the detection
   surface and 100 % of the fast-moving surface (new model IDs, new SDK call patterns, new
-  vector-DB clients). Target time: **under one hour**, and that target is CI-verified — the
+  vector-DB clients). Target time: **under one hour**, and that target is CI-verified, the
   walkthrough below is the canonical one-hour contributor story from
   [ARCHITECTURE.md §6.5](./ARCHITECTURE.md#65-the-one-hour-contributor-story-north-star-documented--ci-verified).
-- **Path B — a code detector (Go).** For anything a pattern can't express: binary headers,
+- **Path B, a code detector (Go).** For anything a pattern can't express: binary headers,
   archive formats, manifest parsing, cross-file logic.
 
 ## The bright line
 
-Before anything else, decide which path you're on. This rule is load-bearing — reviewers
+Before anything else, decide which path you're on. This rule is load-bearing, reviewers
 enforce it, and PRs on the wrong side of it get redirected:
 
 > **If the detection is expressible as *keywords + regex over classified text regions + a
@@ -20,7 +20,7 @@ enforce it, and PRs on the wrong side of it get redirected:
 
 | You want to detect… | Path |
 |---|---|
-| A new hosted-model ID vocabulary (a provider shipped `foo-large-2`) | **A — rules PR, never a release** |
+| A new hosted-model ID vocabulary (a provider shipped `foo-large-2`) | **A, rules PR, never a release** |
 | An SDK's call sites, imports, client constructors | **A** |
 | Framework / vector-DB / serving-client usage patterns | **A** |
 | Generation parameters near a call site | **A** (`capture_params`) |
@@ -30,13 +30,13 @@ enforce it, and PRs on the wrong side of it get redirected:
 
 One more invariant to internalize before you write anything (it shapes both paths):
 **detectors emit claims, never components** (architecture invariant P4). Your output is a
-`Finding` — a raw claim plus an occurrence. Identity, dedup, merging, and confidence are
+`Finding`, a raw claim plus an occurrence. Identity, dedup, merging, and confidence are
 assembler monopolies; the `Finding` type has no ID field, so you physically cannot break
 identity or caching.
 
 ---
 
-## Path A — a rule pack, start to finish
+## Path A: a rule pack, start to finish
 
 We'll add support for **Fireworks AI**: hosted-model IDs
 (`accounts/fireworks/models/llama-v3p1-70b-instruct`) and the `fireworks-ai` SDK, in Python
@@ -61,12 +61,12 @@ created rules/models/testdata/fireworks/usage.ts
 
 > `airom dev new-rulepack` arrives with the CLI command tree in **Phase 3**; its scaffold
 > templates ship alongside the embedded packs in **Phase 6**. Until then, create the three
-> files by hand exactly as shown below — the scaffold produces nothing you can't type.
+> files by hand exactly as shown below. The scaffold produces nothing you can't type.
 
 Layout rule (lint-enforced): **one rule pack file per provider**, in the category directory
 that fits (`rules/models/` here; see the category list in
 [ARCHITECTURE.md §4](./ARCHITECTURE.md#4-repository-layout)). Per-category monoliths are
-rejected — they're merge-conflict hotspots and defeat CODEOWNERS review routing.
+rejected, they're merge-conflict hotspots and defeat CODEOWNERS review routing.
 
 ### A.2 Write the pack
 
@@ -105,22 +105,22 @@ rules:
 
 What each part does (full reference: [rule-schema.md](./rule-schema.md)):
 
-- **`keywords`** — literal substrings fed into the single Aho–Corasick trie built over *all*
+- **`keywords`**, literal substrings fed into the single Aho–Corasick trie built over *all*
   packs at startup. Your regex never executes unless a keyword hits first. Keywords are
   **mandatory**: `airom rules lint` rejects keyword-less rules, so nobody can ship an
   un-prefiltered regex into a 100k-file scan.
-- **`pattern`** — Go RE2 regex. Named groups (`(?P<model>…)`) become template variables and
+- **`pattern`**, Go RE2 regex. Named groups (`(?P<model>…)`) become template variables and
   occurrence fields. Every named group must be referenced (lint-enforced).
-- **`regions`** — the per-language region lexer classifies every file into code / string /
+- **`regions`**, the per-language region lexer classifies every file into code / string /
   comment regions before matching; comments are never scanned.
-- **`claim`** — the templated component claim. `${model}` substitutes the named group. The
-  assembler normalizes the raw name and mints identity — the rule never does.
-- **`capture_params`** — captures listed kwarg-style bindings within 12 lines of the match
+- **`claim`**, the templated component claim. `${model}` substitutes the named group. The
+  assembler normalizes the raw name and mints identity. The rule never does.
+- **`capture_params`**, captures listed kwarg-style bindings within 12 lines of the match
   into `Occurrence.Fields`. Because this occurrence carries a `model` binding, the assembler
   promotes them to provenance-carrying `BoundParam`s on the model's facet
   ([ARCHITECTURE.md §9.5](./ARCHITECTURE.md#95-ai-config--model-attachment-layered-refusal-first)).
-- **`confidence`** — this sighting alone, 0 < c ≤ 0.99. Corroboration across detection
-  methods is the assembler's job (grouped noisy-OR, §9.3) — don't inflate.
+- **`confidence`**, this sighting alone, in the range 0 < c ≤ 0.99. Corroboration across detection
+  methods is the assembler's job (grouped noisy-OR, §9.3). Do not inflate.
 
 Note what you did *not* write: no dedup logic (the same model ID in 40 files becomes one
 component with 40 occurrences), no relationship to the `requirements.txt` entry for
@@ -130,13 +130,13 @@ design, §9.4).
 
 ### A.3 Write the fixtures
 
-Every rule needs **at least one positive and one negative fixture case** — `airom rules
+Every rule needs **at least one positive and one negative fixture case**, `airom rules
 lint` fails the pack otherwise. Cases are marked with annotations the linter and golden
 driver read (semgrep-style):
 
-- `# airom: <rule-id>` — the next line (or this line, when trailing) **must** produce a
+- `# airom: <rule-id>`, the next line (or this line, when trailing) **must** produce a
   finding for that rule.
-- `# airom-ok: <rule-id>` — the next line **must not** produce a finding for that rule.
+- `# airom-ok: <rule-id>`: the next line **must not** produce a finding for that rule.
 
 (Use the host language's comment syntax: `//` in TS, `#` in Python.)
 
@@ -214,7 +214,7 @@ $ go test ./rules/... -run Fireworks            # green
 
 > `airom rules lint` (and its no-Go-toolchain sibling `airom rules test <file>`) arrive with
 > the CLI in **Phase 3**; the validation set is complete once the rule compiler lands in
-> **Phase 5**. The `go test ./rules/...` pack driver — one subtest per pack — ships with the
+> **Phase 5**. The `go test ./rules/...` pack driver, one subtest per pack, ships with the
 > embedded packs in **Phase 6**. In CI all three run on every rules PR.
 
 Lint checks (the full list lives in [rule-schema.md](./rule-schema.md#lint-contract)):
@@ -222,7 +222,7 @@ regexes compile, **keywords non-empty**, every named group referenced, every `${
 by a named group, IDs globally unique across all packs, ≥1 positive + ≥1 negative fixture
 annotation per rule.
 
-`-update` writes `rules/models/testdata/fireworks/findings.golden.json` — the exact findings
+`-update` writes `rules/models/testdata/fireworks/findings.golden.json`, the exact findings
 the pack produces over its fixtures. Excerpt (the `usage.py` entries):
 
 ```json
@@ -286,15 +286,15 @@ rules/models/testdata/fireworks/findings.golden.json
 
 **1 YAML + 2 fixtures + 1 golden. Zero Go. Zero core changes.** CODEOWNERS routes it to the
 rules maintainers; the review is "do the goldens look right." Cache correctness is
-automatic — the SHA-256 of the effective compiled ruleset participates in every cache key,
+automatic, the SHA-256 of the effective compiled ruleset participates in every cache key,
 so your pack self-invalidates every affected cache entry on merge
 ([rule-schema.md](./rule-schema.md#cache-keys)).
 
 ---
 
-## Path B — a code detector, start to finish
+## Path B: a code detector, start to finish
 
-We'll add a parser for **Keras v3 model archives** (`*.keras`) — a ZIP container holding
+We'll add a parser for **Keras v3 model archives** (`*.keras`), a ZIP container holding
 `metadata.json` (Keras version), `config.json` (architecture), and the weights. Walking a
 ZIP central directory is a loop over binary structures: firmly on the Go side of the bright
 line.
@@ -302,7 +302,7 @@ line.
 ### B.0 The interfaces you implement
 
 Everything you need is in the public SDK, `pkg/airom/detect` (stdlib-only imports, semver-
-guarded by apidiff in CI — lands in **Phase 5**):
+guarded by apidiff in CI, lands in **Phase 5**):
 
 ```go
 type Detector interface {
@@ -332,8 +332,8 @@ created internal/detectors/keras/keras_test.go
 created internal/detectors/keras/testdata/
 ```
 
-> `airom dev new-detector` arrives with the CLI in **Phase 3**, templates in **Phase 6** —
-> same caveat as Path A; the files below are the whole scaffold.
+> `airom dev new-detector` arrives with the CLI in **Phase 3**, templates in **Phase 6**.
+> Same caveat as Path A; the files below are the whole scaffold.
 
 Granularity rule: one detector = one *format or provider concern*. A new format gets its own
 package under `internal/detectors/`; don't grow a mega-detector.
@@ -448,20 +448,20 @@ Exact `ComponentClaim`/`ModelClaim` field sets are authoritative in the `pkg/air
 godoc once Phase 5 lands; the shape above tracks
 [ARCHITECTURE.md §6.1](./ARCHITECTURE.md#61-detector-interfaces-pkgairomdetect).
 
-Things the engine does **for** you — don't reimplement them:
+Things the engine does **for** you, so do not reimplement them:
 
 - **Hashes.** Content is tee-hashed (xxh3 + SHA-256) during your one read; the assembled
   component gets `Hashes` for free, and content-hash identity dedups the same archive found
   at three paths into one component with three occurrences.
 - **Panic containment.** A panic in `DetectFile` is recovered per file and recorded as an
   `Unknown` (with your detector ID and the path). The test harness, however, treats panics
-  as failures — fix them there.
+  as failures, fix them there.
 - **Selection.** Your `Selector()` is compiled into the global dispatch index. Never
   re-check extensions or magic inside `DetectFile`.
 
 Two hard rules for parsers eating untrusted bytes (§13): return errors, never panic; never
 allocate proportionally to an attacker-controlled length field. Binary parsers get fuzz
-targets in CI (**Phase 8** wires the corpora) — write yours alongside the detector.
+targets in CI (**Phase 8** wires the corpora). Write yours alongside the detector.
 
 ### B.3 Fixtures
 
@@ -475,7 +475,7 @@ internal/detectors/keras/testdata/
 ```
 
 Handcraft the smallest valid input, exactly like the handcrafted GGUF headers in the core
-fixture set (§14) — never commit real model weights.
+fixture set (§14). Never commit real model weights.
 
 ### B.4 Test with the public harness
 
@@ -496,7 +496,7 @@ func TestKeras(t *testing.T) {
 }
 ```
 
-`detectortest.Run` (public — third-party detectors use the identical harness; lands in
+`detectortest.Run` (public, third-party detectors use the identical harness; lands in
 **Phase 5**) asserts, per its contract in
 [ARCHITECTURE.md §14](./ARCHITECTURE.md#14-testing-strategy):
 
@@ -508,15 +508,15 @@ func TestKeras(t *testing.T) {
 3. **Locations are 1-based** (0 = whole-file), columns are UTF-16 code units (decision D18).
 4. **Determinism**: two runs produce identical findings (P7 at detector scope).
 5. **No panic on truncated/empty input**: the harness auto-mutates every fixture (empty,
-   1 byte, header-truncated) and requires an error or zero findings — never a panic.
-6. **Both backings**: the entire suite runs twice — once dir-backed (where `ReaderAt`
+   1 byte, header-truncated) and requires an error or zero findings, never a panic.
+6. **Both backings**: the entire suite runs twice, once dir-backed (where `ReaderAt`
    works) and once through an in-memory **tar-stream source** (where `ReaderAt` returns
    `ErrNotSeekable`). Seekability bugs die pre-merge instead of surfacing in image scans.
 
 ### B.5 Register it
 
-Built-in detectors are cataloged in `internal/detectors/all/all.go`, which is **generated**
-— there is no hand-edited central list for every PR to conflict on. Convention: your package
+Built-in detectors are cataloged in `internal/detectors/all/all.go`, which is **generated**:
+there is no hand-edited central list for every PR to conflict on. Convention: your package
 exports its constructor(s); the generator (ships in **Phase 5**) scans
 `internal/detectors/*` and rewrites the list sorted by import path:
 
@@ -541,11 +541,11 @@ func Builtin() []detect.Detector {
 }
 ```
 
-Duplicate detector IDs **panic at startup** — CI runs the binary, so a collision fails the
+Duplicate detector IDs **panic at startup**, CI runs the binary, so a collision fails the
 PR rather than silently shadowing someone else's detector.
 
 **Out-of-tree detectors:** library embedders pass their own detectors to the engine
-constructor (the same explicit path — see `pkg/airom.Scan` options), so you can build and
+constructor (the same explicit path. See `pkg/airom.Scan` options), so you can build and
 ship a detector without forking AIROM. Out-of-*process* plugins are deliberately deferred
 (v2, [ROADMAP.md](./ROADMAP.md)): the in-proc API must survive third-party use before a
 wire protocol gets frozen.
@@ -562,7 +562,7 @@ internal/detectors/keras/testdata/findings.golden.json
 internal/detectors/all/all.go                      (regenerated, mechanical)
 ```
 
-Follow-up changes to detector behavior must bump `Version()` — CI enforces "detector code
+Follow-up changes to detector behavior must bump `Version()`, CI enforces "detector code
 diff ⇒ version bump", which keeps the cache honest across releases.
 
 ---
@@ -581,12 +581,12 @@ diff ⇒ version bump", which keeps the cache honest across releases.
 | `airom scan … --rules <file>` | adopt an unmerged pack immediately | Phase 3 |
 
 Until the marked phases land, the Go test drivers are the interface; nothing in either path
-depends on unbuilt machinery to be *authored* — only to be *run*.
+depends on unbuilt machinery to be *authored*, only to be *run*.
 
 ## Where to go next
 
-- [rule-schema.md](./rule-schema.md) — every rule-pack field, constraint, and the merge/
+- [rule-schema.md](./rule-schema.md), every rule-pack field, constraint, and the merge/
   compilation semantics.
-- [cli.md](./cli.md) — the full command surface these walkthroughs referenced.
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — §6 (detector framework), §9 (what the assembler
+- [cli.md](./cli.md), the full command surface these walkthroughs referenced.
+- [ARCHITECTURE.md](./ARCHITECTURE.md), §6 (detector framework), §9 (what the assembler
   does with your claims), §14 (the test matrix your PR runs through).

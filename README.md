@@ -3,9 +3,9 @@
 **Find the AI in your code, and prove it.**
 
 AIROM scans a filesystem, git repo, container image, or Kubernetes workload and
-generates an **AI Bill of Materials** — the models, prompts, datasets, embeddings,
-vector databases, and frameworks your software actually uses — with `file:line`
-evidence behind every entry.
+generates an **AI Bill of Materials**: the models, prompts, datasets, embeddings,
+vector databases, and frameworks your software actually uses. Every entry carries
+`file:line` evidence.
 
 [![CI](https://github.com/airomhq/airom/actions/workflows/ci.yml/badge.svg)](https://github.com/airomhq/airom/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/airomhq/airom?include_prereleases)](https://github.com/airomhq/airom/releases)
@@ -60,16 +60,16 @@ airom diff base.json head.json                           # what a PR changed
 
 | | |
 |---|---|
-| **Hosted models** | OpenAI, Anthropic, Gemini, Bedrock, Azure OpenAI, Cohere, Mistral, Groq — model IDs and SDK call sites |
-| **Local weights** | GGUF, safetensors, ONNX, PyTorch, SavedModel, TFLite, HDF5, TensorRT — identified by magic bytes and header parse, **never loaded or run** |
+| **Hosted models** | OpenAI, Anthropic, Gemini, Bedrock, Azure OpenAI, Cohere, Mistral, Groq. Model IDs and SDK call sites |
+| **Local weights** | GGUF, safetensors, ONNX, PyTorch, SavedModel, TFLite, HDF5, TensorRT. Identified by magic bytes and header parse, and **never loaded or run** |
 | **Frameworks** | LangChain, LlamaIndex, CrewAI, Agno, AutoGen, Semantic Kernel, CAMEL, MetaGPT, Letta, Crawl4AI, FastMCP, Transformers, and more |
 | **Local inference & training** | vLLM, llama.cpp, GPT4All, Ollama, DeepSpeed, Unsloth |
-| **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, Redis, pgvector — including SQL schemas and a server-side pgvector install |
+| **Vector databases** | Chroma, Milvus, Qdrant, Pinecone, Weaviate, FAISS, Redis, pgvector. Includes SQL schemas and a server-side pgvector install |
 | **Prompts & datasets** | Prompt files and templates, CSV/JSONL/Parquet signatures, `load_dataset()`, HF and Kaggle references |
 | **Everything else** | Generation parameters bound to their call site, serving infrastructure, and RAG pipelines stitched into one component |
 
 Dependencies are read from manifests, **lockfiles**, **installed metadata**, and
-even **PyInstaller binaries** — so a frozen app with no source on disk still
+even **PyInstaller binaries**, so a frozen app with no source on disk still
 produces an inventory.
 
 **Languages:** Python · JavaScript · TypeScript · Go · Java · Rust · C# · Kotlin · SQL
@@ -80,7 +80,7 @@ Sooner or later someone asks: *"Your AIBOM says this service uses `gpt-4.1`.
 Why? Where?"*
 
 Most tools can't answer. They describe a model you named in a registry, or they
-never look at your code. AIROM is **evidence-first** — every component carries
+never look at your code. AIROM is **evidence-first**: every component carries
 the `file:line` it was seen at, the technique that found it, and a calibrated
 confidence score, emitted as CycloneDX `evidence.occurrences[]` that other
 AIBOM tools leave empty.
@@ -93,11 +93,11 @@ no claim rather than a quiet "supported".
 
 | Feature | What it does |
 |---|---|
-| [Risk detection](docs/risks.md) | Load-time code-execution surfaces — pickle imports, Keras Lambda layers, GGUF template gadgets, unsafe `torch.load` — as CycloneDX `vulnerabilities[]` and SARIF. Offline. |
+| [Risk detection](docs/risks.md) | Load-time code-execution surfaces: pickle imports, Keras Lambda layers, GGUF template gadgets, and unsafe `torch.load`. Emitted as CycloneDX `vulnerabilities[]` and SARIF. Offline. |
 | [CVE overlay](docs/cve.md) | Your AI dependencies against OSV.dev, with real CVSS scores and a fail-closed gate. On by default. |
 | [Model lifecycle](docs/eol.md) | Hosted models matched against a dated, sourced catalog of provider retirement announcements. |
-| [Compliance mapping](docs/compliance.md) | NIST AI RMF and OWASP Agentic controls as CycloneDX attestations — met/gap/manual, no invented scores. |
-| [VEX export](docs/cli.md) | An OpenVEX document over the CVE overlay, for consumers that ingest VEX. Only ever asserts `affected` — a scanner has no basis for an all-clear. |
+| [Compliance mapping](docs/compliance.md) | NIST AI RMF and OWASP Agentic controls as CycloneDX attestations, marked met, gap, or manual, with no invented scores. |
+| [VEX export](docs/cli.md) | An OpenVEX document over the CVE overlay, for consumers that ingest VEX. Only ever asserts `affected`, because a scanner has no basis for an all-clear. |
 | [SPDX 3.0.1](https://docs.airom.dev/output/formats) | A JSON-LD graph with the AI, Dataset, Software, and Security profiles. Lossiest format: SPDX has no slot for `file:line` evidence, and the document says so rather than letting you assume there was none. |
 | [AIBOM diff](docs/cli.md) | The semantic delta between two scans, so AI becomes a per-PR control. |
 | [Test scope](https://docs.airom.dev/concepts/test-scope) | Fixtures and test trees are recorded but kept out of the default view. |
@@ -118,8 +118,8 @@ them. See **[exit codes](docs/cli.md#exit-code-contract)** and
 
 ## Extending it
 
-The fast-moving surface — model IDs churn weekly — lives in **YAML rule packs**,
-not Go. Adding a provider is a rules PR, not a release:
+Model IDs churn weekly, so the fast-moving surface lives in **YAML rule packs**
+rather than Go. Adding a provider is a rules PR, not a release:
 
 ```bash
 airom dev new-rulepack fireworks   # scaffolds the pack and fixture stubs
@@ -133,7 +133,7 @@ See **[writing rules](docs/rule-schema.md)** and
 
 ## Status
 
-**v0.3.7** — early but real. The pipeline, detectors, writers, and overlays are
+**v0.3.7**, early but real. The pipeline, detectors, writers, and overlays are
 implemented and tested; expect rough edges.
 
 Known gaps, each also surfaced in the affected flag's `--help`: caching is not
@@ -141,8 +141,8 @@ implemented (`--no-cache` is a no-op), live registry and daemon image pulls are
 not available (use `airom image --input <archive>`), and live-cluster scanning
 is not available (use `airom k8s --manifests <dir>`).
 
-The full ledger — what is complete, what is deferred to v2, and how AIROM
-compares to adjacent tools — is in
+The full ledger of what is complete, what is deferred to v2, and how AIROM
+compares to adjacent tools is in
 **[docs/project-status.md](docs/project-status.md)**.
 
 ## Security
@@ -158,17 +158,17 @@ accordingly:
 - **Signed releases.** `CGO_ENABLED=0`, cosign-signed, shipping an SBOM and a
   self-scanned AIBOM.
 
-Report vulnerabilities privately via a GitHub security advisory — see
+Report vulnerabilities privately via a GitHub security advisory. See
 [SECURITY.md](SECURITY.md).
 
 ## Documentation
 
-- **[docs/cli.md](docs/cli.md)** — every command, flag, and exit code
-- **[docs.airom.dev](https://docs.airom.dev)** — installation, concepts, output formats, CI recipes
+- **[docs/cli.md](docs/cli.md)**: every command, flag, and exit code
+- **[docs.airom.dev](https://docs.airom.dev)**: installation, concepts, output formats, CI recipes
   (source: [airomhq/airom-web](https://github.com/airomhq/airom-web))
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — design and decision log
-- **[docs/rule-schema.md](docs/rule-schema.md)** — the rule-pack YAML reference
-- **[docs/RELEASING.md](docs/RELEASING.md)** — cutting a release (it spans two repos)
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: design and decision log
+- **[docs/rule-schema.md](docs/rule-schema.md)**: the rule-pack YAML reference
+- **[docs/RELEASING.md](docs/RELEASING.md)**: cutting a release (it spans two repos)
 
 The documentation site and the landing page are built from
 **[airomhq/airom-web](https://github.com/airomhq/airom-web)**.
@@ -176,7 +176,7 @@ The documentation site and the landing page are built from
 ## Contributing
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md). The fastest way to help is a rule
-pack — most providers land in under an hour.
+pack. Most providers land in under an hour.
 
 ## License
 

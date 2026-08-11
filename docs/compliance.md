@@ -6,13 +6,13 @@ manual** and attaches the component evidence behind the verdict, projecting the
 result into the CycloneDX attestation model.
 
 > **A mapping, never a certification.** Most AI-governance frameworks are
-> largely organizational *process* — policy, documentation, human oversight,
-> post-market monitoring — that a static code scan cannot verify. AIROM marks
+> largely organizational *process*: policy, documentation, human oversight,
+> and post-market monitoring, none of which a static code scan can verify. AIROM marks
 > those controls **manual** and emits **no score** for them: it never asserts a
 > conformance figure it cannot back. An `evidence_of` "met" points at the
 > concrete components that satisfy it, with their `file:line`; a `gap_if` "met"
 > asserts the *absence* of a gap (e.g. no scanner-detected risk), so it carries
-> a score with nothing to list — that is the claim.
+> a score with nothing to list. That is the claim.
 
 ## Usage
 
@@ -33,7 +33,7 @@ valid set. Run `airom fs --help` for the shipped list.
 |-------|---------|-------|----------|
 | `met` | an `evidence_of` expression matched (or a `gap_if` did not) | `1.0` | the matching components |
 | `gap` | a `gap_if` expression matched (or an `evidence_of` did not) | `0.0` | the counter-evidence components |
-| `manual` | not automatable — requires human attestation | *(none)* | — |
+| `manual` | not automatable; requires human attestation | *(none)* | n/a |
 
 Severity/score is a **fixed function of the state**, never judgment at scan
 time, so output is deterministic.
@@ -42,11 +42,11 @@ time, so output is deterministic.
 
 A control declares exactly one mapping directive over the inventory:
 
-- `evidence_of: <expr>` — components matching `<expr>` are supporting evidence;
+- `evidence_of: <expr>`: components matching `<expr>` are supporting evidence;
   ≥1 → `met`, else `gap`.
-- `gap_if: <expr>` — components matching `<expr>` are counter-evidence; ≥1 →
+- `gap_if: <expr>`: components matching `<expr>` are counter-evidence; ≥1 →
   `gap`, else `met`.
-- `manual: true` — reported `manual`, no score.
+- `manual: true`: reported `manual`, no score.
 
 `<expr>` is a subset of the [`--fail-on`](./cli.md) grammar: a component kind
 (`hosted-llm`, `local-model-file`, …), `*` (any component), or a risk selector
@@ -59,9 +59,9 @@ overlay](./risks.md) via `gap_if: risk`.
 
 | Format | Where |
 |--------|-------|
-| CycloneDX | `definitions.standards[]` (the framework + its `requirements[]`) and `declarations` — AIROM as a first-party `assessor`, one `claim` + `attestation.map[]` entry per control, with a graded `conformance.score` (omitted for manual). Evidence points at the component `bom-ref`s. |
-| Compliance report (`-o compliance`) | A human-readable Markdown report: per framework a summary line (`N controls — X met, Y gap, Z manual`) and a table of every control with its state and evidence. |
-| Native JSON / YAML | `inventory.compliance[]` — `{framework, name, version, controls[]}`, each control `{id, title, state, score, rationale, evidence[], counterEvidence[]}`. |
+| CycloneDX | `definitions.standards[]` (the framework + its `requirements[]`) and `declarations`, with AIROM as a first-party `assessor`, one `claim` + `attestation.map[]` entry per control, with a graded `conformance.score` (omitted for manual). Evidence points at the component `bom-ref`s. |
+| Compliance report (`-o compliance`) | A human-readable Markdown report: per framework a summary line (`N controls: X met, Y gap, Z manual`) and a table of every control with its state and evidence. |
+| Native JSON / YAML | `inventory.compliance[]` holding `{framework, name, version, controls[]}`, each control `{id, title, state, score, rationale, evidence[], counterEvidence[]}`. |
 
 ```bash
 # The Markdown report alongside the machine-readable BOM
@@ -84,17 +84,17 @@ airom scan . --compliance nist-ai-rmf --exit-code 1 --fail-on "compliance:gap"
 
 A compliance selector is inventory-level, so it cannot be `&`-combined with a
 component term (use `|`), and `--fail-on` referencing compliance requires
-`--compliance` to have been given — gating on a framework you never evaluated is
+`--compliance` to have been given, because gating on a framework you never evaluated is
 a configuration error, not a silent pass.
 
 > **The gate evaluates the full assembly.** Like every `--fail-on` selector,
-> `compliance:*` is evaluated over the whole assembled inventory — `--min-confidence`
+> `compliance:*` is evaluated over the whole assembled inventory, and `--min-confidence`
 > does **not** relax it. The emitted report *does* honor `--min-confidence` (it is
 > presentation), so under a high `--min-confidence` a run can fail on a gap the
 > report shows as met. That asymmetry is deliberate: a CI gate you could bypass by
 > hiding low-confidence components would be no gate at all.
 
-The mapping stays **deterministic and offline** — the frameworks are static
+The mapping stays **deterministic and offline**: the frameworks are static
 data, no LLM, no network.
 
 `--min-confidence` is a presentation filter, so the compliance overlay is
@@ -104,15 +104,15 @@ filter dropped.
 
 ## Frameworks
 
-- **`nist-ai-rmf`** — NIST AI Risk Management Framework 1.0. A representative
+- **`nist-ai-rmf`**: NIST AI Risk Management Framework 1.0. A representative
   subset: the inventory/documentation subcategories (MAP) are auto-evaluated
   from the AIBOM, security/resilience (MEASURE-2.7) maps to the risk overlay,
   and the governance subcategories (GOVERN, MANAGE) are `manual`.
-- **`owasp-agentic`** — OWASP Agentic AI, Threats and Mitigations. These threats
+- **`owasp-agentic`**: OWASP Agentic AI, Threats and Mitigations. These threats
   are overwhelmingly runtime/behavioral (agent memory, tools, privileges, goals),
   which a static scan cannot observe, so nearly all are `manual`. The one AIROM
   speaks to directly is **T11 (Unexpected RCE and Code Attacks)**, mapped to the
-  artifact-risk overlay — the honest breadth of `manual` marks where static
+  artifact-risk overlay. The honest breadth of `manual` marks where static
   analysis stops (AIROM does not yet detect agents, tools, or MCP endpoints).
 
 _More frameworks (the EU AI Act) and richer agentic detection are tracked in

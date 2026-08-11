@@ -1,20 +1,20 @@
 # Rule-Pack Schema Reference
 
 > **Status:** authoritative contract for the v0 rule-pack format, derived from
-> [ARCHITECTURE.md §6.3](./ARCHITECTURE.md#63-declarative-rule-packs--the-bright-line).
+> [ARCHITECTURE.md §6.3](./ARCHITECTURE.md#63-declarative-rule-packs-the-bright-line).
 > The Go types backing this schema live in `internal/ruleengine` and stay internal in v0
 > (contributors edit YAML, not Go); they graduate to `pkg/` when the format has survived
-> real third-party use. **This document is the compatibility promise in the meantime** —
+> real third-party use. **This document is the compatibility promise in the meantime**:
 > the Phase 5 rule compiler implements exactly what is written here.
 
 A rule pack is a YAML file declaring pattern-based detections: *keywords + regex over
-classified text regions + a templated claim*. Anything beyond that expressive envelope — a
-loop, a parser, cross-file correlation — is a Go detector, not a rule
+classified text regions + a templated claim*. Anything beyond that expressive envelope, a
+loop, a parser, cross-file correlation, is a Go detector, not a rule
 (the bright line, [plugin-guide.md](./plugin-guide.md#the-bright-line)).
 
 ## File layout and naming
 
-- Packs live under `rules/<category>/` — `models/`, `embeddings/`, `frameworks/`,
+- Packs live under `rules/<category>/`, `models/`, `embeddings/`, `frameworks/`,
   `vectordb/`, `infra/`, `params/`, `prompts/`, `datasets/`.
 - **One pack file per provider** (lint-enforced). `rules/models/openai.yaml`, never
   `rules/models/all-providers.yaml`. This is a deliberate architecture decision (D3): with
@@ -27,7 +27,7 @@ loop, a parser, cross-file correlation — is a Go detector, not a rule
 | Field | Type | Required | Constraints |
 |---|---|---|---|
 | `pack` | string | yes | `[a-z0-9-]+`; must equal the filename stem |
-| `version` | integer | yes | ≥ 1. **Informational only** — cache invalidation is driven by the content hash of the effective compiled ruleset, never by this number (see [Cache keys](#cache-keys)). Bump it as a human-readable change marker. |
+| `version` | integer | yes | ≥ 1. **Informational only**, cache invalidation is driven by the content hash of the effective compiled ruleset, never by this number (see [Cache keys](#cache-keys)). Bump it as a human-readable change marker. |
 | `rules` | list | yes | ≥ 1 rule |
 
 ## Rule fields
@@ -56,7 +56,7 @@ Format `<pack>/<slug>`, e.g. `openai/model-literal`. Constraints:
   duplicate surviving to runtime panics at startup (fails CI, never silently shadows).
 - Stable forever once merged: the ID becomes the occurrence `DetectorID`
   (`rules/` + id, e.g. `rules/openai/model-literal`), which is the SARIF `ruleId` and part
-  of SARIF `partialFingerprints`. Renaming an ID breaks downstream suppressions — treat it
+  of SARIF `partialFingerprints`. Renaming an ID breaks downstream suppressions. Treat it
   like a public API symbol.
 - In non-overlay packs, the prefix before `/` must equal `pack:`.
 
@@ -77,7 +77,7 @@ the assembler).
 
 Normalized provider slug (`openai`, `anthropic`, `fireworks`, `aws-bedrock`, …). Feeds both
 `Component.Provider` and the identity `CanonicalKey.Provider`
-([ARCHITECTURE.md §9.1](./ARCHITECTURE.md#91-identity--canonicalkey)) — so spelling it
+([ARCHITECTURE.md §9.1](./ARCHITECTURE.md#91-identity-canonicalkey)), so spelling it
 consistently across rules is what makes cross-rule dedup work. Per-provider alias tables
 (shipping alongside the packs) feed the assembler's normalizer chains; the rule carries the
 raw slug.
@@ -92,33 +92,33 @@ python · javascript · typescript · go · java · rust · csharp · kotlin
 
 Omitted = the rule runs on all of them. Region classification comes from the per-language
 region lexers (for Go, the stdlib scanner). A rule never runs on files whose classified
-language isn't in this list — it's part of the compiled selector, evaluated before any
+language isn't in this list, it's part of the compiled selector, evaluated before any
 content work.
 
-### `keywords` — mandatory, lint-enforced
+### `keywords`: mandatory, lint-enforced
 
 Literal substrings, matched **case-sensitively** against the file's code and string regions
 by a single Aho–Corasick trie built over *all* packs' keywords at startup. The rule's regex
 executes only if at least one keyword hits. Consequences:
 
-- **A rule with no keywords is rejected by `airom rules lint`** — nobody can ship an
+- **A rule with no keywords is rejected by `airom rules lint`**, nobody can ship an
   un-prefiltered regex. This is what keeps hundreds of rules × 100k files cheap (invariant
   P3; the shape gitleaks and semgrep both proved).
 - Include every casing variant you need (`"ChatOpenAI"`, `"chat_openai"`).
 - Prefer selective literals (≥ 4 characters, provider-distinctive). Lint warns on keywords
   so short or common that they defeat the prefilter.
-- Comments are never scanned — a keyword appearing only in a comment cannot activate the
+- Comments are never scanned: a keyword appearing only in a comment cannot activate the
   rule.
 
 ### `pattern`
 
 A Go [RE2](https://github.com/google/re2/wiki/Syntax) regular expression (no backtracking,
-no lookaround — linear-time by construction). Compiled once at startup; a non-compiling
+no lookaround, linear-time by construction). Compiled once at startup; a non-compiling
 pattern fails lint.
 
 - **Named groups** `(?P<name>…)` are the data channel: each named group's match is recorded
   in `Occurrence.Fields[name]` and is referenceable as `${name}` in templates.
-- **Every named group must be referenced** — by a `claim` template, a
+- **Every named group must be referenced**, by a `claim` template, a
   `relations[].target.from_field`, or by having semantic meaning as a captured field the
   assembler consumes (`model` is the canonical example, §9.5). An unreferenced named group
   is a lint error: it's either dead weight or a typo.
@@ -132,14 +132,14 @@ pattern fails lint.
 Which classified text regions the pattern may match: any subset of `code`, `string`, and
 `docstring` (default: `[code, string]`). The region lexer classifies every file into
 code / comment / string / docstring regions before matching; **comment regions are never
-scanned** — not even by the keyword prefilter — so there is no `comment` value. Typical
+scanned**, not even by the keyword prefilter, so there is no `comment` value. Typical
 choices:
 
 - Model-ID literals: `[code, string]` or `[string]` (the ID is a quoted literal).
-- Import/call patterns: `[code]` — but note JS/TS module specifiers
+- Import/call patterns: `[code]`, but note JS/TS module specifiers
   (`from "openai"`) are *string* regions; use `[code, string]` when matching them.
 
-#### `docstring` — documentation that happens to be quoted
+#### `docstring`: documentation that happens to be quoted
 
 A Python string literal standing alone as a statement (a module, class, or function
 docstring) is classified `docstring`, **not** `string`, and is excluded by default for the
@@ -150,22 +150,22 @@ same reason comments are: a worked example is not a dependency. Scanning
 >>> AutoModel.from_pretrained("facebook/esmfold_v1")
 ```
 
-— 42% of everything reported. transformers *documents* those checkpoints; it does not
+That is 42% of everything reported. `transformers` *documents* those checkpoints; it does not
 call them.
 
 The test is Python's own: a triple-quoted literal reached by scanning back over blanks to
 a newline (or the start of file) is a statement, hence a docstring. Anything that consumes
-it is a value and stays `string` — `PROMPT = """…"""`, `f("""…""")`, `{"k": """…"""}`,
+it is a value and stays `string`, `PROMPT = """…"""`, `f("""…""")`, `{"k": """…"""}`,
 `return """…"""`. That is what keeps prompt-template detection working, since a template
 is always assigned or passed.
 
 Opt back in with `regions: [code, string, docstring]` when a rule genuinely wants
-documentation — for instance a pack that inventories the models a library *advertises*
+documentation, for instance a pack that inventories the models a library *advertises*
 rather than the ones it calls.
 
 ### `claim`
 
-The templated component claim. The assembler — never the rule — normalizes names, mints
+The templated component claim. The assembler, never the rule, normalizes names, mints
 identity, dedups, merges, and computes final confidence (invariant P4).
 
 | Subfield | Required | Notes |
@@ -179,7 +179,7 @@ identity, dedups, merges, and computes final confidence (invariant P4).
 
 ### `relations`
 
-Edges are first-class rule output — no Go needed to claim a relationship:
+Edges are first-class rule output, no Go needed to claim a relationship:
 
 ```yaml
 relations:
@@ -193,20 +193,20 @@ relations:
 
 Target hint forms:
 
-1. `{ kind: <kind>, name: "<template>" }` — a concrete (possibly templated) target name.
-2. `{ kind: <kind>, from_field: <field> }` — the target's name is whatever the named group
+1. `{ kind: <kind>, name: "<template>" }`: a concrete (possibly templated) target name.
+2. `{ kind: <kind>, from_field: <field> }`: the target's name is whatever the named group
    or captured param `<field>` matched at this occurrence. `from_field` must reference a
    named group in `pattern` or a name in `capture_params.names` (lint-enforced).
-3. `{ local_ref: <rule-id> }` — links to the claim another rule of the same pack made **in
+3. `{ local_ref: <rule-id> }`, links to the claim another rule of the same pack made **in
    the same file** (e.g. a client-constructor rule linking to its own import rule).
 
 Resolution happens in the assembler **after** all components exist. A hint that matches no
-component becomes a warning in `Inventory.Stats` — **never a phantom node, never a guessed
+component becomes a warning in `Inventory.Stats`, **never a phantom node, never a guessed
 edge**.
 
 ### `capture_params`
 
-Same-call-site generation-parameter capture — the highest-precision layer of the AI-config
+Same-call-site generation-parameter capture, the highest-precision layer of the AI-config
 binding story ([ARCHITECTURE.md §9.5](./ARCHITECTURE.md#95-ai-config--model-attachment-layered-refusal-first)):
 
 ```yaml
@@ -223,25 +223,25 @@ capture_params:
 
 Captured bindings land in `Occurrence.Fields`. The assembler promotes them into
 provenance-carrying `BoundParam`s on a model's facet **only when the same occurrence also
-carries a `model` binding** — call-site capture beats every weaker proximity heuristic, two
+carries a `model` binding**, call-site capture beats every weaker proximity heuristic, two
 call sites with different temperatures stay two `BoundParam`s, and nothing is ever averaged
 or guessed.
 
 Binding **values** may live in string literals regardless of the rule's own `regions`
 (`model="gpt-4.1"` at a `[code]` call site), but the binding **key** must lie in a region
-the rule declares — `temperature:` inside a prose string is not a kwarg. When a captured
+the rule declares, `temperature:` inside a prose string is not a kwarg. When a captured
 value is a bareword identifier rather than a literal (`model=BASE_MODEL`), it is resolved
 against the file's single-literal assignment *statements* (`BASE_MODEL = "gpt-4o-mini-2024-07-18"`,
-anchored at statement position — call-site kwargs, default args, and tuple elements never
-bind); an identifier assigned two different literals is ambiguous and stays verbatim —
-refusal over guessing.
+anchored at statement position, call-site kwargs, default args, and tuple elements never
+bind); an identifier assigned two different literals is ambiguous and stays verbatim.
+Refusal over guessing.
 
 ### `confidence`
 
-Float, `0 < c ≤ 0.99` — the confidence of **one sighting by this rule alone**. Rules cannot
+Float, `0 < c ≤ 0.99`, the confidence of **one sighting by this rule alone**. Rules cannot
 assert `1.0`: certainty is reserved for hash-comparison against known weights and (v2)
-verified attestations (§9.3). Corroboration is the assembler's job — grouped noisy-OR
-across detection methods — so calibrate the single sighting honestly:
+verified attestations (§9.3). Corroboration is the assembler's job, grouped noisy-OR
+across detection methods, so calibrate the single sighting honestly:
 
 - `0.85–0.9`: a provider-distinctive model-ID literal in a `model=`/`model:` position.
 - `0.6–0.75`: an SDK import or call-site shape (tells you the library is present, not which
@@ -253,7 +253,7 @@ Repetition cannot launder into certainty: twelve sightings of one 0.85 rule asse
 
 ## Fixtures and the lint contract
 
-Every rule ships **at least one positive and at least one negative fixture case** —
+Every rule ships **at least one positive and at least one negative fixture case**,
 CI-enforced by `airom rules lint`. Cases are annotated in the fixture source (comment syntax
 of the host language; annotation applies to the next line, or to the same line when
 trailing):
@@ -298,11 +298,11 @@ The effective ruleset is assembled from up to three layers:
 
 Overlay merge is **by rule ID**, with three operations:
 
-- **Add** — a rule whose ID doesn't exist yet. New IDs in an overlay must be namespaced by
+- **Add**, a rule whose ID doesn't exist yet. New IDs in an overlay must be namespaced by
   the overlay's own `pack` name.
-- **Override** — a rule whose ID matches an existing rule **replaces it wholly**. There is
+- **Override**, a rule whose ID matches an existing rule **replaces it wholly**. There is
   no field-level merging: the overlay rule must be complete and passes the same lint.
-- **Disable** — an entry consisting of just the ID and `disable: true` removes the rule
+- **Disable**, an entry consisting of just the ID and `disable: true` removes the rule
   from the effective set:
 
   ```yaml
@@ -324,15 +324,15 @@ the effective ruleset with each rule's originating layer.
 2. Validate the entire lint contract above; any violation aborts startup with the offending
    pack, rule, and reason.
 3. Compile every regex; build **one Aho–Corasick trie over all packs' keywords**.
-4. Hand the compiled `*Matcher` to the rule-engine detector via its constructor — no
+4. Hand the compiled `*Matcher` to the rule-engine detector via its constructor, no
    globals, no `init()` registration (D4).
 
 Per file at scan time:
 
 1. The selector index has already gated on language/size (compiled from the rule metadata).
 2. The region lexer classifies the file into code / comment / string regions.
-3. The trie runs over the code + string regions only. No keyword hit ⇒ the file is done —
-   this eliminates the overwhelming majority of files at ~memcpy speed.
+3. The trie runs over the code + string regions only. No keyword hit ⇒ the file is done.
+   This eliminates the overwhelming majority of files at ~memcpy speed.
 4. Only rules whose keywords hit have their regex executed, and only within their declared
    regions.
 5. Matches template into `Finding`s: claim + occurrence (with `Fields` from named groups
@@ -343,7 +343,9 @@ Rule findings then flow through the same assembler as every code detector's: ide
 `CanonicalKey`, keep-and-relate merge, grouped noisy-OR confidence
 ([ARCHITECTURE.md §9](./ARCHITECTURE.md#9-assembly-identity-dedup-confidence-params)).
 
-<a id="cache-keys"></a>## Cache keys: rules are self-invalidating
+<a id="cache-keys"></a>
+
+## Cache keys: rules are self-invalidating
 
 The SHA-256 of the **effective compiled ruleset** (all three layers, post-merge, canonical
 serialization) participates in the cache namespace
@@ -353,11 +355,11 @@ serialization) participates in the cache namespace
 namespace = sha256(detectorVersions ‖ effectiveRulesetSHA256 ‖ sizeCaps ‖ ignoreConfig)
 ```
 
-Any change to any rule — embedded or overlay, add/override/disable — produces a new
+Any change to any rule, embedded or overlay, add/override/disable, produces a new
 namespace, and every cached finding is structurally invisible to the new configuration.
 This is why `version:` is informational: rules-as-data self-invalidate on **content**, which
 eliminates the forgotten-version-bump stale-cache bug for the entire fast-moving detection
-surface. The flip side: editing rules invalidates the whole cache namespace — correctness
+surface. The flip side: editing rules invalidates the whole cache namespace, correctness
 over cache warmth, and `airom clean` prunes old namespaces.
 
 ## Worked example
@@ -397,11 +399,11 @@ rules:
 ```
 
 For a from-scratch walkthrough of authoring, testing, and shipping a pack (Fireworks AI,
-with fixtures and goldens), see [plugin-guide.md](./plugin-guide.md#path-a--a-rule-pack-start-to-finish).
+with fixtures and goldens), see [plugin-guide.md](./plugin-guide.md#path-a-a-rule-pack-start-to-finish).
 
 ## What rules cannot do
 
 By design, a rule cannot: read a second file, parse a structured format, loop, compute a
 hash, mint an ID, set a purl, assert confidence 1.0, or emit `local-model-file` /
 `rag-pipeline` / `application` components. If the detection you want needs any of those,
-it's a Go detector — [plugin-guide.md, Path B](./plugin-guide.md#path-b--a-code-detector-start-to-finish).
+it's a Go detector, [plugin-guide.md, Path B](./plugin-guide.md#path-b-a-code-detector-start-to-finish).

@@ -2,7 +2,7 @@
 
 AIROM surfaces an **artifact-risk overlay**: structural, statically-detected
 properties of a model artifact that enable code execution or content injection
-at load time — a poisoned checkpoint, an unsafe deserialization surface. Risks
+at load time, such as a poisoned checkpoint or an unsafe deserialization surface. Risks
 are attributes of components already in the AIBOM, not a separate security
 scan: every risk points at a component and carries `file`/offset evidence.
 
@@ -15,9 +15,9 @@ scan: every risk points at a component and carries `file`/offset evidence.
 
 | Format | Where |
 |--------|-------|
-| CycloneDX | top-level `vulnerabilities[]` — a non-CVE `id` with `source.name: airom`, `ratings[].method: other` (no CVSS is claimed), and `affects[].ref` pointing at the component's `bom-ref`. Legacy `airom:pickle.*` component properties are also emitted for one release. |
-| SARIF | a `risk/<slug>` rule carrying the GitHub `security-severity` marker, and a result (level `error`/`warning`/`note` by severity) on the affected artifact — so a poisoned checkpoint shows up as a security alert on the PR that introduced it. |
-| Native JSON / YAML | `component.risks[]` — `{id, severity, detail, occurrence}`. |
+| CycloneDX | top-level `vulnerabilities[]` carrying a non-CVE `id` with `source.name: airom`, `ratings[].method: other` (no CVSS is claimed), and `affects[].ref` pointing at the component's `bom-ref`. Legacy `airom:pickle.*` component properties are also emitted for one release. |
+| SARIF | a `risk/<slug>` rule carrying the GitHub `security-severity` marker, and a result (level `error`/`warning`/`note` by severity) on the affected artifact, so a poisoned checkpoint shows up as a security alert on the PR that introduced it. |
+| Native JSON / YAML | `component.risks[]` holding `{id, severity, detail, occurrence}`. |
 | `--fail-on` | `risk` (any), `risk:<severity>`, or `risk:<slug>`. |
 
 Severity is a **fixed function of the risk id** (never judgment at scan time),
@@ -25,26 +25,26 @@ so output is deterministic.
 
 ## Coverage bounds
 
-Artifact-risk scans read a **bounded** prefix of each file — the same
+Artifact-risk scans read a **bounded** prefix of each file, governed by the same
 `--max-file-size` cap (default 1 MiB) every content detector uses, so peak
 memory stays a function of configuration, not input size. A risk signal placed
 **beyond** that bound is not inspected: a GGUF `chat_template` pushed past 1 MiB
 by a large preceding vocab, or a `Lambda` declared deep in an oversized Keras
 config, can evade the scan while a runtime that reads the whole file still
 executes it. Raise `--max-file-size` to widen the window. As with the static
-pickle walk, **absence of a risk is not a safety claim** — a clean scan of a
+pickle walk, **absence of a risk is not a safety claim**. A clean scan of a
 capped read means "nothing dangerous in the inspected prefix," not "safe."
 
 ## Catalog
 
 <a id="pickle-import"></a>
 
-### AIROM-RISK-PICKLE-IMPORT — Unsafe pickle import · **high**
+### AIROM-RISK-PICKLE-IMPORT: Unsafe pickle import · **high**
 
 `--fail-on` slug: `pickle-import` (alias: `pickle-risk`)
 
 A pickle `GLOBAL` (or `STACK_GLOBAL`) opcode resolves to a code-execution
-callable — `os.system`, `builtins.eval`/`exec`, anything under `subprocess`,
+callable such as `os.system`, `builtins.eval`/`exec`, anything under `subprocess`,
 `runpy`, `socket`, `importlib`, and similar. Because Python's `pickle`
 executes these imports while *unpickling*, loading such a checkpoint
 (`torch.load`, `pickle.load`, `joblib.load`) runs attacker-controlled code
@@ -56,13 +56,13 @@ are never executed and the tensor data is never read.
 
 <a id="keras-lambda"></a>
 
-### AIROM-RISK-KERAS-LAMBDA — Keras Lambda layer · **high**
+### AIROM-RISK-KERAS-LAMBDA: Keras Lambda layer · **high**
 
 `--fail-on` slug: `keras-lambda`
 
 A Keras model config declares a `Lambda` layer. A Lambda layer stores arbitrary
 Python as a marshalled code object inside the config, and `keras.models.load_model`
-(or `Model.from_config`) executes it while reconstructing the model — a code-execution
+(or `Model.from_config`) executes it while reconstructing the model. That is a code-execution
 vector that fires on load, before inference. `detail` records `Lambda`.
 
 Detected by scanning the model config a Keras `.h5`/`.hdf5` stores as a verbatim
@@ -72,26 +72,26 @@ full HDF5 parse; a `.keras` (zip) container is not yet covered.
 
 <a id="gguf-template"></a>
 
-### AIROM-RISK-GGUF-TEMPLATE — Unsafe GGUF chat template · **medium**
+### AIROM-RISK-GGUF-TEMPLATE: Unsafe GGUF chat template · **medium**
 
 `--fail-on` slug: `gguf-template`
 
 The GGUF `tokenizer.chat_template` metadata is a Jinja template rendered at
 prompt-format time. A legitimate template only iterates messages and formats
-strings; this risk fires when it contains sandbox-escape gadgets — a dunder
+strings; this risk fires when it contains sandbox-escape gadgets: a dunder
 attribute traversal (`__globals__`, `__subclasses__`, `__class__`,
 `__builtins__`, `__import__`, …) or a direct `os.popen`/`os.system`/`subprocess`
-call — that a server-side-template-injection payload uses to reach the Python
+call, the reach a server-side-template-injection payload uses to reach the Python
 runtime. Jinja pivot objects that real templates legitimately use (notably
 `namespace(...)` for loop state) are deliberately not flagged; the dangerous use
 of any pivot still trips a dunder token. `detail` lists the matched gadgets.
 
-Detected during GGUF header-metadata parsing (`modelfile/gguf`) — no tensor
+Detected during GGUF header-metadata parsing (`modelfile/gguf`), and no tensor
 data is read.
 
 <a id="savedmodel-pyfunc"></a>
 
-### AIROM-RISK-SAVEDMODEL-PYFUNC — SavedModel Python-callback op · **medium**
+### AIROM-RISK-SAVEDMODEL-PYFUNC: SavedModel Python-callback op · **medium**
 
 `--fail-on` slug: `savedmodel-pyfunc`
 
@@ -106,7 +106,7 @@ distributed artifact warrants review.
 
 <a id="unsafe-load"></a>
 
-### AIROM-RISK-UNSAFE-LOAD — Unsafe model deserialization · **medium**
+### AIROM-RISK-UNSAFE-LOAD: Unsafe model deserialization · **medium**
 
 `--fail-on` slug: `unsafe-load`
 
@@ -115,12 +115,12 @@ checkpoint would execute code on load. Unlike the other catalog entries (which
 inspect an artifact), this is a **code** risk: it rides on the library the call
 uses, with the call's file:line as evidence.
 
-The v1 rule flags `torch.load(..., weights_only=False)` — an explicit opt-out of
+The v1 rule flags `torch.load(..., weights_only=False)`, an explicit opt-out of
 PyTorch's safe weights-only path. A **bare** `torch.load(...)` is deliberately
 NOT flagged: torch ≥ 2.6 defaults `weights_only` to `True`, so only the explicit
 opt-out is unambiguously unsafe.
 
-This risk is emitted by the rule engine, not a binary detector — any rule pack
+This risk is emitted by the rule engine, not a binary detector, so any rule pack
 can attach a catalog risk via a `risk:` field (see
 [rule-schema.md](./rule-schema.md)), which is how code-level risks extend.
 
