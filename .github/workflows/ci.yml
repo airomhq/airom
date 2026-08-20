@@ -179,6 +179,21 @@ jobs:
           print(f"ok: {whl} -> {scripts}")
           PY
 
+      # The check above reads the wheel as a zip. This one installs it and runs
+      # it: the same script the release workflow runs on every target platform,
+      # so an ordinary PR that breaks the binary fails here rather than at
+      # release time. Only linux/x86-64 is covered on this runner; the other six
+      # wheels are covered by the smoke jobs in release-pypi.yml.
+      - name: Install the wheel and run it
+        working-directory: sdk/python
+        run: |
+          set -euo pipefail
+          VERSION=$(python -c "import re;print(re.search(r'__version__ = \"([^\"]+)\"', open('src/airom/__init__.py').read()).group(1))")
+          VENV=$(mktemp -d)/v   # outside the tree: nothing to clean up or gitignore
+          python -m venv "$VENV"
+          "$VENV/bin/python" -m pip install --quiet --no-index --find-links dist "airom==$VERSION"
+          python ../../.github/scripts/smoke_wheel.py "$VENV/bin" "$VERSION"
+
   fuzz:
     name: Fuzz smoke
     runs-on: ubuntu-latest

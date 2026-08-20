@@ -154,9 +154,26 @@ The library resolves the binary without relying on PATH at all (it consults the
 environment's scripts dir directly), so `import airom` works even from an unactivated
 venv's interpreter.
 
-Installing from an **sdist** ships no binary — put `airom` on your `PATH`
-(`go install github.com/airomhq/airom/cmd/airom@latest`, then ensure
-`$(go env GOPATH)/bin` is on PATH) or set `$AIROM_BINARY`.
+### Platforms with no wheel
+
+Wheels are published for macOS (Intel + Apple Silicon), Linux (x86-64 + arm64, glibc +
+musl), and Windows x86-64. Every one is installed and executed on the platform it targets
+before it is published; see the smoke jobs in
+[`release-pypi.yml`](../../.github/workflows/release-pypi.yml).
+
+Anywhere else, pip falls back to the **sdist**, which ships the Python library and no
+binary — and cannot build one, since it does not contain the Go module. Rather than
+install successfully and leave you without a scanner, that build now **fails** and says so.
+To proceed, either install the binary for your platform from the
+[releases page](https://github.com/airomhq/airom/releases) and put it on your `PATH`, or
+take the library alone:
+
+```bash
+AIROM_SKIP_BUNDLE=1 pip install airom
+```
+
+The second form is the right one when you already run the standalone binary and only want
+`import airom`. Resolution then falls through to `$AIROM_BINARY` or `airom` on `PATH`.
 
 ## Development
 
@@ -171,7 +188,8 @@ The suite runs against the **real binary**, not mocks: a wrapper tested only aga
 proves nothing about the contract it wraps.
 
 Building a wheel needs the Go toolchain (the build hook compiles the binary with
-`CGO_ENABLED=0`). Set `AIROM_SKIP_BUNDLE=1` for a pure-Python wheel.
+`CGO_ENABLED=0`) and fails without it, because a wheel with no binary installs no `airom`
+command. Set `AIROM_SKIP_BUNDLE=1` for a pure-Python wheel on purpose.
 
 ## Publishing
 
