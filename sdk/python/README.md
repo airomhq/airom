@@ -157,8 +157,8 @@ venv's interpreter.
 ### Platforms with no wheel
 
 Wheels are published for macOS (Intel + Apple Silicon), Linux (x86-64 + arm64, glibc +
-musl), and Windows x86-64. Every one is installed and executed on the platform it targets
-before it is published; see the smoke jobs in
+musl), and Windows (x86-64 + arm64). Every one is installed and executed on the platform it
+targets before it is published; see the smoke jobs in
 [`release-pypi.yml`](../../.github/workflows/release-pypi.yml).
 
 Anywhere else, pip falls back to the **sdist**, which ships the Python library and no
