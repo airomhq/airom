@@ -226,7 +226,11 @@ jobs:
         include:
           - { id: linux-x86_64-glibc,  runs-on: ubuntu-latest }
           - { id: linux-aarch64-glibc, runs-on: ubuntu-24.04-arm }
-          - { id: macos-x86_64,        runs-on: macos-13 } # the last Intel image
+          # macos-13 is gone from GitHub's supported image list, and a retired
+          # label still QUEUES rather than failing fast: the job sat 38 minutes
+          # with no runner assigned while every other label picked up in
+          # seconds. macos-15-intel is the current Intel image.
+          - { id: macos-x86_64,        runs-on: macos-15-intel }
           - { id: macos-arm64,         runs-on: macos-latest }
           - { id: windows-x86_64,      runs-on: windows-latest }
     steps:
