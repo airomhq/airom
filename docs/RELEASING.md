@@ -82,14 +82,25 @@ notes, and changelog entries. They describe what a specific version did.
    gh release view v<version> --json assets --jq '.assets[].name'
 
    # Download one binary, check it against the published checksum, and run it.
-   gh release download v<version> -p 'airom_*_darwin_arm64.tar.gz' -p 'checksums.txt'
-   grep -E "darwin_arm64.tar.gz$" checksums.txt | awk '{print $1}' \
-     | diff - <(shasum -a 256 airom_*_darwin_arm64.tar.gz | awk '{print $1}')
-   tar xzf airom_*_darwin_arm64.tar.gz && ./airom --version
+   gh release download v<version> -p 'airom_*_macos_silicon.tar.gz' -p 'checksums.txt'
+   grep -E "macos_silicon.tar.gz$" checksums.txt | awk '{print $1}' \
+     | diff - <(shasum -a 256 airom_*_macos_silicon.tar.gz | awk '{print $1}')
+   tar xzf airom_*_macos_silicon.tar.gz && ./airom --version
    ```
 
 8. **Exercise the headline change with the downloaded binary**, not a local
    build. A local build can pass while the released artifact is broken.
+
+## macOS archives are named macos_intel / macos_silicon
+
+Since v0.3.9 the two macOS archives are `airom_<version>_macos_intel.tar.gz`
+and `airom_<version>_macos_silicon.tar.gz`, not `darwin_amd64` / `darwin_arm64`.
+Linux and Windows still use `<goos>_<goarch>`, because amd64 and arm64 are the
+words those users already use.
+
+This breaks any script that globs the old names. If you change it again, grep
+the whole repo first: the download step in this checklist referenced
+`darwin_arm64` directly and would have kept passing against a stale local file.
 
 ## Rule bundles release separately
 

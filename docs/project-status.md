@@ -6,7 +6,7 @@ the front page stays short.
 
 ## Project status
 
-AIROM is at **v0.3.8**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with three overlays (artifact risk, CVE, model lifecycle), compliance mapping, test-scope filtering, per-PR AIBOM diffing, lockfile and installed-metadata version resolution, PyInstaller archive reading, SQL/DDL scanning, SPDX 3.0.1 and OpenVEX export, and a signed rule-update channel, now checked automatically once a day outside CI. Early software; expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
+AIROM is at **v0.3.9**: feature-complete against the 10-phase plan, architecture through a multi-agent production review, with three overlays (artifact risk, CVE, model lifecycle), compliance mapping, test-scope filtering, per-PR AIBOM diffing, lockfile and installed-metadata version resolution, PyInstaller archive reading, SQL/DDL scanning, SPDX 3.0.1 and OpenVEX export, and a signed rule-update channel, now checked automatically once a day outside CI. Early software; expect rough edges, and see the deferred row below for what it deliberately does not do yet. Honest ledger:
 
 | Area | Status |
 |---|---|

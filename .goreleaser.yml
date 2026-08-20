@@ -34,8 +34,14 @@ builds:
 
 archives:
   - id: airom
+    # macOS archives are named for what people call the machines, not for what
+    # Go calls the platform: nobody shopping for a Mac build is looking for
+    # "darwin_arm64". Linux and Windows keep goos_goarch, where amd64/arm64 is
+    # the vocabulary users already have.
     name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macos_{{ if eq .Arch "amd64" }}intel{{ else }}silicon{{ end }}
+      {{- else }}{{ .Os }}_{{ .Arch }}{{ end }}
     format_overrides:
       - goos: windows
         formats: [zip]
