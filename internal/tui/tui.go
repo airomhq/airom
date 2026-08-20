@@ -69,11 +69,17 @@ const (
 	sgrYellow = "33"
 	sgrRed    = "31"
 	sgrWhite  = "37"
+	sgrInvert = "7"
 )
 
 // Palette is the set of styles for one output stream.
+//
+// Selected is reverse video, the one style that is not a color: an interactive
+// list has to show which row the keyboard is on even where color is off but
+// styling is not, and inverting the row is the only marker every terminal
+// renders the same way.
 type Palette struct {
-	Bold, Dim, Accent, Good, Warn, Bad, Heading Style
+	Bold, Dim, Accent, Good, Warn, Bad, Heading, Selected Style
 }
 
 // NewPalette builds a palette for f, disabled unless color is appropriate.
@@ -83,13 +89,14 @@ func NewPalette(f *os.File) Palette {
 		return Style{codes: strings.Join(codes, ";"), enabled: on}
 	}
 	return Palette{
-		Bold:    s(sgrBold),
-		Dim:     s(sgrDim),
-		Accent:  s(sgrCyan),
-		Good:    s(sgrGreen),
-		Warn:    s(sgrYellow),
-		Bad:     s(sgrRed),
-		Heading: s(sgrBold, sgrWhite),
+		Bold:     s(sgrBold),
+		Dim:      s(sgrDim),
+		Accent:   s(sgrCyan),
+		Good:     s(sgrGreen),
+		Warn:     s(sgrYellow),
+		Bad:      s(sgrRed),
+		Heading:  s(sgrBold, sgrWhite),
+		Selected: s(sgrInvert),
 	}
 }
 

@@ -1,0 +1,191 @@
+package fix
+
+import (
+	"testing"
+
+	"github.com/airomhq/airom/pkg/airom"
+)
+
+// comp builds a vulnerable package component with one manifest occurrence.
+func comp(name, version, purl, detector, path string, line int, snippet string, vulns ...airom.Vulnerability) airom.Component {
+	return airom.Component{
+		Kind:            airom.KindLibrary,
+		Name:            name,
+		Version:         airom.KnownString(version),
+		PURL:            purl,
+		Vulnerabilities: vulns,
+		Evidence: airom.Evidence{Occurrences: []airom.Occurrence{{
+			Location:   airom.Location{Path: path, Line: line},
+			DetectorID: detector,
+			Confidence: 0.95,
+			Snippet:    snippet,
+		}}},
+	}
+}
+
+func vuln(id string, sev airom.VulnSeverity, fixed string) airom.Vulnerability {
+	return airom.Vulnerability{ID: id, Severity: sev, Fixed: fixed, Source: "osv.dev"}
+}
+
+func inventory(cs ...airom.Component) *airom.Inventory {
+	return &airom.Inventory{Components: cs}
+}
+
+// TestPlanPicksHighestFixed asserts the remediation is the single bump that
+// clears every advisory, not the first one an advisory happened to name.
+func TestPlanPicksHighestFixed(t *testing.T) {
+	inv := inventory(comp("langchain", "0.0.310", "pkg:pypi/langchain@0.0.310",
+		"manifest/pypi-requirements", "requirements.txt", 1, "langchain==0.0.310",
+		vuln("CVE-1", airom.VulnLow, "0.1.0"),
+		vuln("CVE-2", airom.VulnCritical, "0.2.4"),
+		vuln("CVE-3", airom.VulnMedium, "0.0.339"),
+	))
+	got := Plan(inv, false)
+	if len(got) != 1 {
+		t.Fatalf("Plan returned %d targets, want 1", len(got))
+	}
+	tg := got[0]
+	if tg.Fixed != "0.2.4" {
+		t.Errorf("Fixed = %q, want the highest named fix 0.2.4", tg.Fixed)
+	}
+	if tg.Severity != airom.VulnCritical {
+		t.Errorf("Severity = %q, want the most severe bucket present", tg.Severity)
+	}
+	if !tg.Fixable || tg.File != "requirements.txt" || tg.Line != 1 {
+		t.Errorf("pin site = %v %s:%d, want fixable requirements.txt:1", tg.Fixable, tg.File, tg.Line)
+	}
+	if tg.Ecosystem != "pypi" {
+		t.Errorf("Ecosystem = %q, want pypi", tg.Ecosystem)
+	}
+	// Advisories must be ordered most-severe-first, like every other CVE surface.
+	if tg.Vulns[0].ID != "CVE-2" {
+		t.Errorf("first advisory = %q, want the critical one", tg.Vulns[0].ID)
+	}
+}
+
+// TestPlanSkipsFixesAtOrBelowInstalled guards the case that makes a "fix"
+// actively harmful: an advisory whose fixed version is older than what is
+// installed would downgrade the package if taken literally.
+func TestPlanSkipsFixesAtOrBelowInstalled(t *testing.T) {
+	inv := inventory(comp("pkg", "2.0.0", "pkg:pypi/pkg@2.0.0",
+		"manifest/pypi-requirements", "requirements.txt", 1, "pkg==2.0.0",
+		vuln("CVE-OLD", airom.VulnHigh, "1.5.0"),
+	))
+	if got := Plan(inv, false); len(got) != 0 {
+		t.Fatalf("Plan returned %d targets, want none: 1.5.0 is a downgrade from 2.0.0", len(got))
+	}
+}
+
+// TestPlanIgnoresUnorderableFixedVersions: an advisory that "fixes" at a git
+// commit names nothing we can prove is an upgrade.
+func TestPlanIgnoresUnorderableFixedVersions(t *testing.T) {
+	inv := inventory(comp("pkg", "1.0.0", "pkg:pypi/pkg@1.0.0",
+		"manifest/pypi-requirements", "requirements.txt", 1, "pkg==1.0.0",
+		vuln("CVE-GIT", airom.VulnHigh, "a1b2c3d4e5f6"),
+		vuln("CVE-REAL", airom.VulnLow, "1.0.4"),
+	))
+	got := Plan(inv, false)
+	if len(got) != 1 || got[0].Fixed != "1.0.4" {
+		t.Fatalf("Plan = %+v, want a single target fixing at 1.0.4", got)
+	}
+}
+
+func TestCrossesMajor(t *testing.T) {
+	cases := []struct {
+		current, fixed string
+		want           bool
+	}{
+		{"4.30.0", "4.53.0", false},
+		{"4.30.0", "5.5.0", true},
+		{"0.0.310", "0.0.339", false},
+		{"0.0.310", "1.3.9", true},
+		{"0.2.4", "0.3.27", true}, // pre-1.0: the leading nonzero is the major
+		{"0.2.4", "0.2.9", false}, // same 0.2 line
+		{"1.0.0", "1.0.1", false},
+		{"deadbeef", "1.0.0", false}, // unorderable: claim nothing
+	}
+	for _, c := range cases {
+		if got := crossesMajor(c.current, c.fixed); got != c.want {
+			t.Errorf("crossesMajor(%q, %q) = %v, want %v", c.current, c.fixed, got, c.want)
+		}
+	}
+}
+
+// TestPlanRefusesDerivedSources is the core safety property: a lockfile records
+// a resolution, and rewriting one forges a decision no resolver made. The
+// finding must still be REPORTED, with a reason.
+func TestPlanRefusesDerivedSources(t *testing.T) {
+	inv := inventory(comp("pkg", "1.0.0", "pkg:pypi/pkg@1.0.0",
+		"manifest/pypi-lock", "poetry.lock", 42, `name = "pkg"`,
+		vuln("CVE-1", airom.VulnHigh, "1.0.4"),
+	))
+	got := Plan(inv, false)
+	if len(got) != 1 {
+		t.Fatalf("Plan returned %d targets, want the finding reported anyway", len(got))
+	}
+	if got[0].Fixable {
+		t.Error("a lockfile sighting must not be marked fixable")
+	}
+	if got[0].Reason == "" {
+		t.Error("an unfixable target must carry a reason")
+	}
+}
+
+// TestPlanPrefersManifestOverLockfile: a package seen in both must be fixed at
+// the manifest that declares it.
+func TestPlanPrefersManifestOverLockfile(t *testing.T) {
+	c := comp("pkg", "1.0.0", "pkg:pypi/pkg@1.0.0",
+		"manifest/pypi-lock", "poetry.lock", 42, `name = "pkg"`,
+		vuln("CVE-1", airom.VulnHigh, "1.0.4"))
+	c.Evidence.Occurrences = append(c.Evidence.Occurrences, airom.Occurrence{
+		Location:   airom.Location{Path: "pyproject.toml", Line: 7},
+		DetectorID: "manifest/pypi-pyproject",
+		Confidence: 0.9,
+		Snippet:    `pkg = "1.0.0"`,
+	})
+	got := Plan(inventory(c), false)
+	if len(got) != 1 || !got[0].Fixable || got[0].File != "pyproject.toml" {
+		t.Fatalf("Plan = %+v, want the fix targeted at pyproject.toml", got)
+	}
+}
+
+// TestPlanScopesTestOnly mirrors the table: a component seen only in test
+// scaffolding is off the attention surfaces unless the user asks for it.
+func TestPlanScopesTestOnly(t *testing.T) {
+	c := comp("pkg", "1.0.0", "pkg:pypi/pkg@1.0.0",
+		"manifest/pypi-requirements", "tests/requirements.txt", 1, "pkg==1.0.0",
+		vuln("CVE-1", airom.VulnHigh, "1.0.4"))
+	c.TestOnly = true
+	if got := Plan(inventory(c), false); len(got) != 0 {
+		t.Errorf("test-only component surfaced without --include-tests: %+v", got)
+	}
+	if got := Plan(inventory(c), true); len(got) != 1 {
+		t.Errorf("test-only component hidden despite --include-tests: %+v", got)
+	}
+}
+
+// TestPlanSkipsComponentsWithNoDefiniteVersion: a declared range never matched
+// an advisory in the first place, so there is nothing to bump.
+func TestPlanSkipsComponentsWithNoDefiniteVersion(t *testing.T) {
+	c := comp("pkg", "1.0.0", "pkg:pypi/pkg", "manifest/npm", "package.json", 4,
+		`"pkg": "^1.0.0"`, vuln("CVE-1", airom.VulnHigh, "1.0.4"))
+	c.Version = airom.OptString{} // absent
+	if got := Plan(inventory(c), false); len(got) != 0 {
+		t.Errorf("a component with no resolved version produced a fix: %+v", got)
+	}
+}
+
+// TestPlanOrdersBySeverity keeps the fix table's first row the one a reviewer
+// would reach for first.
+func TestPlanOrdersBySeverity(t *testing.T) {
+	inv := inventory(
+		comp("low-pkg", "1.0.0", "pkg:pypi/low-pkg@1.0.0", "manifest/pypi-requirements",
+			"requirements.txt", 1, "low-pkg==1.0.0", vuln("CVE-L", airom.VulnLow, "1.1.0")),
+		comp("crit-pkg", "1.0.0", "pkg:pypi/crit-pkg@1.0.0", "manifest/pypi-requirements",
+			"requirements.txt", 2, "crit-pkg==1.0.0", vuln("CVE-C", airom.VulnCritical, "1.1.0")),
+	)
+	got := Plan(inv, false)
+	if len(got) != 2 || got[0].Package != "crit-pkg" {
+		t.Fatalf("Plan order = %v, want the critical package first", got)
+	}
+}
