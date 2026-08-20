@@ -15,7 +15,17 @@ Four here, one in [airomhq/airom-web](https://github.com/airomhq/airom-web):
 | airom | `sdk/python/README.md` | `airom <version>` |
 | airom | `README.md` | `**v<version>**, early but real.` |
 | airom | `docs/project-status.md` | `AIROM is at **v<version>**` |
-| **airom-web** | `docs-site/installation.mdx` | **twice**: the callout and `@latest resolves to…` |
+| **airom-web** | `docs-site/installation.mdx` | **four times**: see below |
+
+The four in `installation.mdx` are the callout, `@latest resolves to…`, the
+`airom version` sample output under the pip/pipx tab (which carries a commit
+and build date too, so bump those to the real ones or the block contradicts
+itself), and the `git describe` example under `make build`. Grep, do not count
+from memory:
+
+```bash
+grep -n "<previous version>" docs-site/installation.mdx
+```
 
 Not the Go binary: its version comes from the tag at build time via ldflags
 (see the `LDFLAGS` block in the `Makefile`), so there is no version constant to
@@ -61,7 +71,7 @@ notes, and changelog entries. They describe what a specific version did.
    Say what changed and, explicitly, what upgrading costs.
 
    ```bash
-   git tag -a v0.3.7 -m "..." && git push origin v0.3.7
+   git tag -a v<version> -m "..." && git push origin v<version>
    ```
 
 7. **Verify what actually shipped.** Not that the workflow went green, but
@@ -69,10 +79,10 @@ notes, and changelog entries. They describe what a specific version did.
 
    ```bash
    gh run list --workflow Release --limit 1
-   gh release view v0.3.7 --json assets --jq '.assets[].name'
+   gh release view v<version> --json assets --jq '.assets[].name'
 
    # Download one binary, check it against the published checksum, and run it.
-   gh release download v0.3.7 -p 'airom_*_darwin_arm64.tar.gz' -p 'checksums.txt'
+   gh release download v<version> -p 'airom_*_darwin_arm64.tar.gz' -p 'checksums.txt'
    grep -E "darwin_arm64.tar.gz$" checksums.txt | awk '{print $1}' \
      | diff - <(shasum -a 256 airom_*_darwin_arm64.tar.gz | awk '{print $1}')
    tar xzf airom_*_darwin_arm64.tar.gz && ./airom --version
@@ -87,3 +97,11 @@ notes, and changelog entries. They describe what a specific version did.
 version and its own cadence. Rule and lifecycle-catalog changes reach users
 through the signed update channel without a new scanner release. That is the
 point of the channel. Only bump the scanner when scanner code changed.
+
+One exception, because it has caught us out: **packaging changes need a bump
+even when no scanner code moved.** The wheel matrix runs only when the version
+in `sdk/python/src/airom/__init__.py` is not already on PyPI, so a new wheel
+platform reaches nobody until a release ships it. v0.3.8 was exactly this: no
+Go code changed, and the release existed to publish the Windows arm64 wheel.
+Say so in the tag message, so a reader can tell an optional upgrade from a
+behavioural one.
