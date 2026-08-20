@@ -879,8 +879,9 @@ AIROM is a security tool whose parsers eat untrusted bytes; it must be hardened 
   `PickleRisk` on torch components is a security differentiator, not just inventory.
 - No network access during `fs`/`repo`(local)/`image --input` scans; `--offline` asserts it
   globally.
-- Release binaries: `CGO_ENABLED=0`, reproducible builds, cosign-signed, SBOM +
-  (dogfooded) AIBOM attached per release.
+- Release binaries: `CGO_ENABLED=0`, reproducible builds, checksummed, and
+  cosign-signed. The release binary is exercised against this repo before the
+  release is accepted; its output is a gate, not an attached asset.
 - Scanner never loads/executes model files; header parsing only.
 
 ## 14. Testing strategy

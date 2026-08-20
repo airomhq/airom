@@ -155,8 +155,8 @@ accordingly:
 - **Fuzzed parsers.** Every binary header parser is fuzzed in CI and must return
   errors, never panic.
 - **No surprise network access.** `--offline` asserts it globally.
-- **Signed releases.** `CGO_ENABLED=0`, cosign-signed, shipping an SBOM and a
-  self-scanned AIBOM.
+- **Signed releases.** `CGO_ENABLED=0`, reproducible, checksummed, and
+  keyless-cosign-signed.
 
 Report vulnerabilities privately via a GitHub security advisory. See
 [SECURITY.md](SECURITY.md).
