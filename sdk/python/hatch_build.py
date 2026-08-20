@@ -10,8 +10,18 @@ Wheels are therefore platform-specific, and this hook stamps the wheel tag. It
 needs the Go toolchain and the repository checkout (the module root is two levels
 up from this file).
 
-Opt out with ``AIROM_SKIP_BUNDLE=1`` — the resulting wheel is pure-Python and the
-SDK falls back to ``$AIROM_BINARY`` or ``airom`` on ``PATH`` at runtime.
+If the binary cannot be built, this hook FAILS rather than quietly producing a
+wheel with no ``airom`` command. That case is reached by ``pip install airom``
+on a platform with no prebuilt wheel: pip falls back to the sdist, which
+carries no binary and cannot build one (it does not contain the Go module). A
+warning there produced the worst possible outcome — an install that reports
+success and leaves the user with no scanner, discovered later as
+``airom: command not found``.
+
+Opt out with ``AIROM_SKIP_BUNDLE=1`` to build the pure-Python wheel on purpose:
+the SDK then falls back to ``$AIROM_BINARY`` or ``airom`` on ``PATH`` at
+runtime, which is what someone who already installed the standalone binary and
+only wants ``import airom`` actually wants.
 
 Cross-compile by setting ``GOOS``/``GOARCH`` (both are forwarded to ``go build``);
 set ``AIROM_WHEEL_TAG`` to override the platform tag when doing so.
@@ -64,6 +74,28 @@ def _wheel_tag() -> str:
     return f"py3-none-{plat}"
 
 
+
+def _refuse(reason: str) -> None:
+    """Fail the build rather than ship a wheel that installs no command.
+
+    Raised at `pip install` time, so the message is what the user sees.
+    """
+    raise RuntimeError(
+        f"airom: cannot build the scanner binary ({reason}), and a wheel without "
+        "it installs no `airom` command.\n"
+        "\n"
+        "You are most likely installing from the sdist because this platform has "
+        "no prebuilt wheel. The sdist ships the Python library only; it cannot "
+        "build the scanner.\n"
+        "\n"
+        "  * To get the scanner: install the binary for your platform from\n"
+        "    https://github.com/airomhq/airom/releases and put it on your PATH.\n"
+        "  * To install the Python library alone (you already have the binary,\n"
+        "    or you are building a pure-Python wheel on purpose):\n"
+        "        AIROM_SKIP_BUNDLE=1 pip install airom\n"
+    )
+
+
 class AiromBuildHook(BuildHookInterface):
     PLUGIN_NAME = "custom"
 
@@ -76,18 +108,10 @@ class AiromBuildHook(BuildHookInterface):
             return
 
         if not (REPO_ROOT / "go.mod").is_file():
-            self.app.display_warning(
-                f"no go.mod under {REPO_ROOT} — building without a bundled binary "
-                "(the SDK will fall back to $AIROM_BINARY or PATH)"
-            )
-            return
+            _refuse(f"no Go module under {REPO_ROOT}")
 
         if shutil.which("go") is None:
-            self.app.display_warning(
-                "the Go toolchain was not found — building without a bundled binary "
-                "(set AIROM_SKIP_BUNDLE=1 to silence this)"
-            )
-            return
+            _refuse("the Go toolchain was not found")
 
         BUILD_DIR.mkdir(parents=True, exist_ok=True)
         out = BUILD_DIR / _exe_name()

@@ -46,7 +46,11 @@ notes, and changelog entries. They describe what a specific version did.
    golangci-lint run && go test ./... -race
    ```
 
-5. **Commit and push.** The push publishes the Python SDK to PyPI; confirm:
+5. **Commit and push.** The push publishes the Python SDK to PyPI. Every wheel is
+   installed and run on the platform it targets first (the `smoke` jobs in
+   `release-pypi.yml`), so a cross-compiled binary that does not execute fails
+   before publication rather than after. PyPI never lets a version be
+   re-uploaded, so that gate is the only chance to catch it. Confirm:
 
    ```bash
    curl -s https://pypi.org/pypi/airom/json | python3 -c "import json,sys;print(json.load(sys.stdin)['info']['version'])"

@@ -235,3 +235,84 @@ def test_bundled_binary_is_version_stamped(tmp_path):
         f"{_airom.__version__!r} — the ldflags stamp is not being applied"
     )
     assert info.version != "dev"
+
+
+def _build(args, cwd, env=None):
+    import os
+    import subprocess
+    import sys
+
+    return subprocess.run(
+        [sys.executable, "-m", "build", *args],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        env={**os.environ, **(env or {})},
+    )
+
+
+def test_sdist_install_fails_loudly_rather_than_shipping_no_command(tmp_path):
+    """`pip install airom` on a platform with no wheel must FAIL.
+
+    pip falls back to the sdist there, and the sdist carries no binary and
+    cannot build one: it does not contain the Go module. The build hook used to
+    warn and continue, so the install reported success and left the user with a
+    library and no scanner — a failure that surfaces much later as `airom:
+    command not found`, far from its cause.
+
+    This reproduces that path exactly: build the sdist, extract it somewhere the
+    repository is not reachable, and build a wheel from it.
+    """
+    import tarfile
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    assert _build(["--sdist", "-o", str(tmp_path / "sd")], cwd=root).returncode == 0
+
+    sdist = next((tmp_path / "sd").glob("*.tar.gz"))
+    with tarfile.open(sdist) as tf:
+        tf.extractall(tmp_path / "x", filter="data")
+    extracted = next((tmp_path / "x").iterdir())
+
+    # Built WITH isolation, which is what pip does for an sdist: the backend runs
+    # in its own environment, exactly as it would on the user's machine.
+    proc = _build(["--wheel", "-o", str(tmp_path / "out")], cwd=extracted)
+    assert proc.returncode != 0, (
+        "building a wheel from the sdist SUCCEEDED. That wheel installs no `airom` "
+        "command, so `pip install airom` would report success and leave the user "
+        f"without a scanner.\n--- stdout ---\n{proc.stdout}"
+    )
+    out = proc.stdout + proc.stderr
+    assert "AIROM_SKIP_BUNDLE=1" in out, f"the failure does not say how to proceed:\n{out}"
+    assert "releases" in out, f"the failure does not point at the binary downloads:\n{out}"
+
+
+def test_skip_bundle_still_builds_a_library_only_wheel(tmp_path):
+    """The refusal above must stay opt-out-able.
+
+    Someone who already runs the standalone binary and only wants `import airom`
+    has a legitimate reason to build without bundling, and the error message
+    promises them this works. Assert the promise.
+    """
+    import tarfile
+    import zipfile
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    assert _build(["--sdist", "-o", str(tmp_path / "sd")], cwd=root).returncode == 0
+    sdist = next((tmp_path / "sd").glob("*.tar.gz"))
+    with tarfile.open(sdist) as tf:
+        tf.extractall(tmp_path / "x", filter="data")
+    extracted = next((tmp_path / "x").iterdir())
+
+    proc = _build(
+        ["--wheel", "-o", str(tmp_path / "out")],
+        cwd=extracted,
+        env={"AIROM_SKIP_BUNDLE": "1"},
+    )
+    assert proc.returncode == 0, f"AIROM_SKIP_BUNDLE build failed:\n{proc.stdout}{proc.stderr}"
+
+    whl = next((tmp_path / "out").glob("*.whl"))
+    assert whl.name.endswith("py3-none-any.whl"), f"expected a pure-Python wheel, got {whl.name}"
+    names = zipfile.ZipFile(whl).namelist()
+    assert not [n for n in names if ".data/scripts/" in n], "opted out, but a script shipped anyway"

@@ -24,6 +24,15 @@ name: Publish (PyPI)
 on:
   push:
     branches: [main]
+  # Packaging changes are exercised on the PR that makes them. Without this the
+  # wheel matrix only ever runs on a version bump, so a broken build hook lands
+  # on main and is discovered by the release it breaks.
+  pull_request:
+    paths:
+      - "sdk/python/**"
+      - ".github/workflows/release-pypi.yml"
+      - ".github/scripts/smoke_wheel.py"
+      - "cmd/airom/**"
   workflow_dispatch:
     inputs:
       repository:
@@ -84,23 +93,47 @@ jobs:
           print(f"::notice::airom {version} on {host}: {note}")
           PY
 
+      # This gap is how the smoke jobs came to be missing in the first place:
+      # a platform was added to the wheel matrix and nothing noticed that
+      # nothing tested it. Adding a wheel without a smoke entry now fails here,
+      # before anything is built.
+      - name: Every wheel has a smoke test
+        run: |
+          pip install --quiet pyyaml
+          python - <<'PY'
+          import sys, yaml
+
+          jobs = yaml.safe_load(open(".github/workflows/release-pypi.yml"))["jobs"]
+          ids = lambda j: {m["id"] for m in jobs[j]["strategy"]["matrix"]["include"]}
+          built, smoked = ids("wheels"), ids("smoke") | ids("smoke-musl")
+
+          if unsmoked := sorted(built - smoked):
+              sys.exit(
+                  f"these wheels are published without ever being run: {unsmoked}. "
+                  "Add a matching entry to the smoke or smoke-musl matrix."
+              )
+          if orphan := sorted(smoked - built):
+              sys.exit(f"smoke entries with no wheel to test: {orphan}")
+          print(f"ok: {len(built)} wheels, all smoke-tested")
+          PY
+
   wheels:
-    name: Wheel (${{ matrix.goos }}/${{ matrix.goarch }} ${{ matrix.libc }})
+    name: Wheel ${{ matrix.id }}
     needs: decide
-    if: needs.decide.outputs.publish == 'true'
+    if: needs.decide.outputs.publish == 'true' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { goos: linux, goarch: amd64, libc: manylinux, tag: py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64 }
-          - { goos: linux, goarch: arm64, libc: manylinux, tag: py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64 }
+          - { id: linux-x86_64-glibc,  goos: linux,   goarch: amd64, tag: py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64 }
+          - { id: linux-aarch64-glibc, goos: linux,   goarch: arm64, tag: py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64 }
           # A CGO-free Go binary is static, so the same build also runs on musl.
-          - { goos: linux, goarch: amd64, libc: musllinux, tag: py3-none-musllinux_1_2_x86_64 }
-          - { goos: linux, goarch: arm64, libc: musllinux, tag: py3-none-musllinux_1_2_aarch64 }
-          - { goos: darwin, goarch: amd64, libc: "", tag: py3-none-macosx_10_9_x86_64 }
-          - { goos: darwin, goarch: arm64, libc: "", tag: py3-none-macosx_11_0_arm64 }
-          - { goos: windows, goarch: amd64, libc: "", tag: py3-none-win_amd64 }
+          - { id: linux-x86_64-musl,   goos: linux,   goarch: amd64, tag: py3-none-musllinux_1_2_x86_64 }
+          - { id: linux-aarch64-musl,  goos: linux,   goarch: arm64, tag: py3-none-musllinux_1_2_aarch64 }
+          - { id: macos-x86_64,        goos: darwin,  goarch: amd64, tag: py3-none-macosx_10_9_x86_64 }
+          - { id: macos-arm64,         goos: darwin,  goarch: arm64, tag: py3-none-macosx_11_0_arm64 }
+          - { id: windows-x86_64,      goos: windows, goarch: amd64, tag: py3-none-win_amd64 }
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -144,14 +177,14 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: wheel-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.libc }}
+          name: wheel-${{ matrix.id }}
           path: sdk/python/dist/*.whl
           if-no-files-found: error
 
   sdist:
     name: sdist
     needs: decide
-    if: needs.decide.outputs.publish == 'true'
+    if: needs.decide.outputs.publish == 'true' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -171,10 +204,103 @@ jobs:
           path: sdk/python/dist/*.tar.gz
           if-no-files-found: error
 
+  # ── The gate ──────────────────────────────────────────────────────────────
+  #
+  # Everything above inspects the wheel as a zip file, on the machine that
+  # built it. That proves the binary is in .data/scripts/ and carries the right
+  # version stamp; it cannot prove the binary RUNS, because six of the seven
+  # wheels are cross-compiled on an x86-64 Linux runner and never executed.
+  #
+  # These two jobs install each wheel on the platform it targets and run it.
+  # `publish` depends on them, so an unexecuted wheel cannot reach PyPI, where
+  # a version can never be re-uploaded.
+
+  smoke:
+    name: Smoke ${{ matrix.id }}
+    needs: [decide, wheels]
+    if: needs.decide.outputs.publish == 'true' || github.event_name == 'pull_request'
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: linux-x86_64-glibc,  runs-on: ubuntu-latest }
+          - { id: linux-aarch64-glibc, runs-on: ubuntu-24.04-arm }
+          # macos-13 is gone from GitHub's supported image list, and a retired
+          # label still QUEUES rather than failing fast: the job sat 38 minutes
+          # with no runner assigned while every other label picked up in
+          # seconds. macos-15-intel is the current Intel image.
+          - { id: macos-x86_64,        runs-on: macos-15-intel }
+          - { id: macos-arm64,         runs-on: macos-latest }
+          - { id: windows-x86_64,      runs-on: windows-latest }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v8
+        with:
+          name: wheel-${{ matrix.id }}
+          path: dist
+
+      # A venv here is CI hygiene, not an AIROM requirement: it gives a known
+      # empty environment so "pip put a working airom in bin/" is the only thing
+      # the result can be explained by. The package has no dependencies, so
+      # there is nothing for it to isolate.
+      #
+      # Installing by NAME through --find-links (not by path) also makes pip
+      # check the wheel's platform tag, so a mislabelled tag fails here rather
+      # than becoming an uninstallable release.
+      - name: Install the wheel and run it
+        shell: bash
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          python -m venv .venv
+          if [ -d ".venv/Scripts" ]; then BIN=".venv/Scripts"; else BIN=".venv/bin"; fi
+          "$BIN/python" -m pip install --quiet --no-index --find-links dist "airom==$VERSION"
+          python .github/scripts/smoke_wheel.py "$BIN" "$VERSION"
+
+  smoke-musl:
+    name: Smoke ${{ matrix.id }}
+    needs: [decide, wheels]
+    if: needs.decide.outputs.publish == 'true' || github.event_name == 'pull_request'
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: linux-x86_64-musl,  runs-on: ubuntu-latest }
+          - { id: linux-aarch64-musl, runs-on: ubuntu-24.04-arm }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: wheel-${{ matrix.id }}
+          path: dist
+
+      # Alpine runs through `docker run` rather than a job-level `container:`.
+      # The runner mounts its own glibc-linked node into a job container to run
+      # JavaScript actions, which does not execute on musl, so checkout and
+      # download-artifact would fail before the test could start. Running the
+      # container as a step keeps those actions on the glibc host.
+      - name: Install the wheel and run it under musl
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/w" -w /w alpine:3.21 sh -euc "
+            apk add --no-cache python3 py3-pip >/dev/null
+            python3 -m venv /tmp/v
+            /tmp/v/bin/pip install --quiet --no-index --find-links dist 'airom==$VERSION'
+            python3 .github/scripts/smoke_wheel.py /tmp/v/bin '$VERSION'
+          "
+
   publish:
     name: Publish ${{ needs.decide.outputs.version }}
-    needs: [decide, wheels, sdist]
-    if: needs.decide.outputs.publish == 'true'
+    needs: [decide, wheels, sdist, smoke, smoke-musl]
+    if: needs.decide.outputs.publish == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Trusted Publishing mints the OIDC token. No secrets.
