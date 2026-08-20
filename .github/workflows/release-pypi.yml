@@ -134,6 +134,7 @@ jobs:
           - { id: macos-x86_64,        goos: darwin,  goarch: amd64, tag: py3-none-macosx_10_9_x86_64 }
           - { id: macos-arm64,         goos: darwin,  goarch: arm64, tag: py3-none-macosx_11_0_arm64 }
           - { id: windows-x86_64,      goos: windows, goarch: amd64, tag: py3-none-win_amd64 }
+          - { id: windows-arm64,       goos: windows, goarch: arm64, tag: py3-none-win_arm64 }
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -233,6 +234,7 @@ jobs:
           - { id: macos-x86_64,        runs-on: macos-15-intel }
           - { id: macos-arm64,         runs-on: macos-latest }
           - { id: windows-x86_64,      runs-on: windows-latest }
+          - { id: windows-arm64,       runs-on: windows-11-arm }
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
