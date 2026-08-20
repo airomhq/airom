@@ -43,15 +43,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Dogfood: scan our own repo with the freshly built binary and attach
-      # the AIBOM to the release. AIROM ships its own AI Bill of Materials.
-      - name: Self-scan AIBOM
+      # The self-scan outputs are no longer attached to the release, but the
+      # scan still runs: it is the only place the freshly built release binary
+      # is executed against a real tree. If the shipped artifact cannot scan,
+      # this fails the release rather than a user discovering it. Written to a
+      # temp dir so nothing lands in the release assets.
+      - name: Smoke-test the release binary against this repo
         run: |
           bin=$(find dist -type f -name airom -path '*linux_amd64*' | head -1)
-          "$bin" fs . -o cyclonedx=airom-self.cdx.json -o json=airom-self.aibom.json
-      - name: Attach AIBOM to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            airom-self.cdx.json
-            airom-self.aibom.json
+          out=$(mktemp -d)
+          "$bin" fs . -o cyclonedx="$out/self.cdx.json" -o json="$out/self.aibom.json"
+          python3 - "$out/self.aibom.json" <<'PY'
+          import json, sys
+          inv = json.load(open(sys.argv[1]))
+          n = len(inv.get("components", []))
+          if n < 2:
+              sys.exit(f"the release binary scanned its own repo and found {n} components")
+          print(f"ok: release binary found {n} components in its own tree")
+          PY

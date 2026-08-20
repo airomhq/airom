@@ -1,6 +1,6 @@
 # goreleaser configuration for AIROM (schema v2).
-# Static, CGO-free binaries for every target (invariant P8), checksummed,
-# keyless-cosign-signed, with a per-release SBOM.
+# Static, CGO-free binaries for every target (invariant P8), checksummed and
+# keyless-cosign-signed.
 version: 2
 
 project_name: airom
@@ -68,11 +68,10 @@ signs:
     artifacts: checksum
     output: true
 
-# A CycloneDX SBOM per archive (syft). AIROM additionally attaches its own
-# self-scanned AIBOM in the release workflow.
-sboms:
-  - id: archive
-    artifacts: archive
+# No per-archive SBOMs. They were six near-duplicate syft documents that buried
+# the six binaries people actually came for: 19 assets, of which 6 were what you
+# download. Anyone auditing a release can run syft against the archive and get
+# the same document, pinned to the same checksum.
 
 changelog:
   sort: asc
