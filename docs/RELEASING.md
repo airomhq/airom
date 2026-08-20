@@ -63,8 +63,16 @@ notes, and changelog entries. They describe what a specific version did.
    re-uploaded, so that gate is the only chance to catch it. Confirm:
 
    ```bash
-   curl -s https://pypi.org/pypi/airom/json | python3 -c "import json,sys;print(json.load(sys.stdin)['info']['version'])"
+   # Ask for the version you just pushed, not for "latest". The aggregate
+   # /pypi/airom/json endpoint is cached and served 0.3.8 for minutes after
+   # 0.3.9 was live, which reads exactly like a failed publish.
+   curl -s -o /dev/null -w '%{http_code}\n' https://pypi.org/pypi/airom/<version>/json
+   curl -s https://pypi.org/simple/airom/ | grep -c "airom-<version>-"
    ```
+
+   A `200` and eight wheels means it published. Do not tag until you have
+   seen that; this step and the tag belong in separate commands, so a stale
+   answer here cannot slip past on its way to an irreversible tag.
 
 6. **Tag.** Use an annotated tag; its message becomes the human half of the
    release, since the GitHub release body is goreleaser's generated changelog.
