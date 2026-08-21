@@ -18,6 +18,8 @@ import (
 	"github.com/airomhq/airom/pkg/airom"
 	"github.com/airomhq/airom/pkg/airom/detect"
 	"github.com/airomhq/airom/pkg/airom/purl"
+
+	"github.com/airomhq/airom/internal/approved"
 )
 
 // Options parameterizes one assembly.
@@ -63,8 +65,15 @@ func Build(findings []detect.Finding, unknowns []airom.Unknown, stats airom.Scan
 		Stats:         stats,
 	}
 
+	var manifest *approved.ApprovedManifest
+	if opts.Source.Target != "" {
+		if m, err := approved.LoadManifest(opts.Source.Target); err == nil {
+			manifest = m
+		}
+	}
+
 	for _, d := range a.byID {
-		inv.Components = append(inv.Components, d.finish())
+		inv.Components = append(inv.Components, d.finish(manifest))
 	}
 	sort.Slice(inv.Components, func(i, j int) bool { return inv.Components[i].ID < inv.Components[j].ID })
 
@@ -725,7 +734,7 @@ func mergeHashes(dst, add []airom.Hash) []airom.Hash {
 }
 
 // finish produces the final Component from a draft.
-func (d *draft) finish() airom.Component {
+func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 	// Sort by the TOTAL occLess order, then dedup by (Path, Line, DetectorID).
 	// A total order matters at the tie: two occurrences sharing those three
 	// keys but differing in column/method/snippet (e.g. one rule matching a
@@ -816,6 +825,32 @@ func (d *draft) finish() airom.Component {
 	}
 
 	c.Risks = d.finishRisks()
+
+	if manifest != nil && c.PURL != "" {
+		status := "approved"
+		var finalReason string
+
+		if len(c.Evidence.Occurrences) == 0 {
+			_, st, rs := manifest.IsApproved(string(c.PURL), "")
+			status = st
+			finalReason = rs
+		} else {
+			for _, occ := range c.Evidence.Occurrences {
+				_, st, rs := manifest.IsApproved(string(c.PURL), occ.Location.Path)
+				if st != "approved" {
+					status = st
+					finalReason = rs
+					break
+				}
+				finalReason = rs
+			}
+		}
+
+		c.Props = append(c.Props, airom.KV{Name: "airom:governance.status", Value: status})
+		if status != "approved" && finalReason != "" {
+			c.Props = append(c.Props, airom.KV{Name: "airom:governance.reason", Value: finalReason})
+		}
+	}
 
 	return c
 }

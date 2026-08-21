@@ -112,6 +112,9 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newDevCmd(),
 		newCleanCmd(),
 		newVersionCmd(bi),
+		newApproveCmd(),
+		newRevokeCmd(),
+		newCheckCmd(),
 	)
 	return root
 }

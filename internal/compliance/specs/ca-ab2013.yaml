@@ -1,0 +1,8 @@
+id: ca-ab2013
+name: "California AB 2013 (Generative AI Training Data Transparency)"
+version: "1.0"
+url: "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB2013"
+controls:
+  - id: ca.ab2013.training-data-summary
+    title: "Public Training Data Source Summary"
+    manual: true

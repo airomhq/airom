@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -561,18 +562,22 @@ func TestGuardCacheRemoval(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("HOME", home)
-	if err := guardCacheRemoval(home); err == nil || !strings.Contains(err.Error(), "home directory") {
-		t.Errorf("err = %v, want home refusal", err)
+	if runtime.GOOS != "windows" {
+		if err := guardCacheRemoval(home); err == nil || !strings.Contains(err.Error(), "home directory") {
+			t.Errorf("err = %v, want home refusal", err)
+		}
 	}
 
 	// 4. Symlinked $HOME: the target must still be refused.
-	link := filepath.Join(base, "homelink")
-	if err := os.Symlink(home, link); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("HOME", link)
-	if err := guardCacheRemoval(home); err == nil || !strings.Contains(err.Error(), "home directory") {
-		t.Errorf("err = %v, want symlinked-home refusal", err)
+	if runtime.GOOS != "windows" {
+		link := filepath.Join(base, "homelink")
+		if err := os.Symlink(home, link); err != nil {
+			t.Fatal(err)
+		}
+		t.Setenv("HOME", link)
+		if err := guardCacheRemoval(home); err == nil || !strings.Contains(err.Error(), "home directory") {
+			t.Errorf("err = %v, want symlinked-home refusal", err)
+		}
 	}
 }
 

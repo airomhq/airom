@@ -1,0 +1,11 @@
+id: nyc-ll144
+name: "NYC Local Law 144 (AEDT bias audits)"
+version: "1.0"
+url: "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page"
+controls:
+  - id: nyc.ll144.bias-audit
+    title: "Annual Independent Bias Audit (§20-871(a))"
+    manual: true
+  - id: nyc.ll144.public-posting
+    title: "Public Website Posting (§20-871(b))"
+    manual: true

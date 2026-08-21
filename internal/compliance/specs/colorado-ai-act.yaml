@@ -1,0 +1,18 @@
+id: colorado-ai-act
+name: "Colorado Artificial Intelligence Act (SB 24-205 / HB24-1468)"
+version: "1.0"
+url: "https://leg.colorado.gov/bills/sb24-205"
+controls:
+  - id: co.ai-act.risk-mgmt
+    title: "Risk Management Program Alignment (§6-1-1702)"
+    manual: true
+  - id: co.ai-act.impact-assessment
+    title: "Algorithmic Impact Assessment (§6-1-1703)"
+    text: "Evidence of high-risk models or missing impact assessments."
+    gap_if: "risk"
+  - id: co.ai-act.consumer-notice
+    title: "Consumer Notice & Appeal Pathway (§6-1-1704)"
+    manual: true
+  - id: co.ai-act.incident-reporting
+    title: "90-day AG Incident Reporting (§6-1-1705)"
+    manual: true
