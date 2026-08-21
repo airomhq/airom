@@ -366,11 +366,16 @@ func (c *Config) validateFix() error {
 	if c.FixAll {
 		flag = "--fix-all"
 	}
-	if !c.CVE {
-		return fmt.Errorf("%s needs the CVE overlay to have something to fix (remove --no-cve, or drop --offline)", flag)
-	}
+	// Offline is checked BEFORE the overlay: ApplyDefaults already forced CVE
+	// off under --offline, so the overlay message would otherwise fire first and
+	// this specific one could never be reached — telling a user who asked for
+	// --fix-verify --offline about the CVE overlay instead of about the resolver
+	// they just asked to run without a network.
 	if c.FixVerify && c.Offline {
 		return fmt.Errorf("--fix-verify runs a dependency resolver, which needs the network (drop --offline)")
+	}
+	if !c.CVE {
+		return fmt.Errorf("%s needs the CVE overlay to have something to fix (remove --no-cve, or drop --offline)", flag)
 	}
 	if c.Source != SourceFS {
 		return fmt.Errorf("%s rewrites manifests in a working tree, so it only applies to a filesystem scan (got a %s scan)", flag, c.Source)

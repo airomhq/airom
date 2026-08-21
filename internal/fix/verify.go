@@ -122,7 +122,14 @@ var checkers = map[string]checker{
 			// The module graph alone: it fails on a version that does not exist
 			// and on a go.sum the bump has invalidated, without building or
 			// writing anything.
-			return []string{"go", "list", "-m", "-e", "all"}
+			//
+			// Emphatically NOT -e. That flag exists to report module errors in
+			// the output and exit 0 anyway, which is the opposite of what a
+			// check needs: with it, `go list` returns success for both failures
+			// above — the exact two this check is here to catch — and prints the
+			// bad version as though it resolved. Verified: a parseable but
+			// nonexistent version exits 1 without -e and 0 with it.
+			return []string{"go", "list", "-m", "all"}
 		},
 		markers:      []string{"missing go.sum entry", "go: ", "error"},
 		inconclusive: []string{"unknown flag", "dial tcp", "connection refused"},
@@ -186,11 +193,14 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 		return res
 	}
 
-	out, timedOut, err := run(ctx, dir, c.args(path.Base(manifest)), VerifyTimeout)
+	out, halted, err := run(ctx, dir, c.args(path.Base(manifest)), VerifyTimeout)
 	switch {
-	case timedOut:
+	case halted:
 		res.Status = VerifyErrored
 		res.Reason = fmt.Sprintf("%s did not finish within %s", c.tool, VerifyTimeout)
+		if errors.Is(err, context.Canceled) {
+			res.Reason = c.tool + " was interrupted before it reached a verdict"
+		}
 	case err == nil:
 		res.Status = VerifyOK
 	case containsAny(out, c.inconclusive):
@@ -209,7 +219,9 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 // run executes argv in dir and returns its combined output. The argv comes from
 // the fixed table above plus a manifest basename; no shell is involved, so
 // nothing in the project can influence what is executed.
-func run(ctx context.Context, dir string, argv []string, timeout time.Duration) (out string, timedOut bool, err error) {
+// run reports halted when the context ended the command — a timeout or a
+// Ctrl-C — so the caller can tell "no verdict" from "the resolver said no".
+func run(ctx context.Context, dir string, argv []string, timeout time.Duration) (out string, halted bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -220,8 +232,11 @@ func run(ctx context.Context, dir string, argv []string, timeout time.Duration) 
 	cmd.Env = append(cmd.Environ(), "PIP_DISABLE_PIP_VERSION_CHECK=1", "NO_COLOR=1")
 
 	b, err := cmd.CombinedOutput()
-	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		return string(b), true, ctx.Err()
+	// A killed resolver never rendered a verdict. Reporting its nonzero exit as
+	// a dependency conflict would invent a finding — and then drive the revert
+	// prompt to propose undoing fixes that were fine.
+	if cerr := ctx.Err(); cerr != nil {
+		return string(b), true, cerr
 	}
 	return string(b), false, err
 }

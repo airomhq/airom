@@ -11,9 +11,8 @@ import (
 	"io"
 	"sort"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 
+	"github.com/airomhq/airom/internal/tui"
 	"github.com/airomhq/airom/internal/writer"
 	"github.com/airomhq/airom/pkg/airom"
 )
@@ -262,52 +261,11 @@ func writeTable(w io.Writer, comps []airom.Component, anyVuln, anyEOL bool) {
 
 // ── rendering helpers ───────────────────────────────────────────────────────
 
-// runeLen counts runes — used where a rune count is what's wanted (wrap width,
-// tail truncation). Column alignment uses dispWidth instead.
-func runeLen(s string) int { return utf8.RuneCountInString(s) }
-
-// dispWidth approximates the terminal-cell width of s: East-Asian wide/fullwidth
-// runes and most emoji take two cells, combining/enclosing marks zero, the rest
-// one. It is an approximation (not the full Unicode width tables), but it keeps
-// the box drawings rectangular for the non-ASCII advisory titles OSV can carry —
-// pure-ASCII output (every golden) is unaffected, since there dispWidth == the
-// rune count.
-func dispWidth(s string) int {
-	w := 0
-	for _, r := range s {
-		switch {
-		case r == 0:
-		case unicode.In(r, unicode.Mn, unicode.Me): // combining / enclosing marks
-		case isWide(r):
-			w += 2
-		default:
-			w++
-		}
-	}
-	return w
-}
-
-// isWide reports whether r occupies two terminal cells (CJK, Hangul, Kana,
-// fullwidth forms, and the common emoji/symbol blocks).
-func isWide(r rune) bool {
-	switch {
-	case r >= 0x1100 && r <= 0x115F, // Hangul Jamo
-		r >= 0x2E80 && r <= 0x303E,   // CJK radicals … Kangxi
-		r >= 0x3041 && r <= 0x33FF,   // Hiragana … CJK compat
-		r >= 0x3400 && r <= 0x4DBF,   // CJK Ext A
-		r >= 0x4E00 && r <= 0x9FFF,   // CJK Unified
-		r >= 0xA000 && r <= 0xA4CF,   // Yi
-		r >= 0xAC00 && r <= 0xD7A3,   // Hangul syllables
-		r >= 0xF900 && r <= 0xFAFF,   // CJK compat ideographs
-		r >= 0xFE30 && r <= 0xFE4F,   // CJK compat forms
-		r >= 0xFF00 && r <= 0xFF60,   // Fullwidth forms
-		r >= 0xFFE0 && r <= 0xFFE6,   // Fullwidth signs
-		r >= 0x1F300 && r <= 0x1FAFF, // emoji & pictographs
-		r >= 0x20000 && r <= 0x3FFFD: // CJK Ext B+
-		return true
-	}
-	return false
-}
+// The table measures in terminal cells, not runes: internal/tui owns the one
+// implementation (tui.DispWidth), so every aligned surface — this table and the
+// interactive fix table — agrees on how wide a string is.
+func runeLen(s string) int   { return tui.RuneLen(s) }
+func dispWidth(s string) int { return tui.DispWidth(s) }
 
 func kv(k, v string) string { return fmt.Sprintf("%-13s %s", k, v) }
 

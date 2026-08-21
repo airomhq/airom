@@ -237,41 +237,110 @@ func TestFrameNeverOverflows(t *testing.T) {
 	}
 }
 
-// TestTooNarrowRefusesTheTable rather than drawing one whose clicks would land
-// on the wrong package.
-func TestTooNarrowRefusesTheTable(t *testing.T) {
-	for _, w := range []int{20, 30, MinWidth - 1} {
-		m := newModel("/scan/root", demo(), plain())
-		m.layout(w, 40)
-		out := m.render(w, 40)
-		if strings.Contains(out, "┌") {
-			t.Errorf("width %d: drew a table that cannot fit", w)
+// TestFrameFitsTheTerminal is the guard on the arithmetic that decides where a
+// row lands on screen.
+//
+// bodyRows is derived from the count of fixed lines render() emits. If the two
+// ever disagree the frame overflows, the alternate screen scrolls by the
+// difference, and bodyTop no longer describes where the body starts — the top
+// row stops responding to clicks and every other click applies the row above the
+// one that was clicked. It is invisible in a screenshot and total in effect, so
+// it is asserted by counting lines rather than by eye.
+func TestFrameFitsTheTerminal(t *testing.T) {
+	for _, extra := range []int{0, 1, 6, 40} { // plans shorter and far taller than the screen
+		tgs := demo()
+		for i := range extra {
+			tgs[0].Vulns = append(tgs[0].Vulns, vuln(fmt.Sprintf("CVE-X%d", i), airom.VulnMedium))
 		}
-		if !strings.Contains(out, "--fix-all") {
-			t.Errorf("width %d: did not name the way out:\n%s", w, out)
-		}
-		for _, line := range strings.Split(out, "\r\n") {
-			if n := len([]rune(line)); n > w {
-				t.Errorf("width %d: a line is %d runes wide: %q", w, n, line)
+		for _, h := range []int{MinHeight, MinHeight + 1, 24, 30, 40, 50} {
+			m := newModel("/scan/root", tgs, plain())
+			m.layout(120, h)
+			got := len(strings.Split(m.render(120, h), "\r\n"))
+			if got > h {
+				t.Errorf("plan of %d rows at h=%d: frame is %d lines, terminal has %d (bodyRows=%d)",
+					len(m.rows), h, got, h, m.bodyRows)
+			}
+			// The body must also start where the click handler believes it does.
+			if m.bodyTop != chromeAbove {
+				t.Errorf("bodyTop = %d, want %d", m.bodyTop, chromeAbove)
 			}
 		}
+	}
+}
+
+// TestTooSmallRefusesTheTable rather than drawing one whose clicks would land on
+// the wrong package — in either dimension.
+func TestTooSmallRefusesTheTable(t *testing.T) {
+	type size struct{ w, h int }
+	for _, sz := range []size{{20, 40}, {30, 40}, {MinWidth - 1, 40}, {120, MinHeight - 1}, {120, 4}} {
+		w, h := sz.w, sz.h
+		m := newModel("/scan/root", demo(), plain())
+		m.layout(w, h)
+		out := m.render(w, h)
+		if n := len(strings.Split(out, "\r\n")); n > h {
+			t.Errorf("%dx%d: the notice is %d lines", w, h, n)
+		}
+		if strings.Contains(out, "┌") {
+			t.Errorf("%dx%d: drew a table that cannot fit", w, h)
+		}
+		if h > 5 && !strings.Contains(out, "--fix-all") {
+			t.Errorf("%dx%d: did not name the way out:\n%s", w, h, out)
+		}
+		for _, line := range strings.Split(out, "\r\n") {
+			if n := tui.DispWidth(line); n > w {
+				t.Errorf("%dx%d: a line is %d cells wide: %q", w, h, n, line)
+			}
+		}
+	}
+}
+
+// TestWidthIsMeasuredInCells, not runes: a CJK scan root or an emoji in a
+// package name is two cells per rune, and a row measured short wraps — moving
+// every row below it away from where a click is resolved.
+func TestWidthIsMeasuredInCells(t *testing.T) {
+	tgs := demo()
+	tgs[0].Package = "日本語パッケージ"
+	for _, w := range []int{MinWidth, 60, 80, 120} {
+		m := newModel("/スキャン/ルート/very/deep/path", tgs, plain())
+		m.layout(w, 40)
+		for _, line := range strings.Split(m.render(w, 40), "\r\n") {
+			if n := tui.DispWidth(line); n > w {
+				t.Errorf("width %d: a line is %d cells wide: %q", w, n, line)
+			}
+		}
+	}
+}
+
+// TestReportIsOrderedBySeverity — the fallback views are where ordering matters
+// most, because they are what a user gets when they cannot see the table.
+func TestReportIsOrderedBySeverity(t *testing.T) {
+	out := Report(demo())
+	crit := strings.Index(out, "langchain 0.0.310")  // critical
+	high := strings.Index(out, "locked 1.0.0")       // high
+	med := strings.Index(out, "transformers 4.30.0") // medium
+	if crit < 0 || high < 0 || med < 0 {
+		t.Fatalf("report is missing a target:\n%s", out)
+	}
+	if !(crit < high && high < med) {
+		t.Errorf("report is not most-severe-first:\n%s", out)
 	}
 }
 
 // TestScrollingKeepsTheCursorVisible on a terminal too short for the plan.
 func TestScrollingKeepsTheCursorVisible(t *testing.T) {
 	m := newModel(t.TempDir(), demo(), plain())
-	m.layout(120, 13) // bodyRows == 2
+	const h = MinHeight + 1 // room for exactly two body rows
+	m.layout(120, h)
 	if m.bodyRows != 2 {
 		t.Fatalf("bodyRows = %d, want 2", m.bodyRows)
 	}
 	m.handle(event{Kind: evtEnd})
-	m.layout(120, 13)
+	m.layout(120, h)
 	if m.cursor < m.top || m.cursor >= m.top+m.bodyRows {
 		t.Errorf("cursor %d is outside the visible window [%d,%d)", m.cursor, m.top, m.top+m.bodyRows)
 	}
 	m.handle(event{Kind: evtHome})
-	m.layout(120, 13)
+	m.layout(120, h)
 	if m.top != 0 || m.cursor != 0 {
 		t.Errorf("home left top=%d cursor=%d, want 0/0", m.top, m.cursor)
 	}

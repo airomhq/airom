@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // pipConflict is what pip actually prints when the bumped pins do not resolve
@@ -132,5 +133,51 @@ func TestConflicted(t *testing.T) {
 	}
 	if !Conflicted([]VerifyResult{{Status: VerifyOK}, {Status: VerifyConflict}}) {
 		t.Error("Conflicted missed a conflict")
+	}
+}
+
+// TestGoCheckDoesNotSwallowItsOwnErrors. `go list -m -e all` reports module
+// errors in the OUTPUT and exits 0 — so with -e the check returns success for a
+// version that does not exist and for a go.sum the bump invalidated, which are
+// precisely the two failures docs/cve.md says it catches. Verified against the
+// real toolchain: exit 0 with -e, exit 1 without.
+func TestGoCheckDoesNotSwallowItsOwnErrors(t *testing.T) {
+	argv := checkers["go.mod"].args("go.mod")
+	for _, a := range argv {
+		if a == "-e" {
+			t.Fatalf("go check uses -e (%v): it would exit 0 on the errors it exists to find", argv)
+		}
+	}
+}
+
+// TestCancellationIsNotAConflict. A Ctrl-C during verification kills the
+// resolver, which exits nonzero having said nothing about the pins. Reporting
+// that as a conflict invents a finding — and then drives the revert prompt to
+// propose undoing fixes that were fine.
+func TestCancellationIsNotAConflict(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "requirements.txt"), []byte("x==1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	saved := checkers
+	t.Cleanup(func() { checkers = saved })
+	checkers = map[string]checker{"requirements.txt": {
+		tool:  "sleep",
+		probe: []string{"sleep", "--version"},
+		args:  func(string) []string { return []string{"sleep", "30"} },
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() { time.Sleep(50 * time.Millisecond); cancel() }()
+
+	got := Verify(ctx, root, []string{"requirements.txt"})
+	if got[0].Status == VerifyConflict {
+		t.Error("an interrupted resolver was reported as a dependency conflict")
+	}
+	if got[0].Status != VerifyErrored {
+		t.Errorf("status = %q, want %q", got[0].Status, VerifyErrored)
+	}
+	if Conflicted(got) {
+		t.Error("Conflicted fired on an interrupted check")
 	}
 }

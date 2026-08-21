@@ -133,6 +133,22 @@ var minWidths = [colCount]int{10, 12, 8, 9, 8, 8}
 // unrecognizable.
 const hardMin = 8
 
+// The frame's fixed lines, above and below the table body. render() must emit
+// exactly this many, because bodyRows is derived from them: one line of drift
+// scrolls the alternate screen, which moves every row one line off the position
+// the click handler computes from bodyTop — so the top row stops responding and
+// every other click applies the row above the one that was clicked.
+//
+// TestFrameFitsTheTerminal holds the two in agreement.
+const (
+	chromeAbove = 6 // title, counts, blank, top border, header row, separator
+	chromeBelow = 6 // bottom border, scroll note, detail (2), status, footer
+)
+
+// MinHeight is the shortest terminal the table can be drawn in: the fixed lines
+// plus a single row of body.
+const MinHeight = chromeAbove + chromeBelow + 1
+
 // MinWidth is the narrowest terminal the table can be drawn in: the margin, the
 // four columns that never drop, each at hardMin, and their borders.
 //
@@ -214,8 +230,8 @@ func (m *model) layout(w, h int) {
 	m.shrink(colVuln, colPackage, hard, w)
 	m.shrink(colFixTo, colVuln, hard, w)
 
-	m.bodyTop = 6 // title, counts, blank, top border, header, separator
-	m.bodyRows = max(1, h-11)
+	m.bodyTop = chromeAbove
+	m.bodyRows = max(1, h-chromeAbove-chromeBelow)
 	m.bodyRows = min(m.bodyRows, len(m.rows))
 
 	x := margin + 1 // past the leading space and the left border
@@ -421,8 +437,8 @@ func (m *model) setStatus(k statusKind, s string) { m.status, m.statusK = s, k }
 // ── Rendering ───────────────────────────────────────────────────────────────
 
 func (m *model) render(w, h int) string {
-	if w < MinWidth {
-		return m.tooNarrow(w)
+	if w < MinWidth || h < MinHeight {
+		return m.tooSmall(w, h)
 	}
 	var b strings.Builder
 	fixable, remaining := m.counts()
@@ -463,10 +479,12 @@ func (m *model) render(w, h int) string {
 	return b.String()
 }
 
-// tooNarrow replaces the table on a terminal that cannot hold it, naming both
-// ways out. Drawing a wrapped table would leave every click landing on the
-// wrong row, which is worse than drawing none.
-func (m *model) tooNarrow(w int) string {
+// tooSmall replaces the table on a terminal that cannot hold it, naming both
+// ways out. Drawing a frame larger than the screen would leave every click
+// landing on the wrong row — the alternate screen scrolls, and the row
+// arithmetic is computed from a position that no longer holds — which is worse
+// than drawing no table at all.
+func (m *model) tooSmall(w, h int) string {
 	fixable, _ := m.counts()
 	// The way out leads each line it appears on, because these lines are the
 	// ones most likely to be truncated — advice cut off mid-sentence is not
@@ -475,11 +493,14 @@ func (m *model) tooNarrow(w int) string {
 		m.pal.Heading.S("AIROM · fix advisories"),
 		fmt.Sprintf("%d fixable of %s", fixable, count(len(m.targets), "package", "packages")),
 		"",
-		fmt.Sprintf("Too narrow: %d cols, need %d.", w, MinWidth),
-		"Widen this window, or:",
+		fmt.Sprintf("Too small: %dx%d, need %dx%d.", w, h, MinWidth, MinHeight),
+		"Resize this window, or:",
 		"--fix-all applies every fix.",
 		"",
 		m.pal.Dim.S("q quit"),
+	}
+	if h > 0 && len(lines) > h {
+		lines = lines[:h] // never overflow the screen this notice is about
 	}
 	for i, l := range lines {
 		lines[i] = " " + truncate(l, max(1, w-margin))
@@ -688,7 +709,16 @@ func fixToLabel(t fix.Target) string {
 	return t.Fixed
 }
 
-func runeLen(s string) int { return len([]rune(s)) }
+// runeLen measures a string in TERMINAL CELLS, not runes, via the one
+// implementation in internal/tui.
+//
+// The distinction decides where a row lands on screen. A CJK package name or an
+// emoji in the scan root is two cells wide but one rune; measured in runes the
+// line runs past the terminal, wraps, and every row below it sits one line lower
+// than the click handler computes — the same class of failure as a frame one
+// line too tall. fixToLabel already refuses U+26A0 for exactly this reason; the
+// measuring helpers have to agree with it.
+func runeLen(s string) int { return tui.DispWidth(s) }
 
 func pad(s string, w int) string {
 	if n := runeLen(s); n < w {
@@ -697,20 +727,30 @@ func pad(s string, w int) string {
 	return s
 }
 
-// truncate shortens s to w runes, marking the cut with an ellipsis so a clipped
-// value never reads as a complete one.
+// truncate shortens s to w terminal cells, marking the cut with an ellipsis so a
+// clipped value never reads as a complete one. A wide rune that would straddle
+// the limit is dropped rather than half-drawn.
 func truncate(s string, w int) string {
 	if w <= 0 {
 		return ""
 	}
-	r := []rune(s)
-	if len(r) <= w {
+	if runeLen(s) <= w {
 		return s
 	}
 	if w == 1 {
 		return "…"
 	}
-	return string(r[:w-1]) + "…"
+	var b strings.Builder
+	used := 0
+	for _, r := range s {
+		rw := tui.DispWidth(string(r))
+		if used+rw > w-1 { // reserve one cell for the ellipsis
+			break
+		}
+		b.WriteRune(r)
+		used += rw
+	}
+	return b.String() + "…"
 }
 
 func clamp(v, lo, hi int) int {
@@ -728,11 +768,20 @@ func count(n int, one, many string) string {
 }
 
 // Report renders the non-interactive view of a plan: what a --fix-all run did,
-// or what the table would have offered on a terminal it could not open. Sorted
-// by severity, like everything else the CVE overlay surfaces.
+// or what the table would have offered on a terminal it could not open.
+//
+// Sorted most-severe-first, like every other CVE surface — and like the table
+// this stands in for. Sorting by name instead would put a low finding above a
+// critical one in the two views a user falls back to when they cannot see the
+// table, which is where the ordering matters most.
 func Report(targets []fix.Target) string {
 	ts := append([]fix.Target(nil), targets...)
-	sort.SliceStable(ts, func(i, j int) bool { return ts[i].Package < ts[j].Package })
+	sort.SliceStable(ts, func(i, j int) bool {
+		if ri, rj := fix.SeverityRank(ts[i].Severity), fix.SeverityRank(ts[j].Severity); ri != rj {
+			return ri > rj
+		}
+		return ts[i].Package < ts[j].Package
+	})
 	var b strings.Builder
 	for _, t := range ts {
 		if t.Fixable {

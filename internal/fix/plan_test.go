@@ -1,6 +1,7 @@
 package fix
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/airomhq/airom/pkg/airom"
@@ -187,5 +188,88 @@ func TestPlanOrdersBySeverity(t *testing.T) {
 	got := Plan(inv, false)
 	if len(got) != 2 || got[0].Package != "crit-pkg" {
 		t.Fatalf("Plan order = %v, want the critical package first", got)
+	}
+}
+
+// TestRangeDeclarationIsNotOfferedAsFixable. The assembler resolves Version from
+// a lockfile while the manifest declares a range, so Current is a version the
+// manifest never spells. Offering [ Fix ] there produces a button that always
+// refuses, with an error blaming the user's file for something it never said —
+// and re-scanning reproduces it forever.
+func TestRangeDeclarationIsNotOfferedAsFixable(t *testing.T) {
+	cases := []struct{ name, detector, path, snippet string }{
+		{"npm caret range", "manifest/npm", "package.json", `"openai": "^4.0.0",`},
+		{"requirements lower bound", "manifest/pypi-requirements", "requirements.txt", "openai>=4.0.0"},
+		{"pyproject compatible release", "manifest/pypi-pyproject", "pyproject.toml", `openai = "~4.0"`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			inv := inventory(comp("openai", "4.2.1", "pkg:pypi/openai@4.2.1",
+				c.detector, c.path, 4, c.snippet,
+				vuln("CVE-1", airom.VulnHigh, "4.104.0"),
+			))
+			got := Plan(inv, false)
+			if len(got) != 1 {
+				t.Fatalf("Plan returned %d targets, want the finding reported", len(got))
+			}
+			if got[0].Fixable {
+				t.Error("a range declaration was offered as fixable; the button would always refuse")
+			}
+			if !strings.Contains(got[0].Reason, "range") {
+				t.Errorf("Reason = %q, want it to explain the range", got[0].Reason)
+			}
+		})
+	}
+}
+
+// TestExactPinIsStillFixable — the range check must not reject a real pin.
+func TestExactPinIsStillFixable(t *testing.T) {
+	inv := inventory(comp("openai", "4.2.1", "pkg:pypi/openai@4.2.1",
+		"manifest/npm", "package.json", 4, `"openai": "4.2.1",`,
+		vuln("CVE-1", airom.VulnHigh, "4.104.0"),
+	))
+	got := Plan(inv, false)
+	if len(got) != 1 || !got[0].Fixable {
+		t.Fatalf("Plan = %+v, want an exact pin to stay fixable", got)
+	}
+}
+
+// TestMavenAndFrozenCarryTheirOwnReason. The Maven detector records the
+// <dependency> open-tag line, which holds neither artifactId nor version; a
+// PyInstaller binary holds no pin at all. Both must say so rather than fail
+// later with "your file changed".
+func TestMavenAndFrozenCarryTheirOwnReason(t *testing.T) {
+	cases := []struct{ name, detector, path, snippet, want string }{
+		{"maven", "manifest/maven", "pom.xml", "        <dependency>", "another line"},
+		{"pyinstaller", "frozen/pyinstaller", "dist/app", "", "rebuild"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := Plan(inventory(comp("some.group:artifact", "1.0.0", "pkg:maven/some.group/artifact@1.0.0",
+				c.detector, c.path, 12, c.snippet,
+				vuln("CVE-1", airom.VulnHigh, "1.1.0"))), false)
+			if len(got) != 1 {
+				t.Fatalf("Plan returned %d targets, want the finding reported", len(got))
+			}
+			if got[0].Fixable {
+				t.Errorf("%s was offered as fixable", c.name)
+			}
+			if !strings.Contains(got[0].Reason, c.want) {
+				t.Errorf("Reason = %q, want it to mention %q", got[0].Reason, c.want)
+			}
+		})
+	}
+}
+
+// TestGradleStaysFixable: unlike Maven, the Gradle detector records the line
+// carrying the whole group:artifact:version coordinate, so it has a pin to
+// rewrite.
+func TestGradleStaysFixable(t *testing.T) {
+	got := Plan(inventory(comp("langchain4j", "0.30.0", "pkg:maven/dev.langchain4j/langchain4j@0.30.0",
+		"manifest/gradle", "build.gradle", 12,
+		`    implementation 'dev.langchain4j:langchain4j:0.30.0'`,
+		vuln("CVE-1", airom.VulnHigh, "0.31.0"))), false)
+	if len(got) != 1 || !got[0].Fixable {
+		t.Fatalf("Plan = %+v, want the gradle coordinate to stay fixable", got)
 	}
 }

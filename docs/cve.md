@@ -77,6 +77,10 @@ $ airom scan . --fix --fix-verify   # ...and confirm the result still resolves
   ↑/↓ move · enter or click [ Fix ] · a fix all · ? help · q quit
 ```
 
+**Terminal size.** The table needs at least **46 columns and 13 rows**. Below
+either it refuses to draw and points at `--fix-all`: a frame larger than the
+screen scrolls, and a scrolled frame puts every click on the wrong row.
+
 **Keys and mouse.** `↑`/`↓` (or `j`/`k`, or the wheel) move; `enter`, `space`,
 or a click on the `[ Fix ]` cell applies that package's fix; `a` applies every
 fixable package; `q` quits. The detail pane under the table shows the advisory
@@ -105,6 +109,18 @@ Clearing the advisory is not the same as the project still building — add
   package manager can compute the new one. A package seen *only* there is
   reported with `— manual` and a reason, never silently skipped. After a fix,
   any lockfile the bump has just outdated is named so you can regenerate it.
+- **A declared range.** `"openai": "^4.0.0"` in `package.json` beside a
+  `package-lock.json` resolving `4.2.1` gives the component a version the
+  manifest never spells; the same happens for `>=`/`~=` in `requirements.txt`
+  beside a poetry or uv lock. AIROM has no single pin to rewrite there, so the
+  row says so instead of offering a button that would always refuse.
+- **`pom.xml`.** The Maven detector records the line of the `<dependency>` open
+  tag; the `<version>` is on a later line AIROM does not track. Reported as
+  `— manual` with that reason. (`build.gradle` *is* fixable — its detector
+  records the line carrying the whole `group:artifact:version` coordinate.)
+- **A prefix-named sibling.** The package name is matched as a whole token, so a
+  `langchain` fix can never land on `langchain-core`, and `golang.org/x/mod`
+  never on `golang.org/x/mod/semver`.
 - **A line that moved since the scan.** The pin is re-read and re-checked for
   both the package name and the exact version the scan saw; if either has
   changed, the fix refuses and tells you to re-scan.
@@ -145,8 +161,8 @@ and only the ecosystem's resolver can answer it.
 |---|---|---|
 | `requirements.txt` | `pip install --dry-run --report` | `--report` puts pip in resolution mode, which skips the install-target checks a PEP 668 system Python would otherwise refuse on |
 | `package.json` | `npm install --dry-run` | |
-| `go.mod` | `go list -m -e all` | catches a version that does not exist and a `go.sum` the bump invalidated |
-| everything else | — | reported as **not checked**, with the reason. `pyproject.toml`, `Cargo.toml`, `pom.xml`, and `build.gradle` resolve by writing a lockfile, and a check that mutates your tree is not a check |
+| `go.mod` | `go list -m all` | catches a version that does not exist and a `go.sum` the bump invalidated. Deliberately without `-e`, which would report those errors in the output and exit 0 anyway |
+| everything else | — | reported as **not checked**, with the reason. `pyproject.toml`, `Cargo.toml`, and `build.gradle` resolve by writing a lockfile, and a check that mutates your tree is not a check |
 
 **On a conflict**, the pins are **kept**, never silently rolled back. On a
 terminal you are offered the revert (which restores every edited line

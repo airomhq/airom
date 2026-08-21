@@ -321,3 +321,79 @@ func TestResultCarriesBothVersions(t *testing.T) {
 		t.Errorf("Result = %+v, want the package and both versions recorded", res)
 	}
 }
+
+// TestApplyRefusesAPrefixNamedSibling is the guard against the worst failure
+// this package can produce: editing a different package than the one it reports.
+//
+// `langchain` is a prefix of `langchain-core`, `langchain-community`, and
+// `langchain-openai`; `llama-index` of `llama-index-core`. If the pin's line
+// number has drifted since the scan — a comment added, a dependency inserted
+// above — a substring name check lands on the sibling, finds a whole-token
+// version there, and rewrites it. The user is told langchain was fixed while
+// langchain is still vulnerable and something else was silently bumped.
+func TestApplyRefusesAPrefixNamedSibling(t *testing.T) {
+	siblings := []struct {
+		pkg, line string
+	}{
+		{"langchain", "langchain-core==0.0.310"},
+		{"langchain", "langchain-community==0.0.310"},
+		{"llama-index", "llama-index-core==0.0.310"},
+		{"openai", "openai-agents==0.0.310"},
+		{"core", "langchain-core==0.0.310"}, // suffix, not just prefix
+	}
+	for _, s := range siblings {
+		t.Run(s.pkg+" vs "+s.line, func(t *testing.T) {
+			root := t.TempDir()
+			p := write(t, root, "requirements.txt", s.line+"\n")
+			_, err := Apply(root, target(s.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, ""))
+			if err == nil {
+				got, _ := os.ReadFile(p)
+				t.Fatalf("Apply rewrote %q while claiming to fix %q; file is now %q", s.line, s.pkg, got)
+			}
+			if !strings.Contains(err.Error(), "no longer declares") {
+				t.Errorf("error = %v, want the package-name refusal", err)
+			}
+			if got, _ := os.ReadFile(p); string(got) != s.line+"\n" {
+				t.Errorf("the refused fix still wrote: %q", got)
+			}
+		})
+	}
+}
+
+// TestApplyStillMatchesTheRealPackage — the guard must not be so strict that it
+// rejects the spellings each ecosystem actually uses.
+func TestApplyStillMatchesTheRealPackage(t *testing.T) {
+	cases := []struct{ pkg, line, want string }{
+		{"langchain", "langchain==0.0.310", "langchain==0.2.4"},
+		{"langchain", "langchain[all]==0.0.310  # ops", "langchain[all]==0.2.4  # ops"},
+		{"langchain-core", "langchain_core==0.0.310", "langchain_core==0.2.4"}, // PEP 503
+		{"langchain-core", "LangChain-Core==0.0.310", "LangChain-Core==0.2.4"}, // case
+		{"@langchain/core", `    "@langchain/core": "0.0.310",`, `    "@langchain/core": "0.2.4",`},
+		{"golang.org/x/mod", "\tgolang.org/x/mod v0.0.310", "\tgolang.org/x/mod v0.2.4"},
+		// The sibling is present but so is the real package: pick the real one.
+		{"langchain", "langchain==0.0.310  # not langchain-core", "langchain==0.2.4  # not langchain-core"},
+	}
+	for _, c := range cases {
+		t.Run(c.pkg+" in "+c.line, func(t *testing.T) {
+			root := t.TempDir()
+			p := write(t, root, "requirements.txt", c.line+"\n")
+			if _, err := Apply(root, target(c.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, "")); err != nil {
+				t.Fatalf("Apply refused a legitimate pin: %v", err)
+			}
+			if got, _ := os.ReadFile(p); string(got) != c.want+"\n" {
+				t.Errorf("line =\n  %q\nwant\n  %q", got, c.want+"\n")
+			}
+		})
+	}
+}
+
+// TestGoModuleIsNotMatchedInsideALongerPath: golang.org/x/mod must not match
+// the line declaring golang.org/x/mod/semver.
+func TestGoModuleIsNotMatchedInsideALongerPath(t *testing.T) {
+	root := t.TempDir()
+	p := write(t, root, "go.mod", "require golang.org/x/mod/semver v0.1.0\n")
+	if _, err := Apply(root, target("golang.org/x/mod", "0.1.0", "0.2.0", "go.mod", 1, "")); err == nil {
+		got, _ := os.ReadFile(p)
+		t.Fatalf("Apply matched a module inside a longer path; file is now %q", got)
+	}
+}

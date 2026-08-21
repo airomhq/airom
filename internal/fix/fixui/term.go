@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"golang.org/x/term"
 )
@@ -107,4 +108,48 @@ func (s *screen) size() (w, h int) {
 // does not tear.
 func (s *screen) paint(frame string) {
 	fmt.Fprint(s.out, cursorHome+clearScreen+frame+clearToEnd)
+}
+
+// Confirm asks a yes/no question on the controlling terminal and reports
+// whether the answer was yes. ok is false when there is no terminal to ask on,
+// which the caller must treat as "nobody was asked" rather than as "no".
+//
+// It deliberately uses the same /dev/tty the table does, not os.Stdin. The two
+// diverge exactly when it matters: `airom scan . --fix < /dev/null`, or a scan
+// whose stdin is a pipe, still has a human at a terminal — and gating on stdin
+// there silently skips the revert this package promises, leaving a tree the
+// resolver just said is broken. The private handle is also why the read cannot
+// swallow input meant for the shell: it is closed here, buffer and all.
+//
+// Cooked mode, on purpose: the table has already restored the terminal by the
+// time anything asks a question, so the user gets line editing and a visible
+// answer rather than a raw single-key grab.
+func Confirm(prompt string) (yes bool, ok bool) {
+	f, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+	if err != nil {
+		if !term.IsTerminal(int(os.Stdin.Fd())) {
+			return false, false
+		}
+		f = os.Stdin
+	} else {
+		defer func() { _ = f.Close() }()
+	}
+
+	fmt.Fprint(f, prompt)
+
+	// Byte at a time, stopping at the newline: a buffered reader would pull in
+	// whatever else is queued on the terminal and discard it.
+	var answer []byte
+	buf := make([]byte, 1)
+	for len(answer) < 16 {
+		n, err := f.Read(buf)
+		if n == 0 || err != nil {
+			break
+		}
+		if buf[0] == '\n' || buf[0] == '\r' {
+			break
+		}
+		answer = append(answer, buf[0])
+	}
+	return strings.EqualFold(strings.TrimSpace(string(answer)), "y"), true
 }

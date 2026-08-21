@@ -78,9 +78,18 @@ func (r *reader) next() event {
 	}
 }
 
-// escape decodes what follows an ESC. A bare ESC (nothing buffered behind it)
-// quits; a CSI sequence is parsed; anything else is ignored.
+// escape decodes what follows an ESC. A bare ESC quits; a CSI sequence is
+// parsed; anything else is ignored.
+//
+// The Buffered check is what makes "a bare ESC quits" true rather than
+// aspirational. Every escape sequence a terminal sends arrives as one burst, so
+// an ESC with nothing behind it in the buffer IS the whole keypress — whereas
+// reading ahead for the next byte blocks until the user presses some other key,
+// which is not quitting, it is hanging.
 func (r *reader) escape() event {
+	if r.br.Buffered() == 0 {
+		return event{Kind: evtQuit}
+	}
 	b, err := r.br.ReadByte()
 	if err != nil {
 		return event{Kind: evtQuit}

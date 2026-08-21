@@ -1,17 +1,13 @@
 package app
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sort"
-	"strings"
 
 	"github.com/airomhq/airom/internal/fix"
 	"github.com/airomhq/airom/internal/fix/fixui"
-	"github.com/airomhq/airom/internal/tui"
 	"github.com/airomhq/airom/pkg/airom"
 )
 
@@ -34,8 +30,11 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 	if !cfg.Fix && !cfg.FixAll {
 		return nil
 	}
+	// The SAME filter emit() applies, not an equivalent one. The fix table has
+	// to describe the inventory the AIBOM describes, and keeping that in one
+	// function is what stops the two drifting the next time it grows a step.
 	if cfg.MinConfidence > 0 {
-		inv = filterByConfidence(inv, cfg.MinConfidence)
+		inv = presentationFilter(inv, cfg)
 	}
 	targets := fix.Plan(inv, cfg.IncludeTests)
 	if len(targets) == 0 {
@@ -61,7 +60,7 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("interactive fix: %w", err)
 	}
-	reportApplied(out.Applied, out.Fixed, out.Failed)
+	reportApplied(out.Applied, out.Failed)
 	return verifyFixes(ctx, cfg, out.Applied)
 }
 
@@ -70,7 +69,6 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 // for verification.
 func applyAll(root string, targets []fix.Target) []fix.Result {
 	var applied []fix.Result
-	var fixed []string
 	var failed int
 	for _, t := range targets {
 		if !t.Fixable {
@@ -83,9 +81,8 @@ func applyAll(root string, targets []fix.Target) []fix.Result {
 			continue
 		}
 		applied = append(applied, res)
-		fixed = append(fixed, t.Package)
 	}
-	reportApplied(applied, fixed, failed)
+	reportApplied(applied, failed)
 
 	var manual []fix.Target
 	for _, t := range targets {
@@ -102,7 +99,12 @@ func applyAll(root string, targets []fix.Target) []fix.Result {
 // reportApplied prints the post-session summary: the pins that moved, the
 // lockfiles the bump has just outdated, and the reminder that only a fresh scan
 // can confirm the advisories are gone.
-func reportApplied(applied []fix.Result, fixed []string, failed int) {
+//
+// It reads the package name off each Result rather than off a parallel slice
+// indexed in lockstep. The two can only diverge by a mistake, and the cost of
+// that mistake — an index panic after the AIBOM is written and the tree is
+// already edited — is out of all proportion to the convenience.
+func reportApplied(applied []fix.Result, failed int) {
 	if len(applied) == 0 {
 		if failed > 0 {
 			fmt.Fprintf(stderr, "\nairom fix: no pins changed; %d fix(es) failed.\n", failed)
@@ -114,8 +116,8 @@ func reportApplied(applied []fix.Result, fixed []string, failed int) {
 
 	fmt.Fprintf(stderr, "\nairom fix: updated %d pin(s)\n", len(applied))
 	stale := map[string]bool{}
-	for i, r := range applied {
-		fmt.Fprintf(stderr, "  %s:%d  %s  →  %s   (%s)\n", r.File, r.Line, r.Before, r.After, fixed[i])
+	for _, r := range applied {
+		fmt.Fprintf(stderr, "  %s:%d  %s  →  %s   (%s)\n", r.File, r.Line, r.Before, r.After, r.Package)
 		for _, l := range r.Stale {
 			stale[l] = true
 		}
@@ -199,17 +201,19 @@ func reportVerify(results []fix.VerifyResult) {
 // hand, because an unattended run is exactly where a silent rollback would go
 // unnoticed.
 func offerRevert(cfg *Config, applied []fix.Result) error {
-	if !tui.IsTTY(os.Stdin) {
+	prompt := fmt.Sprintf("\nRevert all %d fix(es)? This re-opens the advisories they closed. [y/N] ", len(applied))
+	yes, asked := fixui.Confirm(prompt)
+	if !asked {
+		// Nobody to ask. The edits stand — rolling back an unattended run
+		// without a word is its own surprise — but the reverse edits are printed
+		// so the tree can be put back by hand.
 		fmt.Fprintf(stderr, "\nThe pins were kept. To undo them:\n")
 		for _, r := range applied {
 			fmt.Fprintf(stderr, "  %s:%d  %s  →  %s\n", r.File, r.Line, r.After, r.Before)
 		}
 		return nil
 	}
-
-	fmt.Fprintf(stderr, "\nRevert all %d fix(es)? This re-opens the advisories they closed. [y/N] ", len(applied))
-	line, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil || !strings.EqualFold(strings.TrimSpace(line), "y") {
+	if !yes {
 		fmt.Fprintln(stderr, "Keeping the fixes. Resolve the conflict, then re-run the scan.")
 		return nil
 	}

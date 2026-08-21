@@ -142,13 +142,75 @@ func resolveInRoot(root, rel string) (string, error) {
 	return abs, nil
 }
 
-// mentionsPackage reports whether line declares pkg, comparing under the
-// normalization every ecosystem in scope tolerates: case-insensitive, and
-// `_`/`.` equivalent to `-` (PEP 503 for PyPI, harmless elsewhere).
+// mentionsPackage reports whether line declares pkg — as a WHOLE name, not as a
+// substring of a longer one.
+//
+// The distinction is the entire value of this guard. `langchain` is a prefix of
+// `langchain-core`, `langchain-community`, and `langchain-openai`; `llama-index`
+// of `llama-index-core`. A substring test accepts all of them, so a Target whose
+// line number has drifted by one — a comment added, a dependency inserted above
+// — lands on the sibling, finds a whole-token version there, rewrites it, and
+// reports the fix under the wrong package's name. The user is told `langchain`
+// is fixed while `langchain` is untouched and `langchain-core` has been bumped
+// behind their back. For a tool whose premise is that it never over-claims,
+// that is the worst reachable outcome, and prefix-named siblings make it the
+// common case rather than an edge one.
+//
+// Comparison is under the normalization every ecosystem in scope tolerates:
+// case-insensitive, with `_` and `.` equivalent to `-` (PEP 503 for PyPI,
+// harmless elsewhere). normalizeName is length-preserving — it maps single
+// runes to single runes — so offsets in the normalized string still address the
+// original.
 func mentionsPackage(line, pkg string) bool {
-	return strings.Contains(normalizeName(line), normalizeName(pkg))
+	return indexName(normalizeName(line), normalizeName(pkg)) >= 0
 }
 
+// indexName returns the offset of the first occurrence of name in s that stands
+// as a complete package name, or -1.
+func indexName(s, name string) int {
+	if name == "" {
+		return -1
+	}
+	for off := 0; off <= len(s)-len(name); {
+		i := strings.Index(s[off:], name)
+		if i < 0 {
+			return -1
+		}
+		i += off
+		if !continuesName(s, i-1) && !continuesName(s, i+len(name)) {
+			return i
+		}
+		off = i + 1
+	}
+	return -1
+}
+
+// continuesName reports whether the byte at index i (out of range = no) would
+// make an adjacent match part of a longer package name.
+//
+// The set is the union of what the ecosystems in scope allow inside a name:
+// alphanumerics and `-` everywhere (`.`/`_` arrive here already folded to `-`),
+// plus `/` and `@` for npm scopes and Go module paths — so `langchain` does not
+// match inside `@langchain/core`, and `golang.org/x/mod` does not match inside
+// `golang.org/x/mod/semver`.
+func continuesName(s string, i int) bool {
+	if i < 0 || i >= len(s) {
+		return false
+	}
+	c := s[i]
+	switch {
+	case c >= '0' && c <= '9', c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z':
+		return true
+	case c == '-', c == '/', c == '@':
+		return true
+	default:
+		return false
+	}
+}
+
+// normalizeName folds a package name (or a whole line) to the form two spellings
+// of the same package share. Length-preserving by construction: callers rely on
+// offsets surviving it.
 func normalizeName(s string) string {
 	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, "_", "-")

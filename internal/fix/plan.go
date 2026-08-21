@@ -66,9 +66,9 @@ var declaredManifests = map[string]string{
 	"manifest/npm":               "package.json",
 	"manifest/gomod":             "go.mod",
 	"manifest/cargo":             "Cargo.toml",
-	"manifest/maven":             "pom.xml",
 	"manifest/gradle":            "build.gradle",
 	"manifest/nuget":             "*.csproj",
+	// manifest/maven is deliberately absent: see derivedSources.
 }
 
 // derivedSources explains, per detector, why its finding is not a pin anyone
@@ -81,6 +81,14 @@ var derivedSources = map[string]string{
 	"manifest/yarn-lock":      "lockfile — regenerate it from the manifest instead",
 	"manifest/pnpm-lock":      "lockfile — regenerate it from the manifest instead",
 	"manifest/pypi-installed": "installed package metadata — reinstall instead of editing site-packages",
+	// A frozen binary is a build output. There is no pin in it to rewrite, and
+	// the manifest that produced it may not even be in this tree.
+	"frozen/pyinstaller": "PyInstaller binary — fix the manifest it was built from and rebuild",
+	// pom.xml IS hand-written, but the Maven detector records the line of the
+	// <dependency> open tag, and the <version> lives on a later line. AIROM has
+	// no line to rewrite, and pretending otherwise would fail every pom.xml fix
+	// with a message claiming the user's file had changed when it had not.
+	"manifest/maven": "pom.xml <dependency> block — the <version> is on another line, which AIROM does not track",
 }
 
 // Plan resolves every vulnerable component in inv into one Target, most severe
@@ -108,7 +116,7 @@ func Plan(inv *airom.Inventory, includeTests bool) []Target {
 		}
 	}
 	sort.SliceStable(out, func(i, j int) bool {
-		if ri, rj := severityRank(out[i].Severity), severityRank(out[j].Severity); ri != rj {
+		if ri, rj := SeverityRank(out[i].Severity), SeverityRank(out[j].Severity); ri != rj {
 			return ri > rj
 		}
 		return out[i].Package < out[j].Package
@@ -135,12 +143,12 @@ func targetFor(c *airom.Component) (Target, bool) {
 			ID: v.ID, Severity: v.Severity, Score: v.Score,
 			Summary: v.Summary, URL: v.URL, Fixed: v.Fixed,
 		})
-		if severityRank(v.Severity) > severityRank(t.Severity) {
+		if SeverityRank(v.Severity) > SeverityRank(t.Severity) {
 			t.Severity = v.Severity
 		}
 	}
 	sort.SliceStable(t.Vulns, func(i, j int) bool {
-		if ri, rj := severityRank(t.Vulns[i].Severity), severityRank(t.Vulns[j].Severity); ri != rj {
+		if ri, rj := SeverityRank(t.Vulns[i].Severity), SeverityRank(t.Vulns[j].Severity); ri != rj {
 			return ri > rj
 		}
 		return t.Vulns[i].ID < t.Vulns[j].ID
@@ -152,7 +160,7 @@ func targetFor(c *airom.Component) (Target, bool) {
 	}
 	t.Major = crossesMajor(current, t.Fixed)
 
-	occ, reason := pinSite(c)
+	occ, reason := pinSite(c, current)
 	if occ == nil {
 		t.Reason = reason
 		return t, true
@@ -164,10 +172,25 @@ func targetFor(c *airom.Component) (Target, bool) {
 
 // pinSite picks the occurrence whose line AIROM will rewrite: the
 // highest-confidence sighting from a declared manifest that carries a line
-// number. Returns a human reason when no occurrence qualifies.
-func pinSite(c *airom.Component) (*airom.Occurrence, string) {
+// number AND actually spells out the version being replaced. Returns a human
+// reason when no occurrence qualifies.
+//
+// That last condition is what keeps the table honest about which rows are
+// actionable. A component's Version is whatever the assembler resolved, which is
+// routinely NOT what the manifest says: `"openai": "^4.0.0"` in package.json
+// with a package-lock.json resolving 4.2.1 yields Version 4.2.1, and the same
+// happens for `>=`/`~=` in requirements.txt beside a poetry or uv lock. Without
+// this check such a component shows [ Fix ] and a target version, Apply then
+// refuses with "no longer pins openai 4.2.1 — re-run the scan", and re-scanning
+// reproduces it forever: a button that cannot work, and an error message that
+// blames the user's file for something it never said.
+//
+// A range is a real answer, so it gets a real reason rather than a broken
+// button. The version check also catches, generically, any detector that points
+// at a line the version does not live on.
+func pinSite(c *airom.Component, current string) (*airom.Occurrence, string) {
 	var best *airom.Occurrence
-	var derived string
+	var derived, unpinned string
 	for i := range c.Evidence.Occurrences {
 		o := &c.Evidence.Occurrences[i]
 		if _, ok := declaredManifests[o.DetectorID]; !ok {
@@ -179,6 +202,16 @@ func pinSite(c *airom.Component) (*airom.Occurrence, string) {
 		if o.Location.Line <= 0 {
 			continue
 		}
+		// The snippet is the line as the detector read it. When a detector
+		// records none there is nothing to check here, and Apply's own re-read
+		// remains the guard.
+		if o.Snippet != "" && !declaresVersion(o.Snippet, current) {
+			if unpinned == "" {
+				unpinned = fmt.Sprintf("%s:%d declares a range, not %s — that version came from a lockfile or installed metadata",
+					o.Location.Path, o.Location.Line, current)
+			}
+			continue
+		}
 		if best == nil || o.Confidence > best.Confidence {
 			best = o
 		}
@@ -186,11 +219,21 @@ func pinSite(c *airom.Component) (*airom.Occurrence, string) {
 	switch {
 	case best != nil:
 		return best, ""
+	case unpinned != "":
+		return nil, unpinned
 	case derived != "":
 		return nil, "only seen in a " + derived
 	default:
 		return nil, "no declared manifest pins this version"
 	}
+}
+
+// declaresVersion reports whether snippet carries version as a whole token —
+// the same test Apply will apply to the line itself, asked early so the table
+// can mark the row instead of offering a button that is going to refuse.
+func declaresVersion(snippet, version string) bool {
+	_, ok := replaceVersion(snippet, version, version+"!")
+	return ok
 }
 
 // ecosystemOf reads the purl type ("pkg:pypi/x@1" -> "pypi"), the one place a
@@ -265,8 +308,10 @@ func compatLine(v []int) [2]int {
 	return out
 }
 
-// severityRank orders the CVSS buckets for sorting, highest first.
-func severityRank(s airom.VulnSeverity) int {
+// SeverityRank orders the CVSS buckets for sorting, highest first. Exported so
+// every view of a plan — the table, the fallback report, the --fix-all summary
+// — sorts by the one rule.
+func SeverityRank(s airom.VulnSeverity) int {
 	switch s {
 	case airom.VulnCritical:
 		return 5

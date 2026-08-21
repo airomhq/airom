@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/airomhq/airom/internal/fix"
 	"github.com/airomhq/airom/pkg/airom"
 )
 
@@ -212,5 +213,71 @@ func TestValidateFixRejectsImpossibleCombinations(t *testing.T) {
 	c.Fix = true
 	if err := c.Validate(); err != nil {
 		t.Errorf("--fix on a filesystem scan was rejected: %v", err)
+	}
+}
+
+// TestFixVerifyOfflineNamesTheRightFlag. ApplyDefaults zeroes CVE under
+// --offline, so an --offline check placed after the CVE-overlay check can never
+// fire: a user who asked for --fix-verify --offline would be told about the CVE
+// overlay instead of about the resolver they just asked to run without a
+// network. Order is the fix, so order is what is asserted.
+func TestFixVerifyOfflineNamesTheRightFlag(t *testing.T) {
+	c := &Config{Source: SourceFS, Target: ".", Fix: true, FixVerify: true, Offline: true}
+	c.ApplyDefaults()
+	err := c.Validate()
+	if err == nil {
+		t.Fatal("Validate accepted --fix-verify --offline")
+	}
+	if !strings.Contains(err.Error(), "--fix-verify") || !strings.Contains(err.Error(), "network") {
+		t.Errorf("error = %v, want it to name --fix-verify and the network", err)
+	}
+}
+
+// TestReportNamesThePackageFromTheResult, not from a slice indexed in lockstep
+// with it. The two can only diverge by mistake, and that mistake would be an
+// index panic after the AIBOM is written and the tree is already edited.
+func TestReportNamesThePackageFromTheResult(t *testing.T) {
+	out := captureStderr(t, func() {
+		reportApplied([]fix.Result{
+			{File: "requirements.txt", Line: 1, Package: "langchain", From: "0.0.310", To: "0.2.4",
+				Before: "langchain==0.0.310", After: "langchain==0.2.4"},
+			{File: "requirements.txt", Line: 4, Package: "transformers", From: "4.30.0", To: "4.53.0",
+				Before: "transformers==4.30.0", After: "transformers==4.53.0"},
+		}, 0)
+	})
+	for _, want := range []string{"(langchain)", "(transformers)", "updated 2 pin"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("report is missing %q\ngot:\n%s", want, out)
+		}
+	}
+}
+
+// TestConflictWithNoTerminalKeepsThePinsAndPrintsTheUndo. An unattended run has
+// nobody to ask, so the edits stand — rolling a tree back without a word is its
+// own surprise — but the reverse edits have to be printed or the promise of a
+// byte-exact revert is empty.
+func TestConflictWithNoTerminalKeepsThePinsAndPrintsTheUndo(t *testing.T) {
+	root := t.TempDir()
+	p := filepath.Join(root, "requirements.txt")
+	if err := os.WriteFile(p, []byte("langchain==0.2.4\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	applied := []fix.Result{{
+		File: "requirements.txt", Line: 1, Package: "langchain", From: "0.0.310", To: "0.2.4",
+		Before: "langchain==0.0.310", After: "langchain==0.2.4",
+	}}
+
+	out := captureStderr(t, func() {
+		if err := offerRevert(&Config{Source: SourceFS, Target: root}, applied); err != nil {
+			t.Fatal(err)
+		}
+	})
+	// Whether a /dev/tty exists here decides which branch runs; both must leave
+	// the pins in place unless a human said otherwise.
+	if got, _ := os.ReadFile(p); string(got) != "langchain==0.2.4\n" {
+		t.Errorf("the pins were rolled back without an answer: %q", got)
+	}
+	if !strings.Contains(out, "kept") && !strings.Contains(out, "Revert all") {
+		t.Errorf("no revert path was reported:\n%s", out)
 	}
 }
