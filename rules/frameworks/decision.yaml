@@ -1,0 +1,21 @@
+pack: decision
+version: 1
+rules:
+  - id: decision/co-decision-system
+    kind: decision-system
+    provider: generic
+    languages: [python, javascript, go]
+    keywords: ["high-risk employment decision system"]
+    pattern: "(?i)high-risk employment decision system"
+    regions: [code, string]
+    confidence: 0.9
+    claim: { name: "co-decision-system" }
+  - id: decision/nyc-aedt
+    kind: aedt
+    provider: generic
+    languages: [python, javascript, go]
+    keywords: ["resume screening AI"]
+    pattern: "(?i)resume screening AI"
+    regions: [code, string]
+    confidence: 0.9
+    claim: { name: "nyc-aedt" }

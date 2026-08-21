@@ -95,6 +95,8 @@ var ruleExpressibleKinds = map[string]airom.ComponentKind{
 	"ai-config":       airom.KindAIConfig,
 	"infra":           airom.KindInfra,
 	"service":         airom.KindService,
+	"decision-system": airom.KindDecisionSystem,
+	"aedt":            airom.KindAEDT,
 }
 
 var supportedLanguages = map[string]detect.Language{

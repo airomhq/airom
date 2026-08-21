@@ -5,4 +5,5 @@ url: "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=20232
 controls:
   - id: ca.ab2013.training-data-summary
     title: "Public Training Data Source Summary"
-    manual: true
+    manual: false
+    gap_if: "hosted-llm | local-model-file"

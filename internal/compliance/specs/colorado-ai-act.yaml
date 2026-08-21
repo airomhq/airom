@@ -7,9 +7,9 @@ controls:
     title: "Risk Management Program Alignment (§6-1-1702)"
     manual: true
   - id: co.ai-act.impact-assessment
-    title: "Algorithmic Impact Assessment (§6-1-1703)"
-    text: "Evidence of high-risk models or missing impact assessments."
-    gap_if: "risk"
+    title: "Algorithmic Impact Assessment (A 6-1-1703)"
+    text: "Evidence of high-risk models or missing impact assessments. Remediation: Conduct an Algorithmic Impact Assessment per CDPHE guidelines and record completion date in manifest."
+    gap_if: "risk | decision-system"
   - id: co.ai-act.consumer-notice
     title: "Consumer Notice & Appeal Pathway (§6-1-1704)"
     manual: true

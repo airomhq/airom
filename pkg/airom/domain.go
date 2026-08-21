@@ -38,6 +38,8 @@ const (
 	KindService        ComponentKind = "service"   // remote endpoint: azure deployment, bedrock
 	KindRAGPipeline    ComponentKind = "rag-pipeline"
 	KindApplication    ComponentKind = "application" // the scan root
+	KindDecisionSystem ComponentKind = "decision-system"
+	KindAEDT           ComponentKind = "aedt"
 )
 
 // Kinds returns every ComponentKind, in declaration order.
@@ -51,6 +53,7 @@ func Kinds() []ComponentKind {
 		KindHostedLLM, KindLocalModelFile, KindEmbeddingModel, KindFramework,
 		KindLibrary, KindVectorDB, KindPrompt, KindDataset, KindAIConfig,
 		KindInfra, KindService, KindRAGPipeline, KindApplication,
+		KindDecisionSystem, KindAEDT,
 	}
 }
 
