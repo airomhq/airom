@@ -115,3 +115,74 @@ func TestSignature_Integrity(t *testing.T) {
 		t.Fatal("expected different signatures for different content")
 	}
 }
+
+func TestCheckConfigDrift(t *testing.T) {
+	m := &ApprovedManifest{
+		Approved: []ComponentApproval{
+			{
+				PURL: "pkg:npm/model*",
+				PermittedConfig: map[string]string{
+					"max_temp": "0.7",
+					"max_tokens": "1000",
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name       string
+		purl       string
+		params     map[string]string
+		wantDrift  bool
+		wantStatus string
+	}{
+		{
+			name: "within limits",
+			purl: "pkg:npm/model@1.0",
+			params: map[string]string{
+				"temperature": "0.5",
+				"max_tokens": "500",
+			},
+			wantDrift: false,
+		},
+		{
+			name: "temperature exceeded",
+			purl: "pkg:npm/model@1.0",
+			params: map[string]string{
+				"temperature": "0.8",
+			},
+			wantDrift: true,
+			wantStatus: "config_drift",
+		},
+		{
+			name: "max_tokens exceeded",
+			purl: "pkg:npm/model@1.0",
+			params: map[string]string{
+				"max_tokens": "1500",
+			},
+			wantDrift: true,
+			wantStatus: "config_drift",
+		},
+		{
+			name: "unrelated component",
+			purl: "pkg:npm/other@1.0",
+			params: map[string]string{
+				"temperature": "0.8",
+			},
+			wantDrift: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			drift, status, _ := m.CheckConfigDrift(tt.purl, tt.params)
+			if drift != tt.wantDrift {
+				t.Errorf("CheckConfigDrift() drift = %v, want %v", drift, tt.wantDrift)
+			}
+			if drift && status != tt.wantStatus {
+				t.Errorf("CheckConfigDrift() status = %v, want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+

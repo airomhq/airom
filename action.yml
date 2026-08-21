@@ -1,0 +1,40 @@
+name: 'AIROM AI Governance & Compliance Scanner'
+description: 'Automatically scan codebases for AI Bill of Materials (AIBOM), Shadow AI, Config Drift, CVEs, and State Regulations (Colorado AI Act, NYC LL144, CA AB 2013).'
+inputs:
+  path:
+    description: 'Target path to scan'
+    required: false
+    default: '.'
+  compliance:
+    description: 'Comma-separated compliance frameworks (e.g. colorado-ai-act,nist-ai-rmf)'
+    required: false
+  fail-on-unapproved:
+    description: 'Fail build if unapproved components found'
+    required: false
+    default: 'true'
+  output-sarif:
+    description: 'Path to write SARIF output'
+    required: false
+    default: 'airom.sarif'
+runs:
+  using: 'composite'
+  steps:
+    - name: Download and install airom
+      shell: bash
+      run: |
+        curl -sSfL https://airomhq.github.io/install.sh | bash
+        echo "$HOME/.airom/bin" >> $GITHUB_PATH
+
+    - name: Run airom scan
+      shell: bash
+      run: |
+        FLAGS=""
+        if [ -n "${{ inputs.compliance }}" ]; then
+          FLAGS="$FLAGS --compliance ${{ inputs.compliance }}"
+        fi
+        
+        if [ "${{ inputs.fail-on-unapproved }}" = "true" ]; then
+          FLAGS="$FLAGS --fail-on-unapproved"
+        fi
+        
+        airom scan ${{ inputs.path }} $FLAGS --format sarif -o ${{ inputs.output-sarif }}

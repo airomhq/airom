@@ -128,6 +128,16 @@ func newCheckCmd() *cobra.Command {
 						approvedStatus, statusType, reason = nameApproved, nameStatus, nameReason
 					}
 				}
+				
+				// Check props for governance status
+				for _, prop := range comp.Props {
+					if prop.Name == "airom:governance.status" && prop.Value != "approved" {
+						approvedStatus = false
+						statusType = prop.Value
+					} else if prop.Name == "airom:governance.reason" && !approvedStatus {
+						reason = prop.Value
+					}
+				}
 
 				if !approvedStatus {
 					fmt.Fprintf(cmd.ErrOrStderr(), "Unapproved component found: %s (Status: %s, Reason: %s)\n", purl, statusType, reason)

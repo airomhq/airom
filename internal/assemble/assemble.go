@@ -826,29 +826,56 @@ func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 
 	c.Risks = d.finishRisks()
 
-	if manifest != nil && c.PURL != "" {
-		status := "approved"
-		var finalReason string
-
-		if len(c.Evidence.Occurrences) == 0 {
-			_, st, rs := manifest.IsApproved(string(c.PURL), "")
-			status = st
-			finalReason = rs
-		} else {
-			for _, occ := range c.Evidence.Occurrences {
-				_, st, rs := manifest.IsApproved(string(c.PURL), occ.Location.Path)
-				if st != "approved" {
-					status = st
-					finalReason = rs
-					break
-				}
-				finalReason = rs
-			}
+	if manifest != nil {
+		targetPURL := c.PURL
+		if targetPURL == "" {
+			targetPURL = c.Name
 		}
-
-		c.Props = append(c.Props, airom.KV{Name: "airom:governance.status", Value: status})
-		if status != "approved" && finalReason != "" {
-			c.Props = append(c.Props, airom.KV{Name: "airom:governance.reason", Value: finalReason})
+		if targetPURL != "" {
+			status := "approved"
+			var finalReason string
+	
+			if len(c.Evidence.Occurrences) == 0 {
+				_, st, rs := manifest.IsApproved(string(targetPURL), "")
+				status = st
+				finalReason = rs
+			} else {
+				for _, occ := range c.Evidence.Occurrences {
+					_, st, rs := manifest.IsApproved(string(targetPURL), occ.Location.Path)
+					if st != "approved" {
+						status = st
+						finalReason = rs
+						break
+					}
+					finalReason = rs
+				}
+			}
+			
+			// Check for config drift
+			params := make(map[string]string)
+			if d.model != nil {
+				for _, p := range d.model.GenerationParams {
+					params[p.Name] = p.Value
+				}
+			}
+			for _, p := range c.Props {
+				if strings.HasPrefix(p.Name, "airom:model.param.") {
+					params[strings.TrimPrefix(p.Name, "airom:model.param.")] = p.Value
+				}
+			}
+			
+			if status == "approved" {
+				drift, driftSt, driftRs := manifest.CheckConfigDrift(string(targetPURL), params)
+				if drift {
+					status = driftSt
+					finalReason = driftRs
+				}
+			}
+	
+			c.Props = append(c.Props, airom.KV{Name: "airom:governance.status", Value: status})
+			if status != "approved" && finalReason != "" {
+				c.Props = append(c.Props, airom.KV{Name: "airom:governance.reason", Value: finalReason})
+			}
 		}
 	}
 

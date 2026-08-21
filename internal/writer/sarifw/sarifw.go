@@ -66,11 +66,14 @@ func (wr Writer) build(inv *airom.Inventory) sarifReport {
 	rules = append(rules, cveRules...)
 	eolRules, eolIndex := buildEOLRules(comps, len(rules))
 	rules = append(rules, eolRules...)
+	govRules, govIndex := buildGovRules(comps, len(rules))
+	rules = append(rules, govRules...)
 
 	results := wr.buildResults(comps, ruleIndex)
 	results = append(results, buildRiskResults(comps, riskIndex)...)
 	results = append(results, buildCVEResults(comps, cveIndex)...)
 	results = append(results, buildEOLResults(comps, eolIndex)...)
+	results = append(results, buildGovResults(comps, govIndex)...)
 
 	run := sarifRun{
 		Tool:        buildTool(inv, rules),
@@ -899,4 +902,112 @@ func upperCamelCase(id string) string {
 		}
 	}
 	return b.String()
+}
+
+// buildGovRules adds governance rules for unapproved, denied, and config_drift statuses.
+func buildGovRules(comps []airom.Component, offset int) ([]sarifRule, map[string]int) {
+	present := map[string]bool{}
+	for _, c := range comps {
+		for _, p := range c.Props {
+			if p.Name == "airom:governance.status" {
+				if p.Value == "unapproved" || p.Value == "denied" || p.Value == "config_drift" {
+					present[p.Value] = true
+				}
+			}
+		}
+	}
+	if len(present) == 0 {
+		return nil, nil
+	}
+	ids := make([]string, 0, len(present))
+	for status := range present {
+		ids = append(ids, status)
+	}
+	sort.Strings(ids)
+
+	rules := make([]sarifRule, 0, len(ids))
+	index := make(map[string]int, len(ids))
+	for i, status := range ids {
+		var ruleID, name, desc, level string
+		switch status {
+		case "unapproved":
+			ruleID = "AIROM-GOV-001"
+			name = "Shadow AI: Unapproved Component"
+			desc = "Unapproved AI component detected."
+			level = "error"
+		case "denied":
+			ruleID = "AIROM-GOV-002"
+			name = "Denied Component"
+			desc = "Explicitly denied AI component detected."
+			level = "error"
+		case "config_drift":
+			ruleID = "AIROM-GOV-003"
+			name = "Config Drift: Parameter Exceeded"
+			desc = "Component configuration drifted beyond allowed parameters."
+			level = "warning"
+		}
+
+		index[ruleID] = offset + i
+		rules = append(rules, sarifRule{
+			ID:                   ruleID,
+			Name:                 name,
+			ShortDescription:     sarifText{Text: desc},
+			DefaultConfiguration: sarifConfig{Level: level},
+			HelpURI:              helpURI + "governance.md",
+		})
+	}
+	return rules, index
+}
+
+// buildGovResults emits results for components violating governance rules.
+func buildGovResults(comps []airom.Component, index map[string]int) []sarifResult {
+	if len(index) == 0 {
+		return nil
+	}
+	var results []sarifResult
+	for _, c := range comps {
+		var govStatus, govReason string
+		for _, p := range c.Props {
+			if p.Name == "airom:governance.status" {
+				govStatus = p.Value
+			} else if p.Name == "airom:governance.reason" {
+				govReason = p.Value
+			}
+		}
+
+		if govStatus != "unapproved" && govStatus != "denied" && govStatus != "config_drift" {
+			continue
+		}
+
+		var ruleID, level string
+		switch govStatus {
+		case "unapproved":
+			ruleID = "AIROM-GOV-001"
+			level = "error"
+		case "denied":
+			ruleID = "AIROM-GOV-002"
+			level = "error"
+		case "config_drift":
+			ruleID = "AIROM-GOV-003"
+			level = "warning"
+		}
+
+		msg := govReason
+		if msg == "" {
+			msg = fmt.Sprintf("Component %s has governance status %s.", c.Name, govStatus)
+		}
+
+		results = append(results, sarifResult{
+			RuleID:     ruleID,
+			RuleIndex:  index[ruleID],
+			Level:      level,
+			Message:    sarifText{Text: msg},
+			Locations:  allLocations(c),
+			Properties: map[string]any{
+				"airom:componentId": string(c.ID),
+				"airom:governance.status": govStatus,
+			},
+		})
+	}
+	return results
 }

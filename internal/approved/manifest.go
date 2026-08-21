@@ -4,8 +4,10 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -157,4 +159,42 @@ func matchScope(scopes []string, filePath string) bool {
 		}
 	}
 	return false
+}
+
+func (m *ApprovedManifest) CheckConfigDrift(purl string, params map[string]string) (bool, string, string) {
+	if m == nil {
+		return false, "", ""
+	}
+	for _, app := range m.Approved {
+		if matchPURL(app.PURL, purl) {
+			if len(app.PermittedConfig) == 0 {
+				continue
+			}
+			
+			if maxTempStr, ok := app.PermittedConfig["max_temp"]; ok {
+				if tempStr, ok := params["temperature"]; ok {
+					if maxTemp, err1 := strconv.ParseFloat(maxTempStr, 64); err1 == nil {
+						if temp, err2 := strconv.ParseFloat(tempStr, 64); err2 == nil {
+							if temp > maxTemp {
+								return true, "config_drift", fmt.Sprintf("temperature %s exceeds approved maximum %s", tempStr, maxTempStr)
+							}
+						}
+					}
+				}
+			}
+			
+			if maxTokensStr, ok := app.PermittedConfig["max_tokens"]; ok {
+				if tokensStr, ok := params["max_tokens"]; ok {
+					if maxTokens, err1 := strconv.ParseInt(maxTokensStr, 10, 64); err1 == nil {
+						if tokens, err2 := strconv.ParseInt(tokensStr, 10, 64); err2 == nil {
+							if tokens > maxTokens {
+								return true, "config_drift", fmt.Sprintf("max_tokens %s exceeds approved maximum %s", tokensStr, maxTokensStr)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return false, "", ""
 }
