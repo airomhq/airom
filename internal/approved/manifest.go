@@ -80,7 +80,11 @@ func (m *ApprovedManifest) IsApproved(purl string, filePath string) (bool, strin
 	for _, deny := range m.Deny {
 		if matchPURL(deny.PURL, purl) {
 			if len(deny.Scope) == 0 || matchScope(deny.Scope, filePath) {
-				return false, "denied", deny.Reason
+				reason := deny.Reason
+				if reason == "" {
+					reason = "Explicitly denied in .airomapproved"
+				}
+				return false, "denied", reason
 			}
 		}
 	}

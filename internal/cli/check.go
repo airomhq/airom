@@ -119,7 +119,14 @@ func newCheckCmd() *cobra.Command {
 				// Check both PURL and Name
 				approvedStatus, statusType, reason := manifest.IsApproved(purl, filePath)
 				if !approvedStatus && comp.Name != "" && comp.Name != purl {
-					approvedStatus, statusType, reason = manifest.IsApproved(comp.Name, filePath)
+					nameApproved, nameStatus, nameReason := manifest.IsApproved(comp.Name, filePath)
+					if statusType == "denied" {
+						// Keep explicit denial priority
+					} else if nameStatus == "denied" {
+						approvedStatus, statusType, reason = false, nameStatus, nameReason
+					} else if nameApproved {
+						approvedStatus, statusType, reason = nameApproved, nameStatus, nameReason
+					}
 				}
 
 				if !approvedStatus {
