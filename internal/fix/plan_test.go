@@ -52,8 +52,8 @@ func TestPlanPicksHighestFixed(t *testing.T) {
 	if tg.Severity != airom.VulnCritical {
 		t.Errorf("Severity = %q, want the most severe bucket present", tg.Severity)
 	}
-	if !tg.Fixable || tg.File != "requirements.txt" || tg.Line != 1 {
-		t.Errorf("pin site = %v %s:%d, want fixable requirements.txt:1", tg.Fixable, tg.File, tg.Line)
+	if !tg.Fixable || tg.Sites[0].File != "requirements.txt" || tg.Sites[0].Line != 1 {
+		t.Errorf("pin site = %v %v, want fixable requirements.txt:1", tg.Fixable, tg.Sites)
 	}
 	if tg.Ecosystem != "pypi" {
 		t.Errorf("Ecosystem = %q, want pypi", tg.Ecosystem)
@@ -145,7 +145,7 @@ func TestPlanPrefersManifestOverLockfile(t *testing.T) {
 		Snippet:    `pkg = "1.0.0"`,
 	})
 	got := Plan(inventory(c), false)
-	if len(got) != 1 || !got[0].Fixable || got[0].File != "pyproject.toml" {
+	if len(got) != 1 || !got[0].Fixable || got[0].Sites[0].File != "pyproject.toml" {
 		t.Fatalf("Plan = %+v, want the fix targeted at pyproject.toml", got)
 	}
 }
@@ -295,7 +295,7 @@ func TestSummarize(t *testing.T) {
 func TestTargetString(t *testing.T) {
 	base := Target{
 		Package: "langchain", Current: "0.0.310", Fixed: "0.2.4",
-		Severity: airom.VulnCritical, File: "./requirements.txt", Line: 1,
+		Severity: airom.VulnCritical, Sites: []Site{{File: "./requirements.txt", Line: 1}},
 		Vulns: make([]Vuln, 12),
 	}
 	got := base.String()
@@ -321,5 +321,44 @@ func TestTargetString(t *testing.T) {
 	one.Vulns = make([]Vuln, 1)
 	if !strings.Contains(one.String(), "1 advisory") || strings.Contains(one.String(), "advisories") {
 		t.Errorf("String() = %q, want the singular form", one.String())
+	}
+}
+
+// TestPlanCollectsEveryPinSite: assembly merges sightings of the same package
+// into one component, so the plan has to carry every manifest that pins it or
+// the fix silently covers a fraction of the exposure.
+func TestPlanCollectsEveryPinSite(t *testing.T) {
+	c := comp("langchain", "0.2.16", "pkg:pypi/langchain@0.2.16",
+		"manifest/pypi-requirements", "worker/requirements.txt", 1, "langchain==0.2.16",
+		vuln("CVE-1", airom.VulnHigh, "1.3.9"))
+	for _, extra := range []struct {
+		path string
+		line int
+	}{{"api/requirements.txt", 3}, {"requirements.txt", 2}} {
+		c.Evidence.Occurrences = append(c.Evidence.Occurrences, airom.Occurrence{
+			Location:   airom.Location{Path: extra.path, Line: extra.line},
+			DetectorID: "manifest/pypi-requirements",
+			Confidence: 0.95,
+			Snippet:    "langchain==0.2.16",
+		})
+	}
+
+	got := Plan(inventory(c), false)
+	if len(got) != 1 {
+		t.Fatalf("Plan returned %d targets, want 1", len(got))
+	}
+	if len(got[0].Sites) != 3 {
+		t.Fatalf("Sites = %v, want all three manifests", got[0].Sites)
+	}
+	// Deterministic order (P7), whatever order detection produced.
+	want := []string{"api/requirements.txt:3", "requirements.txt:2", "worker/requirements.txt:1"}
+	for i, w := range want {
+		if got[0].Sites[i].String() != w {
+			t.Errorf("Sites[%d] = %s, want %s", i, got[0].Sites[i], w)
+		}
+	}
+	// The one-line summary must not describe a third of the work as all of it.
+	if !strings.Contains(got[0].Where(), "2 more manifests") {
+		t.Errorf("Where() = %q, want it to count the other manifests", got[0].Where())
 	}
 }

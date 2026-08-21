@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/airomhq/airom/internal/fix"
 	"github.com/airomhq/airom/internal/fix/fixui"
@@ -81,12 +82,21 @@ func applyAll(root string, targets []fix.Target) []fix.Result {
 			continue
 		}
 		res, err := fix.Apply(root, t)
+		applied = append(applied, res...)
 		if err != nil {
-			fmt.Fprintf(stderr, "airom fix: %s: %v\n", t.Package, err)
+			// Partial is not success. A package still pinned vulnerable in one
+			// manifest is still vulnerable, whatever the other manifests now say.
+			if len(res) > 0 {
+				fmt.Fprintf(stderr, "airom fix: %s: only %d of %d manifest(s) updated:\n",
+					t.Package, len(res), len(t.Sites))
+			} else {
+				fmt.Fprintf(stderr, "airom fix: %s:\n", t.Package)
+			}
+			for _, line := range strings.Split(err.Error(), "\n") {
+				fmt.Fprintf(stderr, "  %s\n", line)
+			}
 			failed++
-			continue
 		}
-		applied = append(applied, res)
 	}
 	reportApplied(applied, failed)
 

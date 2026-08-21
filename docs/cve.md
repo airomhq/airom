@@ -89,7 +89,15 @@ the edit is readable before it is made.
 
 **What "fix" means.** One version per package: the **highest** fixed version any
 of that package's advisories names, because bumping to the first one leaves the
-rest open. Only the version token on the declaring line changes — the comparison
+rest open — applied in **every manifest that pins it**, not just one. A package
+declared in an `api/` and a `worker/` requirements.txt is vulnerable through
+both, and a monorepo makes that the normal case rather than an exotic one; fixing
+one and reporting the package done would leave the advisory live while claiming
+it was closed. If one manifest's line has moved since the scan, the ones that
+were still provable stay applied and the row reports `! partial` with a count,
+because a package still pinned vulnerable somewhere is still vulnerable.
+
+Only the version token on each declaring line changes — the comparison
 operator, extras, indentation, trailing comment, and the file's line endings all
 survive byte-for-byte, so the diff is reviewable.
 

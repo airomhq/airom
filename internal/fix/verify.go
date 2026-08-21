@@ -371,11 +371,16 @@ func Manifests(ts []Target) []string {
 	seen := map[string]bool{}
 	var out []string
 	for _, t := range ts {
-		if !t.Fixable || t.File == "" || seen[t.File] {
+		if !t.Fixable {
 			continue
 		}
-		seen[t.File] = true
-		out = append(out, t.File)
+		for _, site := range t.Sites {
+			if site.File == "" || seen[site.File] {
+				continue
+			}
+			seen[site.File] = true
+			out = append(out, site.File)
+		}
 	}
 	sort.Strings(out)
 	return out

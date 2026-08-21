@@ -401,11 +401,11 @@ func TestNoBaselineIsNotAnAllClear(t *testing.T) {
 // will reach spends a resolver invocation on nothing.
 func TestManifestsSkipsWhatWillNotBeTouched(t *testing.T) {
 	got := Manifests([]Target{
-		{Fixable: true, File: "requirements.txt"},
-		{Fixable: true, File: "requirements.txt"}, // same file, one check
-		{Fixable: false, File: "poetry.lock"},     // never edited
-		{Fixable: true, File: ""},                 // no site
-		{Fixable: true, File: "package.json"},
+		{Fixable: true, Sites: []Site{{File: "requirements.txt", Line: 1}}},
+		{Fixable: true, Sites: []Site{{File: "requirements.txt", Line: 1}}}, // same file, one check
+		{Fixable: false, Sites: []Site{{File: "poetry.lock", Line: 1}}},     // never edited
+		{Fixable: true, Sites: []Site{{File: "", Line: 1}}},                 // no site
+		{Fixable: true, Sites: []Site{{File: "package.json", Line: 1}}},
 	})
 	want := []string{"package.json", "requirements.txt"}
 	if len(got) != len(want) {

@@ -24,9 +24,20 @@ func write(t *testing.T, dir, rel, content string) string {
 
 func target(pkg, cur, fixed, file string, line int, snippet string) Target {
 	return Target{
-		Package: pkg, Current: cur, Fixed: fixed,
-		File: file, Line: line, Snippet: snippet, Fixable: true,
+		Package: pkg, Current: cur, Fixed: fixed, Fixable: true,
+		Sites: []Site{{File: file, Line: line, Snippet: snippet}},
 	}
+}
+
+// applyOne runs Apply on a single-site Target and returns that one Result, for
+// the tests written before a Target could carry several.
+func applyOne(t *testing.T, root string, tg Target) (Result, error) {
+	t.Helper()
+	res, err := Apply(root, tg)
+	if len(res) == 0 {
+		return Result{}, err
+	}
+	return res[0], err
 }
 
 // TestApplyRewritesOnlyTheVersion is the whole contract of the fix in one test:
@@ -72,7 +83,7 @@ func TestApplyRewritesOnlyTheVersion(t *testing.T) {
 			root := t.TempDir()
 			p := write(t, root, c.file, c.content)
 
-			res, err := Apply(root, c.tg)
+			res, err := applyOne(t, root, c.tg)
 			if err != nil {
 				t.Fatalf("Apply: %v", err)
 			}
@@ -81,13 +92,13 @@ func TestApplyRewritesOnlyTheVersion(t *testing.T) {
 				t.Fatal(err)
 			}
 			lines := strings.Split(strings.ReplaceAll(string(got), "\r\n", "\n"), "\n")
-			if lines[c.tg.Line-1] != c.wantLine {
-				t.Errorf("line %d =\n  %q\nwant\n  %q", c.tg.Line, lines[c.tg.Line-1], c.wantLine)
+			if lines[c.tg.Sites[0].Line-1] != c.wantLine {
+				t.Errorf("line %d =\n  %q\nwant\n  %q", c.tg.Sites[0].Line, lines[c.tg.Sites[0].Line-1], c.wantLine)
 			}
 			// Every other line is byte-identical.
 			before := strings.Split(strings.ReplaceAll(c.content, "\r\n", "\n"), "\n")
 			for i := range before {
-				if i == c.tg.Line-1 {
+				if i == c.tg.Sites[0].Line-1 {
 					continue
 				}
 				if before[i] != lines[i] {
@@ -98,8 +109,8 @@ func TestApplyRewritesOnlyTheVersion(t *testing.T) {
 			if strings.Contains(c.content, "\r\n") && !strings.Contains(string(got), "\r\n") {
 				t.Error("CRLF line endings were converted to LF")
 			}
-			if res.Line != c.tg.Line || res.File != c.file {
-				t.Errorf("Result = %s:%d, want %s:%d", res.File, res.Line, c.file, c.tg.Line)
+			if res.Line != c.tg.Sites[0].Line || res.File != c.file {
+				t.Errorf("Result = %s:%d, want %s:%d", res.File, res.Line, c.file, c.tg.Sites[0].Line)
 			}
 		})
 	}
@@ -137,7 +148,7 @@ func TestApplyRefusesWhenTheFileMoved(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			root := t.TempDir()
 			p := write(t, root, "requirements.txt", c.content)
-			if _, err := Apply(root, c.tg); err == nil {
+			if _, err := applyOne(t, root, c.tg); err == nil {
 				t.Fatal("Apply succeeded on a file that moved on")
 			} else if !strings.Contains(err.Error(), c.wantSubstr) {
 				t.Errorf("error = %v, want it to mention %q", err, c.wantSubstr)
@@ -170,7 +181,7 @@ func TestApplyRefusesToEscapeTheScanRoot(t *testing.T) {
 	root := t.TempDir()
 	outside := write(t, t.TempDir(), "requirements.txt", "langchain==0.0.310\n")
 	tg := target("langchain", "0.0.310", "0.2.4", "../../"+filepath.Base(filepath.Dir(outside))+"/requirements.txt", 1, "")
-	if _, err := Apply(root, tg); err == nil {
+	if _, err := applyOne(t, root, tg); err == nil {
 		t.Fatal("Apply followed a path out of the scan root")
 	}
 }
@@ -212,7 +223,7 @@ func TestApplyPreservesMode(t *testing.T) {
 	if err := os.Chmod(p, 0o640); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Apply(root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, "")); err != nil {
+	if _, err := applyOne(t, root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, "")); err != nil {
 		t.Fatal(err)
 	}
 	st, err := os.Stat(p)
@@ -231,7 +242,7 @@ func TestApplyReportsStaleLockfiles(t *testing.T) {
 	write(t, root, "package.json", "{\n  \"dependencies\": {\n    \"openai\": \"4.0.0\"\n  }\n}\n")
 	write(t, root, "package-lock.json", `{"lockfileVersion":3}`)
 
-	res, err := Apply(root, target("openai", "4.0.0", "4.104.0", "package.json", 3, ""))
+	res, err := applyOne(t, root, target("openai", "4.0.0", "4.104.0", "package.json", 3, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,10 +262,10 @@ func TestApplyIsNotIdempotent(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, "requirements.txt", "langchain==0.0.310\n")
 	tg := target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, "")
-	if _, err := Apply(root, tg); err != nil {
+	if _, err := applyOne(t, root, tg); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Apply(root, tg); err == nil {
+	if _, err := applyOne(t, root, tg); err == nil {
 		t.Error("the second Apply succeeded; a repeated fix must refuse")
 	}
 	got, _ := os.ReadFile(filepath.Join(root, "requirements.txt"))
@@ -271,7 +282,7 @@ func TestRevertRestoresTheLineExactly(t *testing.T) {
 	root := t.TempDir()
 	p := write(t, root, "requirements.txt", original)
 
-	res, err := Apply(root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
+	res, err := applyOne(t, root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -292,7 +303,7 @@ func TestRevertRestoresTheLineExactly(t *testing.T) {
 func TestRevertRefusesWhenTheLineMovedOn(t *testing.T) {
 	root := t.TempDir()
 	p := write(t, root, "requirements.txt", "langchain==0.0.310\n")
-	res, err := Apply(root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
+	res, err := applyOne(t, root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -313,7 +324,7 @@ func TestRevertRefusesWhenTheLineMovedOn(t *testing.T) {
 func TestResultCarriesBothVersions(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, "requirements.txt", "langchain==0.0.310\n")
-	res, err := Apply(root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
+	res, err := applyOne(t, root, target("langchain", "0.0.310", "0.2.4", "requirements.txt", 1, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -345,7 +356,7 @@ func TestApplyRefusesAPrefixNamedSibling(t *testing.T) {
 		t.Run(s.pkg+" vs "+s.line, func(t *testing.T) {
 			root := t.TempDir()
 			p := write(t, root, "requirements.txt", s.line+"\n")
-			_, err := Apply(root, target(s.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, ""))
+			_, err := applyOne(t, root, target(s.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, ""))
 			if err == nil {
 				got, _ := os.ReadFile(p)
 				t.Fatalf("Apply rewrote %q while claiming to fix %q; file is now %q", s.line, s.pkg, got)
@@ -377,7 +388,7 @@ func TestApplyStillMatchesTheRealPackage(t *testing.T) {
 		t.Run(c.pkg+" in "+c.line, func(t *testing.T) {
 			root := t.TempDir()
 			p := write(t, root, "requirements.txt", c.line+"\n")
-			if _, err := Apply(root, target(c.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, "")); err != nil {
+			if _, err := applyOne(t, root, target(c.pkg, "0.0.310", "0.2.4", "requirements.txt", 1, "")); err != nil {
 				t.Fatalf("Apply refused a legitimate pin: %v", err)
 			}
 			if got, _ := os.ReadFile(p); string(got) != c.want+"\n" {
@@ -392,8 +403,83 @@ func TestApplyStillMatchesTheRealPackage(t *testing.T) {
 func TestGoModuleIsNotMatchedInsideALongerPath(t *testing.T) {
 	root := t.TempDir()
 	p := write(t, root, "go.mod", "require golang.org/x/mod/semver v0.1.0\n")
-	if _, err := Apply(root, target("golang.org/x/mod", "0.1.0", "0.2.0", "go.mod", 1, "")); err == nil {
+	if _, err := applyOne(t, root, target("golang.org/x/mod", "0.1.0", "0.2.0", "go.mod", 1, "")); err == nil {
 		got, _ := os.ReadFile(p)
 		t.Fatalf("Apply matched a module inside a longer path; file is now %q", got)
+	}
+}
+
+// TestApplyRewritesEveryPinSite is the fix for the defect that made the feature
+// look broken in practice: a package pinned in several manifests was only
+// rewritten in one, the report said "updated 1 pin", and the re-scan it told the
+// user to run still showed the advisory — because the package genuinely was
+// still pinned vulnerable in the manifests nobody touched.
+//
+// Monorepos make this the normal case, not an exotic one: an api/ and a worker/
+// requirements.txt, a manifest per service, a root manifest beside a per-package
+// one. Assembly merges those sightings into ONE component, so the plan has to
+// carry all of them and Apply has to move all of them.
+func TestApplyRewritesEveryPinSite(t *testing.T) {
+	root := t.TempDir()
+	files := []string{"requirements.txt", "api/requirements.txt", "worker/requirements.txt"}
+	for _, f := range files {
+		write(t, root, f, "langchain==0.2.16\nother==1.0.0\n")
+	}
+
+	tg := Target{
+		Package: "langchain", Current: "0.2.16", Fixed: "1.3.9", Fixable: true,
+		Sites: []Site{
+			{File: "requirements.txt", Line: 1},
+			{File: "api/requirements.txt", Line: 1},
+			{File: "worker/requirements.txt", Line: 1},
+		},
+	}
+	got, err := Apply(root, tg)
+	if err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+	if len(got) != 3 {
+		t.Fatalf("Apply returned %d results, want one per pin site (3)", len(got))
+	}
+	for _, f := range files {
+		b, rerr := os.ReadFile(filepath.Join(root, filepath.FromSlash(f)))
+		if rerr != nil {
+			t.Fatal(rerr)
+		}
+		if want := "langchain==1.3.9\nother==1.0.0\n"; string(b) != want {
+			t.Errorf("%s =\n  %q\nwant\n  %q", f, b, want)
+		}
+	}
+}
+
+// TestApplyReportsPartialRatherThanClaimingSuccess. If one site's line moved
+// since the scan, the sites that were still provable stay applied — rolling them
+// back would discard correct remediation over an unrelated edit — but the
+// package is NOT fixed, and both halves have to reach the caller.
+func TestApplyReportsPartialRatherThanClaimingSuccess(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "api/requirements.txt", "langchain==0.2.16\n")
+	write(t, root, "worker/requirements.txt", "langchain==9.9.9  # someone bumped this by hand\n")
+
+	tg := Target{
+		Package: "langchain", Current: "0.2.16", Fixed: "1.3.9", Fixable: true,
+		Sites: []Site{
+			{File: "api/requirements.txt", Line: 1},
+			{File: "worker/requirements.txt", Line: 1},
+		},
+	}
+	got, err := Apply(root, tg)
+	if err == nil {
+		t.Fatal("Apply reported success while one manifest still pins the vulnerable version")
+	}
+	if len(got) != 1 || got[0].File != "api/requirements.txt" {
+		t.Fatalf("results = %+v, want the one provable site applied", got)
+	}
+	// The provable edit stands; the unprovable one is untouched.
+	if b, _ := os.ReadFile(filepath.Join(root, "api", "requirements.txt")); string(b) != "langchain==1.3.9\n" {
+		t.Errorf("api manifest = %q, want the applied fix", b)
+	}
+	if b, _ := os.ReadFile(filepath.Join(root, "worker", "requirements.txt")); string(b) != "langchain==9.9.9  # someone bumped this by hand\n" {
+		t.Errorf("worker manifest was rewritten: %q", b)
 	}
 }
