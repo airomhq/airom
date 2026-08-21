@@ -417,3 +417,80 @@ func TestManifestsSkipsWhatWillNotBeTouched(t *testing.T) {
 		}
 	}
 }
+
+// TestHelperFails stands in for a tool that runs and reports failure. Skipped
+// during an ordinary run.
+func TestHelperFails(t *testing.T) {
+	if os.Getenv(helperEnv) == "" {
+		t.Skip("helper process; only meaningful when re-executed by a verification test")
+	}
+	t.Fatal("stub failure: this is the tool's error output")
+}
+
+// TestVerifyRestoresWhatADryRunRewrites is the guard on the promise that
+// verification leaves the project alone.
+//
+// `npm install --dry-run` rewrites node_modules/.package-lock.json — npm's
+// private record of what is installed — to the versions it WOULD have installed,
+// while leaving the packages on disk untouched. No npm flag avoids it. Left
+// alone, that produces a project where `npm ls` reports the fixed version,
+// `npm install` says "up to date", and the vulnerable release is still there:
+// a check that makes a project LOOK fixed is worse than no check.
+func TestVerifyRestoresWhatADryRunRewrites(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "package.json", `{"name":"d"}`)
+	write(t, root, "package-lock.json", `{"lockfileVersion":3,"was":"original"}`)
+	write(t, root, "node_modules/.package-lock.json", `{"hidden":"original"}`)
+	t.Setenv(helperEnv, "1")
+
+	saved := checkers
+	t.Cleanup(func() { checkers = saved })
+	checkers = map[string]checker{"package.json": {
+		tool:    "stub",
+		probe:   helperArgv(t, "TestHelperExitsOK"),
+		touches: []string{"package-lock.json", "node_modules/.package-lock.json", "created-by-the-check.json"},
+		// The stub scribbles the way npm does: rewriting the resolver's
+		// bookkeeping, and creating a file that was not there.
+		args: func(string) []string { return helperArgv(t, "TestHelperScribbles") },
+	}}
+
+	Verify(context.Background(), root, []string{"package.json"})
+
+	for _, c := range []struct{ rel, want string }{
+		{"package-lock.json", `{"lockfileVersion":3,"was":"original"}`},
+		{"node_modules/.package-lock.json", `{"hidden":"original"}`},
+	} {
+		got, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(c.rel)))
+		if err != nil {
+			t.Errorf("%s: %v", c.rel, err)
+			continue
+		}
+		if string(got) != c.want {
+			t.Errorf("%s was left rewritten:\n  got  %s\n  want %s", c.rel, got, c.want)
+		}
+	}
+	// A file the check created was not there before, so it does not get to be
+	// there after.
+	if _, err := os.Stat(filepath.Join(root, "created-by-the-check.json")); err == nil {
+		t.Error("a file the dry run created survived verification")
+	}
+}
+
+// TestHelperScribbles stands in for a dry run that writes anyway.
+func TestHelperScribbles(t *testing.T) {
+	if os.Getenv(helperEnv) == "" {
+		t.Skip("helper process; only meaningful when re-executed by a verification test")
+	}
+	for name, body := range map[string]string{
+		"package-lock.json":               `{"lockfileVersion":3,"was":"REWRITTEN"}`,
+		"node_modules/.package-lock.json": `{"hidden":"REWRITTEN"}`,
+		"created-by-the-check.json":       `{"new":true}`,
+	} {
+		if err := os.MkdirAll(filepath.Dir(name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(name, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

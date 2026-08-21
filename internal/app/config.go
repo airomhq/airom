@@ -189,6 +189,17 @@ type Config struct {
 	// to run degrades to "not checked", never to a false all-clear.
 	FixVerify bool
 
+	// FixInstall runs each edited manifest's package manager after the fixes, so
+	// the rewritten pin becomes the version actually resolved and installed.
+	//
+	// The heaviest thing AIROM does, and the only thing it does that writes
+	// outside the files it was pointed at: lockfiles, vendor directories, an
+	// interpreter's site-packages. It is here because a manifest edit alone is a
+	// promise — until a resolver runs, the lockfile still pins the vulnerable
+	// release and a build from that tree reinstalls the advisory the fix was
+	// meant to close.
+	FixInstall bool
+
 	// CI policy (exit-code contract in docs/cli.md). Nil Policy = no gate:
 	// scan success always exits 0 regardless of findings.
 	Policy   *Policy
@@ -357,6 +368,9 @@ func (c *Config) validateFix() error {
 		if c.FixVerify {
 			return fmt.Errorf("--fix-verify verifies the fixes --fix or --fix-all made; neither was given")
 		}
+		if c.FixInstall {
+			return fmt.Errorf("--fix-install installs the fixes --fix or --fix-all made; neither was given")
+		}
 		return nil
 	}
 	if c.Fix && c.FixAll {
@@ -373,6 +387,9 @@ func (c *Config) validateFix() error {
 	// they just asked to run without a network.
 	if c.FixVerify && c.Offline {
 		return fmt.Errorf("--fix-verify runs a dependency resolver, which needs the network (drop --offline)")
+	}
+	if c.FixInstall && c.Offline {
+		return fmt.Errorf("--fix-install runs a package manager, which needs the network (drop --offline)")
 	}
 	if !c.CVE {
 		return fmt.Errorf("%s needs the CVE overlay to have something to fix (remove --no-cve, or drop --offline)", flag)

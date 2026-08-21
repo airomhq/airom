@@ -64,6 +64,7 @@ table, for CI and for terminals that cannot host it.
 $ airom scan . --fix        # interactive: click [ Fix ] on a row, or press `a` for all
 $ airom scan . --fix-all    # non-interactive: apply every fixable pin
 $ airom scan . --fix --fix-verify   # ...and confirm the result still resolves
+$ airom scan . --fix-all --fix-install  # ...and actually install them (writes lockfiles)
 ```
 
 ```
@@ -140,8 +141,8 @@ Clearing the advisory is not the same as the project still building — add
 
 Clearing every advisory and producing a manifest nothing can install is not a
 fix. `--fix-verify` runs the ecosystem's own resolver in **dry-run mode** after
-the edits land — it installs nothing and writes nothing to your project — and
-reports whether the bumped pins still resolve *together*.
+the edits land — it installs nothing and leaves your project as it found it —
+and reports whether the bumped pins still resolve *together*.
 
 ```console
 $ airom scan . --fix-all --fix-verify
@@ -198,6 +199,18 @@ edited line byte-for-byte, and says out loud that it re-opens the advisories);
 in CI the edits stand and the report prints the reverse edits so you can undo
 them.
 
+**"Dry run" is not a promise every tool keeps, so AIROM keeps it.** `npm install
+--dry-run` rewrites `node_modules/.package-lock.json` — npm's private record of
+what is installed — to the versions it *would* have installed, while leaving the
+packages on disk untouched. No npm flag avoids it (`--no-save` and
+`--package-lock-only` do it too). Left alone that produces a project where
+`npm ls` reports the fixed version, `npm install` says "up to date", and the
+vulnerable release is still in `node_modules` — a check that makes a project
+*look* fixed is worse than no check. So AIROM captures the resolver-owned files
+each checker is known to touch and puts them back afterwards, including deleting
+one the check created. Verified across a 1,468-file project: nothing changes but
+the manifest line the fix itself edited.
+
 **It degrades, it never fabricates.** No toolchain, an old tool that lacks a
 dry-run, a resolver that times out (3 min), or a refusal about the *machine*
 rather than the pins — a PEP 668 "externally managed" Python, a network
@@ -208,6 +221,71 @@ are broken" either.
 
 It needs the network and the toolchain — and runs the resolver twice, once for
 the baseline — so it is **opt-in** rather than part of `--fix`.
+
+### Making the fix real — `--fix-install`
+
+A rewritten pin is a statement of intent. The lockfile beside it still pins the
+vulnerable release and the environment still has it installed, so `npm ci`, a
+fresh container build, or simply the next developer reinstalls exactly the
+advisory the fix was meant to close. `--fix-install` runs the project's own
+package manager so the new version is the one actually resolved and installed.
+
+```console
+$ airom scan . --fix-all --fix-install
+airom fix: updated 1 pin(s)
+  package.json:4  "ai": "5.0.25"  →  "ai": "5.0.52"   (ai)
+
+airom fix: installing the new versions (this writes lockfiles and installs packages)
+  $ npm install --no-audit --no-fund   (in package.json)
+    changed 3 packages in 2s
+
+  ✔ package.json — npm installed the new versions — updated package-lock.json, node_modules/
+```
+
+Afterwards all three layers agree — manifest `5.0.52`, lockfile `5.0.52`,
+`node_modules` `5.0.52` — and a re-scan reports no advisories.
+
+**This one writes.** Every other AIROM operation either reads, or edits only the
+manifest line it was pointed at. This runs a package manager: lockfiles, vendor
+directories, and an interpreter's `site-packages` all change. That is why it is
+a separate opt-in flag rather than part of `--fix`.
+
+| Manifest | Tool | Writes |
+|---|---|---|
+| `package.json` | `pnpm install` / `yarn install` / `npm install` — chosen by **which lockfile the project already has** | that lockfile, `node_modules/` |
+| `requirements.txt` | `pip install -r` | the active Python environment |
+| `pyproject.toml` (with `uv.lock`) | `uv sync` | `uv.lock`, `.venv/` |
+| `go.mod` | `go mod tidy` | `go.mod`, `go.sum` |
+| everything else | — | reported as **not installed**, with the reason |
+
+Cargo, Poetry, and Pipenv are deliberately absent: their invocations differ
+across major versions (`poetry lock --no-update` was removed in 2.x), and an
+untested command string is the same class of mistake as a flag that quietly does
+the opposite of what it reads like. They report "no installer wired" — an honest
+gap rather than a guess.
+
+**It will not touch a system Python.** `pip install` is the one command here that
+reaches outside the directory being scanned — it mutates whichever interpreter is
+on `PATH`, which on most Linux distributions is the one the OS depends on. AIROM
+requires a project-local `.venv/` or an activated environment first, and says so
+rather than relying on PEP 668 to decline on its behalf. A project `.venv/` wins
+over an activated one, because it is the environment that manifest describes.
+
+**A clean exit is not a working environment.** pip prints
+`ERROR: ... dependency conflicts`, names packages that no longer agree, and exits
+`0`. So after installing, AIROM runs the ecosystem's own consistency check
+(`pip check`) and reports `dirty` when it fails — with the same before/after
+attribution the verifier uses, so "the install produced this" is distinguished
+from "the environment already had it".
+
+**Output streams as it happens.** An install is minutes of genuine work, and a
+silent terminal for minutes is indistinguishable from a hang. Only the last 15
+lines are retained for the summary — the stream itself is not held in memory
+(invariant P2).
+
+If `--fix-verify` already found a conflict the fixes introduced, the install is
+skipped: the resolver has said this will not resolve, and a real install would
+spend minutes reaching the same answer having half-written a lockfile on the way.
 
 **Ordering.** Fixes run *after* the AIBOM is emitted and the emitted document
 describes the tree as the scan found it — a bill of materials for a state the

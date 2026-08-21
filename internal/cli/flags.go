@@ -42,6 +42,7 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 	fs.Bool("fix", false, "after the scan, open an interactive advisory table and rewrite the manifest pins you choose (needs a terminal)")
 	fs.Bool("fix-all", false, "rewrite every vulnerable manifest pin to its fixed version without prompting (implies no table)")
 	fs.Bool("fix-verify", false, "after fixing, run the ecosystem's resolver in dry-run mode to confirm the new pins still resolve (installs nothing)")
+	fs.Bool("fix-install", false, "after fixing, run the package manager for real: regenerate lockfiles and install the new versions (WRITES to lockfiles and your environment)")
 	fs.Bool("include-tests", false, "count AI found only in test scaffolding (testdata/, *_test.go, tests/, spec/) — hidden by default")
 	fs.Int("parallel", 0, "worker count (default: GOMAXPROCS)")
 	fs.String("io-budget", formatSize(app.DefaultIOBudget), "byte-weighted I/O semaphore budget (k/m/g suffixes)")
