@@ -2,8 +2,10 @@ package fix
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -150,6 +152,80 @@ func TestGoCheckDoesNotSwallowItsOwnErrors(t *testing.T) {
 	}
 }
 
+// ── Stub resolver ───────────────────────────────────────────────────────────
+//
+// A checker test needs two external commands: a probe that succeeds and a
+// command that runs until it is killed. Borrowing system binaries for that
+// couples the suite to whichever ones the runner ships — `sleep --version` is
+// GNU coreutils and BSD sleep rejects it, so on macOS the probe failed, Verify
+// short-circuited to "skipped", and the cancellation path the test exists to
+// cover never ran. It failed green-adjacent: the assertion caught it, but the
+// reason had nothing to do with the code under test.
+//
+// So the stub re-executes THIS test binary instead. It exists on every platform
+// by construction, its flag grammar is the one the testing package defines, and
+// there is no system tool left to differ.
+
+const helperEnv = "AIROM_FIX_TEST_HELPER"
+
+// helperArgv builds an argv that re-runs this binary as the named helper.
+func helperArgv(t *testing.T, name string) []string {
+	t.Helper()
+	self, err := os.Executable()
+	if err != nil {
+		t.Fatalf("locate the test binary: %v", err)
+	}
+	return []string{self, "-test.run=^" + name + "$", "-test.count=1"}
+}
+
+// TestHelperExitsOK stands in for a resolver's availability probe: it returns
+// immediately and successfully. Skipped during an ordinary run.
+func TestHelperExitsOK(t *testing.T) {
+	if os.Getenv(helperEnv) == "" {
+		t.Skip("helper process; only meaningful when re-executed by a verification test")
+	}
+}
+
+// helperStarted is the file TestHelperHangs drops in its working directory the
+// moment it is running. A test waits for it before canceling, so cancellation
+// lands during the stub resolver rather than during process startup.
+//
+// Sleeping a fixed "long enough" instead is what made this fragile: under -race
+// the child binary takes longer to start than the delay allowed, so the CANCEL
+// hit the availability probe and every assertion degraded to "skipped" — the
+// same shape as the macOS failure, arrived at by timing rather than by flag
+// grammar. A readiness signal has no margin to get wrong.
+const helperStarted = ".airom-helper-started"
+
+// TestHelperHangs stands in for a resolver still working when the user gives up.
+// It announces itself, then outlives any cancellation the tests apply and is
+// killed by the context; the sleep is a backstop, not the mechanism.
+func TestHelperHangs(t *testing.T) {
+	if os.Getenv(helperEnv) == "" {
+		t.Skip("helper process; only meaningful when re-executed by a verification test")
+	}
+	if err := os.WriteFile(helperStarted, []byte("1"), 0o644); err != nil {
+		t.Fatalf("signal readiness: %v", err)
+	}
+	time.Sleep(time.Minute)
+}
+
+// cancelOnceRunning cancels only after the stub resolver has signaled that it
+// is running, so the test exercises the resolver path and not the probe.
+func cancelOnceRunning(t *testing.T, dir string, cancel context.CancelFunc) {
+	t.Helper()
+	go func() {
+		deadline := time.Now().Add(30 * time.Second)
+		for time.Now().Before(deadline) {
+			if _, err := os.Stat(filepath.Join(dir, helperStarted)); err == nil {
+				break
+			}
+			time.Sleep(5 * time.Millisecond)
+		}
+		cancel() // also fires on the deadline, so a stuck helper cannot hang the suite
+	}()
+}
+
 // TestCancellationIsNotAConflict. A Ctrl-C during verification kills the
 // resolver, which exits nonzero having said nothing about the pins. Reporting
 // that as a conflict invents a finding — and then drives the revert prompt to
@@ -159,16 +235,18 @@ func TestCancellationIsNotAConflict(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "requirements.txt"), []byte("x==1\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	t.Setenv(helperEnv, "1") // inherited by both child processes
 	saved := checkers
 	t.Cleanup(func() { checkers = saved })
 	checkers = map[string]checker{"requirements.txt": {
-		tool:  "sleep",
-		probe: []string{"sleep", "--version"},
-		args:  func(string) []string { return []string{"sleep", "30"} },
+		tool:  "stub-resolver",
+		probe: helperArgv(t, "TestHelperExitsOK"),
+		args:  func(string) []string { return helperArgv(t, "TestHelperHangs") },
 	}}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go func() { time.Sleep(50 * time.Millisecond); cancel() }()
+	defer cancel()
+	cancelOnceRunning(t, root, cancel)
 
 	got := Verify(ctx, root, []string{"requirements.txt"})
 	if got[0].Status == VerifyConflict {
@@ -179,6 +257,82 @@ func TestCancellationIsNotAConflict(t *testing.T) {
 	}
 	if Conflicted(got) {
 		t.Error("Conflicted fired on an interrupted check")
+	}
+	// The probe must actually have run. A stub whose probe fails reports
+	// "skipped" for a reason that has nothing to do with cancellation, which is
+	// how the unportable `sleep --version` hid this path on macOS while still
+	// looking like a real assertion failure.
+	if got[0].Status == VerifySkipped {
+		t.Fatalf("the stub probe did not run (%s); the cancellation path was never exercised", got[0].Reason)
+	}
+}
+
+// TestTimeoutIsNotAConflict — the other way a resolver can be halted without
+// ever giving a verdict. Exercised through run directly, so the assertion holds
+// whether the deadline lands during startup or during the work.
+func TestTimeoutIsNotAConflict(t *testing.T) {
+	t.Setenv(helperEnv, "1")
+	out, halted, err := run(context.Background(), t.TempDir(),
+		helperArgv(t, "TestHelperHangs"), 200*time.Millisecond)
+	if !halted {
+		t.Fatalf("run did not report a halt on timeout: err=%v\n%s", err, out)
+	}
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("err = %v, want DeadlineExceeded", err)
+	}
+	if r := haltReason("stub", err); !strings.Contains(r, "did not finish") {
+		t.Errorf("haltReason = %q, want the timeout wording", r)
+	}
+	if r := haltReason("stub", context.Canceled); !strings.Contains(r, "interrupted") {
+		t.Errorf("haltReason = %q, want the interruption wording", r)
+	}
+}
+
+// TestProbeCancellationIsNotASkip. The availability probe runs under the
+// caller's context too, so a Ctrl-C can land on IT rather than on the resolver.
+// Reporting that as "the tool is not usable" is the same fabricated verdict as
+// calling a killed resolver a conflict — nothing was learned about the tool or
+// the pins, and the report has to say so.
+func TestProbeCancellationIsNotASkip(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "requirements.txt"), []byte("x==1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(helperEnv, "1")
+	saved := checkers
+	t.Cleanup(func() { checkers = saved })
+	checkers = map[string]checker{"requirements.txt": {
+		tool:  "stub-resolver",
+		probe: helperArgv(t, "TestHelperHangs"), // the probe is what hangs here
+		args:  func(string) []string { return helperArgv(t, "TestHelperExitsOK") },
+	}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	cancelOnceRunning(t, root, cancel)
+
+	got := Verify(ctx, root, []string{"requirements.txt"})
+	if got[0].Status != VerifyErrored {
+		t.Errorf("status = %q (%s), want %q", got[0].Status, got[0].Reason, VerifyErrored)
+	}
+	if got[0].Status == VerifySkipped {
+		t.Error("an interrupted probe was reported as an unusable tool")
+	}
+	if Conflicted(got) {
+		t.Error("Conflicted fired on an interrupted probe")
+	}
+}
+
+// TestStubProbeIsPortable pins the property the macOS failure came down to: the
+// stub's probe must succeed on whatever platform the suite is running on. If it
+// ever stops doing so, every test built on the stub silently degrades to
+// asserting "skipped" instead of what it was written to assert.
+func TestStubProbeIsPortable(t *testing.T) {
+	t.Setenv(helperEnv, "1")
+	out, halted, err := run(context.Background(), t.TempDir(), helperArgv(t, "TestHelperExitsOK"), 30*time.Second)
+	if err != nil || halted {
+		t.Fatalf("the stub probe failed on %s/%s: err=%v halted=%v\n%s",
+			runtime.GOOS, runtime.GOARCH, err, halted, out)
 	}
 }
 

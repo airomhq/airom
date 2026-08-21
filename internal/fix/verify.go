@@ -45,6 +45,20 @@ func Conflicted(rs []VerifyResult) bool {
 	return false
 }
 
+// probeTimeout caps the availability probe. Generous, because it is meant to
+// answer "is this tool here at all" rather than to bound real work.
+const probeTimeout = 30 * time.Second
+
+// haltReason describes a command the context ended, distinguishing the user
+// giving up from the tool taking too long. Both mean the same thing for the
+// verdict — nothing was learned — but not for what to do about it.
+func haltReason(tool string, err error) string {
+	if errors.Is(err, context.Canceled) {
+		return tool + " was interrupted before it reached a verdict"
+	}
+	return fmt.Sprintf("%s did not finish within %s", tool, VerifyTimeout)
+}
+
 // VerifyTimeout caps one resolver run. A dependency resolver can spend a long
 // time backtracking, and a fix session must not hang on it.
 const VerifyTimeout = 3 * time.Minute
@@ -190,19 +204,24 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 		res.Status, res.Reason = VerifySkipped, c.tool+" is not on PATH"
 		return res
 	}
-	if _, _, err := run(ctx, dir, c.probe, 30*time.Second); err != nil {
-		res.Status, res.Reason = VerifySkipped, c.tool+" is not usable: "+err.Error()
+	// A halted probe is not a verdict about the tool. If the context ended while
+	// the probe was still running — a Ctrl-C, or a deadline — then nothing was
+	// learned about anything, and calling that "the tool is not usable" is the
+	// same fabrication as calling a killed resolver a dependency conflict, one
+	// level up.
+	if _, halted, err := run(ctx, dir, c.probe, probeTimeout); err != nil {
+		if halted {
+			res.Status, res.Reason = VerifyErrored, haltReason(c.tool, err)
+		} else {
+			res.Status, res.Reason = VerifySkipped, c.tool+" is not usable: "+err.Error()
+		}
 		return res
 	}
 
 	out, halted, err := run(ctx, dir, c.args(path.Base(manifest)), VerifyTimeout)
 	switch {
 	case halted:
-		res.Status = VerifyErrored
-		res.Reason = fmt.Sprintf("%s did not finish within %s", c.tool, VerifyTimeout)
-		if errors.Is(err, context.Canceled) {
-			res.Reason = c.tool + " was interrupted before it reached a verdict"
-		}
+		res.Status, res.Reason = VerifyErrored, haltReason(c.tool, err)
 	case err == nil:
 		res.Status = VerifyOK
 	case containsAny(out, c.inconclusive):
