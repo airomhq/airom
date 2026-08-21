@@ -47,6 +47,14 @@ func LoadManifest(repoRoot string) (*ApprovedManifest, error) {
 		return nil, err
 	}
 
+	// Verify signature integrity if a signature exists
+	if m.Signature != "" {
+		expected := ComputeSignature(&m)
+		if expected != "" && m.Signature != expected {
+			return &m, fmt.Errorf("tampered manifest signature: expected %s, got %s", expected, m.Signature)
+		}
+	}
+
 	return &m, nil
 }
 
