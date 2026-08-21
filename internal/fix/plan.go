@@ -34,13 +34,32 @@ type Target struct {
 	// disclosed vulnerability for an undisclosed build failure.
 	Major bool
 
-	File    string // manifest path, relative to the scan root
-	Line    int    // 1-based line carrying the pin
-	Snippet string // the line as the detector saw it
+	// Sites is EVERY declared manifest that pins this version — not just one.
+	//
+	// A package can be pinned in several places at once: an api/ and a worker/
+	// requirements.txt in the same repo, a monorepo with a manifest per service,
+	// a root manifest beside a per-package one. Assembly merges those sightings
+	// into a single component, so a fix that rewrote only the best-scoring
+	// occurrence left the others declaring the vulnerable version, reported
+	// "updated 1 pin", and told the user to re-scan to confirm — whereupon the
+	// advisory was still there, because it genuinely still was. Reporting a
+	// package fixed while it is still pinned vulnerable elsewhere is the
+	// over-claim this tool exists not to make.
+	Sites []Site
 
 	Fixable bool
 	Reason  string // why not, when Fixable is false
 }
+
+// Site is one manifest line that pins the vulnerable version.
+type Site struct {
+	File    string // manifest path, relative to the scan root
+	Line    int    // 1-based line carrying the pin
+	Snippet string // the line as the detector saw it
+}
+
+// String renders a site as the file:line a report points at.
+func (s Site) String() string { return fmt.Sprintf("%s:%d", s.File, s.Line) }
 
 // Vuln is the display slice of an advisory: enough to explain a row without
 // dragging the whole CycloneDX vulnerability along.
@@ -160,36 +179,35 @@ func targetFor(c *airom.Component) (Target, bool) {
 	}
 	t.Major = crossesMajor(current, t.Fixed)
 
-	occ, reason := pinSite(c, current)
-	if occ == nil {
+	sites, reason := pinSites(c, current)
+	if len(sites) == 0 {
 		t.Reason = reason
 		return t, true
 	}
-	t.File, t.Line, t.Snippet = occ.Location.Path, occ.Location.Line, occ.Snippet
+	t.Sites = sites
 	t.Fixable = true
 	return t, true
 }
 
-// pinSite picks the occurrence whose line AIROM will rewrite: the
-// highest-confidence sighting from a declared manifest that carries a line
-// number AND actually spells out the version being replaced. Returns a human
-// reason when no occurrence qualifies.
+// pinSites collects EVERY declared-manifest occurrence whose line spells out
+// the version being replaced — because every one of them has to move for the
+// package to stop being vulnerable. Returns a human reason when none qualify.
 //
-// That last condition is what keeps the table honest about which rows are
-// actionable. A component's Version is whatever the assembler resolved, which is
-// routinely NOT what the manifest says: `"openai": "^4.0.0"` in package.json
-// with a package-lock.json resolving 4.2.1 yields Version 4.2.1, and the same
-// happens for `>=`/`~=` in requirements.txt beside a poetry or uv lock. Without
-// this check such a component shows [ Fix ] and a target version, Apply then
-// refuses with "no longer pins openai 4.2.1 — re-run the scan", and re-scanning
-// reproduces it forever: a button that cannot work, and an error message that
-// blames the user's file for something it never said.
+// Requiring the line to carry the version is what keeps the table honest about
+// which rows are actionable. A component's Version is whatever the assembler
+// resolved, which is routinely NOT what the manifest says: `"openai": "^4.0.0"`
+// in package.json with a package-lock.json resolving 4.2.1 yields Version 4.2.1,
+// and the same happens for `>=`/`~=` in requirements.txt beside a poetry or uv
+// lock. Without this check such a component shows [ Fix ] and a target version,
+// Apply then refuses with "no longer pins openai 4.2.1 — re-run the scan", and
+// re-scanning reproduces it forever: a button that cannot work, and an error
+// message that blames the user's file for something it never said.
 //
 // A range is a real answer, so it gets a real reason rather than a broken
-// button. The version check also catches, generically, any detector that points
-// at a line the version does not live on.
-func pinSite(c *airom.Component, current string) (*airom.Occurrence, string) {
-	var best *airom.Occurrence
+// button. The check also catches, generically, any detector that points at a
+// line the version does not live on.
+func pinSites(c *airom.Component, current string) ([]Site, string) {
+	var sites []Site
 	var derived, unpinned string
 	for i := range c.Evidence.Occurrences {
 		o := &c.Evidence.Occurrences[i]
@@ -212,13 +230,22 @@ func pinSite(c *airom.Component, current string) (*airom.Occurrence, string) {
 			}
 			continue
 		}
-		if best == nil || o.Confidence > best.Confidence {
-			best = o
-		}
+		sites = append(sites, Site{File: o.Location.Path, Line: o.Location.Line, Snippet: o.Snippet})
 	}
+
+	// Deterministic order (P7): the report and the table list the same sites in
+	// the same sequence on every run, whatever order detection happened to
+	// produce.
+	sort.SliceStable(sites, func(i, j int) bool {
+		if sites[i].File != sites[j].File {
+			return sites[i].File < sites[j].File
+		}
+		return sites[i].Line < sites[j].Line
+	})
+
 	switch {
-	case best != nil:
-		return best, ""
+	case len(sites) > 0:
+		return sites, ""
 	case unpinned != "":
 		return nil, unpinned
 	case derived != "":
@@ -416,9 +443,32 @@ func (t Target) String() string {
 	if t.Major {
 		major = " [major bump]"
 	}
-	return fmt.Sprintf("%s %s -> %s%s (%d advisor%s, %s) at %s:%d",
+	return fmt.Sprintf("%s %s -> %s%s (%d advisor%s, %s) at %s",
 		t.Package, t.Current, t.Fixed, major, len(t.Vulns), plural(len(t.Vulns)),
-		strings.ToUpper(string(t.Severity)), path.Clean(t.File), t.Line)
+		strings.ToUpper(string(t.Severity)), t.Where())
+}
+
+// Where names the sites a fix would touch: the first, plus a count when there
+// are more. A package pinned in four manifests has to say so — "at
+// api/requirements.txt:1" alone would describe a quarter of the work as the
+// whole of it.
+func (t Target) Where() string {
+	switch len(t.Sites) {
+	case 0:
+		return "no pin site"
+	case 1:
+		return path.Clean(t.Sites[0].File) + fmt.Sprintf(":%d", t.Sites[0].Line)
+	default:
+		return fmt.Sprintf("%s:%d and %d more manifest%s",
+			path.Clean(t.Sites[0].File), t.Sites[0].Line, len(t.Sites)-1, plural2(len(t.Sites)-1))
+	}
+}
+
+func plural2(n int) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 func plural(n int) string {

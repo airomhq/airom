@@ -28,7 +28,8 @@ type Result struct {
 	Stale []string // lockfiles under the scan root the bump has just outdated
 }
 
-// Apply rewrites the pin one Target points at, from Current to Fixed.
+// Apply rewrites EVERY pin the Target points at, from Current to Fixed, and
+// returns one Result per site that moved.
 //
 // The edit is proved before it is made: the file is re-read, the line is
 // re-checked for both the package name and the exact version the scan
@@ -37,26 +38,43 @@ type Result struct {
 // indentation — survives byte-for-byte, because a remediation that reformats a
 // manifest is a diff nobody can review.
 //
-// root is the scan root; t.File is interpreted relative to it and may not
-// escape it.
-func Apply(root string, t Target) (Result, error) {
+// Every site, not the best-scoring one: a package pinned in an api/ and a
+// worker/ manifest is vulnerable through both, and moving one leaves the
+// advisory live while the report says it is closed.
+//
+// Sites are applied independently and best-effort. A site whose line has moved
+// since the scan is refused on its own terms and named in the returned error,
+// while the sites that were still provable are left applied — rolling those
+// back would discard correct remediation to tidy up an unrelated edit, and
+// leaving them silently would hide that the package is only partly fixed. The
+// caller gets both halves and has to report both.
+//
+// root is the scan root; every site path is interpreted relative to it and may
+// not escape it.
+func Apply(root string, t Target) ([]Result, error) {
 	if !t.Fixable {
 		if t.Reason != "" {
-			return Result{}, fmt.Errorf("%s: %w (%s)", t.Package, ErrNotFixable, t.Reason)
+			return nil, fmt.Errorf("%s: %w (%s)", t.Package, ErrNotFixable, t.Reason)
 		}
-		return Result{}, fmt.Errorf("%s: %w", t.Package, ErrNotFixable)
+		return nil, fmt.Errorf("%s: %w", t.Package, ErrNotFixable)
 	}
 
-	before, after, err := edit(root, t.File, t.Line, t.Package, t.Current, t.Fixed)
-	if err != nil {
-		return Result{}, err
+	var out []Result
+	var errs []error
+	for _, site := range t.Sites {
+		before, after, err := edit(root, site.File, site.Line, t.Package, t.Current, t.Fixed)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		out = append(out, Result{
+			File: site.File, Line: site.Line, Package: t.Package,
+			From: t.Current, To: t.Fixed,
+			Before: before, After: after,
+			Stale: staleLocks(root, site.File),
+		})
 	}
-	return Result{
-		File: t.File, Line: t.Line, Package: t.Package,
-		From: t.Current, To: t.Fixed,
-		Before: before, After: after,
-		Stale: staleLocks(root, t.File),
-	}, nil
+	return out, errors.Join(errs...)
 }
 
 // Revert undoes one applied fix, putting the pin back exactly where it was.

@@ -30,7 +30,7 @@ var knownKeys = map[string]bool{
 	// global flags (flags.go)
 	"output": true, "format": true, "select": true, "rules": true,
 	"compliance": true, "cve": true, "no-cve": true, "no-eol": true,
-	"include-tests": true, "fix": true, "fix-all": true, "fix-verify": true,
+	"include-tests": true, "fix": true, "fix-all": true, "fix-verify": true, "fix-install": true,
 	"parallel": true, "io-budget": true, "max-file-size": true,
 	"min-confidence": true, "ignore": true, "cache-dir": true,
 	"no-cache": true, "cdx-version": true, "sarif-strict-kinds": true,
@@ -305,7 +305,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 	cveFlag := true // --cve defaults on; honored so an explicit false disables
 	var noCache, sarifStrict, offline, noCVE, noEOL, includeTests, stats, wide, quiet, noProgress, k8sAll, k8sParallelImages bool
 	var noCachedRules, insecureSkipSig, autoUpdateRules bool
-	var doFix, doFixAll, doFixVerify bool
+	var doFix, doFixAll, doFixVerify, doFixInstall bool
 	for key, dst := range map[string]*bool{
 		"no-cache":                &noCache,
 		"sarif-strict-kinds":      &sarifStrict,
@@ -317,6 +317,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		"fix":                     &doFix,
 		"fix-all":                 &doFixAll,
 		"fix-verify":              &doFixVerify,
+		"fix-install":             &doFixInstall,
 		"stats":                   &stats,
 		"wide":                    &wide,
 		"no-cached-rules":         &noCachedRules,
@@ -391,9 +392,10 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		// Remediation runs after the AIBOM is emitted; Config.Validate rejects
 		// the combinations (both flags, no CVE overlay, a non-filesystem scan)
 		// where it could not do what was asked.
-		Fix:       doFix,
-		FixAll:    doFixAll,
-		FixVerify: doFixVerify,
+		Fix:        doFix,
+		FixAll:     doFixAll,
+		FixVerify:  doFixVerify,
+		FixInstall: doFixInstall,
 
 		Policy:   policy,
 		ExitCode: exitCode,

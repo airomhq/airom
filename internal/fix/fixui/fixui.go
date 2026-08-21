@@ -64,9 +64,18 @@ func Run(root string, targets []fix.Target) (Outcome, error) {
 // rowState is the per-package outcome of this session: untouched, fixed, or
 // refused with a reason.
 type rowState struct {
-	applied bool
-	result  fix.Result
+	applied bool // every site of this package moved
+	partial bool // some sites moved and some refused
+	results []fix.Result
 	err     string
+}
+
+// site returns the first applied result, for the one-line summaries.
+func (r rowState) site() (fix.Result, bool) {
+	if len(r.results) == 0 {
+		return fix.Result{}, false
+	}
+	return r.results[0], true
 }
 
 // row is one visible line of the table: a (package, advisory) pair. Packages
@@ -298,6 +307,11 @@ func (m *model) actionLabel(target int) string {
 	switch st := m.state[target]; {
 	case st.applied:
 		return "✔ fixed"
+	case st.partial:
+		// Some manifests moved and some did not, so the package is still
+		// pinned vulnerable somewhere. Saying "fixed" here would be the exact
+		// over-claim the multi-site handling exists to prevent.
+		return "! partial"
 	case st.err != "":
 		return "! failed"
 	case !m.targets[target].Fixable:
@@ -363,10 +377,14 @@ func (m *model) applyCursor() {
 		return
 	}
 	st := m.state[t]
-	if st.applied {
-		m.setStatus(statusGood, fmt.Sprintf("%s → %s in %s:%d",
-			m.targets[t].Package, m.targets[t].Fixed, st.result.File, st.result.Line))
-	} else {
+	switch {
+	case st.applied:
+		m.setStatus(statusGood, fmt.Sprintf("%s → %s in %s",
+			m.targets[t].Package, m.targets[t].Fixed, m.targets[t].Where()))
+	case st.partial:
+		m.setStatus(statusBad, fmt.Sprintf("%s: %d of %d manifests updated — %s",
+			m.targets[t].Package, len(st.results), len(m.targets[t].Sites), st.err))
+	default:
 		m.setStatus(statusBad, st.err)
 	}
 }
@@ -420,15 +438,21 @@ func (m *model) apply(i int) bool {
 		m.setStatus(statusBad, m.targets[i].Package+": "+reason)
 		return false
 	}
-	res, err := fix.Apply(m.root, m.targets[i])
-	if err != nil {
-		m.state[i].err = err.Error()
+	results, err := fix.Apply(m.root, m.targets[i])
+	m.outcome.Applied = append(m.outcome.Applied, results...)
+	switch {
+	case err != nil && len(results) == 0:
+		m.state[i] = rowState{err: err.Error()}
 		m.outcome.Failed++
-		return true
+	case err != nil:
+		// Partially applied: the package is still pinned vulnerable somewhere,
+		// and both halves have to be visible.
+		m.state[i] = rowState{partial: true, results: results, err: err.Error()}
+		m.outcome.Failed++
+	default:
+		m.state[i] = rowState{applied: true, results: results}
+		m.outcome.Fixed = append(m.outcome.Fixed, m.targets[i].Package)
 	}
-	m.state[i] = rowState{applied: true, result: res}
-	m.outcome.Applied = append(m.outcome.Applied, res)
-	m.outcome.Fixed = append(m.outcome.Fixed, m.targets[i].Package)
 	return true
 }
 
@@ -663,14 +687,26 @@ func (m *model) detail(w int) string {
 	}
 
 	var edit string
-	switch st := m.state[r.target]; {
-	case st.applied:
-		edit = fmt.Sprintf("%s:%d  %s", st.result.File, st.result.Line, st.result.After)
+	st := m.state[r.target]
+	switch {
+	case st.applied || st.partial:
+		if res, ok := st.site(); ok {
+			edit = fmt.Sprintf("%s:%d  %s", res.File, res.Line, res.After)
+			if n := len(t.Sites) - len(st.results); n > 0 {
+				edit += fmt.Sprintf("   (%d manifest(s) not updated)", n)
+			} else if len(st.results) > 1 {
+				edit += fmt.Sprintf("   (and %d more)", len(st.results)-1)
+			}
+		}
 	case !t.Fixable:
 		edit = "no manifest pin to rewrite: " + t.Reason
 	default:
+		first := t.Sites[0]
 		edit = fmt.Sprintf("%s:%d  %s   →   %s %s",
-			t.File, t.Line, strings.TrimSpace(t.Snippet), t.Package, t.Fixed)
+			first.File, first.Line, strings.TrimSpace(first.Snippet), t.Package, t.Fixed)
+		if n := len(t.Sites) - 1; n > 0 {
+			edit += fmt.Sprintf("   (+%d more manifest(s))", n)
+		}
 		if t.Major {
 			edit += "   [major bump — review for breaking changes]"
 		}
@@ -786,6 +822,9 @@ func Report(targets []fix.Target) string {
 	for _, t := range ts {
 		if t.Fixable {
 			fmt.Fprintf(&b, "  %s\n", t.String())
+			for _, site := range t.Sites[1:] {
+				fmt.Fprintf(&b, "      also %s\n", site)
+			}
 		} else {
 			fmt.Fprintf(&b, "  %s %s: no automatic fix (%s)\n", t.Package, t.Current, t.Reason)
 		}

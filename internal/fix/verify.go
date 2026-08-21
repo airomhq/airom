@@ -1,12 +1,14 @@
 package fix
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -78,6 +80,20 @@ type checker struct {
 	// markers begin the part of the output worth showing. The first one that
 	// appears wins; when none do, the tail of the output is used.
 	markers []string
+	// touches names the resolver-owned files this tool rewrites EVEN IN DRY-RUN
+	// mode, relative to the manifest's directory. They are captured before the
+	// check and put back after it.
+	//
+	// This is not defensive tidiness; npm makes it mandatory. `npm install
+	// --dry-run` rewrites node_modules/.package-lock.json — its private record of
+	// what is installed — to the versions it WOULD have installed, while leaving
+	// the packages on disk untouched. Nothing npm offers avoids it: --no-save and
+	// --package-lock-only both do it too. The result is a project where `npm ls`
+	// reports the fixed version, `npm install` says "up to date", and the
+	// vulnerable release is still in node_modules. A check that leaves a project
+	// looking fixed when it is not is worse than no check.
+	touches []string
+
 	// inconclusive marks output that means the resolver never reached a verdict
 	// — it is too old to ask, or it refused for a reason about the machine
 	// rather than about the pins. Matching here turns a nonzero exit into a
@@ -125,6 +141,7 @@ var checkers = map[string]checker{
 		args: func(string) []string {
 			return []string{"npm", "install", "--dry-run", "--no-audit", "--no-fund"}
 		},
+		touches: []string{"package-lock.json", "node_modules/.package-lock.json"},
 		markers: []string{"Could not resolve dependency", "ERESOLVE", "npm error", "npm ERR!"},
 		inconclusive: []string{
 			"Unknown argument", "unknown option",
@@ -147,6 +164,9 @@ var checkers = map[string]checker{
 			// nonexistent version exits 1 without -e and 0 with it.
 			return []string{"go", "list", "-m", "all"}
 		},
+		// go list runs -mod=readonly by default and is not observed to write, but
+		// go.sum is the file it would touch if that ever changed.
+		touches:      []string{"go.sum"},
 		markers:      []string{"missing go.sum entry", "go: ", "error"},
 		inconclusive: []string{"unknown flag", "dial tcp", "connection refused"},
 	},
@@ -217,6 +237,10 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 		}
 		return res
 	}
+
+	// Whatever the dry run rewrites, put back. See checker.touches.
+	restore := preserve(dir, c.touches)
+	defer restore()
 
 	out, halted, err := run(ctx, dir, c.args(path.Base(manifest)), VerifyTimeout)
 	switch {
@@ -371,12 +395,63 @@ func Manifests(ts []Target) []string {
 	seen := map[string]bool{}
 	var out []string
 	for _, t := range ts {
-		if !t.Fixable || t.File == "" || seen[t.File] {
+		if !t.Fixable {
 			continue
 		}
-		seen[t.File] = true
-		out = append(out, t.File)
+		for _, site := range t.Sites {
+			if site.File == "" || seen[site.File] {
+				continue
+			}
+			seen[site.File] = true
+			out = append(out, site.File)
+		}
 	}
 	sort.Strings(out)
 	return out
+}
+
+// preserve captures the current contents of rels (relative to dir) and returns a
+// function that puts them back exactly as they were — including deleting a file
+// the command created, and recreating one it removed.
+//
+// It exists because "dry run" is a claim some package managers do not honor for
+// their own bookkeeping files, and internal/fix promises that verification
+// leaves the project alone. A promise that depends on another tool's good
+// behavior is not a promise; this makes it one AIROM keeps itself.
+func preserve(dir string, rels []string) func() {
+	type saved struct {
+		path    string
+		data    []byte
+		mode    os.FileMode
+		existed bool
+	}
+	var snaps []saved
+	for _, rel := range rels {
+		p := filepath.Join(dir, filepath.FromSlash(rel))
+		st, err := os.Stat(p)
+		if err != nil {
+			snaps = append(snaps, saved{path: p})
+			continue
+		}
+		data, err := os.ReadFile(p) // #nosec G304 -- a resolver-owned file inside the scanned project, named by the fixed checker table
+		if err != nil {
+			continue // unreadable: leave it entirely alone rather than half-restore it
+		}
+		snaps = append(snaps, saved{path: p, data: data, mode: st.Mode().Perm(), existed: true})
+	}
+
+	return func() {
+		for _, s := range snaps {
+			if !s.existed {
+				// The check created it. It was not there before, so it does not
+				// get to be there after.
+				_ = os.Remove(s.path)
+				continue
+			}
+			if cur, err := os.ReadFile(s.path); err == nil && bytes.Equal(cur, s.data) {
+				continue // untouched; do not rewrite it for nothing
+			}
+			_ = writeFileAtomic(s.path, s.data, s.mode)
+		}
+	}
 }

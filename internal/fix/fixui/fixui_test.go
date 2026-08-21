@@ -25,13 +25,13 @@ func demo() []fix.Target {
 		{
 			Package: "langchain", Ecosystem: "pypi", Current: "0.0.310", Fixed: "0.2.4",
 			Severity: airom.VulnCritical, Major: true, Fixable: true,
-			File: "requirements.txt", Line: 1, Snippet: "langchain==0.0.310",
+			Sites: []fix.Site{{File: "requirements.txt", Line: 1, Snippet: "langchain==0.0.310"}},
 			Vulns: []fix.Vuln{vuln("CVE-A", airom.VulnCritical), vuln("CVE-B", airom.VulnLow)},
 		},
 		{
 			Package: "transformers", Ecosystem: "pypi", Current: "4.30.0", Fixed: "4.53.0",
 			Severity: airom.VulnMedium, Fixable: true,
-			File: "requirements.txt", Line: 2, Snippet: "transformers==4.30.0",
+			Sites: []fix.Site{{File: "requirements.txt", Line: 2, Snippet: "transformers==4.30.0"}},
 			Vulns: []fix.Vuln{vuln("CVE-C", airom.VulnMedium)},
 		},
 		{

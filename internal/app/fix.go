@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/airomhq/airom/internal/fix"
 	"github.com/airomhq/airom/internal/fix/fixui"
@@ -50,7 +51,8 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 
 	if cfg.FixAll {
 		applied := applyAll(cfg.Target, targets)
-		return verifyFixes(ctx, cfg, applied, baseline)
+		installFixes(ctx, cfg, applied, verifyFixes(ctx, cfg, applied, baseline))
+		return nil
 	}
 
 	out, err := fixui.Run(cfg.Target, targets)
@@ -67,7 +69,8 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 		return fmt.Errorf("interactive fix: %w", err)
 	}
 	reportApplied(out.Applied, out.Failed)
-	return verifyFixes(ctx, cfg, out.Applied, baseline)
+	installFixes(ctx, cfg, out.Applied, verifyFixes(ctx, cfg, out.Applied, baseline))
+	return nil
 }
 
 // applyAll is the non-interactive path: fix everything fixable, then say
@@ -81,12 +84,21 @@ func applyAll(root string, targets []fix.Target) []fix.Result {
 			continue
 		}
 		res, err := fix.Apply(root, t)
+		applied = append(applied, res...)
 		if err != nil {
-			fmt.Fprintf(stderr, "airom fix: %s: %v\n", t.Package, err)
+			// Partial is not success. A package still pinned vulnerable in one
+			// manifest is still vulnerable, whatever the other manifests now say.
+			if len(res) > 0 {
+				fmt.Fprintf(stderr, "airom fix: %s: only %d of %d manifest(s) updated:\n",
+					t.Package, len(res), len(t.Sites))
+			} else {
+				fmt.Fprintf(stderr, "airom fix: %s:\n", t.Package)
+			}
+			for _, line := range strings.Split(err.Error(), "\n") {
+				fmt.Fprintf(stderr, "  %s\n", line)
+			}
 			failed++
-			continue
 		}
-		applied = append(applied, res)
 	}
 	reportApplied(applied, failed)
 
@@ -160,9 +172,9 @@ func reportApplied(applied []fix.Result, failed int) {
 // offered the revert, and everywhere else the pins stand and the clash is
 // printed, because rolling back somebody's tree without asking is its own
 // surprise.
-func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result, baseline []fix.VerifyResult) error {
+func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result, baseline []fix.VerifyResult) (conflicted bool) {
 	if !cfg.FixVerify || len(applied) == 0 {
-		return nil
+		return false
 	}
 	manifests := make([]string, 0, len(applied))
 	for _, r := range applied {
@@ -177,9 +189,76 @@ func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result, baselin
 	// Only a conflict the fixes CAUSED is worth undoing. Reverting a
 	// pre-existing one re-opens advisories without repairing anything.
 	if !fix.Introduced(attr) {
-		return nil
+		return false
 	}
-	return offerRevert(cfg, applied)
+	offerRevert(cfg, applied)
+	return true
+}
+
+// installFixes runs each edited manifest's package manager for real, so the
+// rewritten pin becomes the version that is actually resolved and installed.
+//
+// A manifest edit on its own is a statement of intent. The lockfile beside it
+// still pins the vulnerable release, and the environment still has it installed
+// — so `npm ci`, or a fresh container build, or simply the next developer,
+// reinstalls precisely the advisory the fix was supposed to close. This is the
+// step that makes the edit true.
+//
+// It is skipped when verification found a conflict the fixes introduced: the
+// resolver has already said this will not resolve, and starting a real install
+// against it spends minutes to arrive at the same answer, having half-written a
+// lockfile on the way.
+func installFixes(ctx context.Context, cfg *Config, applied []fix.Result, conflicted bool) {
+	if !cfg.FixInstall || len(applied) == 0 {
+		return
+	}
+	if conflicted {
+		fmt.Fprintln(stderr, "\nairom fix: skipping the install — the resolver already said these pins do not resolve.")
+		return
+	}
+
+	manifests := make([]string, 0, len(applied))
+	for _, r := range applied {
+		manifests = append(manifests, r.File)
+	}
+
+	fmt.Fprintf(stderr, "\nairom fix: installing the new versions (this writes lockfiles and installs packages)\n")
+	results := fix.Install(ctx, cfg.Target, manifests, stderr)
+	reportInstall(results)
+}
+
+// reportInstall prints one line per manifest, naming what each tool wrote and
+// repeating the tail of anything that failed.
+func reportInstall(results []fix.InstallResult) {
+	fmt.Fprintln(stderr)
+	for _, r := range results {
+		switch r.Status {
+		case fix.InstallOK:
+			wrote := ""
+			if len(r.Wrote) > 0 {
+				wrote = " — updated " + strings.Join(r.Wrote, ", ")
+			}
+			fmt.Fprintf(stderr, "  ✔ %s — %s installed the new versions%s\n", r.Manifest, r.Tool, wrote)
+		case fix.InstallDirty:
+			fmt.Fprintf(stderr, "  ! %s — %s\n", r.Manifest, r.Reason)
+			for _, l := range r.Detail {
+				fmt.Fprintf(stderr, "      %s\n", l)
+			}
+		case fix.InstallSkipped:
+			fmt.Fprintf(stderr, "  · %s — not installed: %s\n", r.Manifest, r.Reason)
+		case fix.InstallFailed:
+			fmt.Fprintf(stderr, "  ✖ %s — %s\n", r.Manifest, r.Reason)
+			for _, l := range r.Detail {
+				fmt.Fprintf(stderr, "      %s\n", l)
+			}
+		}
+	}
+	if fix.InstallFailedAny(results) {
+		// The manifests still carry the fixed pins; only the install did not
+		// complete. Say which half is done, so nobody re-runs the whole thing
+		// looking for the edit.
+		fmt.Fprintln(stderr, "\nThe manifest pins are fixed; the install did not finish. Re-run the package manager yourself once the error above is resolved.")
+	}
 }
 
 // baselineVerify records whether the manifests a plan would edit resolve BEFORE
@@ -240,7 +319,7 @@ func reportVerify(results []fix.VerifyResult, attr map[string]fix.Attribution) {
 // Without a terminal the edits stand and the report says how to undo them by
 // hand, because an unattended run is exactly where a silent rollback would go
 // unnoticed.
-func offerRevert(cfg *Config, applied []fix.Result) error {
+func offerRevert(cfg *Config, applied []fix.Result) {
 	prompt := fmt.Sprintf("\nRevert all %d fix(es)? This re-opens the advisories they closed. [y/N] ", len(applied))
 	yes, asked := fixui.Confirm(prompt)
 	if !asked {
@@ -251,11 +330,11 @@ func offerRevert(cfg *Config, applied []fix.Result) error {
 		for _, r := range applied {
 			fmt.Fprintf(stderr, "  %s:%d  %s  →  %s\n", r.File, r.Line, r.After, r.Before)
 		}
-		return nil
+		return
 	}
 	if !yes {
 		fmt.Fprintln(stderr, "Keeping the fixes. Resolve the conflict, then re-run the scan.")
-		return nil
+		return
 	}
 
 	var failed int
@@ -270,5 +349,4 @@ func offerRevert(cfg *Config, applied []fix.Result) error {
 	if failed > 0 {
 		fmt.Fprintf(stderr, "%d pin(s) could not be reverted; check them by hand.\n", failed)
 	}
-	return nil
 }

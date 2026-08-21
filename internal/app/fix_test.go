@@ -272,9 +272,7 @@ func TestConflictWithNoTerminalKeepsThePinsAndPrintsTheUndo(t *testing.T) {
 	}}
 
 	out := captureStderr(t, func() {
-		if err := offerRevert(&Config{Source: SourceFS, Target: root}, applied); err != nil {
-			t.Fatal(err)
-		}
+		offerRevert(&Config{Source: SourceFS, Target: root}, applied)
 	})
 	// Whether a /dev/tty exists here decides which branch runs; both must leave
 	// the pins in place unless a human said otherwise.
