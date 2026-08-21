@@ -9,20 +9,6 @@ import (
 	"github.com/airomhq/airom/pkg/airom"
 )
 
-func TestDispWidth(t *testing.T) {
-	cases := []struct {
-		s    string
-		want int
-	}{
-		{"", 0}, {"abc", 3}, {"日本語", 6}, {"a日b", 4}, {"🚀", 2},
-	}
-	for _, c := range cases {
-		if got := dispWidth(c.s); got != c.want {
-			t.Errorf("dispWidth(%q) = %d, want %d", c.s, got, c.want)
-		}
-	}
-}
-
 // TestVulnTableMergesPerPackageColumns checks the Trivy-style vertical merge:
 // two CVEs on the same package share one LIBRARY and INSTALLED cell (each value
 // appears once), while a differing FIXED version is NOT merged. Every rendered

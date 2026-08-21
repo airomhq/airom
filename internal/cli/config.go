@@ -30,8 +30,8 @@ var knownKeys = map[string]bool{
 	// global flags (flags.go)
 	"output": true, "format": true, "select": true, "rules": true,
 	"compliance": true, "cve": true, "no-cve": true, "no-eol": true,
-	"include-tests": true,
-	"parallel":      true, "io-budget": true, "max-file-size": true,
+	"include-tests": true, "fix": true, "fix-all": true, "fix-verify": true,
+	"parallel": true, "io-budget": true, "max-file-size": true,
 	"min-confidence": true, "ignore": true, "cache-dir": true,
 	"no-cache": true, "cdx-version": true, "sarif-strict-kinds": true,
 	"exit-code": true, "fail-on": true, "offline": true, "pprof": true,
@@ -305,6 +305,7 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 	cveFlag := true // --cve defaults on; honored so an explicit false disables
 	var noCache, sarifStrict, offline, noCVE, noEOL, includeTests, stats, wide, quiet, noProgress, k8sAll, k8sParallelImages bool
 	var noCachedRules, insecureSkipSig, autoUpdateRules bool
+	var doFix, doFixAll, doFixVerify bool
 	for key, dst := range map[string]*bool{
 		"no-cache":                &noCache,
 		"sarif-strict-kinds":      &sarifStrict,
@@ -313,6 +314,9 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		"no-cve":                  &noCVE,
 		"no-eol":                  &noEOL,
 		"include-tests":           &includeTests,
+		"fix":                     &doFix,
+		"fix-all":                 &doFixAll,
+		"fix-verify":              &doFixVerify,
 		"stats":                   &stats,
 		"wide":                    &wide,
 		"no-cached-rules":         &noCachedRules,
@@ -383,6 +387,13 @@ func buildConfig(flags *pflag.FlagSet, workdir string, src app.SourceKind, targe
 		AutoUpdateRules:       autoUpdateRules,
 		RulesSource:           k.String("rules-source"),
 		InsecureSkipSignature: insecureSkipSig,
+
+		// Remediation runs after the AIBOM is emitted; Config.Validate rejects
+		// the combinations (both flags, no CVE overlay, a non-filesystem scan)
+		// where it could not do what was asked.
+		Fix:       doFix,
+		FixAll:    doFixAll,
+		FixVerify: doFixVerify,
 
 		Policy:   policy,
 		ExitCode: exitCode,

@@ -52,6 +52,7 @@ airom image --input app.tar               # a container image archive
 airom k8s --manifests ./deploy            # Kubernetes workloads
 
 airom scan . -o cyclonedx=bom.json -o spdx=bom.spdx.json  # many formats, one pass
+airom scan . --fix --fix-verify                          # fix the CVEs it found, one click each
 airom scan . --exit-code 1 --fail-on "risk:high"         # gate a build
 airom diff base.json head.json                           # what a PR changed
 ```
@@ -95,6 +96,7 @@ no claim rather than a quiet "supported".
 |---|---|
 | [Risk detection](docs/risks.md) | Load-time code-execution surfaces: pickle imports, Keras Lambda layers, GGUF template gadgets, and unsafe `torch.load`. Emitted as CycloneDX `vulnerabilities[]` and SARIF. Offline. |
 | [CVE overlay](docs/cve.md) | Your AI dependencies against OSV.dev, with real CVSS scores and a fail-closed gate. On by default. |
+| [One-click fixes](docs/cve.md#fixing-what-it-finds) | `--fix` opens the advisory table with a **Fix** action per package and rewrites the manifest pin you click. Declared manifests only — a lockfile is reported, never forged. `--fix-verify` then dry-runs the ecosystem's resolver, so a bump that clears eight CVEs and leaves a manifest nothing can install is caught here, not in your next build. |
 | [Model lifecycle](docs/eol.md) | Hosted models matched against a dated, sourced catalog of provider retirement announcements. |
 | [Compliance mapping](docs/compliance.md) | NIST AI RMF and OWASP Agentic controls as CycloneDX attestations, marked met, gap, or manual, with no invented scores. |
 | [VEX export](docs/cli.md) | An OpenVEX document over the CVE overlay, for consumers that ingest VEX. Only ever asserts `affected`, because a scanner has no basis for an all-clear. |

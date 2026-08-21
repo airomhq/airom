@@ -169,6 +169,26 @@ type Config struct {
 	// Ignored under Offline, NoCachedRules, or a CI environment.
 	AutoUpdateRules bool
 
+	// Remediation (docs/cve.md "Fixing what it finds"). Fix opens the
+	// interactive advisory table after the scan; FixAll applies every fixable
+	// pin without one. Both rewrite manifests on disk, which is why they are
+	// opt-in flags rather than a default: a scanner that edits your tree
+	// unasked is not a scanner.
+	//
+	// They are mutually exclusive (Validate enforces it) and require the CVE
+	// overlay — with no advisories there is nothing to fix — and a filesystem
+	// scan, because a container layer and a shallow clone are not the tree the
+	// user would commit.
+	Fix    bool
+	FixAll bool
+
+	// FixVerify runs each edited manifest through its ecosystem's resolver in
+	// dry-run mode after the fixes land, so a bump that clears eight CVEs and
+	// leaves a manifest nothing can install is caught here rather than in
+	// somebody's next build. Needs the network and the toolchain; every failure
+	// to run degrades to "not checked", never to a false all-clear.
+	FixVerify bool
+
 	// CI policy (exit-code contract in docs/cli.md). Nil Policy = no gate:
 	// scan success always exits 0 regardless of findings.
 	Policy   *Policy
@@ -308,6 +328,9 @@ func (c *Config) Validate() error {
 	if c.Policy.ReferencesEOL() && c.NoEOL {
 		return fmt.Errorf("--fail-on references eol but the model lifecycle overlay is disabled (remove --no-eol)")
 	}
+	if err := c.validateFix(); err != nil {
+		return err
+	}
 	stdout := 0
 	for _, o := range c.Outputs {
 		if _, err := ParseFormat(string(o.Format)); err != nil {
@@ -322,6 +345,40 @@ func (c *Config) Validate() error {
 	}
 	if c.ExitCode < 0 || c.ExitCode > 255 {
 		return fmt.Errorf("--exit-code must be in [0,255], got %d", c.ExitCode)
+	}
+	return nil
+}
+
+// validateFix rejects the flag combinations where a fix could not do what the
+// user is asking for. Each one fails loudly instead of running a scan and then
+// quietly remediating nothing.
+func (c *Config) validateFix() error {
+	if !c.Fix && !c.FixAll {
+		if c.FixVerify {
+			return fmt.Errorf("--fix-verify verifies the fixes --fix or --fix-all made; neither was given")
+		}
+		return nil
+	}
+	if c.Fix && c.FixAll {
+		return fmt.Errorf("--fix and --fix-all are mutually exclusive: --fix opens the table, --fix-all skips it")
+	}
+	flag := "--fix"
+	if c.FixAll {
+		flag = "--fix-all"
+	}
+	// Offline is checked BEFORE the overlay: ApplyDefaults already forced CVE
+	// off under --offline, so the overlay message would otherwise fire first and
+	// this specific one could never be reached — telling a user who asked for
+	// --fix-verify --offline about the CVE overlay instead of about the resolver
+	// they just asked to run without a network.
+	if c.FixVerify && c.Offline {
+		return fmt.Errorf("--fix-verify runs a dependency resolver, which needs the network (drop --offline)")
+	}
+	if !c.CVE {
+		return fmt.Errorf("%s needs the CVE overlay to have something to fix (remove --no-cve, or drop --offline)", flag)
+	}
+	if c.Source != SourceFS {
+		return fmt.Errorf("%s rewrites manifests in a working tree, so it only applies to a filesystem scan (got a %s scan)", flag, c.Source)
 	}
 	return nil
 }

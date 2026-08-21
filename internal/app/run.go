@@ -108,6 +108,9 @@ func runFS(ctx context.Context, cfg *Config) error {
 	if err := emit(ctx, inv, cfg); err != nil {
 		return err
 	}
+	if err := runFixes(ctx, inv, cfg); err != nil {
+		return err
+	}
 	return gate(inv, cfg)
 }
 

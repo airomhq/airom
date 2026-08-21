@@ -35,6 +35,13 @@ func addGlobalFlags(fs *pflag.FlagSet) {
 	// The EOL overlay reads an embedded catalog, so unlike --cve it needs no
 	// network and stays on under --offline.
 	fs.Bool("no-eol", false, "disable the hosted-model end-of-life overlay (it is on by default and works offline)")
+	// Remediation. --fix is interactive by design: it edits files in the user's
+	// working tree, and the one place a scanner must not act on its own guess is
+	// the place where it writes. --fix-all is the same plan applied without the
+	// table, for a terminal that cannot host one.
+	fs.Bool("fix", false, "after the scan, open an interactive advisory table and rewrite the manifest pins you choose (needs a terminal)")
+	fs.Bool("fix-all", false, "rewrite every vulnerable manifest pin to its fixed version without prompting (implies no table)")
+	fs.Bool("fix-verify", false, "after fixing, run the ecosystem's resolver in dry-run mode to confirm the new pins still resolve (installs nothing)")
 	fs.Bool("include-tests", false, "count AI found only in test scaffolding (testdata/, *_test.go, tests/, spec/) — hidden by default")
 	fs.Int("parallel", 0, "worker count (default: GOMAXPROCS)")
 	fs.String("io-budget", formatSize(app.DefaultIOBudget), "byte-weighted I/O semaphore budget (k/m/g suffixes)")
