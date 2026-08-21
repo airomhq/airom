@@ -321,7 +321,7 @@ func TestReportIsOrderedBySeverity(t *testing.T) {
 	if crit < 0 || high < 0 || med < 0 {
 		t.Fatalf("report is missing a target:\n%s", out)
 	}
-	if !(crit < high && high < med) {
+	if crit > high || high > med {
 		t.Errorf("report is not most-severe-first:\n%s", out)
 	}
 }

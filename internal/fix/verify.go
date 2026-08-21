@@ -94,8 +94,10 @@ var checkers = map[string]checker{
 			// install" verdict and swallows the "The conflict is caused by:"
 			// block naming which requirement clashes with which — the only part
 			// of the output worth showing a user.
-			return []string{"python3", "-m", "pip", "install", "--dry-run",
-				"--report", os.DevNull, "--no-input", "-r", m}
+			return []string{
+				"python3", "-m", "pip", "install", "--dry-run",
+				"--report", os.DevNull, "--no-input", "-r", m,
+			}
 		},
 		markers: []string{"The conflict is caused by:", "ResolutionImpossible", "ERROR:"},
 		inconclusive: []string{
@@ -284,4 +286,78 @@ func excerpt(out string, markers []string) []string {
 		}
 	}
 	return kept
+}
+
+// Attribution says whether a fix CAUSED a manifest to stop resolving, or merely
+// inherited a manifest that already did not.
+type Attribution string
+
+// The three answers. Unknown is not a synonym for either: no baseline verdict
+// means no attribution, and saying so beats picking the convenient one.
+const (
+	AttrIntroduced  Attribution = "introduced"  // resolved before the fix, conflicts after
+	AttrPreexisting Attribution = "preexisting" // did not resolve before the fix either
+	AttrUnknown     Attribution = "unknown"     // the before-check reached no verdict
+)
+
+// Attribute pairs a before-fix and after-fix verification by manifest and says,
+// for each conflicting manifest, whether the fix is responsible.
+//
+// Without this a conflict is unattributable, and an unattributable conflict is
+// dangerous in one specific way: it drives the offer to revert. A manifest that
+// already did not resolve — a go.sum that was stale before anyone touched it, a
+// peer-dependency clash the project has been carrying for months — would have
+// its fixes rolled back, re-opening real advisories to "solve" a problem the fix
+// did not create and the revert does not fix.
+//
+// Manifests with no conflict after the fix are absent from the result: there is
+// nothing to attribute.
+func Attribute(before, after []VerifyResult) map[string]Attribution {
+	prior := make(map[string]VerifyStatus, len(before))
+	for _, b := range before {
+		prior[b.Manifest] = b.Status
+	}
+	out := map[string]Attribution{}
+	for _, a := range after {
+		if a.Status != VerifyConflict {
+			continue
+		}
+		switch prior[a.Manifest] {
+		case VerifyOK:
+			out[a.Manifest] = AttrIntroduced
+		case VerifyConflict:
+			out[a.Manifest] = AttrPreexisting
+		default: // skipped, errored, or never checked
+			out[a.Manifest] = AttrUnknown
+		}
+	}
+	return out
+}
+
+// Introduced reports whether any conflict is one the fixes caused — the only
+// case where undoing them is the remedy.
+func Introduced(attr map[string]Attribution) bool {
+	for _, a := range attr {
+		if a == AttrIntroduced {
+			return true
+		}
+	}
+	return false
+}
+
+// Manifests lists the distinct manifests a set of targets would edit, for the
+// before-fix baseline. Only fixable targets: nothing else will be touched, and
+// checking a manifest no fix will reach spends a resolver run on nothing.
+func Manifests(ts []Target) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, t := range ts {
+		if !t.Fixable || t.File == "" || seen[t.File] {
+			continue
+		}
+		seen[t.File] = true
+		out = append(out, t.File)
+	}
+	sort.Strings(out)
+	return out
 }

@@ -243,7 +243,7 @@ func replaceVersion(line, old, next string) (string, bool) {
 }
 
 // indexToken returns the offset of the first occurrence of tok in s that stands
-// as a complete version token — neither neighbour continues it. Returns -1 when
+// as a complete version token — neither neighbor continues it. Returns -1 when
 // there is none.
 func indexToken(s, tok string) int {
 	for off := 0; ; {

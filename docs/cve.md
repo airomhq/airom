@@ -164,10 +164,31 @@ and only the ecosystem's resolver can answer it.
 | `go.mod` | `go list -m all` | catches a version that does not exist and a `go.sum` the bump invalidated. Deliberately without `-e`, which would report those errors in the output and exit 0 anyway |
 | everything else | — | reported as **not checked**, with the reason. `pyproject.toml`, `Cargo.toml`, and `build.gradle` resolve by writing a lockfile, and a check that mutates your tree is not a check |
 
-**On a conflict**, the pins are **kept**, never silently rolled back. On a
-terminal you are offered the revert (which restores every edited line
-byte-for-byte, and says out loud that it re-opens the advisories); in CI the
-edits stand and the report prints the reverse edits so you can undo them.
+**A conflict is attributed before it is acted on.** The same check also runs
+*before* anything is edited, so AIROM can tell a clash the fix caused from one
+the manifest already had:
+
+```console
+airom fix: checking how these manifests resolve before any change (dry run)
+  ! requirements.txt does not resolve as it stands, before any fix
+...
+  ! requirements.txt — pip cannot resolve it, and could not before the fix either:
+      ERROR: No matching distribution found for some-broken-pin==1.0.0
+      the fix did not cause this; reverting it would re-open the advisories
+      without repairing the clash
+```
+
+A stale `go.sum`, a peer clash a project has carried for months, a typo'd pin —
+none of them are the fix's doing, and rolling real remediation back to "solve"
+one would re-open live advisories while repairing nothing. So only a conflict
+the fix **introduced** offers the revert. With no baseline verdict the conflict
+is reported as *unknown*, not as innocent, and still offers it.
+
+**On a conflict the fix introduced**, the pins are **kept**, never silently
+rolled back. On a terminal you are offered the revert (which restores every
+edited line byte-for-byte, and says out loud that it re-opens the advisories);
+in CI the edits stand and the report prints the reverse edits so you can undo
+them.
 
 **It degrades, it never fabricates.** No toolchain, an old tool that lacks a
 dry-run, a resolver that times out (3 min), or a refusal about the *machine*
@@ -177,8 +198,8 @@ saying the pins clash is reported as a conflict, because "pip is not installed"
 must never read as "these pins are fine", and it must never read as "these pins
 are broken" either.
 
-It needs the network and the toolchain, so it is **opt-in** rather than part of
-`--fix`.
+It needs the network and the toolchain — and runs the resolver twice, once for
+the baseline — so it is **opt-in** rather than part of `--fix`.
 
 **Ordering.** Fixes run *after* the AIBOM is emitted and the emitted document
 describes the tree as the scan found it — a bill of materials for a state the

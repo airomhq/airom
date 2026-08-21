@@ -273,3 +273,53 @@ func TestGradleStaysFixable(t *testing.T) {
 		t.Fatalf("Plan = %+v, want the gradle coordinate to stay fixable", got)
 	}
 }
+
+func TestSummarize(t *testing.T) {
+	got := Summarize([]Target{
+		{Fixable: true, Vulns: make([]Vuln, 3)},
+		{Fixable: true, Vulns: make([]Vuln, 1)},
+		{Fixable: false, Vulns: make([]Vuln, 2)},
+	})
+	want := Summary{Fixable: 2, Unfixable: 1, Vulns: 6}
+	if got != want {
+		t.Errorf("Summarize = %+v, want %+v", got, want)
+	}
+	if zero := Summarize(nil); zero != (Summary{}) {
+		t.Errorf("Summarize(nil) = %+v, want the zero Summary", zero)
+	}
+}
+
+// TestTargetString is the line a --fix-all report and the no-terminal fallback
+// print, so its shape is user-facing: the versions, the advisory count, the
+// severity, the site, and the major-bump warning when there is one.
+func TestTargetString(t *testing.T) {
+	base := Target{
+		Package: "langchain", Current: "0.0.310", Fixed: "0.2.4",
+		Severity: airom.VulnCritical, File: "./requirements.txt", Line: 1,
+		Vulns: make([]Vuln, 12),
+	}
+	got := base.String()
+	for _, want := range []string{
+		"langchain 0.0.310 -> 0.2.4", "12 advisories", "CRITICAL", "requirements.txt:1",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("String() = %q, missing %q", got, want)
+		}
+	}
+	if strings.Contains(got, "major") {
+		t.Errorf("String() = %q, claimed a major bump on a Target without one", got)
+	}
+
+	major := base
+	major.Major = true
+	if !strings.Contains(major.String(), "[major bump]") {
+		t.Errorf("String() = %q, want the major-bump marker", major.String())
+	}
+
+	// One advisory is singular — the report reads as prose, not as a template.
+	one := base
+	one.Vulns = make([]Vuln, 1)
+	if !strings.Contains(one.String(), "1 advisory") || strings.Contains(one.String(), "advisories") {
+		t.Errorf("String() = %q, want the singular form", one.String())
+	}
+}

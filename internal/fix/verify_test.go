@@ -181,3 +181,85 @@ func TestCancellationIsNotAConflict(t *testing.T) {
 		t.Error("Conflicted fired on an interrupted check")
 	}
 }
+
+// TestAttributeSeparatesCauseFromInheritance. An unattributable conflict is
+// dangerous in one specific way: it drives the offer to revert. A manifest that
+// already did not resolve — a go.sum stale before anyone touched it, a peer
+// clash the project has carried for months — would have real remediation rolled
+// back to "solve" a problem the fix did not create and the revert does not fix.
+func TestAttributeSeparatesCauseFromInheritance(t *testing.T) {
+	before := []VerifyResult{
+		{Manifest: "a.txt", Status: VerifyOK},
+		{Manifest: "b.txt", Status: VerifyConflict},
+		{Manifest: "c.txt", Status: VerifySkipped},
+		{Manifest: "d.txt", Status: VerifyOK},
+	}
+	after := []VerifyResult{
+		{Manifest: "a.txt", Status: VerifyConflict}, // the fix broke it
+		{Manifest: "b.txt", Status: VerifyConflict}, // was already broken
+		{Manifest: "c.txt", Status: VerifyConflict}, // no baseline verdict
+		{Manifest: "d.txt", Status: VerifyOK},       // fine throughout
+	}
+	got := Attribute(before, after)
+
+	want := map[string]Attribution{
+		"a.txt": AttrIntroduced, "b.txt": AttrPreexisting, "c.txt": AttrUnknown,
+	}
+	if len(got) != len(want) {
+		t.Fatalf("Attribute = %v, want %v", got, want)
+	}
+	for m, w := range want {
+		if got[m] != w {
+			t.Errorf("%s = %q, want %q", m, got[m], w)
+		}
+	}
+	if _, ok := got["d.txt"]; ok {
+		t.Error("a manifest with no conflict was attributed")
+	}
+	if !Introduced(got) {
+		t.Error("Introduced missed a conflict the fix caused")
+	}
+}
+
+// TestPreexistingConflictAloneDoesNotOfferRevert — the whole point of
+// attribution.
+func TestPreexistingConflictAloneDoesNotOfferRevert(t *testing.T) {
+	attr := Attribute(
+		[]VerifyResult{{Manifest: "a.txt", Status: VerifyConflict}},
+		[]VerifyResult{{Manifest: "a.txt", Status: VerifyConflict}},
+	)
+	if Introduced(attr) {
+		t.Error("a pre-existing conflict would have triggered the revert offer")
+	}
+}
+
+// TestNoBaselineIsNotAnAllClear: with no before-fix run, a conflict is unknown,
+// not innocent — and unknown still offers the revert, because the alternative is
+// leaving a tree the resolver just refused without saying anything can be done.
+func TestNoBaselineIsNotAnAllClear(t *testing.T) {
+	attr := Attribute(nil, []VerifyResult{{Manifest: "a.txt", Status: VerifyConflict}})
+	if attr["a.txt"] != AttrUnknown {
+		t.Errorf("attribution = %q, want %q", attr["a.txt"], AttrUnknown)
+	}
+}
+
+// TestManifestsSkipsWhatWillNotBeTouched — a baseline run on a manifest no fix
+// will reach spends a resolver invocation on nothing.
+func TestManifestsSkipsWhatWillNotBeTouched(t *testing.T) {
+	got := Manifests([]Target{
+		{Fixable: true, File: "requirements.txt"},
+		{Fixable: true, File: "requirements.txt"}, // same file, one check
+		{Fixable: false, File: "poetry.lock"},     // never edited
+		{Fixable: true, File: ""},                 // no site
+		{Fixable: true, File: "package.json"},
+	})
+	want := []string{"package.json", "requirements.txt"}
+	if len(got) != len(want) {
+		t.Fatalf("Manifests = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("Manifests = %v, want %v", got, want)
+		}
+	}
+}

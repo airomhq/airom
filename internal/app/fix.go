@@ -42,9 +42,15 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 		return nil
 	}
 
+	// The baseline is taken BEFORE anything is edited, so a conflict afterwards
+	// can be attributed. Without it a manifest that already did not resolve gets
+	// blamed on the fix, and the revert offer would roll back real remediation
+	// to "solve" a problem it did not cause.
+	baseline := baselineVerify(ctx, cfg, targets)
+
 	if cfg.FixAll {
 		applied := applyAll(cfg.Target, targets)
-		return verifyFixes(ctx, cfg, applied)
+		return verifyFixes(ctx, cfg, applied, baseline)
 	}
 
 	out, err := fixui.Run(cfg.Target, targets)
@@ -61,7 +67,7 @@ func runFixes(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 		return fmt.Errorf("interactive fix: %w", err)
 	}
 	reportApplied(out.Applied, out.Failed)
-	return verifyFixes(ctx, cfg, out.Applied)
+	return verifyFixes(ctx, cfg, out.Applied, baseline)
 }
 
 // applyAll is the non-interactive path: fix everything fixable, then say
@@ -154,7 +160,7 @@ func reportApplied(applied []fix.Result, failed int) {
 // offered the revert, and everywhere else the pins stand and the clash is
 // printed, because rolling back somebody's tree without asking is its own
 // surprise.
-func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result) error {
+func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result, baseline []fix.VerifyResult) error {
 	if !cfg.FixVerify || len(applied) == 0 {
 		return nil
 	}
@@ -165,17 +171,41 @@ func verifyFixes(ctx context.Context, cfg *Config, applied []fix.Result) error {
 
 	fmt.Fprintf(stderr, "\nairom fix: verifying the new pins resolve (dry run — nothing is installed)\n")
 	results := fix.Verify(ctx, cfg.Target, manifests)
-	reportVerify(results)
+	attr := fix.Attribute(baseline, results)
+	reportVerify(results, attr)
 
-	if !fix.Conflicted(results) {
+	// Only a conflict the fixes CAUSED is worth undoing. Reverting a
+	// pre-existing one re-opens advisories without repairing anything.
+	if !fix.Introduced(attr) {
 		return nil
 	}
 	return offerRevert(cfg, applied)
 }
 
+// baselineVerify records whether the manifests a plan would edit resolve BEFORE
+// any of them is edited. Returns nil when there is nothing to check, which
+// Attribute reads as "no verdict" rather than as "it was fine".
+func baselineVerify(ctx context.Context, cfg *Config, targets []fix.Target) []fix.VerifyResult {
+	if !cfg.FixVerify {
+		return nil
+	}
+	manifests := fix.Manifests(targets)
+	if len(manifests) == 0 {
+		return nil
+	}
+	fmt.Fprintf(stderr, "\nairom fix: checking how these manifests resolve before any change (dry run)\n")
+	results := fix.Verify(ctx, cfg.Target, manifests)
+	for _, r := range results {
+		if r.Status == fix.VerifyConflict {
+			fmt.Fprintf(stderr, "  ! %s does not resolve as it stands, before any fix\n", r.Manifest)
+		}
+	}
+	return results
+}
+
 // reportVerify prints one line per manifest, plus the resolver's own words for
-// any that refused.
-func reportVerify(results []fix.VerifyResult) {
+// any that refused — and, for a refusal, whether the fix is what caused it.
+func reportVerify(results []fix.VerifyResult, attr map[string]fix.Attribution) {
 	for _, r := range results {
 		switch r.Status {
 		case fix.VerifyOK:
@@ -188,9 +218,19 @@ func reportVerify(results []fix.VerifyResult) {
 		case fix.VerifyErrored:
 			fmt.Fprintf(stderr, "  · %s — check did not complete: %s\n", r.Manifest, r.Reason)
 		case fix.VerifyConflict:
-			fmt.Fprintf(stderr, "  ✖ %s — %s cannot resolve the new pins:\n", r.Manifest, r.Tool)
+			switch attr[r.Manifest] {
+			case fix.AttrPreexisting:
+				fmt.Fprintf(stderr, "  ! %s — %s cannot resolve it, and could not before the fix either:\n", r.Manifest, r.Tool)
+			case fix.AttrUnknown:
+				fmt.Fprintf(stderr, "  ✖ %s — %s cannot resolve the new pins (no before-fix verdict, so this may predate them):\n", r.Manifest, r.Tool)
+			default:
+				fmt.Fprintf(stderr, "  ✖ %s — %s resolved this before the fix and cannot now:\n", r.Manifest, r.Tool)
+			}
 			for _, l := range r.Detail {
 				fmt.Fprintf(stderr, "      %s\n", l)
+			}
+			if attr[r.Manifest] == fix.AttrPreexisting {
+				fmt.Fprintf(stderr, "      the fix did not cause this; reverting it would re-open the advisories without repairing the clash\n")
 			}
 		}
 	}

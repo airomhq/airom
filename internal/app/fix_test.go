@@ -239,10 +239,14 @@ func TestFixVerifyOfflineNamesTheRightFlag(t *testing.T) {
 func TestReportNamesThePackageFromTheResult(t *testing.T) {
 	out := captureStderr(t, func() {
 		reportApplied([]fix.Result{
-			{File: "requirements.txt", Line: 1, Package: "langchain", From: "0.0.310", To: "0.2.4",
-				Before: "langchain==0.0.310", After: "langchain==0.2.4"},
-			{File: "requirements.txt", Line: 4, Package: "transformers", From: "4.30.0", To: "4.53.0",
-				Before: "transformers==4.30.0", After: "transformers==4.53.0"},
+			{
+				File: "requirements.txt", Line: 1, Package: "langchain", From: "0.0.310", To: "0.2.4",
+				Before: "langchain==0.0.310", After: "langchain==0.2.4",
+			},
+			{
+				File: "requirements.txt", Line: 4, Package: "transformers", From: "4.30.0", To: "4.53.0",
+				Before: "transformers==4.30.0", After: "transformers==4.53.0",
+			},
 		}, 0)
 	})
 	for _, want := range []string{"(langchain)", "(transformers)", "updated 2 pin"} {
