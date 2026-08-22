@@ -24,7 +24,7 @@ var stateFrameworkIDs = []string{
 // build10KScaleInventory creates a 10,000 component enterprise AI inventory
 // encompassing hosted LLMs, biometric models, embedding models, frameworks,
 // datasets, decision systems, AEDTs, and vector DBs.
-func build10KScaleInventory() (*airom.Inventory, map[string]int) {
+func build10KScaleInventory() *airom.Inventory {
 	counts := map[string]int{
 		"hosted-llm":       2500,
 		"local-model-file": 1500, // includes biometric/CV models
@@ -79,7 +79,7 @@ func build10KScaleInventory() (*airom.Inventory, map[string]int) {
 		Root:       "airom:app-root-000000",
 		Components: components,
 	}
-	return inv, counts
+	return inv
 }
 
 // computeExpectedGroundTruth computes the exact expected outcome for state controls
@@ -372,7 +372,7 @@ func computeExpectedGroundTruth(inv *airom.Inventory, fwID string, includeTests 
 // TestQA_MultiStateScale_10KComponents stress-tests multi-state compliance evaluation
 // with 10,000 components across all 6 state frameworks simultaneously.
 func TestQA_MultiStateScale_10KComponents(t *testing.T) {
-	inv, _ := build10KScaleInventory()
+	inv := build10KScaleInventory()
 
 	// Ensure runtime GC is clean prior to benchmark run
 	runtime.GC()
@@ -579,7 +579,7 @@ func TestQA_MultiStateConflictFuzzing(t *testing.T) {
 
 // BenchmarkMultiState_10KEvaluation measures throughput of evaluating 10,000 AI components across 6 state frameworks.
 func BenchmarkMultiState_10KEvaluation(b *testing.B) {
-	inv, _ := build10KScaleInventory()
+	inv := build10KScaleInventory()
 	b.ResetTimer()
 	b.ReportAllocs()
 

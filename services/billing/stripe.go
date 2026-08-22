@@ -87,18 +87,22 @@ func (s *Service) HandleStripeWebhook(payload []byte, sigHeader string) error {
 
 	switch event.Type {
 	case "customer.subscription.created", "customer.subscription.updated":
-		return s.processSubscriptionUpdated(event.Data.Object)
+		s.processSubscriptionUpdated(event.Data.Object)
+		return nil
 	case "customer.subscription.deleted":
-		return s.processSubscriptionDeleted(event.Data.Object)
+		s.processSubscriptionDeleted(event.Data.Object)
+		return nil
 	case "invoice.payment_failed":
-		return s.processPaymentFailed(event.Data.Object)
+		s.processPaymentFailed(event.Data.Object)
+		return nil
 	case "invoice.payment_succeeded":
-		return s.processPaymentSucceeded(event.Data.Object)
+		s.processPaymentSucceeded(event.Data.Object)
+		return nil
 	}
 	return nil
 }
 
-func (s *Service) processSubscriptionUpdated(obj map[string]interface{}) error {
+func (s *Service) processSubscriptionUpdated(obj map[string]interface{}) {
 	custID, _ := obj["customer"].(string)
 	subID, _ := obj["id"].(string)
 	statusStr, _ := obj["status"].(string)
@@ -117,7 +121,7 @@ func (s *Service) processSubscriptionUpdated(obj map[string]interface{}) error {
 		}
 	}
 	if orgID == "" {
-		return nil
+		return
 	}
 
 	acc, exists := s.accounts[orgID]
@@ -143,11 +147,9 @@ func (s *Service) processSubscriptionUpdated(obj map[string]interface{}) error {
 	if end, ok := obj["current_period_end"].(float64); ok {
 		acc.CurrentPeriodEnd = time.Unix(int64(end), 0)
 	}
-
-	return nil
 }
 
-func (s *Service) processSubscriptionDeleted(obj map[string]interface{}) error {
+func (s *Service) processSubscriptionDeleted(obj map[string]interface{}) {
 	custID, _ := obj["customer"].(string)
 	for _, acc := range s.accounts {
 		if acc.StripeCustomerID == custID {
@@ -157,10 +159,9 @@ func (s *Service) processSubscriptionDeleted(obj map[string]interface{}) error {
 			break
 		}
 	}
-	return nil
 }
 
-func (s *Service) processPaymentFailed(obj map[string]interface{}) error {
+func (s *Service) processPaymentFailed(obj map[string]interface{}) {
 	custID, _ := obj["customer"].(string)
 	for _, acc := range s.accounts {
 		if acc.StripeCustomerID == custID {
@@ -168,10 +169,9 @@ func (s *Service) processPaymentFailed(obj map[string]interface{}) error {
 			break
 		}
 	}
-	return nil
 }
 
-func (s *Service) processPaymentSucceeded(obj map[string]interface{}) error {
+func (s *Service) processPaymentSucceeded(obj map[string]interface{}) {
 	custID, _ := obj["customer"].(string)
 	for _, acc := range s.accounts {
 		if acc.StripeCustomerID == custID {
@@ -179,5 +179,4 @@ func (s *Service) processPaymentSucceeded(obj map[string]interface{}) error {
 			break
 		}
 	}
-	return nil
 }

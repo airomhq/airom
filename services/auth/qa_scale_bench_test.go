@@ -454,7 +454,7 @@ func TestQA_ConcurrentAuthStorm_100Workers(t *testing.T) {
 
 	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
-		go func(workerID int) {
+		go func(_ int) {
 			defer wg.Done()
 			for tsk := range taskChan {
 				var (

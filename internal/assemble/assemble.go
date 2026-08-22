@@ -866,7 +866,7 @@ func (d *draft) finish(manifest *approved.Manifest) airom.Component {
 			}
 
 			if status == "approved" {
-				drift, driftSt, driftRs := manifest.CheckConfigDrift(string(targetPURL), params)
+				drift, driftSt, driftRs := manifest.CheckConfigDrift(targetPURL, params)
 				if drift {
 					status = driftSt
 					finalReason = driftRs

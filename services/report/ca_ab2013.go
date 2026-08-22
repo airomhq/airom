@@ -209,12 +209,12 @@ func buildCADatasetDisclosures(data *CAAB2013Data) string {
 	sb.WriteString("Under Cal. Civ. Code § 1798.500(b), the developer provides the following high-level summary of the datasets used to train or fine-tune the system:\n\n")
 
 	for i, ds := range data.Datasets {
-		sb.WriteString(fmt.Sprintf("### Dataset %d: %s\n\n", i+1, ds.Name))
-		sb.WriteString(fmt.Sprintf("- **Sources / Data Owners:** %s\n", ds.SourceOrOwner))
-		sb.WriteString(fmt.Sprintf("- **Purpose & Alignment:** %s\n", ds.PurposeDescription))
-		sb.WriteString(fmt.Sprintf("- **Volume / Data Points:** %s\n", ds.DataPointCountOrSize))
-		sb.WriteString(fmt.Sprintf("- **Data Modalities / Types:** %s\n", strings.Join(ds.DataTypes, ", ")))
-		sb.WriteString(fmt.Sprintf("- **Collection Time Period:** %s\n", ds.CollectionTimePeriod))
+		fmt.Fprintf(&sb, "### Dataset %d: %s\n\n", i+1, ds.Name)
+		fmt.Fprintf(&sb, "- **Sources / Data Owners:** %s\n", ds.SourceOrOwner)
+		fmt.Fprintf(&sb, "- **Purpose & Alignment:** %s\n", ds.PurposeDescription)
+		fmt.Fprintf(&sb, "- **Volume / Data Points:** %s\n", ds.DataPointCountOrSize)
+		fmt.Fprintf(&sb, "- **Data Modalities / Types:** %s\n", strings.Join(ds.DataTypes, ", "))
+		fmt.Fprintf(&sb, "- **Collection Time Period:** %s\n", ds.CollectionTimePeriod)
 		sb.WriteString("\n")
 	}
 
@@ -250,8 +250,8 @@ func buildCAPrivacyDisclosures(data *CAAB2013Data) string {
 			purch = "Yes"
 		}
 
-		sb.WriteString(fmt.Sprintf("| %s | %s | %s | %s | %s | %s |\n",
-			ds.Name, pInfo, cRight, synth, clean, purch))
+		fmt.Fprintf(&sb, "| %s | %s | %s | %s | %s | %s |\n",
+			ds.Name, pInfo, cRight, synth, clean, purch)
 	}
 	sb.WriteString("\n")
 	return sb.String()
