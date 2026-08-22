@@ -773,6 +773,15 @@ type.
    both fire. Conflicting values are never merged: two call sites with different
    temperatures are two `BoundParam`s.
 
+**Bound beats standalone (airom-bench finding, 2026-08).** A call-site kwarg
+is line-anchored, so the standalone aiconfig fallback pack can see the same
+`temperature=0.1` the capture_params story already bound to the model. The
+assembler drops an ai-config component only when every one of its occurrences
+duplicates a same-named bound param in the same file within the capture
+window; one occurrence outside that evidence keeps the component whole. An
+ai-config component in the output therefore always means UNBOUND, which is
+what the kind is defined to mean.
+
 ## 10. Caching (`internal/cache`, bbolt)
 
 **Namespace key**, the whole cache self-invalidates on any behavior change, no manual bumps:
