@@ -596,14 +596,14 @@ func TestQA_AdversarialTenantCrossInjection(t *testing.T) {
 
 	// Setup baseline valid snapshots for both tenants
 	reqA0 := IngestionRequest{
-		RepoID:          repoA,
-		CommitSHA:       "commit-a0",
-		Branch:          "main",
-		ScanTimestamp:   t0,
-		AIBOMSHA256:     "sha-a0",
-		ControlsMet:     5,
-		ControlsGap:     0,
-		ControlsManual:  0,
+		RepoID:         repoA,
+		CommitSHA:      "commit-a0",
+		Branch:         "main",
+		ScanTimestamp:  t0,
+		AIBOMSHA256:    "sha-a0",
+		ControlsMet:    5,
+		ControlsGap:    0,
+		ControlsManual: 0,
 	}
 	bodyA0, _ := json.Marshal(reqA0)
 	httpReqA0 := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/snapshots", repoA), bytes.NewReader(bodyA0))
@@ -617,14 +617,14 @@ func TestQA_AdversarialTenantCrossInjection(t *testing.T) {
 	_ = json.NewDecoder(recA0.Body).Decode(&ingA0)
 
 	reqB0 := IngestionRequest{
-		RepoID:          repoB,
-		CommitSHA:       "commit-b0",
-		Branch:          "main",
-		ScanTimestamp:   t0,
-		AIBOMSHA256:     "sha-b0",
-		ControlsMet:     3,
-		ControlsGap:     1,
-		ControlsManual:  0,
+		RepoID:         repoB,
+		CommitSHA:      "commit-b0",
+		Branch:         "main",
+		ScanTimestamp:  t0,
+		AIBOMSHA256:    "sha-b0",
+		ControlsMet:    3,
+		ControlsGap:    1,
+		ControlsManual: 0,
 	}
 	bodyB0, _ := json.Marshal(reqB0)
 	httpReqB0 := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/snapshots", repoB), bytes.NewReader(bodyB0))
@@ -645,14 +645,14 @@ func TestQA_AdversarialTenantCrossInjection(t *testing.T) {
 	// =========================================================================
 	t.Log("Executing Attack Vector 1: Cross-Tenant Payload Mismatch Injection...")
 	spoofedReq := IngestionRequest{
-		RepoID:          repoA, // Spoofed victim repo ID
-		CommitSHA:       "commit-spoofed",
-		Branch:          "main",
-		ScanTimestamp:   t0.Add(1 * time.Hour),
-		AIBOMSHA256:     "sha-spoofed",
-		ControlsMet:     10,
-		ControlsGap:     0,
-		ControlsManual:  0,
+		RepoID:         repoA, // Spoofed victim repo ID
+		CommitSHA:      "commit-spoofed",
+		Branch:         "main",
+		ScanTimestamp:  t0.Add(1 * time.Hour),
+		AIBOMSHA256:    "sha-spoofed",
+		ControlsMet:    10,
+		ControlsGap:    0,
+		ControlsManual: 0,
 	}
 	spoofedBody, _ := json.Marshal(spoofedReq)
 	spoofedHttpReq := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/snapshots", repoB), bytes.NewReader(spoofedBody))

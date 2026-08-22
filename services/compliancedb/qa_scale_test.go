@@ -223,15 +223,15 @@ func TestQA_ExtremeChainScale_10K(t *testing.T) {
 
 // TestQA_ConcurrentAPIStorm_100Workers stresses the ComplianceDB REST API with 100 concurrent workers.
 // It executes 1,000+ total HTTP requests across:
-//  - POST /api/v1/repos/{repo}/snapshots (ledger ingestion + incident lifecycle)
-//  - GET /api/v1/repos/{repo}/history (snapshot ledger retrieval + cryptographic verification)
-//  - GET /api/v1/orgs/{org}/compliance (cross-repository multi-regulation aggregation)
+//   - POST /api/v1/repos/{repo}/snapshots (ledger ingestion + incident lifecycle)
+//   - GET /api/v1/repos/{repo}/history (snapshot ledger retrieval + cryptographic verification)
+//   - GET /api/v1/orgs/{org}/compliance (cross-repository multi-regulation aggregation)
 //
 // Assertions:
-//  - 0 dropped requests
-//  - 0 deadlocks (protected by context timeout)
-//  - 100% 200 OK / 201 Created HTTP responses
-//  - Post-storm cryptographic chain verification across all repositories
+//   - 0 dropped requests
+//   - 0 deadlocks (protected by context timeout)
+//   - 100% 200 OK / 201 Created HTTP responses
+//   - Post-storm cryptographic chain verification across all repositories
 func TestQA_ConcurrentAPIStorm_100Workers(t *testing.T) {
 	const numWorkers = 100
 	const iterationsPerWorker = 30 // 100 workers * 30 iterations * 3 ops = 9,000 total HTTP requests
@@ -271,14 +271,14 @@ func TestQA_ConcurrentAPIStorm_100Workers(t *testing.T) {
 
 	// Atomic telemetry metrics
 	var (
-		totalRequests        int64
-		postSnapshotsTotal   int64
-		postSnapshots201     int64
-		getHistoryTotal      int64
-		getHistory200        int64
-		getComplianceTotal   int64
-		getCompliance200     int64
-		errorCount           int64
+		totalRequests      int64
+		postSnapshotsTotal int64
+		postSnapshots201   int64
+		getHistoryTotal    int64
+		getHistory200      int64
+		getComplianceTotal int64
+		getCompliance200   int64
+		errorCount         int64
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)

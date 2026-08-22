@@ -998,13 +998,13 @@ func buildGovResults(comps []airom.Component, index map[string]int) []sarifResul
 		}
 
 		results = append(results, sarifResult{
-			RuleID:     ruleID,
-			RuleIndex:  index[ruleID],
-			Level:      level,
-			Message:    sarifText{Text: msg},
-			Locations:  allLocations(c),
+			RuleID:    ruleID,
+			RuleIndex: index[ruleID],
+			Level:     level,
+			Message:   sarifText{Text: msg},
+			Locations: allLocations(c),
 			Properties: map[string]any{
-				"airom:componentId": string(c.ID),
+				"airom:componentId":       string(c.ID),
 				"airom:governance.status": govStatus,
 			},
 		})

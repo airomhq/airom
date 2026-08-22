@@ -14,13 +14,13 @@ import (
 )
 
 type ComponentApproval struct {
-	PURL           string            `yaml:"purl"`
-	ApprovedBy     string            `yaml:"approved_by,omitempty"`
-	ApprovedAt     string            `yaml:"approved_at,omitempty"`
-	Ticket         string            `yaml:"ticket,omitempty"`
-	Scope          []string          `yaml:"scope,omitempty"`
+	PURL            string            `yaml:"purl"`
+	ApprovedBy      string            `yaml:"approved_by,omitempty"`
+	ApprovedAt      string            `yaml:"approved_at,omitempty"`
+	Ticket          string            `yaml:"ticket,omitempty"`
+	Scope           []string          `yaml:"scope,omitempty"`
 	PermittedConfig map[string]string `yaml:"permitted_config,omitempty"`
-	Reason         string            `yaml:"reason,omitempty"`
+	Reason          string            `yaml:"reason,omitempty"`
 }
 
 type ApprovedManifest struct {
@@ -76,13 +76,13 @@ func SaveManifest(repoRoot string, m *ApprovedManifest) error {
 	if err != nil {
 		return err
 	}
-	
+
 	manifestPath := filepath.Join(repoRoot, ".airomapproved")
 	tmpPath := manifestPath + ".tmp"
 	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
 		return err
 	}
-	
+
 	return os.Rename(tmpPath, manifestPath)
 }
 
@@ -178,7 +178,7 @@ func (m *ApprovedManifest) CheckConfigDrift(purl string, params map[string]strin
 			if len(app.PermittedConfig) == 0 {
 				continue
 			}
-			
+
 			if maxTempStr, ok := app.PermittedConfig["max_temp"]; ok {
 				if tempStr, ok := params["temperature"]; ok {
 					if maxTemp, err1 := strconv.ParseFloat(maxTempStr, 64); err1 == nil {
@@ -190,7 +190,7 @@ func (m *ApprovedManifest) CheckConfigDrift(purl string, params map[string]strin
 					}
 				}
 			}
-			
+
 			if maxTokensStr, ok := app.PermittedConfig["max_tokens"]; ok {
 				if tokensStr, ok := params["max_tokens"]; ok {
 					if maxTokens, err1 := strconv.ParseInt(maxTokensStr, 10, 64); err1 == nil {

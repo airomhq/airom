@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: "1.26"
+  GO_VERSION: "1.25"
 
 jobs:
   # Enumerate targets rather than hard-coding them: a new Fuzz* function should

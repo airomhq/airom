@@ -61,7 +61,7 @@ func TestEvaluateHandler_Success(t *testing.T) {
 
 	var report AnomalyReport
 	json.NewDecoder(w.Body).Decode(&report)
-	
+
 	shadowFound := false
 	tripwireFound := false
 	for _, anomaly := range report.Anomalies {

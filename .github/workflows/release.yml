@@ -9,18 +9,18 @@ permissions:
   id-token: write # keyless cosign signing via OIDC
 
 env:
-  GO_VERSION: "1.26"
+  GO_VERSION: "1.25"
 
 jobs:
   release:
     name: goreleaser
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # goreleaser needs full history + tags for the changelog
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
@@ -36,7 +36,7 @@ jobs:
       - uses: anchore/sbom-action/download-syft@v0
 
       - name: goreleaser
-        uses: goreleaser/goreleaser-action@v7
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
           args: release --clean

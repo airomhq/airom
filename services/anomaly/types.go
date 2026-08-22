@@ -12,26 +12,26 @@ type ParamDelta struct {
 }
 
 type ComponentDelta struct {
-	ComponentID  string                `json:"componentId"`
-	PURL         string                `json:"purl"`
-	OldVersion   string                `json:"oldVersion"`
-	NewVersion   string                `json:"newVersion"`
-	OldProvider  string                `json:"oldProvider"`
-	NewProvider  string                `json:"newProvider"`
-	ParamDeltas  map[string]ParamDelta `json:"paramDeltas"`
+	ComponentID string                `json:"componentId"`
+	PURL        string                `json:"purl"`
+	OldVersion  string                `json:"oldVersion"`
+	NewVersion  string                `json:"newVersion"`
+	OldProvider string                `json:"oldProvider"`
+	NewProvider string                `json:"newProvider"`
+	ParamDeltas map[string]ParamDelta `json:"paramDeltas"`
 }
 
 type DiffReport struct {
-	BaseCommit string             `json:"baseCommit"`
-	HeadCommit string             `json:"headCommit"`
-	Added      []airom.Component  `json:"added"`
-	Removed    []airom.Component  `json:"removed"`
-	Modified   []ComponentDelta   `json:"modified"`
+	BaseCommit string            `json:"baseCommit"`
+	HeadCommit string            `json:"headCommit"`
+	Added      []airom.Component `json:"added"`
+	Removed    []airom.Component `json:"removed"`
+	Modified   []ComponentDelta  `json:"modified"`
 }
 
 type Anomaly struct {
 	ID          string `json:"id"`
-	Type        string `json:"type"` // shadow-ai, model-swap, config-drift, proximity-hiring, proximity-credit, proximity-healthcare
+	Type        string `json:"type"`     // shadow-ai, model-swap, config-drift, proximity-hiring, proximity-credit, proximity-healthcare
 	Severity    string `json:"severity"` // CRITICAL, HIGH, MEDIUM, LOW
 	Component   string `json:"component"`
 	Location    string `json:"location"`
@@ -41,9 +41,9 @@ type Anomaly struct {
 }
 
 type AnomalyReport struct {
-	Clean           bool          `json:"clean"`
-	HighestSeverity string        `json:"highestSeverity"`
-	Anomalies       []Anomaly     `json:"anomalies"`
-	Diff            DiffReport    `json:"diff"`
-	EvaluatedAt     time.Time     `json:"evaluatedAt"`
+	Clean           bool       `json:"clean"`
+	HighestSeverity string     `json:"highestSeverity"`
+	Anomalies       []Anomaly  `json:"anomalies"`
+	Diff            DiffReport `json:"diff"`
+	EvaluatedAt     time.Time  `json:"evaluatedAt"`
 }

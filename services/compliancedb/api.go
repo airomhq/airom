@@ -27,12 +27,12 @@ type IngestionRequest struct {
 
 // IngestionResponse is returned upon successful snapshot ingestion.
 type IngestionResponse struct {
-	SnapshotID         string               `json:"snapshot_id"`
-	SelfHash           string               `json:"self_hash"`
-	PrevHash           string               `json:"prev_hash"`
-	NewIncidentsCount  int                  `json:"new_incidents_count"`
-	ResolvedIncidents  []ComplianceIncident `json:"resolved_incidents,omitempty"`
-	ChainStatus        string               `json:"chain_status"` // VALID, BROKEN
+	SnapshotID        string               `json:"snapshot_id"`
+	SelfHash          string               `json:"self_hash"`
+	PrevHash          string               `json:"prev_hash"`
+	NewIncidentsCount int                  `json:"new_incidents_count"`
+	ResolvedIncidents []ComplianceIncident `json:"resolved_incidents,omitempty"`
+	ChainStatus       string               `json:"chain_status"` // VALID, BROKEN
 }
 
 // OrgComplianceRegulationStats aggregates control verdicts for one regulation.
@@ -46,41 +46,41 @@ type OrgComplianceRegulationStats struct {
 
 // OrgComplianceResponse is returned by GET /api/v1/orgs/{org}/compliance.
 type OrgComplianceResponse struct {
-	OrgID         string                         `json:"org_id"`
-	TotalRepos    int                            `json:"total_repos"`
-	TotalGaps     int                            `json:"total_gaps"`
-	TotalMet      int                            `json:"total_met"`
-	TotalManual   int                            `json:"total_manual"`
-	Regulations   []OrgComplianceRegulationStats `json:"regulations"`
-	GeneratedAt   time.Time                      `json:"generated_at"`
+	OrgID       string                         `json:"org_id"`
+	TotalRepos  int                            `json:"total_repos"`
+	TotalGaps   int                            `json:"total_gaps"`
+	TotalMet    int                            `json:"total_met"`
+	TotalManual int                            `json:"total_manual"`
+	Regulations []OrgComplianceRegulationStats `json:"regulations"`
+	GeneratedAt time.Time                      `json:"generated_at"`
 }
 
 // RepoHistoryResponse is returned by GET /api/v1/repos/{repo}/history.
 type RepoHistoryResponse struct {
-	RepoID       string                  `json:"repo_id"`
-	Snapshots    []ScanSnapshot          `json:"snapshots"`
-	ChainReport  ChainVerificationReport `json:"chain_report"`
-	TotalCount   int                     `json:"total_count"`
-	GeneratedAt  time.Time               `json:"generated_at"`
+	RepoID      string                  `json:"repo_id"`
+	Snapshots   []ScanSnapshot          `json:"snapshots"`
+	ChainReport ChainVerificationReport `json:"chain_report"`
+	TotalCount  int                     `json:"total_count"`
+	GeneratedAt time.Time               `json:"generated_at"`
 }
 
 // RepoIncidentsResponse is returned by GET /api/v1/repos/{repo}/incidents.
 type RepoIncidentsResponse struct {
-	RepoID     string               `json:"repo_id"`
-	OpenCount  int                  `json:"open_count"`
-	Resolved   int                  `json:"resolved_count"`
-	Incidents  []ComplianceIncident `json:"incidents"`
+	RepoID    string               `json:"repo_id"`
+	OpenCount int                  `json:"open_count"`
+	Resolved  int                  `json:"resolved_count"`
+	Incidents []ComplianceIncident `json:"incidents"`
 }
 
 // Service provides the ComplianceDB HTTP REST API server with an in-memory thread-safe state store.
 type Service struct {
-	mu           sync.RWMutex
-	orgs         map[string]*Organization
-	repos        map[string]*Repository
-	repoByOrg    map[string][]string // orgID -> []repoID
-	snapshots    map[string][]ScanSnapshot // repoID -> []ScanSnapshot
-	incidents    map[string][]ComplianceIncident // repoID -> []ComplianceIncident
-	evaluations  map[string][]ControlEvaluation // snapshotID -> []ControlEvaluation
+	mu          sync.RWMutex
+	orgs        map[string]*Organization
+	repos       map[string]*Repository
+	repoByOrg   map[string][]string             // orgID -> []repoID
+	snapshots   map[string][]ScanSnapshot       // repoID -> []ScanSnapshot
+	incidents   map[string][]ComplianceIncident // repoID -> []ComplianceIncident
+	evaluations map[string][]ControlEvaluation  // snapshotID -> []ControlEvaluation
 }
 
 // NewService instantiates a new ComplianceDB API service.
@@ -404,10 +404,10 @@ func (s *Service) GetRepoIncidentsHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	resp := RepoIncidentsResponse{
-		RepoID:        repoID,
-		OpenCount:     openCount,
-		Resolved:      resolvedCount,
-		Incidents:     incs,
+		RepoID:    repoID,
+		OpenCount: openCount,
+		Resolved:  resolvedCount,
+		Incidents: incs,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

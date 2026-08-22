@@ -45,7 +45,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: "1.26"
+  GO_VERSION: "1.25"
 
 jobs:
   decide:
@@ -55,8 +55,8 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       publish: ${{ steps.v.outputs.publish }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - id: v
@@ -136,12 +136,12 @@ jobs:
           - { id: windows-x86_64,      goos: windows, goarch: amd64, tag: py3-none-win_amd64 }
           - { id: windows-arm64,       goos: windows, goarch: arm64, tag: py3-none-win_arm64 }
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -176,7 +176,7 @@ jobs:
           print(f"ok: {whl} -> {scripts}")
           PY
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v4
         with:
           name: wheel-${{ matrix.id }}
           path: sdk/python/dist/*.whl
@@ -188,8 +188,8 @@ jobs:
     if: needs.decide.outputs.publish == 'true' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       # The sdist deliberately carries no binary: installing from it falls back
@@ -199,7 +199,7 @@ jobs:
         run: |
           pip install build
           python -m build --sdist
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v4
         with:
           name: sdist
           path: sdk/python/dist/*.tar.gz
@@ -236,11 +236,11 @@ jobs:
           - { id: windows-x86_64,      runs-on: windows-latest }
           - { id: windows-arm64,       runs-on: windows-11-arm }
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v4
         with:
           name: wheel-${{ matrix.id }}
           path: dist
@@ -276,8 +276,8 @@ jobs:
           - { id: linux-x86_64-musl,  runs-on: ubuntu-latest }
           - { id: linux-aarch64-musl, runs-on: ubuntu-24.04-arm }
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           name: wheel-${{ matrix.id }}
           path: dist
@@ -307,7 +307,7 @@ jobs:
     permissions:
       id-token: write # Trusted Publishing mints the OIDC token. No secrets.
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true

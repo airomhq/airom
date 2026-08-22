@@ -105,7 +105,7 @@ func TestApproveCmd(t *testing.T) {
 		if len(manifest.Revocations) != 1 {
 			t.Fatalf("expected 1 revocation, got %d", len(manifest.Revocations))
 		}
-		
+
 		rev := manifest.Revocations[0]
 		if rev.Reason != "deprecated" {
 			t.Errorf("unexpected revocation reason: %s", rev.Reason)

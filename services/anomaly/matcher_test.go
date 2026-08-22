@@ -121,12 +121,24 @@ func TestEvaluateAnomalies(t *testing.T) {
 		}
 	}
 
-	if !shadow { t.Errorf("missing shadow-ai") }
-	if !hiring { t.Errorf("missing proximity-hiring") }
-	if !credit { t.Errorf("missing proximity-credit") }
-	if !health { t.Errorf("missing proximity-healthcare") }
-	if !swap { t.Errorf("missing model-swap") }
-	if !drift { t.Errorf("missing config-drift") }
+	if !shadow {
+		t.Errorf("missing shadow-ai")
+	}
+	if !hiring {
+		t.Errorf("missing proximity-hiring")
+	}
+	if !credit {
+		t.Errorf("missing proximity-credit")
+	}
+	if !health {
+		t.Errorf("missing proximity-healthcare")
+	}
+	if !swap {
+		t.Errorf("missing model-swap")
+	}
+	if !drift {
+		t.Errorf("missing config-drift")
+	}
 }
 
 func TestEvaluateAnomaliesClean(t *testing.T) {

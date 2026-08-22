@@ -210,7 +210,7 @@ func ProcessSnapshotIncidents(
 				resolved.ResolvedAt = &resTime
 				resSnapID := snapshot.ID
 				resolved.ResolvingSnapshotID = &resSnapID
-				
+
 				hours := resTime.Sub(existing.OpenedAt).Hours()
 				resolved.ResolutionDurationHours = &hours
 

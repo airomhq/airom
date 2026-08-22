@@ -43,7 +43,7 @@ func (e *Engine) EvaluateHandler(w http.ResponseWriter, r *http.Request) {
 			Message:  "Shadow AI detected",
 		})
 	}
-	
+
 	// mock logic for sector tripwires
 	anomalies = append(anomalies, Anomaly{
 		Type:     "proximity-healthcare",

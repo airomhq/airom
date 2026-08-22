@@ -6,24 +6,30 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   airom-scan:
+    name: AIROM Governance Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Run AIROM Scanner
-        uses: ./ # uses the local action.yml
+        uses: ./
         with:
-          path: '.'
-          compliance: 'colorado-ai-act,nist-ai-rmf'
-          fail-on-unapproved: 'true'
-          output-sarif: 'airom.sarif'
+          target: '.'
+          compliance: 'colorado-ai-act'
+          fail-on: 'local-model-file&confidence>=0.9'
+          sarif-output: 'airom.sarif'
+          upload-sarif: 'false'
 
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() # Upload SARIF even if the scan fails
+        if: always()
         with:
           sarif_file: 'airom.sarif'
-          category: 'airom'
+          category: 'airom-governance'

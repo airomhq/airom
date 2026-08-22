@@ -834,7 +834,7 @@ func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 		if targetPURL != "" {
 			status := "approved"
 			var finalReason string
-	
+
 			if len(c.Evidence.Occurrences) == 0 {
 				_, st, rs := manifest.IsApproved(string(targetPURL), "")
 				status = st
@@ -850,7 +850,7 @@ func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 					finalReason = rs
 				}
 			}
-			
+
 			// Check for config drift
 			params := make(map[string]string)
 			if d.model != nil {
@@ -863,7 +863,7 @@ func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 					params[strings.TrimPrefix(p.Name, "airom:model.param.")] = p.Value
 				}
 			}
-			
+
 			if status == "approved" {
 				drift, driftSt, driftRs := manifest.CheckConfigDrift(string(targetPURL), params)
 				if drift {
@@ -871,7 +871,7 @@ func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
 					finalReason = driftRs
 				}
 			}
-	
+
 			c.Props = append(c.Props, airom.KV{Name: "airom:governance.status", Value: status})
 			if status != "approved" && finalReason != "" {
 				c.Props = append(c.Props, airom.KV{Name: "airom:governance.reason", Value: finalReason})

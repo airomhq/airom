@@ -76,7 +76,7 @@ func newCheckCmd() *cobra.Command {
 			defer os.Remove(tmpPath)
 
 			cfg.Outputs = []app.OutputSpec{{Format: app.FormatJSON, Path: tmpPath}}
-			cfg.Quiet = true 
+			cfg.Quiet = true
 
 			if err := runScan(cmd.Context(), cfg); err != nil {
 				return err
@@ -103,7 +103,7 @@ func newCheckCmd() *cobra.Command {
 				if purl == "" {
 					purl = comp.Name
 				}
-				
+
 				filePath := ""
 				if len(comp.Evidence.Occurrences) > 0 {
 					filePath = comp.Evidence.Occurrences[0].Location.Path
@@ -128,7 +128,7 @@ func newCheckCmd() *cobra.Command {
 						approvedStatus, statusType, reason = nameApproved, nameStatus, nameReason
 					}
 				}
-				
+
 				// Check props for governance status
 				for _, prop := range comp.Props {
 					if prop.Name == "airom:governance.status" && prop.Value != "approved" {

@@ -153,14 +153,14 @@ func TestAPI_OrgComplianceAggregation(t *testing.T) {
 
 	// Ingest for Repo 1 (CO AI Act: met)
 	req1 := IngestionRequest{
-		RepoID:          "repo-1",
-		CommitSHA:       "c1",
-		Branch:          "main",
-		ScanTimestamp:   t0,
-		AIBOMSHA256:     "sha1",
-		ControlsMet:     2,
-		ControlsGap:     0,
-		ControlsManual:  1,
+		RepoID:         "repo-1",
+		CommitSHA:      "c1",
+		Branch:         "main",
+		ScanTimestamp:  t0,
+		AIBOMSHA256:    "sha1",
+		ControlsMet:    2,
+		ControlsGap:    0,
+		ControlsManual: 1,
 		Evaluations: []ControlEvaluation{
 			{ControlID: "co.1", StatuteRef: "CO SB 24-205", Verdict: VerdictMet},
 			{ControlID: "co.2", StatuteRef: "CO SB 24-205", Verdict: VerdictMet},
@@ -172,14 +172,14 @@ func TestAPI_OrgComplianceAggregation(t *testing.T) {
 
 	// Ingest for Repo 2 (NYC LL144: gap)
 	req2 := IngestionRequest{
-		RepoID:          "repo-2",
-		CommitSHA:       "c2",
-		Branch:          "main",
-		ScanTimestamp:   t0,
-		AIBOMSHA256:     "sha2",
-		ControlsMet:     1,
-		ControlsGap:     1,
-		ControlsManual:  0,
+		RepoID:         "repo-2",
+		CommitSHA:      "c2",
+		Branch:         "main",
+		ScanTimestamp:  t0,
+		AIBOMSHA256:    "sha2",
+		ControlsMet:    1,
+		ControlsGap:    1,
+		ControlsManual: 0,
 		Evaluations: []ControlEvaluation{
 			{ControlID: "nyc.1", StatuteRef: "NYC LL144", Verdict: VerdictMet},
 			{ControlID: "nyc.2", StatuteRef: "NYC LL144", Verdict: VerdictGap},
@@ -252,14 +252,14 @@ func BenchmarkAPI_IngestSnapshot(b *testing.B) {
 
 	t0 := time.Now().UTC()
 	req := IngestionRequest{
-		RepoID:          "repo-bench",
-		CommitSHA:       "c-bench",
-		Branch:          "main",
-		ScanTimestamp:   t0,
-		AIBOMSHA256:     "sha-bench",
-		ControlsMet:     5,
-		ControlsGap:     0,
-		ControlsManual:  0,
+		RepoID:         "repo-bench",
+		CommitSHA:      "c-bench",
+		Branch:         "main",
+		ScanTimestamp:  t0,
+		AIBOMSHA256:    "sha-bench",
+		ControlsMet:    5,
+		ControlsGap:    0,
+		ControlsManual: 0,
 	}
 	body, _ := json.Marshal(req)
 	client := ts.Client()

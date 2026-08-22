@@ -122,7 +122,7 @@ func TestCheckConfigDrift(t *testing.T) {
 			{
 				PURL: "pkg:npm/model*",
 				PermittedConfig: map[string]string{
-					"max_temp": "0.7",
+					"max_temp":   "0.7",
 					"max_tokens": "1000",
 				},
 			},
@@ -141,7 +141,7 @@ func TestCheckConfigDrift(t *testing.T) {
 			purl: "pkg:npm/model@1.0",
 			params: map[string]string{
 				"temperature": "0.5",
-				"max_tokens": "500",
+				"max_tokens":  "500",
 			},
 			wantDrift: false,
 		},
@@ -151,7 +151,7 @@ func TestCheckConfigDrift(t *testing.T) {
 			params: map[string]string{
 				"temperature": "0.8",
 			},
-			wantDrift: true,
+			wantDrift:  true,
 			wantStatus: "config_drift",
 		},
 		{
@@ -160,7 +160,7 @@ func TestCheckConfigDrift(t *testing.T) {
 			params: map[string]string{
 				"max_tokens": "1500",
 			},
-			wantDrift: true,
+			wantDrift:  true,
 			wantStatus: "config_drift",
 		},
 		{
@@ -185,4 +185,3 @@ func TestCheckConfigDrift(t *testing.T) {
 		})
 	}
 }
-
