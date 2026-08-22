@@ -55,6 +55,7 @@ type EnterpriseServer struct {
 	auditSvc      *audit.Service
 	billingSvc    *billing.Service
 	docAgent      *document.Agent
+	eventBroker   *EventBroker
 	reportCfg     report.EngineConfig
 	httpServer    *http.Server
 	mux           *http.ServeMux
@@ -81,6 +82,7 @@ func NewEnterpriseServer(cfg Config) *EnterpriseServer {
 	auditSvc := audit.NewService(cfg.AuditSigningKey, nil)
 	billingSvc := billing.NewService(cfg.StripeSecret)
 	docAgent := document.NewAgent([]byte(cfg.HumanTokenSecret))
+	eventBroker := NewEventBroker()
 	reportCfg := report.DefaultEngineConfig()
 
 	s := &EnterpriseServer{
@@ -91,6 +93,7 @@ func NewEnterpriseServer(cfg Config) *EnterpriseServer {
 		auditSvc:      auditSvc,
 		billingSvc:    billingSvc,
 		docAgent:      docAgent,
+		eventBroker:   eventBroker,
 		reportCfg:     reportCfg,
 		mux:           http.NewServeMux(),
 	}
@@ -108,6 +111,7 @@ func (s *EnterpriseServer) setupRoutes() {
 	// 2. Metrics & System Info
 	s.mux.HandleFunc("/metrics", s.handleMetrics)
 	s.mux.HandleFunc("/api/v1/info", s.handleSystemInfo)
+	s.mux.HandleFunc("/api/v1/events/stream", s.eventBroker.Handler())
 
 	// 3. Mount Service Handlers with Path Stripping / Delegation
 	mountHandler(s.mux, "/api/v1/auth/", s.authSvc.Routes())

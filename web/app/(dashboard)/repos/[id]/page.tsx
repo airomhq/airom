@@ -1,28 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   GitBranch,
   Lock,
   ShieldCheck,
-  CheckCircle2,
-  AlertOctagon,
-  FileCheck2,
   Check,
   X,
-  History,
-  Code2,
   FileText,
-  Terminal,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../../../components/ui/card";
-import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../../../../components/ui/table";
 import { ScanSnapshot, ControlEvaluation } from "../../../../types";
 import { verifyLedgerIntegrity, LedgerVerificationResult } from "../../../../lib/crypto";
+import { HashChainGraph } from "../../../../components/ledger/HashChainGraph";
+import { GreenYellowRedReview } from "../../../../components/review/GreenYellowRedReview";
 
 const mockSnapshots: ScanSnapshot[] = [
   {
@@ -55,16 +49,6 @@ const mockSnapshots: ScanSnapshot[] = [
 
 const mockControls: ControlEvaluation[] = [
   {
-    id: "co.ai-act.risk-mgmt",
-    frameworkId: "colorado-ai-act",
-    title: "Risk Management Program (§ 6-1-1702)",
-    category: "Governance & Policies",
-    state: "manual",
-    score: 0,
-    rationale: "Confirm risk management program aligned with NIST AI RMF is documented and maintained.",
-    evidence: [],
-  },
-  {
     id: "co.ai-act.impact-assessment",
     frameworkId: "colorado-ai-act",
     title: "Algorithmic Impact Assessment (§ 6-1-1703)",
@@ -83,16 +67,6 @@ const mockControls: ControlEvaluation[] = [
     ],
   },
   {
-    id: "co.ai-act.consumer-notice",
-    frameworkId: "colorado-ai-act",
-    title: "Consumer Disclosure (§ 6-1-1704)",
-    category: "Transparency",
-    state: "manual",
-    score: 0,
-    rationale: "Confirm consumer notice mechanism is visible in deployment UI before consequential decision.",
-    evidence: [],
-  },
-  {
     id: "co.ai-act.incident-reporting",
     frameworkId: "colorado-ai-act",
     title: "Algorithmic Discrimination Notification (§ 6-1-1705)",
@@ -102,6 +76,26 @@ const mockControls: ControlEvaluation[] = [
     rationale: "Automated 90-day notification incident trigger active in ComplianceDB.",
     evidence: [],
   },
+  {
+    id: "co.ai-act.risk-mgmt",
+    frameworkId: "colorado-ai-act",
+    title: "Risk Management Program (§ 6-1-1702)",
+    category: "Governance & Policies",
+    state: "manual",
+    score: 0,
+    rationale: "Confirm risk management program aligned with NIST AI RMF is documented and maintained.",
+    evidence: [],
+  },
+  {
+    id: "co.ai-act.consumer-notice",
+    frameworkId: "colorado-ai-act",
+    title: "Consumer Disclosure (§ 6-1-1704)",
+    category: "Transparency",
+    state: "manual",
+    score: 0,
+    rationale: "Confirm consumer notice mechanism is visible in deployment UI before consequential decision.",
+    evidence: [],
+  },
 ];
 
 export default function RepoDetailPage() {
@@ -109,8 +103,13 @@ export default function RepoDetailPage() {
   const repoId = params?.id as string;
   const [snapshots] = useState<ScanSnapshot[]>(mockSnapshots);
   const [controls] = useState<ControlEvaluation[]>(mockControls);
+  const [attestations, setAttestations] = useState<Record<string, string>>({});
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<LedgerVerificationResult | null>(null);
+
+  const handleAttestationChange = (controlId: string, value: string) => {
+    setAttestations((prev) => ({ ...prev, [controlId]: value }));
+  };
 
   const handleVerifyLedger = async () => {
     setVerifying(true);
@@ -162,7 +161,7 @@ export default function RepoDetailPage() {
               <CardTitle className="text-base text-white">ComplianceDB Hash-Chain State Ledger</CardTitle>
             </div>
             <CardDescription className="text-gray-400 text-xs mt-1">
-              Tamper-evident sequential ledger blocks sealed with SHA-256 cryptographic signatures.
+              Tamper-evident sequential ledger blocks sealed with SHA-256 cryptographic signatures. Click any block to inspect payload.
             </CardDescription>
           </div>
           <Button
@@ -205,83 +204,18 @@ export default function RepoDetailPage() {
             </div>
           )}
 
-          {/* Block Visualizer */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {snapshots.map((snap, idx) => (
-              <div
-                key={snap.scanId}
-                className="rounded-lg border border-gray-800 bg-gray-950 p-4 text-xs font-mono space-y-2 relative"
-              >
-                <div className="flex items-center justify-between text-gray-400">
-                  <span className="font-bold text-white">Block #{idx + 1} ({snap.scanId})</span>
-                  <span className="text-[10px] text-gray-500">{new Date(snap.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <div className="text-gray-400">
-                  <span className="text-gray-500">self_hash: </span>
-                  <span className="text-emerald-400">{snap.selfHash.slice(0, 20)}...</span>
-                </div>
-                <div className="text-gray-400">
-                  <span className="text-gray-500">prev_hash: </span>
-                  <span className="text-blue-400">{snap.prevHash ? `${snap.prevHash.slice(0, 20)}...` : "(Genesis Block)"}</span>
-                </div>
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-800/80 text-[11px]">
-                  <span className="text-gray-300">{snap.componentsCount} components</span>
-                  <span className="text-emerald-400">{snap.metCount} met</span>
-                  <span className="text-red-400">{snap.gapCount} gap</span>
-                  <span className="text-amber-400">{snap.manualCount} manual</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Interactive Hash-Chain Visualizer */}
+          <HashChainGraph snapshots={snapshots} />
         </CardContent>
       </Card>
 
-      {/* Colorado AI Act Statutory Controls Breakdown */}
-      <Card className="border-gray-800 bg-gray-900/60">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base text-white">Colorado AI Act (SB 24-205) Controls</CardTitle>
-              <CardDescription className="text-gray-400 text-xs">
-                Statutory requirement evaluations and code evidence mappings.
-              </CardDescription>
-            </div>
-            <Badge variant="met">100% COMPLIANT</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="divide-y divide-gray-800/80">
-            {controls.map((c) => (
-              <div key={c.id} className="py-4 space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-white">{c.id}</span>
-                    <span className="text-sm text-gray-200">{c.title}</span>
-                  </div>
-                  <Badge variant={c.state === "met" ? "met" : c.state === "gap" ? "gap" : "manual"}>
-                    {c.state.toUpperCase()}
-                  </Badge>
-                </div>
-                <p className="text-xs text-gray-400">{c.rationale}</p>
-                {c.evidence.length > 0 && (
-                  <div className="mt-2 rounded bg-gray-950 p-2.5 text-xs font-mono text-gray-300 border border-gray-800">
-                    <div className="text-[11px] text-gray-500 flex items-center gap-1 mb-1">
-                      <Code2 className="h-3.5 w-3.5 text-blue-400" />
-                      <span>Supporting Code Evidence:</span>
-                    </div>
-                    {c.evidence.map((ev, i) => (
-                      <div key={i} className="flex items-center justify-between text-[11px]">
-                        <span className="text-blue-300 font-bold">{ev.name} ({ev.purl})</span>
-                        <span className="text-gray-500">{ev.location}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Colorado AI Act Statutory Controls Breakdown with Green/Yellow/Red Review */}
+      <GreenYellowRedReview
+        frameworkName="Colorado AI Act (SB 24-205)"
+        controls={controls}
+        attestations={attestations}
+        onAttestationChange={handleAttestationChange}
+      />
     </div>
   );
 }

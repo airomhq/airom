@@ -6,35 +6,121 @@ import {
   ShieldCheck,
   Download,
   CheckCircle2,
-  AlertTriangle,
   Lock,
-  Sparkles,
-  ExternalLink,
   Code2,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../../components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { loadSession } from "../../../lib/auth";
+import { ControlEvaluation } from "../../../types";
+import { GreenYellowRedReview } from "../../../components/review/GreenYellowRedReview";
+import { AttestationSignModal } from "../../../components/review/AttestationSignModal";
+
+const frameworkControlsMap: Record<string, { name: string; controls: ControlEvaluation[] }> = {
+  "colorado-ai-act": {
+    name: "Colorado AI Act (SB 24-205)",
+    controls: [
+      {
+        id: "co.ai-act.impact-assessment",
+        frameworkId: "colorado-ai-act",
+        title: "Algorithmic Impact Assessment (§ 6-1-1703)",
+        category: "Assessments",
+        state: "met",
+        score: 1.0,
+        rationale: "Annual algorithmic impact assessment complete; model purpose and bias mitigation verified.",
+        evidence: [
+          {
+            componentId: "airom:989de824357981e6",
+            name: "openai-gpt-4o",
+            purl: "pkg:pypi/openai@1.51.0",
+            location: "src/underwriting/scorer.py:14",
+            confidence: 0.95,
+          },
+        ],
+      },
+      {
+        id: "co.ai-act.incident-reporting",
+        frameworkId: "colorado-ai-act",
+        title: "Algorithmic Discrimination Notification (§ 6-1-1705)",
+        category: "Incident Response",
+        state: "met",
+        score: 1.0,
+        rationale: "Automated 90-day notification incident trigger active in ComplianceDB.",
+        evidence: [],
+      },
+      {
+        id: "co.ai-act.risk-mgmt",
+        frameworkId: "colorado-ai-act",
+        title: "Risk Management Program (§ 6-1-1702)",
+        category: "Governance & Policies",
+        state: "manual",
+        score: 0,
+        rationale: "Confirm risk management program aligned with NIST AI RMF is documented and maintained.",
+        evidence: [],
+      },
+      {
+        id: "co.ai-act.consumer-notice",
+        frameworkId: "colorado-ai-act",
+        title: "Consumer Disclosure (§ 6-1-1704)",
+        category: "Transparency",
+        state: "manual",
+        score: 0,
+        rationale: "Confirm consumer notice mechanism is visible in deployment UI before consequential decision.",
+        evidence: [],
+      },
+    ],
+  },
+  "nyc-ll144": {
+    name: "NYC Local Law 144 (AEDT)",
+    controls: [
+      {
+        id: "nyc.ll144.bias-audit",
+        frameworkId: "nyc-ll144",
+        title: "Independent Annual Bias Audit (§ 20-871)",
+        category: "Bias Audit",
+        state: "manual",
+        score: 0,
+        rationale: "Upload or cite independent third-party bias audit published within the past 12 months.",
+        evidence: [],
+      },
+      {
+        id: "nyc.ll144.candidate-notice",
+        frameworkId: "nyc-ll144",
+        title: "10-Day Candidate Advance Notice (§ 20-872)",
+        category: "Notice & Opt-Out",
+        state: "met",
+        score: 1.0,
+        rationale: "Automated notice dispatch system detected in applicant tracking pipeline.",
+        evidence: [
+          {
+            componentId: "airom:778ae912",
+            name: "candidate-notification-agent",
+            location: "src/hiring/notice.ts:32",
+            confidence: 0.9,
+          },
+        ],
+      },
+    ],
+  },
+};
 
 export default function ReportsPage() {
   const [selectedFramework, setSelectedFramework] = useState("colorado-ai-act");
-  const [riskMgmtAttestation, setRiskMgmtAttestation] = useState(
-    "Risk management program verified under Enterprise NIST AI RMF governance policy v2.4."
-  );
-  const [consumerNoticeAttestation, setConsumerNoticeAttestation] = useState(
-    "Consumer notice modal active on production checkout UI (/src/ui/NoticeBanner.tsx)."
-  );
-  const [signing, setSigning] = useState(false);
+  const [attestations, setAttestations] = useState<Record<string, string>>({
+    "co.ai-act.risk-mgmt": "Risk management program verified under Enterprise NIST AI RMF governance policy v2.4.",
+    "co.ai-act.consumer-notice": "Consumer notice modal active on production checkout UI (/src/ui/NoticeBanner.tsx).",
+  });
+  const [showSignModal, setShowSignModal] = useState(false);
   const [signedToken, setSignedToken] = useState<string | null>(null);
 
-  const handleSignAttestation = () => {
-    setSigning(true);
-    setTimeout(() => {
-      setSignedToken("hmac-sha256:7f9a2c89b71e4d3a8e9102c9183746a5b82c91e0294857162534a8e9102c9183");
-      setSigning(false);
-    }, 800);
+  const activeData = frameworkControlsMap[selectedFramework] || frameworkControlsMap["colorado-ai-act"];
+
+  const handleAttestationChange = (controlId: string, value: string) => {
+    setAttestations((prev) => ({ ...prev, [controlId]: value }));
   };
+
+  const manualControls = activeData.controls.filter((c) => c.state === "manual");
+  const unfilledManualCount = manualControls.filter((c) => !attestations[c.id]?.trim()).length;
 
   return (
     <div className="space-y-8">
@@ -54,86 +140,25 @@ export default function ReportsPage() {
           >
             <option value="colorado-ai-act">Colorado AI Act (SB 24-205)</option>
             <option value="nyc-ll144">NYC Local Law 144 (AEDT)</option>
-            <option value="ca-ab2013">California AB 2013 (Training Data)</option>
-            <option value="illinois-bipa">Illinois BIPA (740 ILCS 14)</option>
-            <option value="texas-traiga">Texas TRAIGA (Gov Code § 2054)</option>
-            <option value="virginia-vcdpa">Virginia VCDPA (§ 59.1-575)</option>
           </select>
         </div>
       </div>
 
       {/* Green / Yellow / Red Review Gateway */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Form & Controls */}
+        {/* Left 2 Cols: Interactive Review */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Green Controls (Automated - Met) */}
-          <Card className="border-gray-800 bg-gray-900/60">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-emerald-500" />
-                  <CardTitle className="text-sm text-white">Automated Controls (2 Met - Grounded)</CardTitle>
-                </div>
-                <Badge variant="met">VERIFIED</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <div className="rounded border border-gray-800 bg-gray-950 p-3 space-y-1">
-                <span className="font-mono text-emerald-400 font-semibold">co.ai-act.impact-assessment (§ 6-1-1703)</span>
-                <p className="text-gray-300">Algorithmic impact assessment complete; model purpose and bias mitigation verified.</p>
-                <div className="text-[11px] text-gray-500 font-mono">Evidence: src/underwriting/scorer.py:14 (openai-gpt-4o)</div>
-              </div>
-              <div className="rounded border border-gray-800 bg-gray-950 p-3 space-y-1">
-                <span className="font-mono text-emerald-400 font-semibold">co.ai-act.incident-reporting (§ 6-1-1705)</span>
-                <p className="text-gray-300">Automated 90-day notification incident trigger active in ComplianceDB.</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Yellow Controls (Manual - Attestation Required) */}
-          <Card className="border-gray-800 bg-gray-900/60">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-amber-500" />
-                  <CardTitle className="text-sm text-white">Manual Attestation Controls (2 Sign-Offs Required)</CardTitle>
-                </div>
-                <Badge variant="manual">ACTION REQUIRED</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 text-xs">
-              {/* Control 1 */}
-              <div className="space-y-2">
-                <label className="font-mono font-semibold text-gray-200">
-                  co.ai-act.risk-mgmt (§ 6-1-1702): Risk Management Program Alignment
-                </label>
-                <textarea
-                  rows={2}
-                  value={riskMgmtAttestation}
-                  onChange={(e) => setRiskMgmtAttestation(e.target.value)}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-950 p-2.5 text-xs text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
-              {/* Control 2 */}
-              <div className="space-y-2">
-                <label className="font-mono font-semibold text-gray-200">
-                  co.ai-act.consumer-notice (§ 6-1-1704): Consumer UI Disclosure Notice
-                </label>
-                <textarea
-                  rows={2}
-                  value={consumerNoticeAttestation}
-                  onChange={(e) => setConsumerNoticeAttestation(e.target.value)}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-950 p-2.5 text-xs text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <GreenYellowRedReview
+            frameworkName={activeData.name}
+            controls={activeData.controls}
+            attestations={attestations}
+            onAttestationChange={handleAttestationChange}
+          />
         </div>
 
         {/* Right Col: Sign & Export Panel */}
         <div className="space-y-6">
-          <Card className="border-gray-800 bg-gray-900/60">
+          <Card className="border-gray-800 bg-gray-900/60 sticky top-24">
             <CardHeader>
               <CardTitle className="text-base text-white">Legal Sign-Off & Token</CardTitle>
               <CardDescription className="text-gray-400 text-xs">
@@ -144,7 +169,7 @@ export default function ReportsPage() {
               <div className="rounded border border-gray-800 bg-gray-950 p-3 space-y-1.5 font-mono">
                 <div className="flex justify-between text-gray-400">
                   <span>Signer:</span>
-                  <span className="text-white">sarah.chen@acme.com</span>
+                  <span className="text-white">Sarah Chen</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
                   <span>Role:</span>
@@ -152,7 +177,7 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex justify-between text-gray-400">
                   <span>Statutory Standard:</span>
-                  <span className="text-emerald-400">CO SB 24-205 § 6-1-1703</span>
+                  <span className="text-emerald-400">{activeData.name}</span>
                 </div>
               </div>
 
@@ -166,12 +191,14 @@ export default function ReportsPage() {
                 </div>
               ) : (
                 <Button
-                  onClick={handleSignAttestation}
-                  disabled={signing}
+                  onClick={() => setShowSignModal(true)}
+                  disabled={unfilledManualCount > 0}
                   className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <Lock className="h-4 w-4" />
-                  {signing ? "Signing Attestation..." : "Sign & Seal Report"}
+                  {unfilledManualCount > 0
+                    ? `${unfilledManualCount} Attestations Missing`
+                    : "Sign & Seal Report"}
                 </Button>
               )}
 
@@ -191,6 +218,21 @@ export default function ReportsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Attestation Sign Modal */}
+      {showSignModal && (
+        <AttestationSignModal
+          frameworkId={selectedFramework}
+          frameworkName={activeData.name}
+          repoId="acme/loan-decisioning"
+          unfilledManualCount={unfilledManualCount}
+          onClose={() => setShowSignModal(false)}
+          onSignSuccess={(token) => {
+            setSignedToken(token);
+            setShowSignModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
