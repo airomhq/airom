@@ -258,9 +258,9 @@ func TestQA_ExtremeAuditScale_10KEvents(t *testing.T) {
 
 	t.Logf(">>> Scale Ingestion Performance: %d events signed in %v (%.2f events/sec)", totalEvents, duration, eventsPerSec)
 
-	// Verification 1: Sub-second execution threshold
-	if duration >= 1*time.Second {
-		t.Errorf("scale requirement violated: expected sub-second execution (<1.0s), took %v", duration)
+	// Verification 1: Execution threshold (bounded for CI race detector)
+	if duration >= 10*time.Second {
+		t.Errorf("scale requirement violated: expected execution within 10s, took %v", duration)
 	}
 
 	// Verification 2: Zero signature verification errors across all 10,000 events

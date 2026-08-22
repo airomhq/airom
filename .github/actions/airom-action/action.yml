@@ -64,19 +64,20 @@ runs:
       id: run-airom
       shell: bash
       run: |
-        FLAGS=""
+        ARGS=()
         if [ -n "${{ inputs.compliance }}" ]; then
-          FLAGS="$FLAGS --compliance ${{ inputs.compliance }}"
+          ARGS+=(--compliance "${{ inputs.compliance }}")
         fi
         if [ -n "${{ inputs.fail-on }}" ]; then
-          FLAGS="$FLAGS --fail-on \"${{ inputs.fail-on }}\""
+          ARGS+=(--fail-on "${{ inputs.fail-on }}")
         fi
 
+        EXIT_CODE=0
         ./airom-bin scan "${{ inputs.target }}" \
           -o "sarif=${{ inputs.sarif-output }}" \
           -o "cyclonedx=${{ inputs.json-output }}" \
           -o table \
-          $FLAGS || EXIT_CODE=$?
+          "${ARGS[@]}" || EXIT_CODE=$?
 
         echo "exit-code=${EXIT_CODE:-0}" >> $GITHUB_OUTPUT
         exit ${EXIT_CODE:-0}
