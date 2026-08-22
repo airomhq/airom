@@ -286,9 +286,12 @@ var cargoCatalog = catalog{
 // restores the conventional casing.
 var nugetCatalog = catalog{
 	exact: map[string]aiPkg{
-		"azure.ai.openai":          {kLibrary, provMicrosoft, "Azure.AI.OpenAI"},
-		"openai":                   {kLibrary, provOpenAI, "OpenAI"},
-		"microsoft.semantickernel": {kFramework, provMicrosoft, "Microsoft.SemanticKernel"},
+		"azure.ai.openai": {kLibrary, provMicrosoft, "Azure.AI.OpenAI"},
+		"openai":          {kLibrary, provOpenAI, "OpenAI"},
+		// Display name folds with the rule pack's claim ("semantic-kernel");
+		// the declared NuGet identity travels in the purl. Split-brain found
+		// by airom-bench Tier S.
+		"microsoft.semantickernel": {kFramework, provMicrosoft, "semantic-kernel"},
 		"langchain":                {kFramework, provLangChain, "LangChain"},
 		"betalgo.openai":           {kLibrary, provOpenAI, "Betalgo.OpenAI"},
 		"pinecone.net":             {kVectorDB, provPinecone, "Pinecone.NET"},

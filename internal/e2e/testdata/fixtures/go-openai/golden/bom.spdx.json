@@ -33,14 +33,6 @@
       "type": "Organization"
     },
     {
-      "comment": "airom:package.ecosystem golang; airom:confidence 0.8; airom:evidence 1 occurrence(s); airom:kind library",
-      "creationInfo": "_:creationInfo",
-      "name": "github.com/sashabaranov/go-openai",
-      "software_primaryPurpose": "library",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cffbe1cb532342ef",
-      "type": "software_Package"
-    },
-    {
       "comment": "airom:releaseTime NOASSERTION; airom:model.id gpt-4o; airom:confidence 0.75; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
       "creationInfo": "_:creationInfo",
       "name": "gpt-4o",
@@ -60,7 +52,7 @@
       "type": "software_Package"
     },
     {
-      "comment": "airom:package.ecosystem golang; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
+      "comment": "airom:package.ecosystem golang; airom:confidence 0.99; airom:evidence 2 occurrence(s); airom:kind library",
       "creationInfo": "_:creationInfo",
       "externalIdentifier": [
         {
@@ -80,7 +72,6 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cffbe1cb532342ef",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d641d9eba24d3a58",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f7e06de2ad26950f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f96ee68bb40a8bb3"

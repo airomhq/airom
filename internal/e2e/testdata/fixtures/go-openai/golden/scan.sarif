@@ -63,39 +63,6 @@
           "ruleIndex": 0,
           "level": "note",
           "message": {
-            "text": "library 'github.com/sashabaranov/go-openai' detected (confidence 0.8)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "main.go",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 7,
-                  "snippet": {
-                    "text": "openai \"github.com/sashabaranov/go-openai\""
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "ec65289fa7bf006b7cf3f2728cb6a458f4ac86c744f76e0a451bd610cc04f709"
-          },
-          "properties": {
-            "airom:componentId": "airom:cffbe1cb532342ef",
-            "airom:confidence": 0.8,
-            "airom:kind": "library",
-            "airom:occurrence.confidence": 0.8
-          }
-        },
-        {
-          "ruleId": "gosrc/ast",
-          "ruleIndex": 0,
-          "level": "note",
-          "message": {
             "text": "hosted-llm 'gpt-4o' detected (confidence 0.75)"
           },
           "locations": [
@@ -134,7 +101,7 @@
           "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "library 'github.com/sashabaranov/go-openai' [v1.32.0] detected (confidence 0.95)"
+            "text": "library 'github.com/sashabaranov/go-openai' [v1.32.0] detected (confidence 0.99)"
           },
           "locations": [
             {
@@ -157,9 +124,44 @@
           },
           "properties": {
             "airom:componentId": "airom:f96ee68bb40a8bb3",
-            "airom:confidence": 0.95,
+            "airom:confidence": 0.99,
             "airom:kind": "library",
             "airom:occurrence.confidence": 0.95,
+            "airom:provider": "openai",
+            "airom:purl": "pkg:golang/github.com/sashabaranov/go-openai@v1.32.0"
+          }
+        },
+        {
+          "ruleId": "gosrc/ast",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "library 'github.com/sashabaranov/go-openai' [v1.32.0] detected (confidence 0.99)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "main.go",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 7,
+                  "snippet": {
+                    "text": "openai \"github.com/sashabaranov/go-openai\""
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "591c26641eb38f6933cb5fdf4b57fdc26266e432f487cccfcff7f40d1212ef06"
+          },
+          "properties": {
+            "airom:componentId": "airom:f96ee68bb40a8bb3",
+            "airom:confidence": 0.99,
+            "airom:kind": "library",
+            "airom:occurrence.confidence": 0.8,
             "airom:provider": "openai",
             "airom:purl": "pkg:golang/github.com/sashabaranov/go-openai@v1.32.0"
           }

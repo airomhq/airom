@@ -33,7 +33,7 @@
     {
       "Claim": {
         "Kind": "framework",
-        "Name": "Microsoft.SemanticKernel",
+        "Name": "semantic-kernel",
         "Group": "",
         "Version": "1.15.0",
         "Provider": "Microsoft",

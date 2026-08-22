@@ -80,30 +80,6 @@
   },
   "components": [
     {
-      "bom-ref": "airom:cffbe1cb532342ef",
-      "type": "library",
-      "name": "github.com/sashabaranov/go-openai",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.8"
-        },
-        {
-          "name": "airom:kind",
-          "value": "library"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "main.go",
-            "line": 7,
-            "additionalContext": "openai \"github.com/sashabaranov/go-openai\""
-          }
-        ]
-      }
-    },
-    {
       "bom-ref": "airom:d641d9eba24d3a58",
       "type": "machine-learning-model",
       "name": "gpt-4o",
@@ -141,7 +117,7 @@
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.95"
+          "value": "0.99"
         },
         {
           "name": "airom:kind",
@@ -171,6 +147,11 @@
             "location": "go.mod",
             "line": 5,
             "additionalContext": "require github.com/sashabaranov/go-openai v1.32.0"
+          },
+          {
+            "location": "main.go",
+            "line": 7,
+            "additionalContext": "openai \"github.com/sashabaranov/go-openai\""
           }
         ]
       }
