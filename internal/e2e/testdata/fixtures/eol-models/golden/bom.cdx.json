@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:aa2a11f29e846576",
+      "bom-ref": "airom:bcbb2f8c0987e213",
       "type": "application",
-      "name": "eol-models",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\eol-models",
       "properties": [
         {
           "name": "airom:confidence",

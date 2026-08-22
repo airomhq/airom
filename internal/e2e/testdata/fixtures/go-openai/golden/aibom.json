@@ -14,8 +14,15 @@
     "kind": "dir",
     "target": "go-openai"
   },
-  "root": "airom:f7e06de2ad26950f",
+  "root": "airom:3343d8bd0751ecb3",
   "components": [
+    {
+      "id": "airom:3343d8bd0751ecb3",
+      "kind": "application",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\go-openai",
+      "confidence": 0,
+      "evidence": {}
+    },
     {
       "id": "airom:cffbe1cb532342ef",
       "kind": "library",
@@ -67,13 +74,6 @@
       ]
     },
     {
-      "id": "airom:f7e06de2ad26950f",
-      "kind": "application",
-      "name": "go-openai",
-      "confidence": 0,
-      "evidence": {}
-    },
-    {
       "id": "airom:f96ee68bb40a8bb3",
       "kind": "library",
       "name": "github.com/sashabaranov/go-openai",
@@ -114,8 +114,8 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
-    "headerBytes": 547,
-    "contentBytes": 547,
+    "headerBytes": 575,
+    "contentBytes": 575,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

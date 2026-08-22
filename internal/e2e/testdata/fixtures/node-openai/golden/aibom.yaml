@@ -84,9 +84,9 @@ components:
     versionConstraint: ^0.3.2
   - confidence: 0
     evidence: {}
-    id: airom:bfa221b1fd6ea0d5
+    id: airom:961122fbff9058d8
     kind: application
-    name: node-openai
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\node-openai
   - confidence: 0.985
     evidence:
       identity:
@@ -171,14 +171,14 @@ relationships:
     from: airom:f16d02e10b6caf23
     to: airom:14ac8720c7a8d1ef
     type: uses
-root: airom:bfa221b1fd6ea0d5
+root: airom:961122fbff9058d8
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: node-openai
 stats:
-  contentBytes: 588
+  contentBytes: 612
   detectors:
     - findings: 0
       id: dataset/file
@@ -324,7 +324,7 @@ stats:
   filesFailed: 0
   filesProcessed: 2
   filesWalked: 2
-  headerBytes: 588
+  headerBytes: 612
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

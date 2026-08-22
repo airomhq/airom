@@ -91,6 +91,11 @@ components:
             path: models/tf_model/saved_model.pb
           method: binary-analysis
         severity: medium
+  - confidence: 0
+    evidence: {}
+    id: airom:9423f449d4c6c695
+    kind: application
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\risky-models
   - confidence: 0.95
     evidence:
       identity:
@@ -115,11 +120,6 @@ components:
     provider: openai
     purl: pkg:pypi/openai@1.51.0
     version: 1.51.0
-  - confidence: 0
-    evidence: {}
-    id: airom:d4e3be4126ba4a51
-    kind: application
-    name: risky-models
   - confidence: 0.99
     evidence:
       identity:
@@ -198,14 +198,14 @@ components:
           method: binary-analysis
         severity: high
 lifecycle: pre-build
-root: airom:d4e3be4126ba4a51
+root: airom:9423f449d4c6c695
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: risky-models
 stats:
-  contentBytes: 613
+  contentBytes: 622
   detectors:
     - findings: 0
       id: dataset/file
@@ -351,7 +351,7 @@ stats:
   filesFailed: 0
   filesProcessed: 6
   filesWalked: 6
-  headerBytes: 613
+  headerBytes: 622
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

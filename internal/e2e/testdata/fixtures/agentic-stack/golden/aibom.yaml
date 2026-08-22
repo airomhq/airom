@@ -1,9 +1,9 @@
 components:
   - confidence: 0
     evidence: {}
-    id: airom:14f0893c734c4d89
+    id: airom:669989d3d8e834a5
     kind: application
-    name: agentic-stack
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\agentic-stack
   - confidence: 0.9875
     evidence:
       identity:
@@ -170,14 +170,14 @@ components:
     purl: pkg:pypi/mcp@2.0.0
     version: 2.0.0
 lifecycle: pre-build
-root: airom:14f0893c734c4d89
+root: airom:669989d3d8e834a5
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: agentic-stack
 stats:
-  contentBytes: 915
+  contentBytes: 947
   detectors:
     - findings: 0
       id: dataset/file
@@ -323,7 +323,7 @@ stats:
   filesFailed: 0
   filesProcessed: 3
   filesWalked: 3
-  headerBytes: 915
+  headerBytes: 947
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

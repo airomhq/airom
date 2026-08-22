@@ -65,7 +65,7 @@ func TestConfidenceBand(t *testing.T) {
 // If you added a kind: add it to Kinds() and bump the count here and in the
 // "The thirteen component kinds" comment.
 func TestKindsIsComplete(t *testing.T) {
-	const want = 13
+	const want = 15
 	if got := len(Kinds()); got != want {
 		t.Errorf("len(Kinds()) = %d, want %d — add the new kind to Kinds()", got, want)
 	}

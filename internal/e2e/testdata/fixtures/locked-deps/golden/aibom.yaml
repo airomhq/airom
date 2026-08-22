@@ -63,11 +63,6 @@ components:
     provider: anthropic
     purl: pkg:pypi/anthropic@0.34.2
     version: 0.34.2
-  - confidence: 0
-    evidence: {}
-    id: airom:7c7c4199feb6d991
-    kind: application
-    name: locked-deps
   - confidence: 0.95
     evidence:
       identity:
@@ -92,6 +87,11 @@ components:
     provider: openai
     purl: pkg:pypi/openai@1.40.0
     version: 1.40.0
+  - confidence: 0
+    evidence: {}
+    id: airom:c26bb05e019ef9c4
+    kind: application
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\locked-deps
   - confidence: 0.95
     evidence:
       identity:
@@ -152,14 +152,14 @@ components:
     purl: pkg:npm/openai@4.28.4
     version: 4.28.4
 lifecycle: pre-build
-root: airom:7c7c4199feb6d991
+root: airom:c26bb05e019ef9c4
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: locked-deps
 stats:
-  contentBytes: 1374
+  contentBytes: 1435
   detectors:
     - findings: 0
       id: dataset/file
@@ -305,7 +305,7 @@ stats:
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4
-  headerBytes: 1374
+  headerBytes: 1435
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

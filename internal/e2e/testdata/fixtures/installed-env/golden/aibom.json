@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "installed-env"
   },
-  "root": "airom:e827242fd464167e",
+  "root": "airom:5e219aa064b7f188",
   "components": [
     {
       "id": "airom:3e3a9735550d6b44",
@@ -71,6 +71,13 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:5e219aa064b7f188",
+      "kind": "application",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\installed-env",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:65ad4ea6556c5aad",
@@ -209,13 +216,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "airom:e827242fd464167e",
-      "kind": "application",
-      "name": "installed-env",
-      "confidence": 0,
-      "evidence": {}
     }
   ],
   "relationships": [
@@ -248,8 +248,8 @@
     "filesWalked": 6,
     "filesProcessed": 6,
     "filesFailed": 0,
-    "headerBytes": 1997,
-    "contentBytes": 1735,
+    "headerBytes": 2060,
+    "contentBytes": 1791,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

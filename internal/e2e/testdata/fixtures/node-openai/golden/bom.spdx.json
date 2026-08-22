@@ -75,9 +75,9 @@
     {
       "comment": "airom:kind application",
       "creationInfo": "_:creationInfo",
-      "name": "node-openai",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\node-openai",
       "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#961122fbff9058d8",
       "type": "software_Package"
     },
     {
@@ -116,12 +116,12 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#14ac8720c7a8d1ef",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#74c94e76beb18249",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#961122fbff9058d8",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f16d02e10b6caf23",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f9aed661fdbdcef2"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bfa221b1fd6ea0d5"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#961122fbff9058d8"
       ],
       "software_sbomType": [
         "build"

@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:e827242fd464167e",
+      "bom-ref": "airom:5e219aa064b7f188",
       "type": "application",
-      "name": "installed-env",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\installed-env",
       "properties": [
         {
           "name": "airom:confidence",

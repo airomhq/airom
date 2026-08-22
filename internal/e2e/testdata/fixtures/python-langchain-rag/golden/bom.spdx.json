@@ -57,14 +57,6 @@
       "type": "Organization"
     },
     {
-      "comment": "airom:kind application",
-      "creationInfo": "_:creationInfo",
-      "name": "python-langchain-rag",
-      "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#0f9a0955ae2b259c",
-      "type": "software_Package"
-    },
-    {
       "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
       "creationInfo": "_:creationInfo",
       "externalIdentifier": [
@@ -149,6 +141,14 @@
       "name": "temperature",
       "software_primaryPurpose": "configuration",
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6b1292e468717462",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\python-langchain-rag",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6e41647ced4c09ca",
       "type": "software_Package"
     },
     {
@@ -286,7 +286,6 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#0f9a0955ae2b259c",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#113e832148731168",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#1d7789e0b7e68c35",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#243c3c460eb1aeda",
@@ -294,6 +293,7 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3e3a9735550d6b44",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43f7aec19ad0c8e0",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6b1292e468717462",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6e41647ced4c09ca",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6ed15db34c48ea41",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
@@ -301,7 +301,7 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#e9e505aeb0e23154"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#0f9a0955ae2b259c"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6e41647ced4c09ca"
       ],
       "software_sbomType": [
         "build"

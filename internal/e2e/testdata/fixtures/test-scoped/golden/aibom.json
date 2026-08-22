@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "test-scoped"
   },
-  "root": "airom:f465180fc8f3da77",
+  "root": "airom:41354996d4016b61",
   "components": [
     {
       "id": "airom:36fd9d7d8704ef27",
@@ -89,6 +89,13 @@
         "sourceUrl": "https://platform.claude.com/docs/en/docs/about-claude/model-deprecations",
         "verified": "2026-07-23"
       }
+    },
+    {
+      "id": "airom:41354996d4016b61",
+      "kind": "application",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\test-scoped",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:65ac1a1b3af7edab",
@@ -406,13 +413,6 @@
         "sourceUrl": "https://developers.openai.com/api/docs/deprecations",
         "verified": "2026-07-23"
       }
-    },
-    {
-      "id": "airom:f465180fc8f3da77",
-      "kind": "application",
-      "name": "test-scoped",
-      "confidence": 0,
-      "evidence": {}
     }
   ],
   "relationships": [
@@ -535,8 +535,8 @@
     "filesWalked": 4,
     "filesProcessed": 4,
     "filesFailed": 0,
-    "headerBytes": 1522,
-    "contentBytes": 1522,
+    "headerBytes": 1576,
+    "contentBytes": 1576,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

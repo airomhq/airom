@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "locked-deps"
   },
-  "root": "airom:7c7c4199feb6d991",
+  "root": "airom:c26bb05e019ef9c4",
   "components": [
     {
       "id": "airom:3e3a9735550d6b44",
@@ -114,13 +114,6 @@
       }
     },
     {
-      "id": "airom:7c7c4199feb6d991",
-      "kind": "application",
-      "name": "locked-deps",
-      "confidence": 0,
-      "evidence": {}
-    },
-    {
       "id": "airom:a6ccf893ff130124",
       "kind": "library",
       "name": "openai",
@@ -155,6 +148,13 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:c26bb05e019ef9c4",
+      "kind": "application",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\locked-deps",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:eefd674ef1a59b46",
@@ -250,8 +250,8 @@
     "filesWalked": 4,
     "filesProcessed": 4,
     "filesFailed": 0,
-    "headerBytes": 1374,
-    "contentBytes": 1374,
+    "headerBytes": 1435,
+    "contentBytes": 1435,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

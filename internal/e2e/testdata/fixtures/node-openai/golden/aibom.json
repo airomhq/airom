@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "node-openai"
   },
-  "root": "airom:bfa221b1fd6ea0d5",
+  "root": "airom:961122fbff9058d8",
   "components": [
     {
       "id": "airom:14ac8720c7a8d1ef",
@@ -140,9 +140,9 @@
       }
     },
     {
-      "id": "airom:bfa221b1fd6ea0d5",
+      "id": "airom:961122fbff9058d8",
       "kind": "application",
-      "name": "node-openai",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\node-openai",
       "confidence": 0,
       "evidence": {}
     },
@@ -273,8 +273,8 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
-    "headerBytes": 588,
-    "contentBytes": 588,
+    "headerBytes": 612,
+    "contentBytes": 612,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

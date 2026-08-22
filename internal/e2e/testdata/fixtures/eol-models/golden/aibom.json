@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "eol-models"
   },
-  "root": "airom:aa2a11f29e846576",
+  "root": "airom:bcbb2f8c0987e213",
   "components": [
     {
       "id": "airom:0b7828a4ff243920",
@@ -464,9 +464,9 @@
       }
     },
     {
-      "id": "airom:aa2a11f29e846576",
+      "id": "airom:bcbb2f8c0987e213",
       "kind": "application",
-      "name": "eol-models",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\eol-models",
       "confidence": 0,
       "evidence": {}
     },
@@ -647,8 +647,8 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
-    "headerBytes": 1558,
-    "contentBytes": 1558,
+    "headerBytes": 1608,
+    "contentBytes": 1608,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

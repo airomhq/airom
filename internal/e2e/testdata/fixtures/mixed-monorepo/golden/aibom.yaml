@@ -1,4 +1,9 @@
 components:
+  - confidence: 0
+    evidence: {}
+    id: airom:31dde78fd7394528
+    kind: application
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\mixed-monorepo
   - confidence: 0.75
     evidence:
       occurrences:
@@ -64,11 +69,6 @@ components:
     provider: openai
     purl: pkg:pypi/openai@1.51.0
     version: 1.51.0
-  - confidence: 0
-    evidence: {}
-    id: airom:c4cea838751d80a9
-    kind: application
-    name: mixed-monorepo
   - confidence: 0.95
     evidence:
       identity:
@@ -93,14 +93,14 @@ components:
     provider: openai
     versionConstraint: ^4.67.1
 lifecycle: pre-build
-root: airom:c4cea838751d80a9
+root: airom:31dde78fd7394528
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: mixed-monorepo
 stats:
-  contentBytes: 321
+  contentBytes: 342
   detectors:
     - findings: 0
       id: dataset/file
@@ -246,7 +246,7 @@ stats:
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4
-  headerBytes: 777
+  headerBytes: 822
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

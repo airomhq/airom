@@ -33,6 +33,14 @@
       "type": "Organization"
     },
     {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\go-openai",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3343d8bd0751ecb3",
+      "type": "software_Package"
+    },
+    {
       "comment": "airom:package.ecosystem golang; airom:confidence 0.8; airom:evidence 1 occurrence(s); airom:kind library",
       "creationInfo": "_:creationInfo",
       "name": "github.com/sashabaranov/go-openai",
@@ -50,14 +58,6 @@
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d641d9eba24d3a58",
       "suppliedBy": "https://spdx.org/rdf/3.0.1/terms/Core/NoAssertionElement",
       "type": "ai_AIPackage"
-    },
-    {
-      "comment": "airom:kind application",
-      "creationInfo": "_:creationInfo",
-      "name": "go-openai",
-      "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f7e06de2ad26950f",
-      "type": "software_Package"
     },
     {
       "comment": "airom:package.ecosystem golang; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
@@ -80,13 +80,13 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3343d8bd0751ecb3",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cffbe1cb532342ef",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d641d9eba24d3a58",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f7e06de2ad26950f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f96ee68bb40a8bb3"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#f7e06de2ad26950f"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3343d8bd0751ecb3"
       ],
       "software_sbomType": [
         "build"

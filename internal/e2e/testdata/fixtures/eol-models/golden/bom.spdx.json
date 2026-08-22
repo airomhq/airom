@@ -129,9 +129,9 @@
     {
       "comment": "airom:kind application",
       "creationInfo": "_:creationInfo",
-      "name": "eol-models",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\eol-models",
       "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bcbb2f8c0987e213",
       "type": "software_Package"
     },
     {
@@ -212,11 +212,11 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#76a548bfe1b671c7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bcbb2f8c0987e213",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#be123ae014845a9f"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#aa2a11f29e846576"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#bcbb2f8c0987e213"
       ],
       "software_sbomType": [
         "build"

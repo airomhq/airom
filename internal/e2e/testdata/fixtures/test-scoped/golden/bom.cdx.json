@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:f465180fc8f3da77",
+      "bom-ref": "airom:41354996d4016b61",
       "type": "application",
-      "name": "test-scoped",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\test-scoped",
       "properties": [
         {
           "name": "airom:confidence",

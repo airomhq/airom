@@ -1,9 +1,4 @@
 components:
-  - confidence: 0
-    evidence: {}
-    id: airom:0f9a0955ae2b259c
-    kind: application
-    name: python-langchain-rag
   - confidence: 0.95
     evidence:
       identity:
@@ -175,6 +170,11 @@ components:
     id: airom:6b1292e468717462
     kind: ai-config
     name: temperature
+  - confidence: 0
+    evidence: {}
+    id: airom:6e41647ced4c09ca
+    kind: application
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\python-langchain-rag
   - confidence: 0.95
     evidence:
       identity:
@@ -384,14 +384,14 @@ relationships:
     from: airom:a6ccf893ff130124
     to: airom:cfc27e587216febe
     type: uses
-root: airom:0f9a0955ae2b259c
+root: airom:6e41647ced4c09ca
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: python-langchain-rag
 stats:
-  contentBytes: 1126
+  contentBytes: 1163
   detectors:
     - findings: 0
       id: dataset/file
@@ -537,7 +537,7 @@ stats:
   filesFailed: 0
   filesProcessed: 6
   filesWalked: 6
-  headerBytes: 1211
+  headerBytes: 1252
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

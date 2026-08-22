@@ -52,6 +52,11 @@ components:
         value: claude-1.0
     provider: anthropic
     testOnly: true
+  - confidence: 0
+    evidence: {}
+    id: airom:41354996d4016b61
+    kind: application
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\test-scoped
   - confidence: 0.985
     evidence:
       identity:
@@ -274,11 +279,6 @@ components:
         value: gpt-4-32k
     provider: openai
     testOnly: true
-  - confidence: 0
-    evidence: {}
-    id: airom:f465180fc8f3da77
-    kind: application
-    name: test-scoped
 lifecycle: pre-build
 relationships:
   - confidence: 0.7
@@ -363,14 +363,14 @@ relationships:
     from: airom:a6ccf893ff130124
     to: airom:be123ae014845a9f
     type: uses
-root: airom:f465180fc8f3da77
+root: airom:41354996d4016b61
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: test-scoped
 stats:
-  contentBytes: 1522
+  contentBytes: 1576
   detectors:
     - findings: 0
       id: dataset/file
@@ -516,7 +516,7 @@ stats:
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4
-  headerBytes: 1522
+  headerBytes: 1576
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

@@ -53,9 +53,9 @@
     {
       "comment": "airom:kind application",
       "creationInfo": "_:creationInfo",
-      "name": "agentic-stack",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\agentic-stack",
       "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#669989d3d8e834a5",
       "type": "software_Package"
     },
     {
@@ -122,14 +122,14 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#669989d3d8e834a5",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6d183e4ec227484e",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#989de824357981e6",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a9c29d22c69110c7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#b8ff217b82fc34ca"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#669989d3d8e834a5"
       ],
       "software_sbomType": [
         "build"

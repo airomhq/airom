@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:14f0893c734c4d89",
+      "bom-ref": "airom:669989d3d8e834a5",
       "type": "application",
-      "name": "agentic-stack",
+      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\agentic-stack",
       "properties": [
         {
           "name": "airom:confidence",

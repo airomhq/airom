@@ -316,9 +316,9 @@ components:
     version: 1.51.0
   - confidence: 0
     evidence: {}
-    id: airom:aa2a11f29e846576
+    id: airom:bcbb2f8c0987e213
     kind: application
-    name: eol-models
+    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\eol-models
   - confidence: 0.85
     eol:
       announced: "2024-06-06"
@@ -442,14 +442,14 @@ relationships:
     from: airom:a6ccf893ff130124
     to: airom:be123ae014845a9f
     type: uses
-root: airom:aa2a11f29e846576
+root: airom:bcbb2f8c0987e213
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:
   kind: dir
   target: eol-models
 stats:
-  contentBytes: 1558
+  contentBytes: 1608
   detectors:
     - findings: 0
       id: dataset/file
@@ -595,7 +595,7 @@ stats:
   filesFailed: 0
   filesProcessed: 2
   filesWalked: 2
-  headerBytes: 1558
+  headerBytes: 1608
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'
