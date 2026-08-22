@@ -1,8 +1,8 @@
 # Benchmark design: measuring what the scanner actually does
 
-> **Status:** Design accepted, corpus not yet built. This document is the
-> methodology; results do not exist until the corpus does. Nothing in AIROM's
-> docs may cite a precision, recall, or calibration number before this
+> **Status:** Design accepted; the evaluator (`airom bench`) is implemented;
+> the corpus is not yet built. Results do not exist until it is. Nothing in
+> AIROM's docs may cite a precision, recall, or calibration number before this
 > benchmark produces it in CI.
 
 ## 1. Why
@@ -89,7 +89,7 @@ benchmark you can study for is a fixture suite with extra steps.
 airom-bench/
   corpus/
     <repo-name>/
-      snapshot.tar.zst      # the pinned tree, content-addressed
+      snapshot.tar.gz       # the pinned tree, content-addressed (stdlib-decodable: no new dependency for the extractor)
       truth.yaml            # the labels
       MANIFEST.yaml         # upstream URL, commit, license, sha256, labeler
   schema/truth-schema.json

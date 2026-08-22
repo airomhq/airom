@@ -241,6 +241,26 @@ $ airom k8s prod -A -o cyclonedx=cluster-aibom.json
 $ airom k8s --manifests ./deploy/rendered --offline
 ```
 
+### `airom bench <corpus-dir>`
+
+Runs the detection benchmark ([benchmark.md](./benchmark.md)) against a
+labeled corpus and prints the metric report: precision and recall overall,
+per kind, and per language, attribute accuracy, trap violations, coverage
+rates, and the per-band calibration table, every rate beside its counts.
+
+Scans run offline with the overlays off: the benchmark grades detection, and
+a number that moves when OSV.dev does is not measuring the scanner.
+
+```console
+$ airom bench ../airom-bench --json bench.json
+$ airom bench ../airom-bench --baseline baselines/v0.4.1.json   # exits nonzero on regression
+```
+
+`--baseline` applies the gate policy of benchmark.md §5: fail on a >1-point
+precision or recall drop (overall, or any kind with at least 20 labels), and
+on ANY increase in trap violations or wrong versions. Improvements print a
+reminder to update the baseline in the same PR.
+
 ### `airom diff <old-aibom.json> <new-aibom.json>`
 
 Compare two native AIBOM documents (`airom scan <target> -o json=<file>`) and report the
