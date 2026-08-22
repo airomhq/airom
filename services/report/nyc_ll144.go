@@ -183,18 +183,18 @@ func buildNYCInventorySection(req ReportRequest, data *NYCLL144Data) (string, []
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf("Pursuant to NYC Admin Code § 20-871(a), this summary provides public disclosure of the Automated Employment Decision Tool (AEDT) utilized by **%s**.\n\n", req.OrgName))
-	sb.WriteString(fmt.Sprintf("**AEDT Description:** %s\n\n", data.AEDTDescription))
-	sb.WriteString(fmt.Sprintf("**Target Job Classifications:** %s\n\n", strings.Join(data.JobCategories, ", ")))
+	fmt.Fprintf(&sb, "Pursuant to NYC Admin Code § 20-871(a), this summary provides public disclosure of the Automated Employment Decision Tool (AEDT) utilized by **%s**.\n\n", req.OrgName)
+	fmt.Fprintf(&sb, "**AEDT Description:** %s\n\n", data.AEDTDescription)
+	fmt.Fprintf(&sb, "**Target Job Classifications:** %s\n\n", strings.Join(data.JobCategories, ", "))
 
 	if len(req.EvidenceIndex) > 0 {
 		sb.WriteString("### Verified Decision Logic & Model Deployments in Codebase\n\n")
 		for _, ev := range req.EvidenceIndex {
 			citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-			sb.WriteString(fmt.Sprintf(
+			fmt.Fprintf(&sb,
 				"- **%s** (`%s`): Implemented at `%s:%d` %s with detection confidence `%.2f`.\n",
 				ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag, ev.Confidence,
-			))
+			)
 			citations = append(citations, Citation{
 				RawTag:     citTag,
 				AIBOMID:    ev.AIBOMID,
@@ -216,8 +216,8 @@ func buildNYCImpactRatioSection(data *NYCLL144Data) string {
 	sb.WriteString("|---|:---:|:---:|:---:|:---:|\n")
 
 	for _, m := range data.Metrics {
-		sb.WriteString(fmt.Sprintf("| %s | %d | %d | %.1f%% | **%.3f** |\n",
-			m.Category, m.TotalScored, m.Selected, m.SelectionRate*100, m.ImpactRatio))
+		fmt.Fprintf(&sb, "| %s | %d | %d | %.1f%% | **%.3f** |\n",
+			m.Category, m.TotalScored, m.Selected, m.SelectionRate*100, m.ImpactRatio)
 	}
 	sb.WriteString("\n*Note: An impact ratio of 0.80 or greater demonstrates compliance with the EEOC Four-Fifths (80%) rule.* \n")
 	return sb.String()
@@ -236,10 +236,10 @@ func buildNYCLedgerSection(req ReportRequest) string {
 	var sb strings.Builder
 	sb.WriteString("To satisfy NYC LL144 compliance verification requirements, all scanning results and bias audit metadata are anchored in the immutable ComplianceDB ledger.\n\n")
 	if req.Snapshot != nil {
-		sb.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&sb,
 			"- **Ledger Snapshot:** `%s`\n- **Cryptographic Hash (SHA-256):** `%s`\n- **Continuous Chain Link:** `%s`\n",
 			req.Snapshot.ID, req.Snapshot.SelfHash, req.Snapshot.PrevSnapshotHash,
-		))
+		)
 	} else {
 		sb.WriteString("- Continuous audit verification is maintained through automated CI/CD pipeline scans.\n")
 	}

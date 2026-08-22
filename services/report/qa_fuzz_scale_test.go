@@ -40,10 +40,10 @@ func TestQA_ExtremeCitationScale_50K(t *testing.T) {
 			Confidence:  0.95 + float64(i%5)/100.0,
 		}
 
-		proseBuilder.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&proseBuilder,
 			"Service module %d deploys algorithmic decision system at `%s:%d` [ev:%s:%s:%d].\n",
 			i, filePath, lineNum, aibomID, filePath, lineNum,
-		))
+		)
 	}
 
 	proseDocument := proseBuilder.String()
@@ -473,10 +473,10 @@ func BenchmarkScale_50KCitations(b *testing.B) {
 			Confidence:  0.99,
 		}
 
-		proseBuilder.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&proseBuilder,
 			"Service module %d deploys high-risk model at %s:%d [ev:%s:%s:%d].\n",
 			i, filePath, lineNum, aibomID, filePath, lineNum,
-		))
+		)
 	}
 
 	prose := proseBuilder.String()

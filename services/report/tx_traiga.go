@@ -122,13 +122,13 @@ func buildTRAIGASystemOverview(req ReportRequest, data *TRAIGAData) (string, []C
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf("Texas Responsible AI Registry Documentation for **%s** (`%s`).\n\n", req.OrgName, req.RepoName))
-	sb.WriteString(fmt.Sprintf("**Registry Identifier:** `%s`\n\n", data.RegistryID))
+	fmt.Fprintf(&sb, "Texas Responsible AI Registry Documentation for **%s** (`%s`).\n\n", req.OrgName, req.RepoName)
+	fmt.Fprintf(&sb, "**Registry Identifier:** `%s`\n\n", data.RegistryID)
 	if len(req.EvidenceIndex) > 0 {
 		sb.WriteString("### Verified Deployed Models & Code Citations\n\n")
 		for _, ev := range req.EvidenceIndex {
 			citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-			sb.WriteString(fmt.Sprintf("- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag))
+			fmt.Fprintf(&sb, "- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag)
 			citations = append(citations, Citation{
 				RawTag:     citTag,
 				AIBOMID:    ev.AIBOMID,

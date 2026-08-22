@@ -122,13 +122,13 @@ func buildVCDPASystemOverview(req ReportRequest, data *VCDPAData) (string, []Cit
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf("Virginia Data Protection Assessment for **%s** under Va. Code § 59.1-580.\n\n", req.OrgName))
-	sb.WriteString(fmt.Sprintf("**DPA Assessment Reference:** `%s`\n\n", data.AssessmentID))
+	fmt.Fprintf(&sb, "Virginia Data Protection Assessment for **%s** under Va. Code § 59.1-580.\n\n", req.OrgName)
+	fmt.Fprintf(&sb, "**DPA Assessment Reference:** `%s`\n\n", data.AssessmentID)
 	if len(req.EvidenceIndex) > 0 {
 		sb.WriteString("### Verified Profiling & Scoring Models\n\n")
 		for _, ev := range req.EvidenceIndex {
 			citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-			sb.WriteString(fmt.Sprintf("- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag))
+			fmt.Fprintf(&sb, "- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag)
 			citations = append(citations, Citation{
 				RawTag:     citTag,
 				AIBOMID:    ev.AIBOMID,
