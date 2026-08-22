@@ -1,6 +1,7 @@
 package report
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -197,6 +198,112 @@ func TestColoradoReport_EndToEndGeneration(t *testing.T) {
 	}
 }
 
+func TestNYCLL144Report_GenerationAndFormatting(t *testing.T) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"src/screening/ranker.py:32": {
+			AIBOMID:     "aibom-nyc-1",
+			FilePath:    "src/screening/ranker.py",
+			LineNumber:  32,
+			ComponentID: "comp-ranker",
+			ModelName:   "candidate-ranker-xgb",
+			Kind:        "local-weights",
+			Confidence:  0.96,
+		},
+	}
+
+	req := ReportRequest{
+		OrgName:       "Gotham Talent Corp",
+		RepoID:        "talent-aedt",
+		RepoName:      "resume-ranker-aedt",
+		CommitSHA:     "commit-nyc-123",
+		EvidenceIndex: evIndex,
+	}
+
+	report, err := GenerateNYCLL144Report(req, nil)
+	if err != nil {
+		t.Fatalf("failed to generate NYC LL144 report: %v", err)
+	}
+
+	if report.Framework != "nyc-ll144" || len(report.Sections) != 5 {
+		t.Errorf("unexpected NYC report structure: framework=%s, sections=%d", report.Framework, len(report.Sections))
+	}
+
+	md := RenderMarkdown(report)
+	if !strings.Contains(md, "Four-Fifths") || !strings.Contains(md, "Selection Rate") {
+		t.Errorf("expected four-fifths and selection rate in NYC markdown: %s", md)
+	}
+
+	html := RenderHTML(report)
+	if !strings.Contains(html, "Automated Employment Decision Tool") {
+		t.Errorf("expected AEDT reference in NYC HTML: %s", html)
+	}
+}
+
+func TestCAAB2013Report_GenerationAndFormatting(t *testing.T) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"data/loader.py:15": {
+			AIBOMID:     "aibom-ca-1",
+			FilePath:    "data/loader.py",
+			LineNumber:  15,
+			ComponentID: "comp-data-loader",
+			ModelName:   "enterprise-finetune-corpus",
+			Kind:        "dataset",
+			Confidence:  0.92,
+		},
+	}
+
+	req := ReportRequest{
+		OrgName:       "Pacific AI Labs",
+		RepoID:        "genai-writer",
+		RepoName:      "enterprise-assistant-llm",
+		CommitSHA:     "commit-ca-789",
+		EvidenceIndex: evIndex,
+	}
+
+	report, err := GenerateCAAB2013Report(req, nil)
+	if err != nil {
+		t.Fatalf("failed to generate CA AB 2013 report: %v", err)
+	}
+
+	if report.Framework != "ca-ab2013" || len(report.Sections) != 4 {
+		t.Errorf("unexpected CA report structure: framework=%s, sections=%d", report.Framework, len(report.Sections))
+	}
+
+	md := RenderMarkdown(report)
+	if !strings.Contains(md, "California AB 2013") || !strings.Contains(md, "Personal Info Included") {
+		t.Errorf("expected AB 2013 notice and privacy table in markdown: %s", md)
+	}
+
+	html := RenderHTML(report)
+	if !strings.Contains(html, "Training Data Transparency Notice") {
+		t.Errorf("expected transparency notice in HTML: %s", html)
+	}
+}
+
+func TestEngineConfig_ValidationAndDefaults(t *testing.T) {
+	cfg := DefaultEngineConfig()
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("expected default config to be valid, got: %v", err)
+	}
+
+	// Invalid provider
+	badCfg := cfg
+	badCfg.LLMBackend.Provider = "unsupported-llm"
+	if err := badCfg.Validate(); err == nil {
+		t.Errorf("expected error on unsupported provider")
+	}
+
+	// Missing required API key env when not air-gapped
+	onlineCfg := cfg
+	onlineCfg.LLMBackend.Provider = ProviderAnthropic
+	onlineCfg.LLMBackend.AirGapped = false
+	onlineCfg.LLMBackend.APIKeyEnv = "TEST_MISSING_API_KEY_ENV_XYZ"
+	os.Unsetenv("TEST_MISSING_API_KEY_ENV_XYZ")
+	if err := onlineCfg.Validate(); err == nil {
+		t.Errorf("expected error on missing API key env var")
+	}
+}
+
 func BenchmarkCitation_ExtractionAndVerification(b *testing.B) {
 	prose := `
 Underwriting system deploys GPT-4o at src/scoring.py:47 [ev:aibom-1:src/scoring.py:47].
@@ -243,6 +350,52 @@ func BenchmarkReport_GenerationAndExport(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		rep, _ := GenerateColoradoReport(req)
+		_ = RenderHTML(rep)
+	}
+}
+
+func BenchmarkNYCLL144_Generation(b *testing.B) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"src/ranker.py:10": {
+			AIBOMID:    "aibom-nyc",
+			FilePath:   "src/ranker.py",
+			LineNumber: 10,
+			ModelName:  "ranker",
+		},
+	}
+	req := ReportRequest{
+		OrgName:       "Gotham Bench",
+		RepoID:        "bench-aedt",
+		CommitSHA:     "c-bench",
+		EvidenceIndex: evIndex,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rep, _ := GenerateNYCLL144Report(req, nil)
+		_ = RenderHTML(rep)
+	}
+}
+
+func BenchmarkCAAB2013_Generation(b *testing.B) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"data/loader.py:10": {
+			AIBOMID:    "aibom-ca",
+			FilePath:   "data/loader.py",
+			LineNumber: 10,
+			ModelName:  "corpus",
+		},
+	}
+	req := ReportRequest{
+		OrgName:       "Pacific Bench",
+		RepoID:        "bench-ca",
+		CommitSHA:     "c-bench",
+		EvidenceIndex: evIndex,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rep, _ := GenerateCAAB2013Report(req, nil)
 		_ = RenderHTML(rep)
 	}
 }
