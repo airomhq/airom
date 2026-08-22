@@ -12,7 +12,7 @@ import (
 type EventType string
 
 const (
-	EventAnomalyDetected  EventType = "anomaly_detected"
+	EventAnomalyDetected   EventType = "anomaly_detected"
 	EventSnapshotCommitted EventType = "snapshot_committed"
 	EventAttestationSigned EventType = "attestation_signed"
 	EventQuotaAlert        EventType = "quota_alert"
