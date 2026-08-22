@@ -115,6 +115,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newApproveCmd(),
 		newRevokeCmd(),
 		newCheckCmd(),
+		newServeCmd(),
 	)
 	return root
 }

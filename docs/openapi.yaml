@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: AIROM Enterprise Governance & Compliance API
+  description: |
+    AIROM is the Enterprise AI Governance & Automated Regulatory Compliance platform.
+    This API provides cryptographic ledger snapshot tracking, multi-state statutory report generation
+    (Colorado AI Act, NYC LL144, CA AB 2013, Illinois BIPA, Texas TRAIGA, Virginia VCDPA),
+    ephemeral human review gateways, SOC 2 audit streaming (Datadog, Splunk), and commercial Stripe billing.
+  version: 1.0.0
+  contact:
+    name: AIROM Engineering
+    email: support@airom.dev
+    url: https://docs.airom.dev
+
+servers:
+  - url: https://api.airom.dev
+    description: Production Enterprise Cloud
+  - url: http://localhost:8080
+    description: Local Gateway Daemon
+
+paths:
+  /healthz:
+    get:
+      summary: Liveness Probe
+      responses:
+        '200':
+          description: Service is healthy
+
+  /readyz:
+    get:
+      summary: Readiness Probe
+      responses:
+        '200':
+          description: All microservices are ready
+
+  /metrics:
+    get:
+      summary: Prometheus Metrics
+      responses:
+        '200':
+          description: OpenMetrics / Prometheus metrics stream
+
+  /api/v1/info:
+    get:
+      summary: System Metadata & Supported Frameworks
+      responses:
+        '200':
+          description: System edition and enabled compliance packs
+
+  /api/v1/auth/sso/callback:
+    post:
+      tags: [Authentication]
+      summary: Enterprise SSO IdP Callback (Okta, Azure AD, Google)
+      responses:
+        '200':
+          description: JWT Session minted
+
+  /api/v1/auth/keys:
+    post:
+      tags: [Authentication]
+      summary: Mint Scoped Machine API Key
+      responses:
+        '201':
+          description: API key created (raw secret returned once)
+
+  /api/v1/repos/{repo}/snapshots:
+    post:
+      tags: [ComplianceDB & Ledger]
+      summary: Ingest AIBOM Snapshot into Hash-Chain Ledger
+      parameters:
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Snapshot appended with SHA-256 block hash
+
+  /api/v1/repos/{repo}/history:
+    get:
+      tags: [ComplianceDB & Ledger]
+      summary: Retrieve Repository Audit Trail & Hash-Chain Verification
+      parameters:
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Time-series snapshots and chain validation report
+
+  /api/v1/orgs/{org}/compliance:
+    get:
+      tags: [ComplianceDB & Ledger]
+      summary: Organization-Level Multi-Framework Compliance Posture
+      parameters:
+        - name: org
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Aggregated met/gap/manual stats across all state frameworks
+
+  /api/v1/anomalies/evaluate:
+    post:
+      tags: [Anomaly Engine]
+      summary: Cloud Diff & AI Model Drift Detection
+      responses:
+        '200':
+          description: Anomaly detection verdict and component diff
+
+  /api/v1/auth/human-token:
+    post:
+      tags: [Document Review Gateway]
+      summary: Issue 90-Second Ephemeral HMAC Confirmation Token
+      responses:
+        '200':
+          description: Ephemeral token issued
+
+  /api/v1/documents:
+    post:
+      tags: [Document Review Gateway]
+      summary: Compile Regulator-Ready Document Package (Green/Yellow/Red)
+      responses:
+        '201':
+          description: Review package created
+
+  /api/v1/documents/{id}/certify:
+    post:
+      tags: [Document Review Gateway]
+      summary: Execute Cryptographic Human Certification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document certified and immutable audit entry created
+
+  /api/v1/audit/events:
+    get:
+      tags: [SOC 2 & SIEM]
+      summary: Query SOC 2 Audit Trail
+      parameters:
+        - name: org_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Signed audit events list
+
+  /api/v1/audit/siem/config:
+    post:
+      tags: [SOC 2 & SIEM]
+      summary: Configure Datadog / Splunk / Webhook SIEM Streamer
+      responses:
+        '200':
+          description: SIEM destination configured
+
+  /api/v1/billing/subscription:
+    get:
+      tags: [Billing & Quotas]
+      summary: Get Subscription Details & Tier Quotas
+      parameters:
+        - name: org_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Active tier quotas and account status
+
+  /api/v1/billing/usage:
+    get:
+      tags: [Billing & Quotas]
+      summary: Get Current Billing Month Consumption
+      parameters:
+        - name: org_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scan usage vs monthly quota
+
+  /api/v1/billing/webhook/stripe:
+    post:
+      tags: [Billing & Quotas]
+      summary: Stripe Webhook Ingestion Endpoint
+      responses:
+        '200':
+          description: Webhook processed
