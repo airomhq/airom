@@ -8,17 +8,17 @@ import (
 
 // TrainingDatasetEntry describes a dataset in compliance with CA AB 2013.
 type TrainingDatasetEntry struct {
-	Name                  string   `json:"name"`
-	SourceOrOwner         string   `json:"source_or_owner"`
-	PurposeDescription    string   `json:"purpose_description"`
-	DataPointCountOrSize  string   `json:"data_point_count_or_size"`
-	DataTypes             []string `json:"data_types"` // e.g. "Text", "Code", "Images"
-	IncludesPersonalInfo  bool     `json:"includes_personal_info"`
-	IncludesCopyrighted   bool     `json:"includes_copyrighted"`
-	UsedSyntheticData     bool     `json:"used_synthetic_data"`
-	CleanedOrFiltered     bool     `json:"cleaned_or_filtered"`
-	PurchasedOrLicensed   bool     `json:"purchased_or_licensed"`
-	CollectionTimePeriod  string   `json:"collection_time_period"`
+	Name                 string   `json:"name"`
+	SourceOrOwner        string   `json:"source_or_owner"`
+	PurposeDescription   string   `json:"purpose_description"`
+	DataPointCountOrSize string   `json:"data_point_count_or_size"`
+	DataTypes            []string `json:"data_types"` // e.g. "Text", "Code", "Images"
+	IncludesPersonalInfo bool     `json:"includes_personal_info"`
+	IncludesCopyrighted  bool     `json:"includes_copyrighted"`
+	UsedSyntheticData    bool     `json:"used_synthetic_data"`
+	CleanedOrFiltered    bool     `json:"cleaned_or_filtered"`
+	PurchasedOrLicensed  bool     `json:"purchased_or_licensed"`
+	CollectionTimePeriod string   `json:"collection_time_period"`
 }
 
 // CAAB2013Data contains the transparency disclosures for California AB 2013.

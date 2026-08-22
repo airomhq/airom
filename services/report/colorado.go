@@ -150,10 +150,10 @@ func GenerateColoradoReport(req ReportRequest) (*ComplianceReport, error) {
 		SignerName:        signerName,
 		SignerTitle:       signerTitle,
 		Metadata: map[string]string{
-			"statute":         "Colorado SB 24-205",
-			"jurisdiction":    "State of Colorado, USA",
-			"effective_date":  "2026-02-01",
-			"generator":       "AIROM ReportEngine v1.0",
+			"statute":        "Colorado SB 24-205",
+			"jurisdiction":   "State of Colorado, USA",
+			"effective_date": "2026-02-01",
+			"generator":      "AIROM ReportEngine v1.0",
 		},
 	}, nil
 }

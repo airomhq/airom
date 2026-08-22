@@ -1,37 +1,48 @@
 package auth
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 // Service provides the enterprise authentication service.
 type Service struct {
-	mu         sync.RWMutex
-	secret     []byte
-	users      map[string]*User      // userID -> User
-	usersByEmail map[string]*User    // email -> User
-	apiKeys    map[string]*APIKey    // keyID -> APIKey
-	ssoConfigs map[string]*SSOConfig // orgID -> SSOConfig
-	auditLogs  []AuthEvent
+	mu            sync.RWMutex
+	secret        []byte
+	users         map[string]*User      // userID -> User
+	usersByEmail  map[string]*User      // email -> User
+	apiKeys       map[string]*APIKey    // keyID -> APIKey
+	apiKeysByHash map[string]*APIKey    // keyHash -> APIKey
+	ssoConfigs    map[string]*SSOConfig // orgID -> SSOConfig
+	auditLogs     []AuthEvent
+	userSeq       uint64
+	eventSeq      uint64
 }
 
 // NewService creates a new enterprise Auth Service.
-func NewService(secret []byte) *Service {
-	if len(secret) == 0 {
+func NewService(secrets ...[]byte) *Service {
+	var secret []byte
+	if len(secrets) > 0 && len(secrets[0]) > 0 {
+		secret = secrets[0]
+	} else {
 		secret = []byte("airom-auth-enterprise-secret-key-32b")
 	}
 	return &Service{
-		secret:       secret,
-		users:        make(map[string]*User),
-		usersByEmail: make(map[string]*User),
-		apiKeys:      make(map[string]*APIKey),
-		ssoConfigs:   make(map[string]*SSOConfig),
-		auditLogs:    make([]AuthEvent, 0),
+		secret:        secret,
+		users:         make(map[string]*User),
+		usersByEmail:  make(map[string]*User),
+		apiKeys:       make(map[string]*APIKey),
+		apiKeysByHash: make(map[string]*APIKey),
+		ssoConfigs:    make(map[string]*SSOConfig),
+		auditLogs:     make([]AuthEvent, 0),
 	}
 }
 
@@ -81,15 +92,58 @@ func (s *Service) Authenticate(r *http.Request) (*AuthClaims, error) {
 }
 
 func (s *Service) authAPIKey(rawKey string) (*AuthClaims, error) {
-	s.mu.RLock()
-	var keys []APIKey
-	for _, k := range s.apiKeys {
-		keys = append(keys, *k)
+	if !strings.HasPrefix(rawKey, APIKeyPrefix) {
+		return nil, errors.New("invalid api key format")
 	}
+
+	rawHashBytes := sha256.Sum256([]byte(rawKey))
+	rawHash := hex.EncodeToString(rawHashBytes[:])
+
+	s.mu.RLock()
+	apiKey, exists := s.apiKeysByHash[rawHash]
 	s.mu.RUnlock()
 
-	_, claims, err := AuthenticateAPIKey(rawKey, keys)
-	return claims, err
+	if !exists {
+		return nil, errors.New("invalid api key")
+	}
+	if !apiKey.IsActive {
+		return nil, ErrKeyInactive
+	}
+	if apiKey.ExpiresAt != nil && time.Now().UTC().After(*apiKey.ExpiresAt) {
+		return nil, ErrKeyExpired
+	}
+
+	now := time.Now().UTC()
+	claims := &AuthClaims{
+		UserID:      apiKey.ID,
+		OrgID:       apiKey.OrgID,
+		Email:       fmt.Sprintf("apikey:%s", apiKey.Name),
+		Role:        apiKey.Role,
+		Permissions: apiKey.Permissions,
+		TokenType:   "api_key",
+		IssuedAt:    now,
+		ExpiresAt:   now.Add(365 * 24 * time.Hour),
+	}
+	return claims, nil
+}
+
+// RegisterAPIKey registers a pre-minted API key into the service index.
+func (s *Service) RegisterAPIKey(apiKey APIKey) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apiKeys[apiKey.ID] = &apiKey
+	s.apiKeysByHash[apiKey.KeyHash] = &apiKey
+}
+
+// BulkRegisterAPIKeys registers multiple pre-minted API keys efficiently.
+func (s *Service) BulkRegisterAPIKeys(keys []APIKey) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range keys {
+		k := &keys[i]
+		s.apiKeys[k.ID] = k
+		s.apiKeysByHash[k.KeyHash] = k
+	}
 }
 
 // RequirePermission wraps a handler with RBAC permission enforcement.
@@ -152,8 +206,9 @@ func (s *Service) handleSSOCallback(w http.ResponseWriter, r *http.Request) {
 		if role == "" {
 			role = RoleDeveloper
 		}
+		seq := atomic.AddUint64(&s.userSeq, 1)
 		user = &User{
-			ID:          fmt.Sprintf("usr-%d", now.UnixNano()),
+			ID:          fmt.Sprintf("usr-%d-%d", now.UnixNano(), seq),
 			OrgID:       req.OrgID,
 			Email:       req.Email,
 			Name:        req.Name,
@@ -220,6 +275,7 @@ func (s *Service) handleKeysCollection(w http.ResponseWriter, r *http.Request) {
 
 		s.mu.Lock()
 		s.apiKeys[apiKey.ID] = &apiKey
+		s.apiKeysByHash[apiKey.KeyHash] = &apiKey
 		s.mu.Unlock()
 
 		s.recordEvent(claims.OrgID, claims.UserID, "KEY_MINTED", fmt.Sprintf("Minted API key %q", apiKey.Name))
@@ -318,8 +374,9 @@ func (s *Service) handleUsersCollection(w http.ResponseWriter, r *http.Request) 
 		}
 
 		now := time.Now().UTC()
+		seq := atomic.AddUint64(&s.userSeq, 1)
 		user := &User{
-			ID:        fmt.Sprintf("usr-%d", now.UnixNano()),
+			ID:        fmt.Sprintf("usr-%d-%d", now.UnixNano(), seq),
 			OrgID:     claims.OrgID,
 			Email:     req.Email,
 			Name:      req.Name,
@@ -437,8 +494,9 @@ func (s *Service) handleAuditLogs(w http.ResponseWriter, r *http.Request) {
 func (s *Service) recordEvent(orgID, userID, eventType, details string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	seq := atomic.AddUint64(&s.eventSeq, 1)
 	s.auditLogs = append(s.auditLogs, AuthEvent{
-		ID:        fmt.Sprintf("ev-%d", time.Now().UTC().UnixNano()),
+		ID:        fmt.Sprintf("ev-%d-%d", time.Now().UTC().UnixNano(), seq),
 		OrgID:     orgID,
 		UserID:    userID,
 		EventType: eventType,

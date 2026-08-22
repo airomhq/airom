@@ -34,12 +34,12 @@ func (e EvidenceRef) FullKey() string {
 
 // Citation records an extracted [ev:...] reference.
 type Citation struct {
-	RawTag        string      `json:"raw_tag"`
-	AIBOMID       string      `json:"aibom_id"`
-	FilePath      string      `json:"file_path"`
-	LineNumber    int         `json:"line_number"`
-	IsValid       bool        `json:"is_valid"`
-	ValidationMsg string      `json:"validation_msg,omitempty"`
+	RawTag        string       `json:"raw_tag"`
+	AIBOMID       string       `json:"aibom_id"`
+	FilePath      string       `json:"file_path"`
+	LineNumber    int          `json:"line_number"`
+	IsValid       bool         `json:"is_valid"`
+	ValidationMsg string       `json:"validation_msg,omitempty"`
 	Evidence      *EvidenceRef `json:"evidence,omitempty"`
 }
 
@@ -47,7 +47,7 @@ type Citation struct {
 type AttestationStatus string
 
 const (
-	StatusVerified              AttestationStatus = "VERIFIED"
+	StatusVerified               AttestationStatus = "VERIFIED"
 	StatusRequiresAttestation    AttestationStatus = "REQUIRES_MANUAL_ATTESTATION"
 	StatusInvalidCitationRemoved AttestationStatus = "INVALID_CITATION_REMOVED"
 )
@@ -64,20 +64,20 @@ type ReportSection struct {
 
 // ComplianceReport is the top-level structured output of the ReportEngine.
 type ComplianceReport struct {
-	ID                string                       `json:"id"`
-	Framework         string                       `json:"framework"` // e.g. "colorado-ai-act", "nyc-ll144", "ca-ab2013"
-	Title             string                       `json:"title"`
-	OrgName           string                       `json:"org_name"`
-	RepoName          string                       `json:"repo_name"`
-	CommitSHA         string                       `json:"commit_sha"`
-	GeneratedAt       time.Time                    `json:"generated_at"`
-	ExecutiveSummary  string                       `json:"executive_summary"`
-	Sections          []ReportSection              `json:"sections"`
+	ID                string                           `json:"id"`
+	Framework         string                           `json:"framework"` // e.g. "colorado-ai-act", "nyc-ll144", "ca-ab2013"
+	Title             string                           `json:"title"`
+	OrgName           string                           `json:"org_name"`
+	RepoName          string                           `json:"repo_name"`
+	CommitSHA         string                           `json:"commit_sha"`
+	GeneratedAt       time.Time                        `json:"generated_at"`
+	ExecutiveSummary  string                           `json:"executive_summary"`
+	Sections          []ReportSection                  `json:"sections"`
 	Evaluations       []compliancedb.ControlEvaluation `json:"evaluations"`
-	AllCitationsValid bool                         `json:"all_citations_valid"`
-	SignerName        string                       `json:"signer_name,omitempty"`
-	SignerTitle       string                       `json:"signer_title,omitempty"`
-	Metadata          map[string]string            `json:"metadata,omitempty"`
+	AllCitationsValid bool                             `json:"all_citations_valid"`
+	SignerName        string                           `json:"signer_name,omitempty"`
+	SignerTitle       string                           `json:"signer_title,omitempty"`
+	Metadata          map[string]string                `json:"metadata,omitempty"`
 }
 
 // ReportRequest is the input payload to generate a report.
@@ -98,10 +98,10 @@ type ReportRequest struct {
 
 // VerifiedProseResult holds the output of the AST citation verification.
 type VerifiedProseResult struct {
-	CleanedProse      string            `json:"cleaned_prose"`
+	CleanedProse       string            `json:"cleaned_prose"`
 	ExtractedCitations []Citation        `json:"extracted_citations"`
-	ValidCount        int               `json:"valid_count"`
-	InvalidCount      int               `json:"invalid_count"`
-	UncitedClaims     int               `json:"uncited_claims"`
-	AttestationStatus AttestationStatus `json:"attestation_status"`
+	ValidCount         int               `json:"valid_count"`
+	InvalidCount       int               `json:"invalid_count"`
+	UncitedClaims      int               `json:"uncited_claims"`
+	AttestationStatus  AttestationStatus `json:"attestation_status"`
 }

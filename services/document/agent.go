@@ -13,10 +13,10 @@ import (
 
 // Agent manages compliance document packages and human review gateways.
 type Agent struct {
-	mu          sync.RWMutex
-	secret      []byte
-	packages    map[string]*DocumentPackage
-	auditLogs   []FilingAuditEntry
+	mu        sync.RWMutex
+	secret    []byte
+	packages  map[string]*DocumentPackage
+	auditLogs []FilingAuditEntry
 }
 
 // NewAgent instantiates a new ComplianceDocumentAgent.

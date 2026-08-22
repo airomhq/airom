@@ -17,10 +17,10 @@ const (
 )
 
 var (
-	ErrTokenExpired      = errors.New("human confirmation token has expired (TTL = 90s)")
-	ErrTokenInvalidSig   = errors.New("human confirmation token signature is invalid or tampered")
-	ErrTokenDocMismatch  = errors.New("human confirmation token is not authorized for this document")
-	ErrTokenMalformed    = errors.New("malformed human confirmation token structure")
+	ErrTokenExpired     = errors.New("human confirmation token has expired (TTL = 90s)")
+	ErrTokenInvalidSig  = errors.New("human confirmation token signature is invalid or tampered")
+	ErrTokenDocMismatch = errors.New("human confirmation token is not authorized for this document")
+	ErrTokenMalformed   = errors.New("malformed human confirmation token structure")
 )
 
 // GenerateHumanToken creates a signed, ephemeral 90-second confirmation token.

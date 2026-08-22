@@ -133,7 +133,7 @@ func MintAPIKey(orgID, name string, role Role, customPerms []Permission) (string
 	keyHash := hex.EncodeToString(keyHashBytes[:])
 
 	now := time.Now().UTC()
-	keyID := fmt.Sprintf("key-%d", now.UnixNano())
+	keyID := fmt.Sprintf("key-%d-%s", now.UnixNano(), entropyHex[:8])
 	prefix := rawKey[:18] + "..." // e.g. "airom_live_a1b2c3d..."
 
 	apiKey := APIKey{

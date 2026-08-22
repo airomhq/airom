@@ -11,50 +11,50 @@ import (
 type ItemStatus string
 
 const (
-	StatusGreenVerified            ItemStatus = "GREEN_VERIFIED"
+	StatusGreenVerified             ItemStatus = "GREEN_VERIFIED"
 	StatusYellowAttestationRequired ItemStatus = "YELLOW_ATTESTATION_REQUIRED"
 	StatusRedGap                    ItemStatus = "RED_GAP"
 )
 
 // ReviewItem represents a single line item in the human review gateway.
 type ReviewItem struct {
-	ID                     string     `json:"id"`
-	Category               string     `json:"category"` // e.g. "System Identity", "Consumer Notice", "Bias Audit"
-	Title                  string     `json:"title"`
-	Description            string     `json:"description"`
-	Status                 ItemStatus `json:"status"`
-	StatuteRef             string     `json:"statute_ref,omitempty"`
-	EvidenceCitation       string     `json:"evidence_citation,omitempty"`
-	IsLocked               bool       `json:"is_locked"` // Green items are locked
-	Value                  string     `json:"value,omitempty"` // User answer for Yellow
-	Options                []string   `json:"options,omitempty"` // Dropdown choices for Yellow
-	IsAnswered             bool       `json:"is_answered"`
+	ID                      string     `json:"id"`
+	Category                string     `json:"category"` // e.g. "System Identity", "Consumer Notice", "Bias Audit"
+	Title                   string     `json:"title"`
+	Description             string     `json:"description"`
+	Status                  ItemStatus `json:"status"`
+	StatuteRef              string     `json:"statute_ref,omitempty"`
+	EvidenceCitation        string     `json:"evidence_citation,omitempty"`
+	IsLocked                bool       `json:"is_locked"`         // Green items are locked
+	Value                   string     `json:"value,omitempty"`   // User answer for Yellow
+	Options                 []string   `json:"options,omitempty"` // Dropdown choices for Yellow
+	IsAnswered              bool       `json:"is_answered"`
 	RequiresAcknowledgement bool       `json:"requires_acknowledgement"` // For Red gaps
-	IsAcknowledged         bool       `json:"is_acknowledged"`
-	AcknowledgementReason  string     `json:"acknowledgement_reason,omitempty"`
+	IsAcknowledged          bool       `json:"is_acknowledged"`
+	AcknowledgementReason   string     `json:"acknowledgement_reason,omitempty"`
 }
 
 // DocumentPackage is a regulator-ready compliance packet managed by the Human Review Gateway.
 type DocumentPackage struct {
-	ID                string                       `json:"id"`
-	OrgID             string                       `json:"org_id"`
-	RepoID            string                       `json:"repo_id"`
-	Framework         string                       `json:"framework"` // colorado-ai-act, nyc-ll144, ca-ab2013
-	Title             string                       `json:"title"`
-	CommitSHA         string                       `json:"commit_sha"`
-	CreatedAt         time.Time                    `json:"created_at"`
-	IsCertified       bool                         `json:"is_certified"`
-	CertifiedBy       string                       `json:"certified_by,omitempty"`
-	CertifiedEmail    string                       `json:"certified_email,omitempty"`
-	CertifiedTitle    string                       `json:"certified_title,omitempty"`
-	CertifiedAt       *time.Time                   `json:"certified_at,omitempty"`
-	Items             []ReviewItem                 `json:"items"`
-	Report            *report.ComplianceReport     `json:"report,omitempty"`
-	HTMLPayload       string                       `json:"html_payload,omitempty"`
-	MarkdownPayload   string                       `json:"markdown_payload,omitempty"`
-	AIBOMSHA256       string                       `json:"aibom_sha256"`
-	AuditEntryID      string                       `json:"audit_entry_id,omitempty"`
-	Metadata          map[string]string            `json:"metadata,omitempty"`
+	ID              string                   `json:"id"`
+	OrgID           string                   `json:"org_id"`
+	RepoID          string                   `json:"repo_id"`
+	Framework       string                   `json:"framework"` // colorado-ai-act, nyc-ll144, ca-ab2013
+	Title           string                   `json:"title"`
+	CommitSHA       string                   `json:"commit_sha"`
+	CreatedAt       time.Time                `json:"created_at"`
+	IsCertified     bool                     `json:"is_certified"`
+	CertifiedBy     string                   `json:"certified_by,omitempty"`
+	CertifiedEmail  string                   `json:"certified_email,omitempty"`
+	CertifiedTitle  string                   `json:"certified_title,omitempty"`
+	CertifiedAt     *time.Time               `json:"certified_at,omitempty"`
+	Items           []ReviewItem             `json:"items"`
+	Report          *report.ComplianceReport `json:"report,omitempty"`
+	HTMLPayload     string                   `json:"html_payload,omitempty"`
+	MarkdownPayload string                   `json:"markdown_payload,omitempty"`
+	AIBOMSHA256     string                   `json:"aibom_sha256"`
+	AuditEntryID    string                   `json:"audit_entry_id,omitempty"`
+	Metadata        map[string]string        `json:"metadata,omitempty"`
 }
 
 // IsReadyToCertify checks if all Yellow items are answered and all Red items are acknowledged.
@@ -103,30 +103,30 @@ type TokenResponse struct {
 
 // CertifyRequest is the payload required to certify a document package.
 type CertifyRequest struct {
-	UserID                string            `json:"user_id"`
-	UserEmail             string            `json:"user_email"`
-	UserTitle             string            `json:"user_title"`
-	HumanConfirmationToken string           `json:"human_confirmation_token"`
-	YellowAnswers         map[string]string `json:"yellow_answers,omitempty"`         // itemID -> answer
-	RedAcknowledgements   map[string]string `json:"red_acknowledgements,omitempty"`   // itemID -> reason
-	SignatureText         string            `json:"signature_text"`
+	UserID                 string            `json:"user_id"`
+	UserEmail              string            `json:"user_email"`
+	UserTitle              string            `json:"user_title"`
+	HumanConfirmationToken string            `json:"human_confirmation_token"`
+	YellowAnswers          map[string]string `json:"yellow_answers,omitempty"`       // itemID -> answer
+	RedAcknowledgements    map[string]string `json:"red_acknowledgements,omitempty"` // itemID -> reason
+	SignatureText          string            `json:"signature_text"`
 }
 
 // FilingAuditEntry represents an immutable audit log record in filing_audit_log.
 type FilingAuditEntry struct {
-	ID             string    `json:"id"`
-	OrgID          string    `json:"org_id"`
-	RepoID         string    `json:"repo_id"`
-	Framework      string    `json:"framework"`
-	ActionType     string    `json:"action_type"` // e.g. "DOCUMENT_CERTIFIED", "PUBLIC_POSTING_GENERATED"
-	DocumentID     string    `json:"document_id"`
-	AIBOMSHA256    string    `json:"aibom_sha256"`
-	ActorUserID    string    `json:"actor_user_id"`
-	ActorEmail     string    `json:"actor_email"`
-	HumanTokenID   string    `json:"human_token_id"`
-	Timestamp      time.Time `json:"timestamp"`
-	SignatureHash  string    `json:"signature_hash"`
-	Metadata       string    `json:"metadata,omitempty"`
+	ID            string    `json:"id"`
+	OrgID         string    `json:"org_id"`
+	RepoID        string    `json:"repo_id"`
+	Framework     string    `json:"framework"`
+	ActionType    string    `json:"action_type"` // e.g. "DOCUMENT_CERTIFIED", "PUBLIC_POSTING_GENERATED"
+	DocumentID    string    `json:"document_id"`
+	AIBOMSHA256   string    `json:"aibom_sha256"`
+	ActorUserID   string    `json:"actor_user_id"`
+	ActorEmail    string    `json:"actor_email"`
+	HumanTokenID  string    `json:"human_token_id"`
+	Timestamp     time.Time `json:"timestamp"`
+	SignatureHash string    `json:"signature_hash"`
+	Metadata      string    `json:"metadata,omitempty"`
 }
 
 // CreatePackageRequest is the payload to compile a document package.

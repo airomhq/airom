@@ -8,21 +8,21 @@ import (
 
 // DemographicMetric holds selection rate and impact ratio metrics for NYC LL144.
 type DemographicMetric struct {
-	Category     string  `json:"category"`      // e.g. "Male", "Female", "Hispanic/Latino", "Black/African American", "White"
-	TotalScored  int     `json:"total_scored"`  // Number of candidates scored
-	Selected     int     `json:"selected"`      // Number of candidates selected / advanced
+	Category      string  `json:"category"`       // e.g. "Male", "Female", "Hispanic/Latino", "Black/African American", "White"
+	TotalScored   int     `json:"total_scored"`   // Number of candidates scored
+	Selected      int     `json:"selected"`       // Number of candidates selected / advanced
 	SelectionRate float64 `json:"selection_rate"` // Selected / TotalScored
-	ImpactRatio  float64 `json:"impact_ratio"`  // SelectionRate / MaxSelectionRate
+	ImpactRatio   float64 `json:"impact_ratio"`   // SelectionRate / MaxSelectionRate
 }
 
 // NYCLL144Data contains the audit parameters and demographic tables for NYC LL144.
 type NYCLL144Data struct {
-	AuditorName      string              `json:"auditor_name"`
-	AuditDate        time.Time           `json:"audit_date"`
-	AEDTDescription  string              `json:"aedt_description"`
-	JobCategories    []string            `json:"job_categories"`
-	Metrics          []DemographicMetric `json:"metrics"`
-	PublicationURL   string              `json:"publication_url,omitempty"`
+	AuditorName     string              `json:"auditor_name"`
+	AuditDate       time.Time           `json:"audit_date"`
+	AEDTDescription string              `json:"aedt_description"`
+	JobCategories   []string            `json:"job_categories"`
+	Metrics         []DemographicMetric `json:"metrics"`
+	PublicationURL  string              `json:"publication_url,omitempty"`
 }
 
 // GenerateNYCLL144Report produces a verified public bias audit summary for NYC Local Law 144.

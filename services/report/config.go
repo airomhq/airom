@@ -18,21 +18,21 @@ const (
 
 // LLMBackendConfig holds settings for BYOK (Bring-Your-Own-Key) LLM integration.
 type LLMBackendConfig struct {
-	Provider   LLMProvider `json:"provider" yaml:"provider"`
-	APIKeyEnv  string      `json:"api_key_env" yaml:"api_key_env"`
-	Model      string      `json:"model" yaml:"model"`
-	BaseURL    string      `json:"base_url,omitempty" yaml:"base_url,omitempty"`
-	AirGapped  bool        `json:"air_gapped" yaml:"air_gapped"`
-	MaxTokens  int         `json:"max_tokens" yaml:"max_tokens"`
-	Temperature float64    `json:"temperature" yaml:"temperature"`
+	Provider    LLMProvider `json:"provider" yaml:"provider"`
+	APIKeyEnv   string      `json:"api_key_env" yaml:"api_key_env"`
+	Model       string      `json:"model" yaml:"model"`
+	BaseURL     string      `json:"base_url,omitempty" yaml:"base_url,omitempty"`
+	AirGapped   bool        `json:"air_gapped" yaml:"air_gapped"`
+	MaxTokens   int         `json:"max_tokens" yaml:"max_tokens"`
+	Temperature float64     `json:"temperature" yaml:"temperature"`
 }
 
 // EngineConfig holds configuration for the ReportEngine service and on-prem container.
 type EngineConfig struct {
-	Endpoint    string           `json:"endpoint" yaml:"endpoint"`
-	LLMBackend  LLMBackendConfig `json:"llm_backend" yaml:"llm_backend"`
-	DefaultOrg  string           `json:"default_org,omitempty" yaml:"default_org,omitempty"`
-	OutputFormat string          `json:"output_format,omitempty" yaml:"output_format,omitempty"` // markdown, html, json, all
+	Endpoint     string           `json:"endpoint" yaml:"endpoint"`
+	LLMBackend   LLMBackendConfig `json:"llm_backend" yaml:"llm_backend"`
+	DefaultOrg   string           `json:"default_org,omitempty" yaml:"default_org,omitempty"`
+	OutputFormat string           `json:"output_format,omitempty" yaml:"output_format,omitempty"` // markdown, html, json, all
 }
 
 // DefaultEngineConfig returns standard secure defaults.

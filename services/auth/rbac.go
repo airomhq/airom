@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	ErrUnauthorized     = errors.New("unauthorized: missing valid authentication credentials")
-	ErrForbidden        = errors.New("forbidden: insufficient role permissions")
-	ErrOrgMismatch      = errors.New("forbidden: cross-organization access denied")
-	ErrInvalidRole      = errors.New("invalid role assignment")
+	ErrUnauthorized = errors.New("unauthorized: missing valid authentication credentials")
+	ErrForbidden    = errors.New("forbidden: insufficient role permissions")
+	ErrOrgMismatch  = errors.New("forbidden: cross-organization access denied")
+	ErrInvalidRole  = errors.New("invalid role assignment")
 )
 
 // rolePermissions defines the strict RBAC permission matrix.
