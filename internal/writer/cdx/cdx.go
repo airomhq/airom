@@ -203,6 +203,33 @@ func (b *builder) metadata() *cyclonedx.Metadata {
 	// Honesty over silence (P6): the unknown count always surfaces.
 	props.add("airom:unknowns", strconv.Itoa(len(inv.Unknowns)))
 
+	// Assurance (§6.5): the coverage account, so a CDX consumer can tell a
+	// complete scan from a partial one without the native document. Counters
+	// are emitted only when nonzero; the enrichment and confidence-model
+	// entries are emitted whenever known, because "overlay off" is exactly the
+	// fact a consumer needs.
+	if st := inv.Stats; true {
+		if st.FilesIgnored > 0 {
+			props.add("airom:assurance.filesIgnored", strconv.FormatInt(st.FilesIgnored, 10))
+		}
+		if st.DirsPruned > 0 {
+			props.add("airom:assurance.dirsPruned", strconv.FormatInt(st.DirsPruned, 10))
+		}
+		if st.FilesTruncated > 0 {
+			props.add("airom:assurance.filesTruncated", strconv.FormatInt(st.FilesTruncated, 10))
+		}
+		if e := st.Enrichment; e != nil {
+			props.add("airom:assurance.cve.enabled", strconv.FormatBool(e.CVE.Enabled))
+			if e.CVE.Unchecked > 0 {
+				props.add("airom:assurance.cve.unchecked", strconv.Itoa(e.CVE.Unchecked))
+			}
+			props.add("airom:assurance.eol.enabled", strconv.FormatBool(e.EOL.Enabled))
+		}
+		if st.ConfidenceModel != "" {
+			props.add("airom:assurance.confidenceModel", st.ConfidenceModel)
+		}
+	}
+
 	md.Properties = props.sorted()
 	return md
 }

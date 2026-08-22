@@ -23,12 +23,14 @@ type memSource struct {
 	unknowns []source.Unknown
 }
 
-func (m *memSource) Name() string                   { return "mem" }
-func (m *memSource) Kind() source.Kind              { return source.KindDir }
-func (m *memSource) ID() string                     { return "mem:test" }
-func (m *memSource) Info() source.Info              { return source.Info{Kind: source.KindDir, Target: "mem"} }
-func (m *memSource) Close() error                   { return nil }
-func (m *memSource) Resolver() source.Resolver      { return nil }
+func (m *memSource) Name() string                { return "mem" }
+func (m *memSource) Kind() source.Kind           { return source.KindDir }
+func (m *memSource) ID() string                  { return "mem:test" }
+func (m *memSource) Info() source.Info           { return source.Info{Kind: source.KindDir, Target: "mem"} }
+func (m *memSource) Close() error                { return nil }
+func (m *memSource) Resolver() source.Resolver   { return nil }
+func (m *memSource) WalkStats() source.WalkStats { return source.WalkStats{} }
+
 func (m *memSource) WalkUnknowns() []source.Unknown { return m.unknowns }
 
 func (m *memSource) Walk(ctx context.Context, fn source.WalkFunc) error {
@@ -248,5 +250,30 @@ func TestContentBytesCountedOnPanic(t *testing.T) {
 	}
 	if out.Stats.ContentBytes != 5000 {
 		t.Errorf("ContentBytes = %d, want 5000 despite the panic", out.Stats.ContentBytes)
+	}
+}
+
+// TestTruncationIsCounted pins the assurance counter: a file whose content
+// read stopped at MaxFileSize is counted, because detectors saw a prefix and
+// a finding in the unseen tail is a finding the scan could not have made.
+func TestTruncationIsCounted(t *testing.T) {
+	big := make([]byte, 4096)
+	for i := range big {
+		big[i] = 'a'
+	}
+	src := &memSource{files: map[string][]byte{
+		"big.py":   big,
+		"small.py": []byte("tiny"),
+	}}
+	proc := procFunc(func(ctx context.Context, f *filectx.File) (any, error) {
+		_, _, err := f.Content(ctx) // force the capped read
+		return "ok", err
+	})
+	out, err := New(Options{MaxFileSize: 1024}).Scan(context.Background(), src, proc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.Stats.FilesTruncated != 1 {
+		t.Errorf("FilesTruncated = %d, want 1 (big.py only)", out.Stats.FilesTruncated)
 	}
 }

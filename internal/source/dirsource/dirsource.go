@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/charlievieth/fastwalk"
@@ -92,6 +93,7 @@ type Source struct {
 
 	mu       sync.Mutex
 	unknowns []source.Unknown // published by the most recent Walk
+	stats    source.WalkStats // exclusion accounting, published with unknowns
 }
 
 type ignoreNode struct {
@@ -158,6 +160,12 @@ type walkState struct {
 	mu       sync.Mutex
 	unknowns []source.Unknown
 
+	// Exclusion counters. fastwalk callbacks run concurrently, hence atomics;
+	// the totals are deterministic because the excluded SET is (P7) — only
+	// the increment order varies.
+	ignored atomic.Int64
+	pruned  atomic.Int64
+
 	// nodes maps root-relative dir path ("." for the root) to its ignore
 	// state. Only directories that INTRODUCE patterns get an entry; lookup
 	// walks to the nearest stored ancestor, so memory scales with ignore
@@ -201,8 +209,17 @@ func (s *Source) Walk(ctx context.Context, fn source.WalkFunc) error {
 	err := s.walk(ctx, fn, ws)
 	s.mu.Lock()
 	s.unknowns = ws.unknowns
+	s.stats = source.WalkStats{FilesIgnored: ws.ignored.Load(), DirsPruned: ws.pruned.Load()}
 	s.mu.Unlock()
 	return err
+}
+
+// WalkStats returns the exclusion accounting of the most recent top-level
+// Walk. Like WalkUnknowns, Resolver pulls never clobber it.
+func (s *Source) WalkStats() source.WalkStats {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.stats
 }
 
 // walk runs one traversal against walk-local state.
@@ -238,10 +255,12 @@ func (s *Source) walk(ctx context.Context, fn source.WalkFunc, ws *walkState) er
 
 		if d.IsDir() {
 			if defaultMatcher.Match(matchSegs, true) {
+				ws.pruned.Add(1)
 				return fastwalk.SkipDir // non-overridable by design
 			}
 			node := ws.lookup(parent)
 			if node.matcher.Match(matchSegs, true) || s.userIgnored(rel, true) {
+				ws.pruned.Add(1)
 				return fastwalk.SkipDir
 			}
 			if child := s.childNode(node, path, matchSegs); child != node {
@@ -254,10 +273,12 @@ func (s *Source) walk(ctx context.Context, fn source.WalkFunc, ws *walkState) er
 			return nil // symlinks, sockets, devices: never followed or read
 		}
 		if defaultMatcher.Match(matchSegs, false) {
+			ws.ignored.Add(1)
 			return nil
 		}
 		node := ws.lookup(parent)
 		if node.matcher.Match(matchSegs, false) || s.userIgnored(rel, false) {
+			ws.ignored.Add(1)
 			return nil
 		}
 

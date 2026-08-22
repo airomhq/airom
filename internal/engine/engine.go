@@ -84,6 +84,9 @@ type Stats struct {
 	FilesWalked    int64 // entries emitted by the source (post-ignore)
 	FilesProcessed int64 // files a processor ran on without error
 	FilesFailed    int64 // files degraded to Unknowns
+	FilesIgnored   int64 // files the ignore rules excluded from the walk
+	DirsPruned     int64 // directories excluded whole; contents never enumerated
+	FilesTruncated int64 // content reads capped at MaxFileSize
 	HeaderBytes    int64 // bytes read into header samples
 	ContentBytes   int64 // bytes read as bounded content
 	// Duration is legitimately nondeterministic; the Phase-7 writers must
@@ -142,6 +145,7 @@ type result struct {
 	headerBytes  int64
 	contentBytes int64
 	processed    bool
+	truncated    bool // a content read stopped at the --max-file-size cap
 }
 
 // Scan runs the phase-1 pipeline over src. The returned error is reserved
@@ -215,6 +219,9 @@ func (e *Engine) Scan(ctx context.Context, src source.Source, proc Processor) (*
 			if len(r.unknowns) > 0 {
 				out.Stats.FilesFailed++
 			}
+			if r.truncated {
+				out.Stats.FilesTruncated++
+			}
 		}
 		return nil
 	})
@@ -225,6 +232,8 @@ func (e *Engine) Scan(ctx context.Context, src source.Source, proc Processor) (*
 
 	out.Unknowns = append(out.Unknowns, src.WalkUnknowns()...)
 	out.Stats.FilesWalked = walked.Load()
+	ws := src.WalkStats()
+	out.Stats.FilesIgnored, out.Stats.DirsPruned = ws.FilesIgnored, ws.DirsPruned
 	out.Stats.Duration = time.Since(start)
 
 	// Determinism (P7): concurrency never leaks into output ordering.
@@ -295,7 +304,7 @@ func (e *Engine) processEntry(ctx context.Context, en source.Entry, proc Process
 	defer f.Release()
 	// Deferred so byte accounting survives the panic-recovery path too:
 	// bytes were read from the source whether or not the processor lived.
-	defer func() { res.contentBytes = f.BytesRead() }()
+	defer func() { res.contentBytes, res.truncated = f.BytesRead(), f.Truncated() }()
 
 	if proc == nil {
 		res.processed = true

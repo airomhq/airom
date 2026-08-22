@@ -250,6 +250,7 @@
     "filesWalked": 4,
     "filesProcessed": 4,
     "filesFailed": 0,
+    "dirsPruned": 1,
     "headerBytes": 1374,
     "contentBytes": 1374,
     "durationNs": 0,
@@ -501,6 +502,16 @@
         "findings": 0,
         "ns": 0
       }
-    ]
+    ],
+    "enrichment": {
+      "cve": {
+        "enabled": false
+      },
+      "eol": {
+        "enabled": true,
+        "catalogLoaded": true
+      }
+    },
+    "confidenceModel": "evidence-weighted/1; not empirically calibrated"
   }
 }

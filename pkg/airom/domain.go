@@ -83,6 +83,14 @@ const (
 // rate.
 type Confidence float64
 
+// ConfidenceModelV1 names the scheme behind every Confidence in a document:
+// author-assigned evidence weights combined by grouped noisy-OR (§9.3),
+// ordinal, and not empirically calibrated. Recorded in ScanStats so the
+// document itself says what its numbers mean; the version bumps if the
+// calculus changes, and the "not empirically calibrated" clause is removed
+// only by a published calibration study, never by editing this string.
+const ConfidenceModelV1 = "evidence-weighted/1; not empirically calibrated"
+
 // Band buckets a confidence for table output and --min-confidence UX.
 func (c Confidence) Band() string {
 	switch {

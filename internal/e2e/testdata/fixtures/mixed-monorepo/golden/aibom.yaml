@@ -100,6 +100,7 @@ source:
   kind: dir
   target: mixed-monorepo
 stats:
+  confidenceModel: evidence-weighted/1; not empirically calibrated
   contentBytes: 321
   detectors:
     - findings: 0
@@ -242,7 +243,14 @@ stats:
       id: ruleengine
       invocations: 0
       ns: 0
+  dirsPruned: 1
   durationNs: 0
+  enrichment:
+    cve:
+      enabled: false
+    eol:
+      catalogLoaded: true
+      enabled: true
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4

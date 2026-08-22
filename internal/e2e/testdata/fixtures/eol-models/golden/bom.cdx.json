@@ -37,6 +37,22 @@
     },
     "properties": [
       {
+        "name": "airom:assurance.confidenceModel",
+        "value": "evidence-weighted/1; not empirically calibrated"
+      },
+      {
+        "name": "airom:assurance.cve.enabled",
+        "value": "false"
+      },
+      {
+        "name": "airom:assurance.dirsPruned",
+        "value": "1"
+      },
+      {
+        "name": "airom:assurance.eol.enabled",
+        "value": "true"
+      },
+      {
         "name": "airom:eol.catalog",
         "value": "builtin"
       },

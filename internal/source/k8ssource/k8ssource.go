@@ -269,6 +269,10 @@ func (s *Source) Walk(ctx context.Context, _ source.WalkFunc) error {
 	return ctx.Err()
 }
 
+// WalkStats returns the zero value: this source applies no ignore rules, so
+// nothing is ever deliberately excluded from its walk.
+func (s *Source) WalkStats() source.WalkStats { return source.WalkStats{} }
+
 // WalkUnknowns returns manifest parse/read failures recorded during New.
 func (s *Source) WalkUnknowns() []source.Unknown {
 	return append([]source.Unknown(nil), s.unknowns...)

@@ -1,22 +1,28 @@
 AI Bill of Materials — python-langchain-rag
 
-┌─ Scan Summary ─────────────────────┐
-│ Target        python-langchain-rag │
-│ Components    12                   │
-│ Relationships 3                    │
-│ Files         6 scanned            │
-│                                    │
-│ By Type                            │
-│   ai-config          2             │
-│   library            2             │
-│   local-model-file   2             │
-│   embedding-model    1             │
-│   framework          1             │
-│   hosted-llm         1             │
-│   prompt             1             │
-│   rag-pipeline       1             │
-│   vector-db          1             │
-└────────────────────────────────────┘
+┌─ Scan Summary ────────────────────────────────────────────────┐
+│ Target        python-langchain-rag                            │
+│ Components    12                                              │
+│ Relationships 3                                               │
+│ Files         6 scanned                                       │
+│                                                               │
+│ By Type                                                       │
+│   ai-config          2                                        │
+│   library            2                                        │
+│   local-model-file   2                                        │
+│   embedding-model    1                                        │
+│   framework          1                                        │
+│   hosted-llm         1                                        │
+│   prompt             1                                        │
+│   rag-pipeline       1                                        │
+│   vector-db          1                                        │
+│                                                               │
+│ Assurance                                                     │
+│   ignored            0 files, 1 dirs pruned                   │
+│   cve                not checked (overlay off)                │
+│   lifecycle          catalog consulted                        │
+│ Confidence    evidence-weighted/1; not empirically calibrated │
+└───────────────────────────────────────────────────────────────┘
 
 ┌──────────────────┬────────────────────────┬─────────┬─────────────┬───────┬────────────────────┬──────────┐
 │ KIND             │ NAME                   │ VERSION │ PROVIDER    │ CONF  │ LOCATION           │ EVIDENCE │

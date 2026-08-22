@@ -63,3 +63,35 @@ def test_dt_parse_truncates_rather_than_rounds() -> None:
 def test_dt_parse_rejects_garbage() -> None:
     with pytest.raises(ValueError):
         _dt_parse("not a timestamp")
+
+
+def test_scan_stats_assurance_fields():
+    """The assurance block round-trips: 'no CVE check' must be visible in the SDK."""
+    from airom import EnrichmentStats, ScanStats
+
+    st = ScanStats.from_json(
+        {
+            "filesWalked": 10,
+            "filesIgnored": 3,
+            "dirsPruned": 2,
+            "filesTruncated": 1,
+            "confidenceModel": "evidence-weighted/1; not empirically calibrated",
+            "enrichment": {
+                "cve": {"enabled": True, "unchecked": 4},
+                "eol": {"enabled": True, "catalogLoaded": True},
+            },
+        }
+    )
+    assert st.files_ignored == 3
+    assert st.dirs_pruned == 2
+    assert st.files_truncated == 1
+    assert "not empirically calibrated" in st.confidence_model
+    assert st.enrichment is not None
+    assert st.enrichment.cve.unchecked == 4
+    assert st.enrichment.eol.catalog_loaded is True
+
+    # A pre-assurance document parses to honest defaults, not a crash.
+    legacy = ScanStats.from_json({"filesWalked": 5})
+    assert legacy.enrichment is None
+    assert legacy.confidence_model == ""
+    assert isinstance(EnrichmentStats.from_json({}), EnrichmentStats)

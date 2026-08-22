@@ -1,13 +1,19 @@
 AI Bill of Materials — agentic-stack
 
-┌─ Scan Summary ──────────────┐
-│ Target        agentic-stack │
-│ Components    4             │
-│ Files         3 scanned     │
-│                             │
-│ By Type                     │
-│   framework          4      │
-└─────────────────────────────┘
+┌─ Scan Summary ────────────────────────────────────────────────┐
+│ Target        agentic-stack                                   │
+│ Components    4                                               │
+│ Files         3 scanned                                       │
+│                                                               │
+│ By Type                                                       │
+│   framework          4                                        │
+│                                                               │
+│ Assurance                                                     │
+│   ignored            0 files, 1 dirs pruned                   │
+│   cve                not checked (overlay off)                │
+│   lifecycle          catalog consulted                        │
+│ Confidence    evidence-weighted/1; not empirically calibrated │
+└───────────────────────────────────────────────────────────────┘
 
 ┌───────────┬──────────┬─────────┬──────────┬────────┬────────────────────┬──────────┐
 │ KIND      │ NAME     │ VERSION │ PROVIDER │ CONF   │ LOCATION           │ EVIDENCE │
