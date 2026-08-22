@@ -890,7 +890,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 			}
 
 			var keys []APIKey
-			json.NewDecoder(resp.Body).Decode(&keys)
+			_ = json.NewDecoder(resp.Body).Decode(&keys)
 			drainAndClose(resp)
 
 			for _, k := range keys {
@@ -931,7 +931,7 @@ func TestQA_SecurityAuditTrailCompleteness(t *testing.T) {
 		t.Fatalf("SSO callback failed: %v", err)
 	}
 	var authRes map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&authRes)
+	_ = json.NewDecoder(resp.Body).Decode(&authRes)
 	drainAndClose(resp)
 	adminToken := authRes["token"].(string)
 	adminUserMap := authRes["user"].(map[string]interface{})
@@ -954,7 +954,7 @@ func TestQA_SecurityAuditTrailCompleteness(t *testing.T) {
 		t.Fatalf("User creation failed: %v", err)
 	}
 	var createdUser User
-	json.NewDecoder(respU.Body).Decode(&createdUser)
+	_ = json.NewDecoder(respU.Body).Decode(&createdUser)
 	drainAndClose(respU)
 
 	// ------------------------------------------------------------------------
@@ -987,7 +987,7 @@ func TestQA_SecurityAuditTrailCompleteness(t *testing.T) {
 		t.Fatalf("Key minting failed: %v", err)
 	}
 	var keyRes map[string]interface{}
-	json.NewDecoder(respK.Body).Decode(&keyRes)
+	_ = json.NewDecoder(respK.Body).Decode(&keyRes)
 	drainAndClose(respK)
 	keyDetails := keyRes["key_details"].(map[string]interface{})
 	mintedKeyID := keyDetails["id"].(string)
@@ -1049,7 +1049,7 @@ func TestQA_SecurityAuditTrailCompleteness(t *testing.T) {
 		t.Fatalf("Failed to retrieve audit logs: %v", err)
 	}
 	var auditLogs []AuthEvent
-	json.NewDecoder(respAudit.Body).Decode(&auditLogs)
+	_ = json.NewDecoder(respAudit.Body).Decode(&auditLogs)
 	drainAndClose(respAudit)
 
 	expectedEventTypes := []string{

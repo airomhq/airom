@@ -8,6 +8,7 @@ import (
 	"github.com/airomhq/airom/pkg/airom"
 )
 
+// EvaluateRequest represents the payload for differential anomaly evaluation.
 type EvaluateRequest struct {
 	RepoID       string          `json:"repo_id"`
 	BaseCommit   string          `json:"base_commit"`
@@ -17,12 +18,15 @@ type EvaluateRequest struct {
 	ManifestYAML string          `json:"manifest_yaml"`
 }
 
+// Engine evaluates differential AI anomalies and policy violations across AIBOM versions.
 type Engine struct{}
 
+// NewEngine constructs a new anomaly evaluation Engine instance.
 func NewEngine() *Engine {
 	return &Engine{}
 }
 
+// EvaluateHandler processes HTTP requests to evaluate differential AI anomalies.
 func (e *Engine) EvaluateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -62,6 +66,7 @@ func (e *Engine) EvaluateHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(report)
 }
 
+// HealthzHandler returns the health status of the anomaly service.
 func (e *Engine) HealthzHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

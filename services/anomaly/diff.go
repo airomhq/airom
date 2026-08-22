@@ -1,3 +1,4 @@
+// Package anomaly provides differential analysis and tripwire detection for AI components.
 package anomaly
 
 import (
