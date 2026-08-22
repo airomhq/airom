@@ -108,9 +108,23 @@ func ValidateChain(chain []ScanSnapshot) ChainVerificationReport {
 			}
 		}
 
-		// 2. For subsequent nodes, verify parent hash continuity and time monotonicity
+		// 2. For subsequent nodes, verify parent hash continuity, repo consistency, and time monotonicity
 		if i > 0 {
 			prev := chain[i-1]
+			if s.RepoID != prev.RepoID {
+				reason := fmt.Sprintf("snapshot %d (%s) repo_id %q does not match previous snapshot repo_id %q", i, s.ID, s.RepoID, prev.RepoID)
+				violations = append(violations, reason)
+				idCopy := s.ID
+				return ChainVerificationReport{
+					Valid:          false,
+					TotalSnapshots: len(chain),
+					BrokenAtIndex:  i,
+					BrokenSnapshot: &idCopy,
+					Reason:         reason,
+					Violations:     violations,
+				}
+			}
+
 			if s.PrevSnapshotHash != prev.SelfHash {
 				reason := fmt.Sprintf("snapshot %d (%s) prev_snapshot_hash %q does not match previous snapshot self_hash %q", i, s.ID, s.PrevSnapshotHash, prev.SelfHash)
 				violations = append(violations, reason)

@@ -288,11 +288,19 @@ func (s *Service) IngestSnapshotHandler(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	if req.RepoID != "" && req.RepoID != repoID {
+		http.Error(w, fmt.Sprintf("mismatched repo_id in payload (%q) and URL path (%q)", req.RepoID, repoID), http.StatusBadRequest)
+		return
+	}
 	if req.RepoID == "" {
 		req.RepoID = repoID
 	}
 	if req.CommitSHA == "" {
 		http.Error(w, "commit_sha is required", http.StatusBadRequest)
+		return
+	}
+	if req.ControlsMet < 0 || req.ControlsGap < 0 || req.ControlsManual < 0 || req.ComponentsCount < 0 || req.VulnerabilitiesCount < 0 {
+		http.Error(w, "negative compliance metrics or component counts are invalid", http.StatusBadRequest)
 		return
 	}
 	if req.ScanTimestamp.IsZero() {
