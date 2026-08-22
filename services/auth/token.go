@@ -15,7 +15,7 @@ import (
 
 const (
 	DefaultSessionTTL = 24 * time.Hour
-	APIKeyPrefix      = "airom_live_"
+	APIKeyPrefix      = "airom_live_" // #nosec G101 -- public key prefix constant, not a credential
 )
 
 var (

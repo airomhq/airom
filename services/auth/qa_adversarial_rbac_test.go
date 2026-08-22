@@ -723,7 +723,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 			t.Fatalf("failed dev SSO setup for %s: %v", orgID, err)
 		}
 		var devAuth map[string]interface{}
-		json.NewDecoder(respD.Body).Decode(&devAuth)
+		_ = json.NewDecoder(respD.Body).Decode(&devAuth)
 		drainAndClose(respD)
 		devToken := devAuth["token"].(string)
 
@@ -742,7 +742,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 			t.Fatalf("failed user provision for %s: %v", orgID, err)
 		}
 		var createdUser User
-		json.NewDecoder(respU.Body).Decode(&createdUser)
+		_ = json.NewDecoder(respU.Body).Decode(&createdUser)
 		drainAndClose(respU)
 
 		// 4. Admin Mints an API Key
@@ -759,7 +759,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 			t.Fatalf("failed key mint for %s: %v", orgID, err)
 		}
 		var keyRes map[string]interface{}
-		json.NewDecoder(respK.Body).Decode(&keyRes)
+		_ = json.NewDecoder(respK.Body).Decode(&keyRes)
 		drainAndClose(respK)
 
 		rawKey := keyRes["raw_api_key"].(string)

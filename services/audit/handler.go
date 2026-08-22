@@ -99,7 +99,7 @@ func (s *Service) Routes() http.Handler {
 		cfg.SecretKey = maskSecret(cfg.SecretKey)
 
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(cfg)
+		_ = json.NewEncoder(w).Encode(cfg) // #nosec G117 -- secrets are explicitly masked above before encoding
 	})
 
 	return mux

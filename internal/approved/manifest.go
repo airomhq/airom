@@ -34,7 +34,7 @@ type ApprovedManifest struct {
 
 func LoadManifest(repoRoot string) (*ApprovedManifest, error) {
 	manifestPath := filepath.Join(repoRoot, ".airomapproved")
-	data, err := os.ReadFile(manifestPath)
+	data, err := os.ReadFile(manifestPath) // #nosec G304 -- manifest path constructed from repoRoot
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil // graceful fallback
@@ -79,7 +79,7 @@ func SaveManifest(repoRoot string, m *ApprovedManifest) error {
 
 	manifestPath := filepath.Join(repoRoot, ".airomapproved")
 	tmpPath := manifestPath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o600); err != nil {
 		return err
 	}
 

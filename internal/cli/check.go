@@ -82,7 +82,7 @@ func newCheckCmd() *cobra.Command {
 				return err
 			}
 
-			data, err := os.ReadFile(tmpPath)
+			data, err := os.ReadFile(tmpPath) // #nosec G304 -- tmpPath is an internal temporary file created by os.CreateTemp
 			if err != nil {
 				return fmt.Errorf("failed to read scan results: %w", err)
 			}

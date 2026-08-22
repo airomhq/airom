@@ -109,8 +109,8 @@ func ValidateChain(chain []ScanSnapshot) ChainVerificationReport {
 		}
 
 		// 2. For subsequent nodes, verify parent hash continuity, repo consistency, and time monotonicity
-		if i > 0 {
-			prev := chain[i-1]
+		if i > 0 && i < len(chain) {
+			prev := chain[i-1] // #nosec G602 -- bounds checked by i > 0 && i < len(chain)
 			if s.RepoID != prev.RepoID {
 				reason := fmt.Sprintf("snapshot %d (%s) repo_id %q does not match previous snapshot repo_id %q", i, s.ID, s.RepoID, prev.RepoID)
 				violations = append(violations, reason)

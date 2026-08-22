@@ -1,9 +1,10 @@
 package anomaly
 
 import (
+	"testing"
+
 	"github.com/airomhq/airom/internal/approved"
 	"github.com/airomhq/airom/pkg/airom"
-	"testing"
 )
 
 func TestQA_E2E(t *testing.T) {
