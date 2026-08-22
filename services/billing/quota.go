@@ -61,11 +61,7 @@ func (s *Service) GetUsage(orgID string) UsageMetrics {
 	return *u
 }
 
-// CheckScanAllowed validates whether organization is allowed to execute a scan.
-func (s *Service) CheckScanAllowed(orgID string) error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
+func (s *Service) checkScanAllowedLocked(orgID string) error {
 	acc, ok := s.accounts[orgID]
 	tier := TierCommunity
 	status := StatusActive
@@ -93,14 +89,21 @@ func (s *Service) CheckScanAllowed(orgID string) error {
 	return nil
 }
 
+// CheckScanAllowed validates whether organization is allowed to execute a scan.
+func (s *Service) CheckScanAllowed(orgID string) error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.checkScanAllowedLocked(orgID)
+}
+
 // RecordScanUsage increments scan counter for current billing month.
 func (s *Service) RecordScanUsage(orgID string) error {
-	if err := s.CheckScanAllowed(orgID); err != nil {
-		return err
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if err := s.checkScanAllowedLocked(orgID); err != nil {
+		return err
+	}
 
 	key := currentMonthKey(orgID)
 	u, ok := s.usage[key]
