@@ -391,7 +391,7 @@ source:
   kind: dir
   target: python-langchain-rag
 stats:
-  contentBytes: 1163
+  contentBytes: 1126
   detectors:
     - findings: 0
       id: dataset/file
@@ -537,7 +537,7 @@ stats:
   filesFailed: 0
   filesProcessed: 6
   filesWalked: 6
-  headerBytes: 1252
+  headerBytes: 1211
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

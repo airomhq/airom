@@ -70,31 +70,6 @@
       ]
     },
     {
-      "comment": "airom:releaseTime NOASSERTION; airom:model.format hdf5; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind local-model-file",
-      "creationInfo": "_:creationInfo",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "packageUrl",
-          "identifier": "pkg:generic/lambda.h5?checksum=sha256:94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755",
-          "type": "ExternalIdentifier"
-        }
-      ],
-      "name": "lambda.h5",
-      "software_downloadLocation": "NOASSERTION",
-      "software_packageVersion": "NOASSERTION",
-      "software_primaryPurpose": "model",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
-      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
-      "type": "ai_AIPackage",
-      "verifiedUsing": [
-        {
-          "algorithm": "sha256",
-          "hashValue": "94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755",
-          "type": "Hash"
-        }
-      ]
-    },
-    {
       "comment": "airom:releaseTime NOASSERTION; airom:model.format tensorflow-savedmodel; airom:confidence 0.9; airom:evidence 1 occurrence(s); airom:kind local-model-file",
       "creationInfo": "_:creationInfo",
       "externalIdentifier": [
@@ -196,20 +171,11 @@
       "type": "security_Vulnerability"
     },
     {
-      "comment": "airom:source airom (high severity)",
-      "creationInfo": "_:creationInfo",
-      "description": "A Keras model config declares a Lambda layer, which marshals arbitrary Python that executes when the model is loaded. Found: Lambda.",
-      "name": "AIROM-RISK-KERAS-LAMBDA",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda",
-      "summary": "Keras Lambda layer",
-      "type": "security_Vulnerability"
-    },
-    {
       "comment": "airom:source airom (medium severity)",
       "creationInfo": "_:creationInfo",
       "description": "The SavedModel graph contains a PyFunc-family op, which invokes arbitrary Python during inference. Found: PyFunc.",
       "name": "AIROM-RISK-SAVEDMODEL-PYFUNC",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-savedmodel-pyfunc",
       "summary": "SavedModel Python-callback op",
       "type": "security_Vulnerability"
     },
@@ -218,7 +184,7 @@
       "creationInfo": "_:creationInfo",
       "description": "A source call site deserializes a model through an unsafe path (e.g. torch.load with weights_only=False); a malicious checkpoint would execute code on load.",
       "name": "AIROM-RISK-UNSAFE-LOAD",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-unsafe-load",
       "summary": "Unsafe model deserialization",
       "type": "security_Vulnerability"
     },
@@ -227,7 +193,7 @@
       "creationInfo": "_:creationInfo",
       "description": "A pickle GLOBAL resolves to a code-execution callable; loading this artifact runs code before any model is produced. Found: os.system.",
       "name": "AIROM-RISK-PICKLE-IMPORT",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-pickle-import",
       "summary": "Unsafe pickle import",
       "type": "security_Vulnerability"
     },
@@ -245,22 +211,11 @@
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
       "relationshipType": "hasAssociatedVulnerability",
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-1",
       "to": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-keras-lambda"
-      ],
-      "type": "Relationship"
-    },
-    {
-      "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
-      "creationInfo": "_:creationInfo",
-      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
-      "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-2",
-      "to": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-savedmodel-pyfunc"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-1-airom-risk-savedmodel-pyfunc"
       ],
       "type": "Relationship"
     },
@@ -269,9 +224,9 @@
       "creationInfo": "_:creationInfo",
       "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-3",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-2",
       "to": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-unsafe-load"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-2-airom-risk-unsafe-load"
       ],
       "type": "Relationship"
     },
@@ -280,9 +235,9 @@
       "creationInfo": "_:creationInfo",
       "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550",
       "relationshipType": "hasAssociatedVulnerability",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-4",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-3",
       "to": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-4-airom-risk-pickle-import"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Vulnerability-3-airom-risk-pickle-import"
       ],
       "type": "Relationship"
     },
@@ -291,7 +246,6 @@
       "creationInfo": "_:creationInfo",
       "element": [
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",

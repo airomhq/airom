@@ -178,7 +178,7 @@ source:
   kind: dir
   target: node-openai
 stats:
-  contentBytes: 612
+  contentBytes: 588
   detectors:
     - findings: 0
       id: dataset/file
@@ -324,7 +324,7 @@ stats:
   filesFailed: 0
   filesProcessed: 2
   filesWalked: 2
-  headerBytes: 612
+  headerBytes: 588
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

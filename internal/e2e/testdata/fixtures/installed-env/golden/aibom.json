@@ -248,8 +248,8 @@
     "filesWalked": 6,
     "filesProcessed": 6,
     "filesFailed": 0,
-    "headerBytes": 2060,
-    "contentBytes": 1791,
+    "headerBytes": 1997,
+    "contentBytes": 1735,
     "durationNs": 0,
     "selection": [
       "dataset/file: selected by \"default\"",

@@ -177,7 +177,7 @@ source:
   kind: dir
   target: agentic-stack
 stats:
-  contentBytes: 947
+  contentBytes: 915
   detectors:
     - findings: 0
       id: dataset/file
@@ -323,7 +323,7 @@ stats:
   filesFailed: 0
   filesProcessed: 3
   filesWalked: 3
-  headerBytes: 947
+  headerBytes: 915
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

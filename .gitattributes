@@ -1,0 +1,13 @@
+# Enforce LF line endings across all platforms to ensure reproducible fixture byte counts
+* text=auto eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.go text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.onnx binary
+*.pt binary
+*.bin binary
+*.safetensors binary

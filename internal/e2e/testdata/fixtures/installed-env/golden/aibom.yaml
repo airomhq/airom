@@ -162,7 +162,7 @@ source:
   kind: dir
   target: installed-env
 stats:
-  contentBytes: 1791
+  contentBytes: 1735
   detectors:
     - findings: 0
       id: dataset/file
@@ -308,7 +308,7 @@ stats:
   filesFailed: 0
   filesProcessed: 6
   filesWalked: 6
-  headerBytes: 2060
+  headerBytes: 1997
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

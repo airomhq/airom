@@ -101,43 +101,6 @@
       }
     },
     {
-      "bom-ref": "airom:357bff4125ef88bb",
-      "type": "machine-learning-model",
-      "name": "lambda.h5",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755"
-        }
-      ],
-      "purl": "pkg:generic/lambda.h5?checksum=sha256:94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.85"
-        },
-        {
-          "name": "airom:kind",
-          "value": "local-model-file"
-        },
-        {
-          "name": "airom:model.format",
-          "value": "hdf5"
-        },
-        {
-          "name": "airom:model.provider",
-          "value": "local"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "models/lambda.h5"
-          }
-        ]
-      }
-    },
-    {
       "bom-ref": "airom:43da64690b16bac7",
       "type": "machine-learning-model",
       "name": "tf_model",
@@ -341,38 +304,6 @@
         {
           "name": "airom:risk.symbols",
           "value": "__globals__|os.popen"
-        }
-      ]
-    },
-    {
-      "id": "AIROM-RISK-KERAS-LAMBDA",
-      "source": {
-        "name": "airom",
-        "url": "https://github.com/airomhq/airom/blob/main/docs/risks.md#keras-lambda"
-      },
-      "ratings": [
-        {
-          "source": {
-            "name": "airom"
-          },
-          "severity": "high",
-          "method": "other"
-        }
-      ],
-      "description": "A Keras model config declares a Lambda layer, which marshals arbitrary Python that executes when the model is loaded.",
-      "affects": [
-        {
-          "ref": "airom:357bff4125ef88bb"
-        }
-      ],
-      "properties": [
-        {
-          "name": "airom:risk.evidence",
-          "value": "models/lambda.h5"
-        },
-        {
-          "name": "airom:risk.symbols",
-          "value": "Lambda"
         }
       ]
     },

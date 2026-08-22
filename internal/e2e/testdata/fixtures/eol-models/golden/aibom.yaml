@@ -449,7 +449,7 @@ source:
   kind: dir
   target: eol-models
 stats:
-  contentBytes: 1608
+  contentBytes: 1558
   detectors:
     - findings: 0
       id: dataset/file
@@ -595,7 +595,7 @@ stats:
   filesFailed: 0
   filesProcessed: 2
   filesWalked: 2
-  headerBytes: 1608
+  headerBytes: 1558
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

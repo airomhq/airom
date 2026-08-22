@@ -370,7 +370,7 @@ source:
   kind: dir
   target: test-scoped
 stats:
-  contentBytes: 1576
+  contentBytes: 1522
   detectors:
     - findings: 0
       id: dataset/file
@@ -516,7 +516,7 @@ stats:
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4
-  headerBytes: 1576
+  headerBytes: 1522
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

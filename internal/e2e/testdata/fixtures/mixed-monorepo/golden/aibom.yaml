@@ -100,7 +100,7 @@ source:
   kind: dir
   target: mixed-monorepo
 stats:
-  contentBytes: 342
+  contentBytes: 321
   detectors:
     - findings: 0
       id: dataset/file
@@ -246,7 +246,7 @@ stats:
   filesFailed: 0
   filesProcessed: 4
   filesWalked: 4
-  headerBytes: 822
+  headerBytes: 777
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

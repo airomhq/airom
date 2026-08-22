@@ -68,7 +68,7 @@ source:
   kind: dir
   target: go-openai
 stats:
-  contentBytes: 552
+  contentBytes: 547
   detectors:
     - findings: 0
       id: dataset/file
@@ -214,7 +214,7 @@ stats:
   filesFailed: 0
   filesProcessed: 2
   filesWalked: 2
-  headerBytes: 552
+  headerBytes: 547
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'

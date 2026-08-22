@@ -38,20 +38,6 @@
               }
             },
             {
-              "id": "modelfilex/hdf5",
-              "name": "ModelfilexHdf5",
-              "shortDescription": {
-                "text": "Components identified by the modelfilex/hdf5 detector."
-              },
-              "defaultConfiguration": {
-                "level": "note"
-              },
-              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
-              "properties": {
-                "airom:method": "binary-analysis"
-              }
-            },
-            {
               "id": "modelfilex/savedmodel",
               "name": "ModelfilexSavedmodel",
               "shortDescription": {
@@ -106,21 +92,6 @@
               "properties": {
                 "airom:risk.severity": "medium",
                 "security-severity": "5.0"
-              }
-            },
-            {
-              "id": "risk/keras-lambda",
-              "name": "RiskKerasLambda",
-              "shortDescription": {
-                "text": "A Keras model config declares a Lambda layer, which marshals arbitrary Python that executes when the model is loaded."
-              },
-              "defaultConfiguration": {
-                "level": "error"
-              },
-              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/risks.md#keras-lambda",
-              "properties": {
-                "airom:risk.severity": "high",
-                "security-severity": "8.0"
               }
             },
             {
@@ -219,37 +190,8 @@
           }
         },
         {
-          "ruleId": "modelfilex/hdf5",
-          "ruleIndex": 2,
-          "level": "note",
-          "message": {
-            "text": "local-model-file 'lambda.h5' detected (confidence 0.85)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "models/lambda.h5",
-                  "uriBaseId": "SRCROOT"
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "0fec20992be9306af878ceeff9b6f944f4997084f97628143e2faf2fc34c961e"
-          },
-          "properties": {
-            "airom:componentId": "airom:357bff4125ef88bb",
-            "airom:confidence": 0.85,
-            "airom:kind": "local-model-file",
-            "airom:occurrence.confidence": 0.85,
-            "airom:provider": "local",
-            "airom:purl": "pkg:generic/lambda.h5?checksum=sha256:94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755"
-          }
-        },
-        {
           "ruleId": "modelfilex/savedmodel",
-          "ruleIndex": 3,
+          "ruleIndex": 2,
           "level": "note",
           "message": {
             "text": "local-model-file 'tf_model' detected (confidence 0.9)"
@@ -348,7 +290,7 @@
         },
         {
           "ruleId": "rules/unsafe-load/torch-weights-only-false",
-          "ruleIndex": 5,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "framework 'torch' [2.1.0] detected (confidence 0.99)"
@@ -386,7 +328,7 @@
         },
         {
           "ruleId": "modelfilex/torch",
-          "ruleIndex": 4,
+          "ruleIndex": 3,
           "level": "note",
           "message": {
             "text": "local-model-file 'checkpoint.pt' detected (confidence 0.95)"
@@ -416,7 +358,7 @@
         },
         {
           "ruleId": "risk/gguf-template",
-          "ruleIndex": 6,
+          "ruleIndex": 5,
           "level": "warning",
           "message": {
             "text": "Unsafe GGUF chat template in \"poisoned.gguf\": __globals__, os.popen"
@@ -438,31 +380,8 @@
           }
         },
         {
-          "ruleId": "risk/keras-lambda",
-          "ruleIndex": 7,
-          "level": "error",
-          "message": {
-            "text": "Keras Lambda layer in \"lambda.h5\": Lambda"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "models/lambda.h5",
-                  "uriBaseId": "SRCROOT"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "airom:componentId": "airom:357bff4125ef88bb",
-            "airom:risk.severity": "high",
-            "airom:risk.symbols": "Lambda"
-          }
-        },
-        {
           "ruleId": "risk/savedmodel-pyfunc",
-          "ruleIndex": 9,
+          "ruleIndex": 7,
           "level": "warning",
           "message": {
             "text": "SavedModel Python-callback op in \"tf_model\": PyFunc"
@@ -485,7 +404,7 @@
         },
         {
           "ruleId": "risk/unsafe-load",
-          "ruleIndex": 10,
+          "ruleIndex": 8,
           "level": "warning",
           "message": {
             "text": "Unsafe model deserialization in \"torch\""
@@ -516,7 +435,7 @@
         },
         {
           "ruleId": "risk/pickle-import",
-          "ruleIndex": 8,
+          "ruleIndex": 6,
           "level": "error",
           "message": {
             "text": "Unsafe pickle import in \"checkpoint.pt\": os.system"
