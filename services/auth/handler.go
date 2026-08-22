@@ -79,12 +79,13 @@ func (s *Service) Authenticate(r *http.Request) (*AuthClaims, error) {
 	tokenType := strings.ToLower(parts[0])
 	tokenValue := parts[1]
 
-	if tokenType == "bearer" {
+	switch tokenType {
+	case "bearer":
 		if strings.HasPrefix(tokenValue, APIKeyPrefix) {
 			return s.authAPIKey(tokenValue)
 		}
 		return VerifySessionToken(s.secret, tokenValue)
-	} else if tokenType == "apikey" {
+	case "apikey":
 		return s.authAPIKey(tokenValue)
 	}
 

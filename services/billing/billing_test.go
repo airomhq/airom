@@ -94,7 +94,7 @@ func TestStripe_WebhookSubscriptionLifecycle(t *testing.T) {
 	}
 
 	// 4. Test invoice.payment_failed -> transitions to past_due
-	payFailedPayload := fmt.Sprintf(`{
+	payFailedPayload := `{
 		"id": "evt_inv_002",
 		"type": "invoice.payment_failed",
 		"data": {
@@ -102,7 +102,7 @@ func TestStripe_WebhookSubscriptionLifecycle(t *testing.T) {
 				"customer": "cus_stripe_111"
 			}
 		}
-	}`)
+	}`
 	sigHeader2 := generateStripeSignature([]byte(payFailedPayload), secret, time.Now())
 	_ = svc.HandleStripeWebhook([]byte(payFailedPayload), sigHeader2)
 
@@ -117,7 +117,7 @@ func TestStripe_WebhookSubscriptionLifecycle(t *testing.T) {
 	}
 
 	// 6. Test invoice.payment_succeeded -> recovers to active
-	paySuccessPayload := fmt.Sprintf(`{
+	paySuccessPayload := `{
 		"id": "evt_inv_003",
 		"type": "invoice.payment_succeeded",
 		"data": {
@@ -125,7 +125,7 @@ func TestStripe_WebhookSubscriptionLifecycle(t *testing.T) {
 				"customer": "cus_stripe_111"
 			}
 		}
-	}`)
+	}`
 	sigHeader3 := generateStripeSignature([]byte(paySuccessPayload), secret, time.Now())
 	_ = svc.HandleStripeWebhook([]byte(paySuccessPayload), sigHeader3)
 

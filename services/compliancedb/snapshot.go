@@ -186,7 +186,8 @@ func ProcessSnapshotIncidents(
 	for _, ev := range evaluations {
 		existing, hasOpen := openByControl[ev.ControlID]
 
-		if ev.Verdict == VerdictGap {
+		switch ev.Verdict {
+		case VerdictGap:
 			if !hasOpen {
 				// Open new incident
 				inc := ComplianceIncident{
@@ -201,7 +202,7 @@ func ProcessSnapshotIncidents(
 				newIncidents = append(newIncidents, inc)
 				openByControl[ev.ControlID] = inc
 			}
-		} else if ev.Verdict == VerdictMet {
+		case VerdictMet:
 			if hasOpen {
 				// Resolve existing incident
 				resolved := existing

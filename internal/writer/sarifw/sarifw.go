@@ -968,9 +968,10 @@ func buildGovResults(comps []airom.Component, index map[string]int) []sarifResul
 	for _, c := range comps {
 		var govStatus, govReason string
 		for _, p := range c.Props {
-			if p.Name == "airom:governance.status" {
+			switch p.Name {
+			case "airom:governance.status":
 				govStatus = p.Value
-			} else if p.Name == "airom:governance.reason" {
+			case "airom:governance.reason":
 				govReason = p.Value
 			}
 		}

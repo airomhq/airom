@@ -396,9 +396,10 @@ func (s *Service) GetRepoIncidentsHandler(w http.ResponseWriter, r *http.Request
 	openCount := 0
 	resolvedCount := 0
 	for _, inc := range incs {
-		if inc.Status == IncidentStatusOpen {
+		switch inc.Status {
+		case IncidentStatusOpen:
 			openCount++
-		} else if inc.Status == IncidentStatusResolved {
+		case IncidentStatusResolved:
 			resolvedCount++
 		}
 	}

@@ -837,12 +837,12 @@ func (d *draft) finish(manifest *approved.Manifest) airom.Component {
 			var finalReason string
 
 			if len(c.Evidence.Occurrences) == 0 {
-				_, st, rs := manifest.IsApproved(string(targetPURL), "")
+				_, st, rs := manifest.IsApproved(targetPURL, "")
 				status = st
 				finalReason = rs
 			} else {
 				for _, occ := range c.Evidence.Occurrences {
-					_, st, rs := manifest.IsApproved(string(targetPURL), occ.Location.Path)
+					_, st, rs := manifest.IsApproved(targetPURL, occ.Location.Path)
 					if st != "approved" {
 						status = st
 						finalReason = rs

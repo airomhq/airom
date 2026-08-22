@@ -180,17 +180,16 @@ func buildCASystemOverview(req ReportRequest, data *CAAB2013Data) (string, []Cit
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf("Pursuant to Cal. Civ. Code § 1798.500(a), **%s** provides this transparency documentation for the generative artificial intelligence system known as **%s**.\n\n", req.OrgName, data.SystemName))
-	sb.WriteString(fmt.Sprintf("**Intended Purpose:** %s\n\n", data.SystemPurpose))
+	fmt.Fprintf(&sb, "Pursuant to Cal. Civ. Code § 1798.500(a), **%s** provides this transparency documentation for the generative artificial intelligence system known as **%s**.\n\n", req.OrgName, data.SystemName)
+	fmt.Fprintf(&sb, "**Intended Purpose:** %s\n\n", data.SystemPurpose)
 
 	if len(req.EvidenceIndex) > 0 {
 		sb.WriteString("### Verified Generative AI Models & Data Ingestion Pipelines\n\n")
 		for _, ev := range req.EvidenceIndex {
 			citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-			sb.WriteString(fmt.Sprintf(
-				"- **%s** (`%s`): Referenced at `%s:%d` %s with confidence score `%.2f`.\n",
+			fmt.Fprintf(&sb, "- **%s** (`%s`): Referenced at `%s:%d` %s with confidence score `%.2f`.\n",
 				ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag, ev.Confidence,
-			))
+			)
 			citations = append(citations, Citation{
 				RawTag:     citTag,
 				AIBOMID:    ev.AIBOMID,
