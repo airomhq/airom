@@ -11,9 +11,9 @@ import (
 func RenderMarkdown(r *ComplianceReport) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("# %s\n\n", r.Title))
-	sb.WriteString(fmt.Sprintf("**Organization:** %s | **Repository:** `%s` | **Commit:** `%s`\n", r.OrgName, r.RepoName, r.CommitSHA))
-	sb.WriteString(fmt.Sprintf("**Date of Generation:** %s | **Framework:** `%s`\n\n", r.GeneratedAt.Format("2006-01-02 15:04:05 UTC"), r.Framework))
+	fmt.Fprintf(&sb, "# %s\n\n", r.Title)
+	fmt.Fprintf(&sb, "**Organization:** %s | **Repository:** `%s` | **Commit:** `%s`\n", r.OrgName, r.RepoName, r.CommitSHA)
+	fmt.Fprintf(&sb, "**Date of Generation:** %s | **Framework:** `%s`\n\n", r.GeneratedAt.Format("2006-01-02 15:04:05 UTC"), r.Framework)
 	sb.WriteString("---\n\n")
 
 	sb.WriteString("## Executive Summary\n\n")
@@ -21,9 +21,9 @@ func RenderMarkdown(r *ComplianceReport) string {
 	sb.WriteString("\n\n---\n\n")
 
 	for _, sec := range r.Sections {
-		sb.WriteString(fmt.Sprintf("## %s\n\n", sec.Title))
+		fmt.Fprintf(&sb, "## %s\n\n", sec.Title)
 		if sec.StatuteRef != "" {
-			sb.WriteString(fmt.Sprintf("*Statutory Authority: %s*\n\n", sec.StatuteRef))
+			fmt.Fprintf(&sb, "*Statutory Authority: %s*\n\n", sec.StatuteRef)
 		}
 		sb.WriteString(sec.Prose)
 		sb.WriteString("\n\n")
@@ -35,7 +35,7 @@ func RenderMarkdown(r *ComplianceReport) string {
 				if !cit.IsValid {
 					status = "❌ UNVERIFIED"
 				}
-				sb.WriteString(fmt.Sprintf("- `%s`: `%s:%d` (%s)\n", cit.RawTag, cit.FilePath, cit.LineNumber, status))
+				fmt.Fprintf(&sb, "- `%s`: `%s:%d` (%s)\n", cit.RawTag, cit.FilePath, cit.LineNumber, status)
 			}
 			sb.WriteString("\n")
 		}
@@ -54,7 +54,7 @@ func RenderHTML(r *ComplianceReport) string {
 	sb.WriteString("<head>\n")
 	sb.WriteString("  <meta charset=\"UTF-8\">\n")
 	sb.WriteString("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
-	sb.WriteString(fmt.Sprintf("  <title>%s</title>\n", html.EscapeString(r.Title)))
+	fmt.Fprintf(&sb, "  <title>%s</title>\n", html.EscapeString(r.Title))
 	sb.WriteString("  <style>\n")
 	sb.WriteString("    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 900px; margin: 0 auto; padding: 2rem; }\n")
 	sb.WriteString("    header { border-bottom: 2px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 2rem; }\n")
@@ -74,28 +74,28 @@ func RenderHTML(r *ComplianceReport) string {
 	sb.WriteString("<body>\n")
 
 	sb.WriteString("<header>\n")
-	sb.WriteString(fmt.Sprintf("  <h1>%s</h1>\n", html.EscapeString(r.Title)))
-	sb.WriteString(fmt.Sprintf("  <div class=\"meta\"><strong>Org:</strong> %s | <strong>Repository:</strong> <code>%s</code> | <strong>Commit:</strong> <code>%s</code> | <strong>Date:</strong> %s</div>\n",
-		html.EscapeString(r.OrgName), html.EscapeString(r.RepoName), html.EscapeString(r.CommitSHA), r.GeneratedAt.Format("2006-01-02 15:04:05 UTC")))
+	fmt.Fprintf(&sb, "  <h1>%s</h1>\n", html.EscapeString(r.Title))
+	fmt.Fprintf(&sb, "  <div class=\"meta\"><strong>Org:</strong> %s | <strong>Repository:</strong> <code>%s</code> | <strong>Commit:</strong> <code>%s</code> | <strong>Date:</strong> %s</div>\n",
+		html.EscapeString(r.OrgName), html.EscapeString(r.RepoName), html.EscapeString(r.CommitSHA), r.GeneratedAt.Format("2006-01-02 15:04:05 UTC"))
 	sb.WriteString("</header>\n\n")
 
 	sb.WriteString("<main>\n")
 	sb.WriteString("  <section class=\"summary-box\">\n")
 	sb.WriteString("    <h2>Executive Summary</h2>\n")
-	sb.WriteString(fmt.Sprintf("    <p>%s</p>\n", html.EscapeString(r.ExecutiveSummary)))
+	fmt.Fprintf(&sb, "    <p>%s</p>\n", html.EscapeString(r.ExecutiveSummary))
 	sb.WriteString("  </section>\n\n")
 
 	for _, sec := range r.Sections {
 		sb.WriteString("  <article class=\"section\">\n")
-		sb.WriteString(fmt.Sprintf("    <h2>%s</h2>\n", html.EscapeString(sec.Title)))
+		fmt.Fprintf(&sb, "    <h2>%s</h2>\n", html.EscapeString(sec.Title))
 		if sec.StatuteRef != "" {
-			sb.WriteString(fmt.Sprintf("    <div class=\"statute\">Statutory Ref: %s</div>\n", html.EscapeString(sec.StatuteRef)))
+			fmt.Fprintf(&sb, "    <div class=\"statute\">Statutory Ref: %s</div>\n", html.EscapeString(sec.StatuteRef))
 		}
 
 		formattedProse := html.EscapeString(sec.Prose)
 		formattedProse = strings.ReplaceAll(formattedProse, "\n\n", "</p><p>")
 		formattedProse = strings.ReplaceAll(formattedProse, "\n", "<br>")
-		sb.WriteString(fmt.Sprintf("    <p>%s</p>\n", formattedProse))
+		fmt.Fprintf(&sb, "    <p>%s</p>\n", formattedProse)
 
 		if len(sec.Citations) > 0 {
 			sb.WriteString("    <table class=\"evidence-table\" aria-label=\"Evidence Grounding Table\">\n")
@@ -106,8 +106,8 @@ func RenderHTML(r *ComplianceReport) string {
 				if !cit.IsValid {
 					statusBadge = "<span class=\"badge-gap\">UNVERIFIED</span>"
 				}
-				sb.WriteString(fmt.Sprintf("        <tr><td><code>%s</code></td><td><code>%s</code></td><td>%d</td><td>%s</td></tr>\n",
-					html.EscapeString(cit.RawTag), html.EscapeString(cit.FilePath), cit.LineNumber, statusBadge))
+				fmt.Fprintf(&sb, "        <tr><td><code>%s</code></td><td><code>%s</code></td><td>%d</td><td>%s</td></tr>\n",
+					html.EscapeString(cit.RawTag), html.EscapeString(cit.FilePath), cit.LineNumber, statusBadge)
 			}
 			sb.WriteString("      </tbody>\n")
 			sb.WriteString("    </table>\n")
