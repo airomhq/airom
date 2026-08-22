@@ -2,6 +2,7 @@
 # The static binary built by `make build` lands at the repo root.
 /airom
 /airom.exe
+/bin/
 # goreleaser output (release builds, archives, checksums, SBOM/AIBOM attachments).
 /dist/
 # Scratch space for local experiments.

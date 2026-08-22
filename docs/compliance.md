@@ -104,16 +104,13 @@ filter dropped.
 
 ## Frameworks
 
-- **`nist-ai-rmf`**: NIST AI Risk Management Framework 1.0. A representative
-  subset: the inventory/documentation subcategories (MAP) are auto-evaluated
-  from the AIBOM, security/resilience (MEASURE-2.7) maps to the risk overlay,
-  and the governance subcategories (GOVERN, MANAGE) are `manual`.
-- **`owasp-agentic`**: OWASP Agentic AI, Threats and Mitigations. These threats
-  are overwhelmingly runtime/behavioral (agent memory, tools, privileges, goals),
-  which a static scan cannot observe, so nearly all are `manual`. The one AIROM
-  speaks to directly is **T11 (Unexpected RCE and Code Attacks)**, mapped to the
-  artifact-risk overlay. The honest breadth of `manual` marks where static
-  analysis stops (AIROM does not yet detect agents, tools, or MCP endpoints).
+- **`colorado-ai-act`**: Colorado AI Act (SB 24-205 / C.R.S. § 6-1-1701 et seq.). Enforces mandatory risk management programs, annual algorithmic impact assessments (§ 6-1-1703), consumer disclosures (§ 6-1-1704), and 90-day discrimination incident notification protocols (§ 6-1-1705).
+- **`nyc-ll144`**: New York City Local Law 144 (Admin Code § 20-870 et seq.). Enforces independent bias audits, adverse impact ratio threshold calculations (EEOC 80% four-fifths rule), and 10-business-day advance candidate notices for Automated Employment Decision Tools (AEDTs).
+- **`ca-ab2013`**: California AB 2013 Generative AI Training Data Transparency Act (Civ. Code § 1798.500 et seq.). Enforces public summaries of training datasets, source data licensing, and biometric/PII data collection disclosures.
+- **`illinois-bipa`**: Illinois Biometric Information Privacy Act (740 ILCS 14/15(a)-(e)). Enforces written retention schedules, permanent deletion triggers upon satisfaction of purpose, informed consent mandates, and bans on profiting from biometric identifiers.
+- **`texas-traiga`**: Texas Responsible AI Governance Act (TRAIGA / Tex. Gov't Code § 2054.601-604). Enforces state automated decision system registry filings, impact assessments, and public interest safeguards.
+- **`virginia-vcdpa`**: Virginia Consumer Data Protection Act (Va. Code § 59.1-575-580). Enforces mandatory Data Protection Assessments (DPAs) for targeted profiling, consequential decisions, and biometric processing.
+- **`nist-ai-rmf`**: NIST AI Risk Management Framework 1.0. A representative subset: the inventory/documentation subcategories (MAP) are auto-evaluated from the AIBOM, security/resilience (MEASURE-2.7) maps to the risk overlay, and the governance subcategories (GOVERN, MANAGE) are `manual`.
+- **`owasp-agentic`**: OWASP Agentic AI Threats and Mitigations. Tracks prompt injection, tool abuse, untrusted model artifacts, and privilege boundaries.
 
-_More frameworks (the EU AI Act) and richer agentic detection are tracked in
-[ROADMAP.md](./ROADMAP.md)._
+_All framework YAML specifications reside in `internal/compliance/specs/` and are embedded directly into the standalone binary._

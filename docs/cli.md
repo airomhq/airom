@@ -31,6 +31,10 @@ airom
 ├── image <ref>            # --input tar, --platform; remote→daemon→tarball→layout chain
 ├── k8s [context]          # --namespace | -A; --manifests <dir> (offline mode)
 ├── diff <old> <new>       # semantic delta between two native AIBOMs; --format table|markdown|json
+├── approve <purl>         # add an approved model/framework to .airomapproved manifest
+├── revoke <purl>          # revoke an approved asset from .airomapproved manifest
+├── check                  # filter scan results to governance policy violations (shadow AI / config drift)
+├── serve                  # start Unified Enterprise Server Gateway (SSO, ComplianceDB, Reports, SIEM, Billing)
 ├── detectors {list|explain <id>}     # the explainability view
 ├── rules {list|lint <file>|test <file>}
 ├── dev {new-rulepack <name>|new-detector <name>}   # contributor scaffolding
