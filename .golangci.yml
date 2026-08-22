@@ -42,6 +42,17 @@ linters:
         - fmt.Fprintf
         - fmt.Fprintln
 
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+
     gosec:
       # No global excludes. AIROM is a security tool whose parsers eat
       # untrusted bytes (§13); suppress individual findings with an inline

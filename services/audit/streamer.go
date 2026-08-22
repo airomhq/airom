@@ -83,8 +83,10 @@ func (s *Service) RecordEvent(ctx context.Context, e AuditEvent) (*AuditEvent, e
 	s.events = append(s.events, e)
 	s.mu.Unlock()
 
-	// Non-blocking push to streaming worker
+	// Push to streaming worker or abort on context cancellation
 	select {
+	case <-ctx.Done():
+		return &e, ctx.Err()
 	case s.eventChannel <- e:
 	default:
 		// Buffer full: in high load, do not block caller
