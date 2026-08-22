@@ -26,12 +26,14 @@ const configFileName = ".airom.yaml"
 // .airom.yaml and the AIROM_* environment: every global flag plus the
 // command-specific keys. A typo'd key is a fatal configuration error
 // (exit 2), never a silent no-op — the same contract flags already have.
+//
+// The --fix family is deliberately ABSENT: see flagOnlyKeys.
 var knownKeys = map[string]bool{
 	// global flags (flags.go)
 	"output": true, "format": true, "select": true, "rules": true,
 	"compliance": true, "cve": true, "no-cve": true, "no-eol": true,
-	"include-tests": true, "fix": true, "fix-all": true, "fix-verify": true,
-	"parallel": true, "io-budget": true, "max-file-size": true,
+	"include-tests": true,
+	"parallel":      true, "io-budget": true, "max-file-size": true,
 	"min-confidence": true, "ignore": true, "cache-dir": true,
 	"no-cache": true, "cdx-version": true, "sarif-strict-kinds": true,
 	"exit-code": true, "fail-on": true, "offline": true, "pprof": true,
@@ -42,6 +44,28 @@ var knownKeys = map[string]bool{
 	// command-specific (image, k8s)
 	"input": true, "platform": true, "namespace": true,
 	"all-namespaces": true, "manifests": true, "parallel-images": true,
+}
+
+// flagOnlyKeys are flags that may be typed on the command line and nowhere
+// else. Every other key in knownKeys selects read-only behavior; these write
+// to the user's tree.
+//
+// .airom.yaml is discovered in the WORKING DIRECTORY, which means it arrives
+// with the repository being scanned. Accepting `fix-all: true` from it let a
+// checked-in file turn `airom scan .` — a command whose whole contract is that
+// it reads — into one that rewrote the caller's manifests with no flag typed.
+// Shipped in v0.4.0, fixed in v0.4.1. The AIROM_* environment has the same
+// problem one step removed: a shared CI image sets it once and every later job
+// inherits it.
+//
+// The refusal is explicit rather than a silent drop, and separate from the
+// unknown-key path, because "fix-all is not a real key" would be false and
+// would send someone hunting a typo that is not there.
+var flagOnlyKeys = map[string]string{
+	"fix":         "it rewrites files in your tree",
+	"fix-all":     "it rewrites files in your tree",
+	"fix-verify":  "it runs a dependency resolver against the network",
+	"fix-install": "it runs your package manager for real",
 }
 
 // listKeys are configuration keys whose env-variable form is comma-split
@@ -107,13 +131,27 @@ func loadLayers(flags *pflag.FlagSet, dir string) (*layers, error) {
 // of silently not applying.
 func checkKnownKeys(k *koanf.Koanf, msg string) error {
 	seen := map[string]bool{}
-	var unknown []string
+	var unknown, refused []string
 	for _, key := range k.Keys() {
 		top, _, _ := strings.Cut(key, ".")
-		if !knownKeys[top] && !seen[top] {
+		if seen[top] {
+			continue
+		}
+		switch {
+		case flagOnlyKeys[top] != "":
+			seen[top] = true
+			refused = append(refused, fmt.Sprintf("%s (%s)", top, flagOnlyKeys[top]))
+		case !knownKeys[top]:
 			seen[top] = true
 			unknown = append(unknown, top)
 		}
+	}
+	if len(refused) > 0 {
+		sort.Strings(refused)
+		return &app.UsageError{Err: fmt.Errorf(
+			"these may only be given as command-line flags, not from a config file or the environment: %s",
+			strings.Join(refused, ", "),
+		)}
 	}
 	if len(unknown) > 0 {
 		sort.Strings(unknown)

@@ -593,3 +593,62 @@ func TestCheckPProfForm(t *testing.T) {
 		t.Errorf("after --: %v", err)
 	}
 }
+
+// TestFixFlagsAreFlagOnly pins the v0.4.1 fix. Every other configuration key
+// selects read-only behavior, so accepting it from .airom.yaml and AIROM_* is
+// a convenience. The --fix family writes to the caller's tree, and .airom.yaml
+// is discovered in the WORKING DIRECTORY — it arrives with the repository being
+// scanned. In v0.4.0 a checked-in `fix-all: true` turned `airom scan .` into a
+// command that rewrote the caller's manifests with no flag typed.
+//
+// The refusal must be explicit rather than a silent drop: a config that does
+// something other than what it says is the failure this whole feature is
+// supposed to avoid.
+func TestFixFlagsAreFlagOnly(t *testing.T) {
+	for _, key := range []string{"fix", "fix-all", "fix-verify"} {
+		t.Run(key+" in .airom.yaml is refused", func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(dir, ".airom.yaml"),
+				[]byte(key+": true\n"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			t.Chdir(dir)
+			_, err := execute(t, "fs", ".")
+			if err == nil {
+				t.Fatalf("%s: true in .airom.yaml was accepted; a checked-in config must not "+
+					"be able to make a scan write to the tree", key)
+			}
+			if !strings.Contains(err.Error(), "command-line flags") {
+				t.Errorf("error does not explain why: %v", err)
+			}
+			if strings.Contains(err.Error(), "unknown") {
+				t.Errorf("refused as a typo rather than as a policy: %v", err)
+			}
+		})
+
+		t.Run(key+" in the environment is refused", func(t *testing.T) {
+			t.Chdir(t.TempDir())
+			// executeNoClear: execute's hermetic scrub would unset the very
+			// variable this test sets.
+			clearAiromEnv(t)
+			name := "AIROM_" + strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
+			t.Setenv(name, "true")
+			if err := executeNoClear(t, "fs", "."); err == nil {
+				t.Fatalf("%s was accepted; a shared CI image must not be able to make "+
+					"every later job write to the tree", name)
+			} else if !strings.Contains(err.Error(), "command-line flags") {
+				t.Errorf("error does not explain why: %v", err)
+			}
+		})
+	}
+
+	// The flag itself must keep working, or the fix is a regression.
+	t.Run("--fix-all is still accepted as a flag", func(t *testing.T) {
+		t.Chdir(t.TempDir())
+		if _, err := execute(t, "fs", ".", "--fix-all", "--no-cve"); err == nil {
+			t.Error("expected --fix-all --no-cve to be rejected for lacking the CVE overlay")
+		} else if strings.Contains(err.Error(), "command-line flags") {
+			t.Errorf("--fix-all was refused as if it came from a config file: %v", err)
+		}
+	})
+}

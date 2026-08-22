@@ -120,6 +120,15 @@ ignore:
   - "**/*.example.py"
 ```
 
+**The `--fix` family is flag-only.** `--fix`, `--fix-all`, and `--fix-verify`
+cannot be set from `.airom.yaml` or an `AIROM_*` variable, and either one is a
+fatal configuration error naming the reason. Every other key selects read-only
+behaviour; these write to your tree, and `.airom.yaml` is discovered in the
+working directory — it arrives with the repository being scanned. Accepting
+them there let a checked-in file turn `airom scan .` into a command that
+rewrote the caller's manifests with no flag typed (shipped in v0.4.0, fixed in
+v0.4.1). A scan writes to your tree only when you type so.
+
 ## `.airomignore`
 
 Gitignore syntax, same nested per-directory semantics as `.gitignore`, applied **in
