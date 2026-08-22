@@ -1,0 +1,126 @@
+package report
+
+import (
+	"encoding/json"
+	"fmt"
+	"html"
+	"strings"
+)
+
+// RenderMarkdown formats a ComplianceReport into publication-grade Markdown.
+func RenderMarkdown(r *ComplianceReport) string {
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf("# %s\n\n", r.Title))
+	sb.WriteString(fmt.Sprintf("**Organization:** %s | **Repository:** `%s` | **Commit:** `%s`\n", r.OrgName, r.RepoName, r.CommitSHA))
+	sb.WriteString(fmt.Sprintf("**Date of Generation:** %s | **Framework:** `%s`\n\n", r.GeneratedAt.Format("2006-01-02 15:04:05 UTC"), r.Framework))
+	sb.WriteString("---\n\n")
+
+	sb.WriteString("## Executive Summary\n\n")
+	sb.WriteString(r.ExecutiveSummary)
+	sb.WriteString("\n\n---\n\n")
+
+	for _, sec := range r.Sections {
+		sb.WriteString(fmt.Sprintf("## %s\n\n", sec.Title))
+		if sec.StatuteRef != "" {
+			sb.WriteString(fmt.Sprintf("*Statutory Authority: %s*\n\n", sec.StatuteRef))
+		}
+		sb.WriteString(sec.Prose)
+		sb.WriteString("\n\n")
+
+		if len(sec.Citations) > 0 {
+			sb.WriteString("#### Evidence Footnotes\n")
+			for _, cit := range sec.Citations {
+				status := "✅ VERIFIED"
+				if !cit.IsValid {
+					status = "❌ UNVERIFIED"
+				}
+				sb.WriteString(fmt.Sprintf("- `%s`: `%s:%d` (%s)\n", cit.RawTag, cit.FilePath, cit.LineNumber, status))
+			}
+			sb.WriteString("\n")
+		}
+		sb.WriteString("---\n\n")
+	}
+
+	return sb.String()
+}
+
+// RenderHTML formats a ComplianceReport into WCAG 2.1 AA compliant accessible HTML.
+func RenderHTML(r *ComplianceReport) string {
+	var sb strings.Builder
+
+	sb.WriteString("<!DOCTYPE html>\n")
+	sb.WriteString("<html lang=\"en\">\n")
+	sb.WriteString("<head>\n")
+	sb.WriteString("  <meta charset=\"UTF-8\">\n")
+	sb.WriteString("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
+	sb.WriteString(fmt.Sprintf("  <title>%s</title>\n", html.EscapeString(r.Title)))
+	sb.WriteString("  <style>\n")
+	sb.WriteString("    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 900px; margin: 0 auto; padding: 2rem; }\n")
+	sb.WriteString("    header { border-bottom: 2px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 2rem; }\n")
+	sb.WriteString("    h1 { color: #111827; font-size: 2rem; margin-bottom: 0.5rem; }\n")
+	sb.WriteString("    .meta { color: #4b5563; font-size: 0.95rem; }\n")
+	sb.WriteString("    .summary-box { background: #f3f4f6; border-left: 4px solid #2563eb; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }\n")
+	sb.WriteString("    .section { margin-bottom: 2.5rem; }\n")
+	sb.WriteString("    .statute { color: #6b7280; font-size: 0.85rem; font-style: italic; margin-bottom: 1rem; }\n")
+	sb.WriteString("    .evidence-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }\n")
+	sb.WriteString("    .evidence-table th, .evidence-table td { border: 1px solid #e5e7eb; padding: 0.5rem 0.75rem; text-align: left; }\n")
+	sb.WriteString("    .evidence-table th { background: #f9fafb; font-weight: 600; }\n")
+	sb.WriteString("    .badge-verified { background: #dcfce7; color: #166534; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; }\n")
+	sb.WriteString("    .badge-gap { background: #fee2e2; color: #991b1b; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; }\n")
+	sb.WriteString("    @media print { body { padding: 0; } .summary-box { border: 1px solid #999; } }\n")
+	sb.WriteString("  </style>\n")
+	sb.WriteString("</head>\n")
+	sb.WriteString("<body>\n")
+
+	sb.WriteString("<header>\n")
+	sb.WriteString(fmt.Sprintf("  <h1>%s</h1>\n", html.EscapeString(r.Title)))
+	sb.WriteString(fmt.Sprintf("  <div class=\"meta\"><strong>Org:</strong> %s | <strong>Repository:</strong> <code>%s</code> | <strong>Commit:</strong> <code>%s</code> | <strong>Date:</strong> %s</div>\n",
+		html.EscapeString(r.OrgName), html.EscapeString(r.RepoName), html.EscapeString(r.CommitSHA), r.GeneratedAt.Format("2006-01-02 15:04:05 UTC")))
+	sb.WriteString("</header>\n\n")
+
+	sb.WriteString("<main>\n")
+	sb.WriteString("  <section class=\"summary-box\">\n")
+	sb.WriteString("    <h2>Executive Summary</h2>\n")
+	sb.WriteString(fmt.Sprintf("    <p>%s</p>\n", html.EscapeString(r.ExecutiveSummary)))
+	sb.WriteString("  </section>\n\n")
+
+	for _, sec := range r.Sections {
+		sb.WriteString("  <article class=\"section\">\n")
+		sb.WriteString(fmt.Sprintf("    <h2>%s</h2>\n", html.EscapeString(sec.Title)))
+		if sec.StatuteRef != "" {
+			sb.WriteString(fmt.Sprintf("    <div class=\"statute\">Statutory Ref: %s</div>\n", html.EscapeString(sec.StatuteRef)))
+		}
+
+		formattedProse := html.EscapeString(sec.Prose)
+		formattedProse = strings.ReplaceAll(formattedProse, "\n\n", "</p><p>")
+		formattedProse = strings.ReplaceAll(formattedProse, "\n", "<br>")
+		sb.WriteString(fmt.Sprintf("    <p>%s</p>\n", formattedProse))
+
+		if len(sec.Citations) > 0 {
+			sb.WriteString("    <table class=\"evidence-table\" aria-label=\"Evidence Grounding Table\">\n")
+			sb.WriteString("      <thead><tr><th>Citation Tag</th><th>Source File</th><th>Line</th><th>Verification Status</th></tr></thead>\n")
+			sb.WriteString("      <tbody>\n")
+			for _, cit := range sec.Citations {
+				statusBadge := "<span class=\"badge-verified\">VERIFIED</span>"
+				if !cit.IsValid {
+					statusBadge = "<span class=\"badge-gap\">UNVERIFIED</span>"
+				}
+				sb.WriteString(fmt.Sprintf("        <tr><td><code>%s</code></td><td><code>%s</code></td><td>%d</td><td>%s</td></tr>\n",
+					html.EscapeString(cit.RawTag), html.EscapeString(cit.FilePath), cit.LineNumber, statusBadge))
+			}
+			sb.WriteString("      </tbody>\n")
+			sb.WriteString("    </table>\n")
+		}
+		sb.WriteString("  </article>\n\n")
+	}
+	sb.WriteString("</main>\n")
+	sb.WriteString("</body>\n</html>\n")
+
+	return sb.String()
+}
+
+// RenderJSON serializes a ComplianceReport into formatted JSON.
+func RenderJSON(r *ComplianceReport) ([]byte, error) {
+	return json.MarshalIndent(r, "", "  ")
+}
