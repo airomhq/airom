@@ -158,8 +158,8 @@ func TestHTTP_SSO_And_RBAC_Protection(t *testing.T) {
 	}
 
 	var authRes map[string]interface{}
-	json.NewDecoder(resp1.Body).Decode(&authRes)
-	resp1.Body.Close()
+	_ = json.NewDecoder(resp1.Body).Decode(&authRes)
+	_ = resp1.Body.Close()
 	adminToken := authRes["token"].(string)
 
 	// 2. Admin Mints API Key
@@ -179,8 +179,8 @@ func TestHTTP_SSO_And_RBAC_Protection(t *testing.T) {
 	}
 
 	var keyRes map[string]interface{}
-	json.NewDecoder(resp2.Body).Decode(&keyRes)
-	resp2.Body.Close()
+	_ = json.NewDecoder(resp2.Body).Decode(&keyRes)
+	_ = resp2.Body.Close()
 	rawAPIKey := keyRes["raw_api_key"].(string)
 
 	// 3. Developer SSO Callback
@@ -194,8 +194,8 @@ func TestHTTP_SSO_And_RBAC_Protection(t *testing.T) {
 	dBody, _ := json.Marshal(devPayload)
 	resp3, _ := http.Post(ts.URL+"/api/v1/auth/sso/callback", "application/json", bytes.NewReader(dBody))
 	var devAuthRes map[string]interface{}
-	json.NewDecoder(resp3.Body).Decode(&devAuthRes)
-	resp3.Body.Close()
+	_ = json.NewDecoder(resp3.Body).Decode(&devAuthRes)
+	_ = resp3.Body.Close()
 	devToken := devAuthRes["token"].(string)
 
 	// 4. Developer attempts Admin-only action (Mint API Key) -> FORBIDDEN (403)
@@ -206,7 +206,7 @@ func TestHTTP_SSO_And_RBAC_Protection(t *testing.T) {
 	if err != nil || resp4.StatusCode != http.StatusForbidden {
 		t.Fatalf("expected 403 Forbidden for Developer on Admin route, got: %d", resp4.StatusCode)
 	}
-	resp4.Body.Close()
+	_ = resp4.Body.Close()
 
 	// 5. Test API Key Authentication on Authenticate()
 	testReq, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/v1/auth/keys", nil)

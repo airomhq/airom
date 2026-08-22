@@ -59,11 +59,11 @@ func (e *Engine) EvaluateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(report)
+	_ = json.NewEncoder(w).Encode(report)
 }
 
 func (e *Engine) HealthzHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"status": "ok", "service": "airom-anomaly-engine"}`))
+	_, _ = w.Write([]byte(`{"status": "ok", "service": "airom-anomaly-engine"}`))
 }

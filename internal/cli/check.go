@@ -72,8 +72,8 @@ func newCheckCmd() *cobra.Command {
 				return err
 			}
 			tmpPath := tmpFile.Name()
-			tmpFile.Close()
-			defer os.Remove(tmpPath)
+			_ = tmpFile.Close()
+			defer func() { _ = os.Remove(tmpPath) }()
 
 			cfg.Outputs = []app.OutputSpec{{Format: app.FormatJSON, Path: tmpPath}}
 			cfg.Quiet = true
