@@ -34,7 +34,7 @@ type Config struct {
 
 // DefaultConfig returns recommended production defaults.
 func DefaultConfig() Config {
-	return Config{
+	return Config{ // #nosec G101 -- default configuration template values for local development and testing
 		Host:             "0.0.0.0",
 		Port:             8080,
 		JWTSecret:        "airom-enterprise-jwt-secret-key-prod-2026",

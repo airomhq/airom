@@ -793,7 +793,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 				t.Fatalf("request failed: %v", err)
 			}
 			var returnedUsers []User
-			json.NewDecoder(resp.Body).Decode(&returnedUsers)
+			_ = json.NewDecoder(resp.Body).Decode(&returnedUsers)
 			drainAndClose(resp)
 
 			for _, u := range returnedUsers {
@@ -810,7 +810,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 				t.Fatalf("request failed: %v", err)
 			}
 			var returnedKeys []APIKey
-			json.NewDecoder(respK.Body).Decode(&returnedKeys)
+			_ = json.NewDecoder(respK.Body).Decode(&returnedKeys)
 			drainAndClose(respK)
 
 			for _, k := range returnedKeys {
@@ -827,7 +827,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 				t.Fatalf("request failed: %v", err)
 			}
 			var returnedLogs []AuthEvent
-			json.NewDecoder(respA.Body).Decode(&returnedLogs)
+			_ = json.NewDecoder(respA.Body).Decode(&returnedLogs)
 			drainAndClose(respA)
 
 			for _, e := range returnedLogs {

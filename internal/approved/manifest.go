@@ -1,3 +1,4 @@
+// Package approved manages .airomapproved manifests for AI component governance.
 package approved
 
 import (
@@ -13,6 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ComponentApproval represents an approved or denied component entry in .airomapproved.
 type ComponentApproval struct {
 	PURL            string            `yaml:"purl"`
 	ApprovedBy      string            `yaml:"approved_by,omitempty"`
@@ -23,6 +25,7 @@ type ComponentApproval struct {
 	Reason          string            `yaml:"reason,omitempty"`
 }
 
+// ApprovedManifest represents the parsed .airomapproved repository manifest.
 type ApprovedManifest struct {
 	SchemaVersion string              `yaml:"schema_version"`
 	Repo          string              `yaml:"repo"`
@@ -32,6 +35,7 @@ type ApprovedManifest struct {
 	Revocations   []ComponentApproval `yaml:"revocations,omitempty"`
 }
 
+// LoadManifest reads and parses .airomapproved from the given repository root directory.
 func LoadManifest(repoRoot string) (*ApprovedManifest, error) {
 	manifestPath := filepath.Join(repoRoot, ".airomapproved")
 	data, err := os.ReadFile(manifestPath) // #nosec G304 -- manifest path constructed from repoRoot
@@ -58,6 +62,7 @@ func LoadManifest(repoRoot string) (*ApprovedManifest, error) {
 	return &m, nil
 }
 
+// ComputeSignature calculates the HMAC-SHA256 signature for the manifest.
 func ComputeSignature(m *ApprovedManifest) string {
 	clone := *m
 	clone.Signature = ""
@@ -70,6 +75,7 @@ func ComputeSignature(m *ApprovedManifest) string {
 	return hex.EncodeToString(mac.Sum(nil))
 }
 
+// SaveManifest serializes and writes the manifest to .airomapproved in repoRoot.
 func SaveManifest(repoRoot string, m *ApprovedManifest) error {
 	m.Signature = ComputeSignature(m)
 	data, err := yaml.Marshal(m)
@@ -86,6 +92,7 @@ func SaveManifest(repoRoot string, m *ApprovedManifest) error {
 	return os.Rename(tmpPath, manifestPath)
 }
 
+// IsApproved checks whether a given PURL and file path are approved according to the manifest.
 func (m *ApprovedManifest) IsApproved(purl string, filePath string) (bool, string, string) {
 	for _, deny := range m.Deny {
 		if matchPURL(deny.PURL, purl) {
@@ -169,6 +176,7 @@ func matchScope(scopes []string, filePath string) bool {
 	return false
 }
 
+// CheckConfigDrift validates if the runtime configuration matches permitted thresholds.
 func (m *ApprovedManifest) CheckConfigDrift(purl string, params map[string]string) (bool, string, string) {
 	if m == nil {
 		return false, "", ""
