@@ -38,7 +38,7 @@ func newApproveCmd() *cobra.Command {
 				return fmt.Errorf("failed to load manifest: %w", err)
 			}
 			if manifest == nil {
-				manifest = &approved.ApprovedManifest{
+				manifest = &approved.Manifest{
 					SchemaVersion: "1",
 					Repo:          filepath.Base(repoRoot),
 				}

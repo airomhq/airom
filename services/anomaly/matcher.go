@@ -9,7 +9,7 @@ import (
 )
 
 // EvaluateAnomalies evaluates diff against rules and manifest to find anomalies.
-func EvaluateAnomalies(diff DiffReport, manifest *approved.ApprovedManifest) AnomalyReport {
+func EvaluateAnomalies(diff DiffReport, manifest *approved.Manifest) AnomalyReport {
 	report := AnomalyReport{
 		Diff:        diff,
 		EvaluatedAt: time.Now(),

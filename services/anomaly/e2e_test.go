@@ -8,7 +8,7 @@ import (
 )
 
 func TestQA_E2E(t *testing.T) {
-	manifest := &approved.ApprovedManifest{
+	manifest := &approved.Manifest{
 		Approved: []approved.ComponentApproval{
 			{
 				PURL: "pkg:npm/config",

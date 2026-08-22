@@ -46,7 +46,7 @@ approved:
 }
 
 func TestIsApproved_Approved(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		Approved: []ComponentApproval{
 			{PURL: "pkg:pypi/requests*", Scope: []string{"src/*"}},
 		},
@@ -58,7 +58,7 @@ func TestIsApproved_Approved(t *testing.T) {
 }
 
 func TestIsApproved_ScopeMismatch(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		Approved: []ComponentApproval{
 			{PURL: "pkg:pypi/requests*", Scope: []string{"src/*"}},
 		},
@@ -70,7 +70,7 @@ func TestIsApproved_ScopeMismatch(t *testing.T) {
 }
 
 func TestIsApproved_Deny(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		Deny: []ComponentApproval{
 			{PURL: "pkg:npm/evil*"},
 		},
@@ -85,7 +85,7 @@ func TestIsApproved_Deny(t *testing.T) {
 }
 
 func TestIsApproved_Unapproved(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		Approved: []ComponentApproval{
 			{PURL: "pkg:npm/good*"},
 		},
@@ -97,7 +97,7 @@ func TestIsApproved_Unapproved(t *testing.T) {
 }
 
 func TestSignature_Integrity(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		SchemaVersion: "1.0",
 		Repo:          "test",
 		Approved: []ComponentApproval{
@@ -117,7 +117,7 @@ func TestSignature_Integrity(t *testing.T) {
 }
 
 func TestCheckConfigDrift(t *testing.T) {
-	m := &ApprovedManifest{
+	m := &Manifest{
 		Approved: []ComponentApproval{
 			{
 				PURL: "pkg:npm/model*",

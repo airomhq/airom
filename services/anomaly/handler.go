@@ -67,7 +67,7 @@ func (e *Engine) EvaluateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // HealthzHandler returns the health status of the anomaly service.
-func (e *Engine) HealthzHandler(w http.ResponseWriter, r *http.Request) {
+func (e *Engine) HealthzHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(`{"status": "ok", "service": "airom-anomaly-engine"}`))

@@ -59,7 +59,7 @@ func newCheckCmd() *cobra.Command {
 				return fmt.Errorf("failed to load manifest: %w", err)
 			}
 			if manifest == nil {
-				manifest = &approved.ApprovedManifest{}
+				manifest = &approved.Manifest{}
 			}
 
 			cfg, err := buildConfig(cmd.Flags(), wd, src, target)

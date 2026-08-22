@@ -66,7 +66,7 @@ func Build(findings []detect.Finding, unknowns []airom.Unknown, stats airom.Scan
 		Stats:         stats,
 	}
 
-	var manifest *approved.ApprovedManifest
+	var manifest *approved.Manifest
 	if opts.Source.Target != "" {
 		if m, err := approved.LoadManifest(opts.Source.Target); err == nil {
 			manifest = m
@@ -735,7 +735,7 @@ func mergeHashes(dst, add []airom.Hash) []airom.Hash {
 }
 
 // finish produces the final Component from a draft.
-func (d *draft) finish(manifest *approved.ApprovedManifest) airom.Component {
+func (d *draft) finish(manifest *approved.Manifest) airom.Component {
 	// Sort by the TOTAL occLess order, then dedup by (Path, Line, DetectorID).
 	// A total order matters at the tie: two occurrences sharing those three
 	// keys but differing in column/method/snippet (e.g. one rule matching a

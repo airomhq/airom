@@ -13,10 +13,14 @@ import (
 	"time"
 )
 
+// Standard errors returned by the SIEM event streamer.
 var (
+	// ErrDestinationDisabled indicates that the SIEM destination is currently disabled.
 	ErrDestinationDisabled = errors.New("siem destination is disabled")
-	ErrInvalidConfig       = errors.New("invalid siem configuration")
-	ErrDeliveryFailed      = errors.New("siem event delivery failed")
+	// ErrInvalidConfig indicates the SIEM destination configuration is invalid.
+	ErrInvalidConfig = errors.New("invalid siem configuration")
+	// ErrDeliveryFailed indicates delivery to the SIEM destination failed after retries.
+	ErrDeliveryFailed = errors.New("siem event delivery failed")
 )
 
 // HTTPClient interface allows mocking HTTP requests in tests.

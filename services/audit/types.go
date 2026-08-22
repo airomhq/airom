@@ -1,3 +1,4 @@
+// Package audit provides SOC 2 compliant immutable audit logging and SIEM event streaming.
 package audit
 
 import (

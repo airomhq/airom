@@ -6,11 +6,13 @@ import (
 	"github.com/airomhq/airom/pkg/airom"
 )
 
+// ParamDelta describes changes to a single model parameter.
 type ParamDelta struct {
 	OldValue string `json:"oldValue"`
 	NewValue string `json:"newValue"`
 }
 
+// ComponentDelta describes version or configuration shifts in an AI component.
 type ComponentDelta struct {
 	ComponentID string                `json:"componentId"`
 	PURL        string                `json:"purl"`
@@ -21,6 +23,7 @@ type ComponentDelta struct {
 	ParamDeltas map[string]ParamDelta `json:"paramDeltas"`
 }
 
+// DiffReport aggregates additions, removals, and modifications between inventory versions.
 type DiffReport struct {
 	BaseCommit string            `json:"baseCommit"`
 	HeadCommit string            `json:"headCommit"`
@@ -29,6 +32,7 @@ type DiffReport struct {
 	Modified   []ComponentDelta  `json:"modified"`
 }
 
+// Anomaly represents a detected AI policy violation, drift, or risk indicator.
 type Anomaly struct {
 	ID          string `json:"id"`
 	Type        string `json:"type"`     // shadow-ai, model-swap, config-drift, proximity-hiring, proximity-credit, proximity-healthcare
@@ -40,6 +44,7 @@ type Anomaly struct {
 	Remediation string `json:"remediation"`
 }
 
+// AnomalyReport encapsulates the full evaluation verdict across differential AI changes.
 type AnomalyReport struct {
 	Clean           bool       `json:"clean"`
 	HighestSeverity string     `json:"highestSeverity"`

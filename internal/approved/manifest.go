@@ -35,9 +35,6 @@ type Manifest struct {
 	Revocations   []ComponentApproval `yaml:"revocations,omitempty"`
 }
 
-// ApprovedManifest is an alias for Manifest for backwards compatibility.
-type ApprovedManifest = Manifest
-
 // LoadManifest reads and parses .airomapproved from the given repository root directory.
 func LoadManifest(repoRoot string) (*Manifest, error) {
 	manifestPath := filepath.Join(repoRoot, ".airomapproved")

@@ -73,7 +73,7 @@ func TestEvaluateAnomalies(t *testing.T) {
 		},
 	}
 
-	manifest := &approved.ApprovedManifest{
+	manifest := &approved.Manifest{
 		Approved: []approved.ComponentApproval{
 			{PURL: "pkg:npm/hiring"},
 			{PURL: "pkg:npm/credit"},
@@ -156,7 +156,7 @@ func TestEvaluateAnomaliesClean(t *testing.T) {
 		},
 	}
 
-	manifest := &approved.ApprovedManifest{
+	manifest := &approved.Manifest{
 		Approved: []approved.ComponentApproval{
 			{PURL: "pkg:npm/clean"},
 		},
