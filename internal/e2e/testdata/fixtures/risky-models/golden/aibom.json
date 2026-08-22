@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "risky-models"
   },
-  "root": "airom:9423f449d4c6c695",
+  "root": "airom:d4e3be4126ba4a51",
   "components": [
     {
       "id": "airom:2df08beb45af93fd",
@@ -162,13 +162,6 @@
       ]
     },
     {
-      "id": "airom:9423f449d4c6c695",
-      "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\risky-models",
-      "confidence": 0,
-      "evidence": {}
-    },
-    {
       "id": "airom:a6ccf893ff130124",
       "kind": "library",
       "name": "openai",
@@ -203,6 +196,13 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:d4e3be4126ba4a51",
+      "kind": "application",
+      "name": "risky-models",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:d5686fa6fcffb28f",

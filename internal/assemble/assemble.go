@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -1009,7 +1010,7 @@ func assembleConfidence(occs []airom.Occurrence) airom.Confidence {
 // ── Root, relations, params ─────────────────────────────────────────────────
 
 func (a *assembly) mintRoot(opts Options) airom.ID {
-	name := opts.Source.Target
+	name := filepath.ToSlash(opts.Source.Target)
 	if i := strings.LastIndexByte(strings.TrimRight(name, "/"), '/'); i >= 0 {
 		name = strings.TrimRight(name, "/")[i+1:]
 	}

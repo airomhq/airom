@@ -14,15 +14,8 @@
     "kind": "dir",
     "target": "go-openai"
   },
-  "root": "airom:3343d8bd0751ecb3",
+  "root": "airom:f7e06de2ad26950f",
   "components": [
-    {
-      "id": "airom:3343d8bd0751ecb3",
-      "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\go-openai",
-      "confidence": 0,
-      "evidence": {}
-    },
     {
       "id": "airom:cffbe1cb532342ef",
       "kind": "library",
@@ -72,6 +65,13 @@
           "value": "gpt-4o"
         }
       ]
+    },
+    {
+      "id": "airom:f7e06de2ad26950f",
+      "kind": "application",
+      "name": "go-openai",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:f96ee68bb40a8bb3",

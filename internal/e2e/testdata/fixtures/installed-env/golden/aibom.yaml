@@ -37,11 +37,6 @@ components:
       ecosystem: pypi
     provider: chroma
     version: 0.5.3
-  - confidence: 0
-    evidence: {}
-    id: airom:5e219aa064b7f188
-    kind: application
-    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\installed-env
   - confidence: 0.85
     evidence:
       occurrences:
@@ -136,6 +131,11 @@ components:
     provider: openai
     purl: pkg:pypi/openai@1.40.0
     version: 1.40.0
+  - confidence: 0
+    evidence: {}
+    id: airom:e827242fd464167e
+    kind: application
+    name: installed-env
 lifecycle: pre-build
 relationships:
   - confidence: 0.7
@@ -155,7 +155,7 @@ relationships:
     from: airom:a6ccf893ff130124
     to: airom:65ad4ea6556c5aad
     type: uses
-root: airom:5e219aa064b7f188
+root: airom:e827242fd464167e
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:

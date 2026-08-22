@@ -84,9 +84,9 @@ components:
     versionConstraint: ^0.3.2
   - confidence: 0
     evidence: {}
-    id: airom:961122fbff9058d8
+    id: airom:bfa221b1fd6ea0d5
     kind: application
-    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\node-openai
+    name: node-openai
   - confidence: 0.985
     evidence:
       identity:
@@ -171,7 +171,7 @@ relationships:
     from: airom:f16d02e10b6caf23
     to: airom:14ac8720c7a8d1ef
     type: uses
-root: airom:961122fbff9058d8
+root: airom:bfa221b1fd6ea0d5
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:

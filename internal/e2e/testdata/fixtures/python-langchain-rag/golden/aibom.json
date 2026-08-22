@@ -14,8 +14,15 @@
     "kind": "dir",
     "target": "python-langchain-rag"
   },
-  "root": "airom:6e41647ced4c09ca",
+  "root": "airom:0f9a0955ae2b259c",
   "components": [
+    {
+      "id": "airom:0f9a0955ae2b259c",
+      "kind": "application",
+      "name": "python-langchain-rag",
+      "confidence": 0,
+      "evidence": {}
+    },
     {
       "id": "airom:113e832148731168",
       "kind": "library",
@@ -272,13 +279,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "airom:6e41647ced4c09ca",
-      "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\python-langchain-rag",
-      "confidence": 0,
-      "evidence": {}
     },
     {
       "id": "airom:6ed15db34c48ea41",

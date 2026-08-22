@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "eol-models"
   },
-  "root": "airom:bcbb2f8c0987e213",
+  "root": "airom:aa2a11f29e846576",
   "components": [
     {
       "id": "airom:0b7828a4ff243920",
@@ -464,9 +464,9 @@
       }
     },
     {
-      "id": "airom:bcbb2f8c0987e213",
+      "id": "airom:aa2a11f29e846576",
       "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\eol-models",
+      "name": "eol-models",
       "confidence": 0,
       "evidence": {}
     },

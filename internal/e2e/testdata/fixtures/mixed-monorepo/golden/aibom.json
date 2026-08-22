@@ -14,15 +14,8 @@
     "kind": "dir",
     "target": "mixed-monorepo"
   },
-  "root": "airom:31dde78fd7394528",
+  "root": "airom:c4cea838751d80a9",
   "components": [
-    {
-      "id": "airom:31dde78fd7394528",
-      "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\mixed-monorepo",
-      "confidence": 0,
-      "evidence": {}
-    },
     {
       "id": "airom:53f987ae810a0674",
       "kind": "infra",
@@ -120,6 +113,13 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:c4cea838751d80a9",
+      "kind": "application",
+      "name": "mixed-monorepo",
+      "confidence": 0,
+      "evidence": {}
     },
     {
       "id": "airom:f16d02e10b6caf23",

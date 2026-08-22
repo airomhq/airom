@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:6e41647ced4c09ca",
+      "bom-ref": "airom:0f9a0955ae2b259c",
       "type": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\python-langchain-rag",
+      "name": "python-langchain-rag",
       "properties": [
         {
           "name": "airom:confidence",

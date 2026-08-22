@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:31dde78fd7394528",
+      "bom-ref": "airom:c4cea838751d80a9",
       "type": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\mixed-monorepo",
+      "name": "mixed-monorepo",
       "properties": [
         {
           "name": "airom:confidence",

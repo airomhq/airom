@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "installed-env"
   },
-  "root": "airom:5e219aa064b7f188",
+  "root": "airom:e827242fd464167e",
   "components": [
     {
       "id": "airom:3e3a9735550d6b44",
@@ -71,13 +71,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "airom:5e219aa064b7f188",
-      "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\installed-env",
-      "confidence": 0,
-      "evidence": {}
     },
     {
       "id": "airom:65ad4ea6556c5aad",
@@ -216,6 +209,13 @@
           }
         ]
       }
+    },
+    {
+      "id": "airom:e827242fd464167e",
+      "kind": "application",
+      "name": "installed-env",
+      "confidence": 0,
+      "evidence": {}
     }
   ],
   "relationships": [

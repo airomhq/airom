@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:c26bb05e019ef9c4",
+      "bom-ref": "airom:7c7c4199feb6d991",
       "type": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\locked-deps",
+      "name": "locked-deps",
       "properties": [
         {
           "name": "airom:confidence",

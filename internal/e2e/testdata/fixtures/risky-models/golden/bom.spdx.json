@@ -120,14 +120,6 @@
       ]
     },
     {
-      "comment": "airom:kind application",
-      "creationInfo": "_:creationInfo",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\risky-models",
-      "software_primaryPurpose": "application",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#9423f449d4c6c695",
-      "type": "software_Package"
-    },
-    {
       "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind library",
       "creationInfo": "_:creationInfo",
       "externalIdentifier": [
@@ -142,6 +134,14 @@
       "software_primaryPurpose": "library",
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
       "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:kind application",
+      "creationInfo": "_:creationInfo",
+      "name": "risky-models",
+      "software_primaryPurpose": "application",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
       "type": "software_Package"
     },
     {
@@ -293,13 +293,13 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#9423f449d4c6c695",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d5686fa6fcffb28f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d884b0dd6c364550"
       ],
       "rootElement": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#9423f449d4c6c695"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#d4e3be4126ba4a51"
       ],
       "software_sbomType": [
         "build"

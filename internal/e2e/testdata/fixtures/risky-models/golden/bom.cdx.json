@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:9423f449d4c6c695",
+      "bom-ref": "airom:d4e3be4126ba4a51",
       "type": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\risky-models",
+      "name": "risky-models",
       "properties": [
         {
           "name": "airom:confidence",

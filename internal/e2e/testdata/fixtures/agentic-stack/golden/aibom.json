@@ -14,12 +14,12 @@
     "kind": "dir",
     "target": "agentic-stack"
   },
-  "root": "airom:669989d3d8e834a5",
+  "root": "airom:14f0893c734c4d89",
   "components": [
     {
-      "id": "airom:669989d3d8e834a5",
+      "id": "airom:14f0893c734c4d89",
       "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\agentic-stack",
+      "name": "agentic-stack",
       "confidence": 0,
       "evidence": {}
     },

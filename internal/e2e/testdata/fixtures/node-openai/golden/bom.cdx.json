@@ -21,9 +21,9 @@
       ]
     },
     "component": {
-      "bom-ref": "airom:961122fbff9058d8",
+      "bom-ref": "airom:bfa221b1fd6ea0d5",
       "type": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\node-openai",
+      "name": "node-openai",
       "properties": [
         {
           "name": "airom:confidence",

@@ -91,11 +91,6 @@ components:
             path: models/tf_model/saved_model.pb
           method: binary-analysis
         severity: medium
-  - confidence: 0
-    evidence: {}
-    id: airom:9423f449d4c6c695
-    kind: application
-    name: C:\Users\remoteadmin\airom\internal\e2e\testdata\fixtures\risky-models
   - confidence: 0.95
     evidence:
       identity:
@@ -120,6 +115,11 @@ components:
     provider: openai
     purl: pkg:pypi/openai@1.51.0
     version: 1.51.0
+  - confidence: 0
+    evidence: {}
+    id: airom:d4e3be4126ba4a51
+    kind: application
+    name: risky-models
   - confidence: 0.99
     evidence:
       identity:
@@ -198,7 +198,7 @@ components:
           method: binary-analysis
         severity: high
 lifecycle: pre-build
-root: airom:9423f449d4c6c695
+root: airom:d4e3be4126ba4a51
 schemaVersion: "1"
 serial: urn:uuid:00000000-0000-4000-8000-000000000000
 source:

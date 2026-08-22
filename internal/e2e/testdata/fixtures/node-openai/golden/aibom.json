@@ -14,7 +14,7 @@
     "kind": "dir",
     "target": "node-openai"
   },
-  "root": "airom:961122fbff9058d8",
+  "root": "airom:bfa221b1fd6ea0d5",
   "components": [
     {
       "id": "airom:14ac8720c7a8d1ef",
@@ -140,9 +140,9 @@
       }
     },
     {
-      "id": "airom:961122fbff9058d8",
+      "id": "airom:bfa221b1fd6ea0d5",
       "kind": "application",
-      "name": "C:\\Users\\remoteadmin\\airom\\internal\\e2e\\testdata\\fixtures\\node-openai",
+      "name": "node-openai",
       "confidence": 0,
       "evidence": {}
     },
