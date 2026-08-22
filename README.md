@@ -82,8 +82,8 @@ Why? Where?"*
 
 Most tools can't answer. They describe a model you named in a registry, or they
 never look at your code. AIROM is **evidence-first**: every component carries
-the `file:line` it was seen at, the technique that found it, and a calibrated
-confidence score, emitted as CycloneDX `evidence.occurrences[]` that other
+the `file:line` it was seen at, the technique that found it, and an
+evidence-weighted confidence score, emitted as CycloneDX `evidence.occurrences[]` that other
 AIBOM tools leave empty.
 
 It is also honest about what it doesn't know. A version it couldn't resolve

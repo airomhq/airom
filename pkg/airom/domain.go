@@ -70,10 +70,17 @@ const (
 	MethodAttestation DetectionMethod = "attestation" // v2: sigstore/in-toto verified
 )
 
-// Confidence is a calibrated belief in [0,1]. Detectors emit per-sighting
-// confidence; component-level confidence is computed by the assembler's
-// grouped noisy-OR (§9.3) and clamps at 0.99 — only hash-comparison against
-// known weights (or a verified attestation, v2) may assert 1.0.
+// Confidence is an evidence-weighted score in [0,1]. Detectors emit
+// per-sighting confidence; component-level confidence is computed by the
+// assembler's grouped noisy-OR (§9.3) and clamps at 0.99 — only
+// hash-comparison against known weights (or a verified attestation, v2) may
+// assert 1.0.
+//
+// The values are ordinal, not calibrated probabilities: per-sighting scores
+// are author-assigned from the strength of the evidence (rule-schema.md), and
+// no study has established that findings scored 0.85 are correct 85% of the
+// time. Read a higher score as stronger evidence, not as a measured error
+// rate.
 type Confidence float64
 
 // Band buckets a confidence for table output and --min-confidence UX.
