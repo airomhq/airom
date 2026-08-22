@@ -21,7 +21,6 @@ import (
 // It tracks metrics, verifies payload integrity and security headers per destination,
 // and injects intermittent 503 Service Unavailable errors to test retry resilience.
 type concurrentScaleMockClient struct {
-	mu                 sync.Mutex
 	injected503Count   int64
 	successful200Count int64
 	totalRequests      int64

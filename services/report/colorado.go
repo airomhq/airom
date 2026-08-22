@@ -60,7 +60,7 @@ func GenerateColoradoReport(req ReportRequest) (*ComplianceReport, error) {
 	})
 
 	// 3. Training & Validation Data Transparency
-	sec3Prose := buildDataTransparencySection(req)
+	sec3Prose := buildDataTransparencySection()
 	vRes3 := ValidateReportCitations(sec3Prose, req.EvidenceIndex)
 	if vRes3.InvalidCount > 0 {
 		allValid = false
@@ -172,10 +172,10 @@ func buildInventorySection(req ReportRequest) (string, []Citation) {
 	sb.WriteString("### Detected AI Decision Systems & Component Deployments\n\n")
 	for _, ev := range req.EvidenceIndex {
 		citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-		sb.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&sb,
 			"- **%s** (`%s`): Deployed at `%s:%d` %s with confidence score `%.2f`.\n",
 			ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag, ev.Confidence,
-		))
+		)
 		citations = append(citations, Citation{
 			RawTag:     citTag,
 			AIBOMID:    ev.AIBOMID,
@@ -198,7 +198,7 @@ func buildAlgorithmicRiskSection(req ReportRequest) string {
 		if strings.Contains(strings.ToLower(ev.StatuteRef), "co") || strings.Contains(strings.ToLower(ev.ControlID), "co.") {
 			if ev.Verdict == compliancedb.VerdictGap {
 				hasGaps = true
-				sb.WriteString(fmt.Sprintf("> [COMPLIANCE GAP DETECTED] Control `%s`: %s\n\n", ev.ControlID, ev.GapMessage))
+				fmt.Fprintf(&sb, "> [COMPLIANCE GAP DETECTED] Control `%s`: %s\n\n", ev.ControlID, ev.GapMessage)
 			}
 		}
 	}
@@ -210,7 +210,7 @@ func buildAlgorithmicRiskSection(req ReportRequest) string {
 	return sb.String()
 }
 
-func buildDataTransparencySection(req ReportRequest) string {
+func buildDataTransparencySection() string {
 	var sb strings.Builder
 	sb.WriteString("Under CO SB 24-205 § 6-1-1703(1)(c), the deployer documents the data provenance and governance mechanisms used to validate system performance.\n\n")
 	sb.WriteString("1. **Data Governance & Integrity:** Model inputs and outputs are validated via strict type schemas and parameterized configurations.\n")
@@ -222,10 +222,10 @@ func buildMonitoringSection(req ReportRequest) string {
 	var sb strings.Builder
 	sb.WriteString("Pursuant to CO SB 24-205 § 6-1-1703(2), post-deployment continuous monitoring is enforced through the AIROM ComplianceDB cryptographic ledger.\n\n")
 	if req.Snapshot != nil {
-		sb.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&sb,
 			"- **Ledger Snapshot ID:** `%s`\n- **Cryptographic Hash (SHA-256):** `%s`\n- **Parent Link:** `%s`\n",
 			req.Snapshot.ID, req.Snapshot.SelfHash, req.Snapshot.PrevSnapshotHash,
-		))
+		)
 	} else {
 		sb.WriteString("- Continuous CI/CD scanning is integrated via `airomhq/airom-action@v1` on every pull request and release.\n")
 	}

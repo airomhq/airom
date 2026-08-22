@@ -45,7 +45,7 @@ func GenerateBIPAReport(req ReportRequest, data *BIPAData) (*ComplianceReport, e
 	allValid := true
 
 	// 1. Biometric AI Identification
-	sec1Prose, sec1Cits := buildBIPASystemOverview(req, data)
+	sec1Prose, sec1Cits := buildBIPASystemOverview(req)
 	vRes1 := ValidateReportCitations(sec1Prose, req.EvidenceIndex)
 	if vRes1.InvalidCount > 0 {
 		allValid = false
@@ -134,16 +134,16 @@ func GenerateBIPAReport(req ReportRequest, data *BIPAData) (*ComplianceReport, e
 	}, nil
 }
 
-func buildBIPASystemOverview(req ReportRequest, data *BIPAData) (string, []Citation) {
+func buildBIPASystemOverview(req ReportRequest) (string, []Citation) {
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf("Evaluation of **%s** codebase `%s` for biometric identifiers under 740 ILCS 14/10.\n\n", req.OrgName, req.RepoName))
+	fmt.Fprintf(&sb, "Evaluation of **%s** codebase `%s` for biometric identifiers under 740 ILCS 14/10.\n\n", req.OrgName, req.RepoName)
 	if len(req.EvidenceIndex) > 0 {
 		sb.WriteString("### Verified Biometric Models & Ingestion Code Evidence\n\n")
 		for _, ev := range req.EvidenceIndex {
 			citTag := FormatCitation(ev.AIBOMID, ev.FilePath, ev.LineNumber)
-			sb.WriteString(fmt.Sprintf("- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag))
+			fmt.Fprintf(&sb, "- **%s** (`%s`): `%s:%d` %s\n", ev.ModelName, ev.Kind, ev.FilePath, ev.LineNumber, citTag)
 			citations = append(citations, Citation{
 				RawTag:     citTag,
 				AIBOMID:    ev.AIBOMID,

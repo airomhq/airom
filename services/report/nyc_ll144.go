@@ -94,7 +94,7 @@ func GenerateNYCLL144Report(req ReportRequest, auditData *NYCLL144Data) (*Compli
 	})
 
 	// 3. Candidate Notice & 10-Business-Day Disclosure Procedures
-	sec3Prose := buildNYCCandidateNoticeSection(req)
+	sec3Prose := buildNYCCandidateNoticeSection()
 	vRes3 := ValidateReportCitations(sec3Prose, req.EvidenceIndex)
 	if vRes3.InvalidCount > 0 {
 		allValid = false
@@ -223,7 +223,7 @@ func buildNYCImpactRatioSection(data *NYCLL144Data) string {
 	return sb.String()
 }
 
-func buildNYCCandidateNoticeSection(req ReportRequest) string {
+func buildNYCCandidateNoticeSection() string {
 	var sb strings.Builder
 	sb.WriteString("Pursuant to NYC Admin Code § 20-872, the employer enforces the following candidate notice protocols:\n\n")
 	sb.WriteString("1. **10-Business-Day Pre-Notice:** All candidates residing in NYC receive written notice at least 10 business days prior to assessment detailing the use of the AEDT and the specific job qualifications evaluated.\n")
