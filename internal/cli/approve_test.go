@@ -15,7 +15,7 @@ func TestApproveCmd(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Init fake git repo
-	err := os.Mkdir(filepath.Join(tmpDir, ".git"), 0755)
+	err := os.Mkdir(filepath.Join(tmpDir, ".git"), 0o755)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -298,7 +298,7 @@ func TestEngineConfig_ValidationAndDefaults(t *testing.T) {
 	onlineCfg.LLMBackend.Provider = ProviderAnthropic
 	onlineCfg.LLMBackend.AirGapped = false
 	onlineCfg.LLMBackend.APIKeyEnv = "TEST_MISSING_API_KEY_ENV_XYZ"
-	os.Unsetenv("TEST_MISSING_API_KEY_ENV_XYZ")
+	_ = os.Unsetenv("TEST_MISSING_API_KEY_ENV_XYZ")
 	if err := onlineCfg.Validate(); err == nil {
 		t.Errorf("expected error on missing API key env var")
 	}

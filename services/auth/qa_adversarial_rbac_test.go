@@ -705,7 +705,7 @@ func TestQA_CrossTenantDataIsolation(t *testing.T) {
 			t.Fatalf("failed SSO setup for %s: %v", orgID, err)
 		}
 		var adminAuth map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&adminAuth)
+		_ = json.NewDecoder(resp.Body).Decode(&adminAuth)
 		drainAndClose(resp)
 		adminToken := adminAuth["token"].(string)
 

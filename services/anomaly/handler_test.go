@@ -58,9 +58,10 @@ func TestEvaluateHandler_Success(t *testing.T) {
 	if res.StatusCode != http.StatusOK {
 		t.Errorf("expected status OK, got %v", res.StatusCode)
 	}
+	_ = res.Body.Close()
 
 	var report AnomalyReport
-	json.NewDecoder(w.Body).Decode(&report)
+	_ = json.NewDecoder(w.Body).Decode(&report)
 
 	shadowFound := false
 	tripwireFound := false
@@ -92,6 +93,7 @@ func TestEvaluateHandler_MalformedJSON(t *testing.T) {
 	if res.StatusCode != http.StatusBadRequest {
 		t.Errorf("expected status Bad Request, got %v", res.StatusCode)
 	}
+	_ = res.Body.Close()
 }
 
 func BenchmarkEvaluateHandler(b *testing.B) {

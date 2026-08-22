@@ -25,7 +25,7 @@ import (
 func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 	cfg := DefaultConfig()
 	srv := NewEnterpriseServer(cfg)
-	defer srv.Shutdown(context.Background())
+	defer func() { _ = srv.Shutdown(context.Background()) }()
 
 	ts := httptest.NewServer(srv.Handler())
 	defer ts.Close()
@@ -35,6 +35,7 @@ func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 	if err != nil || resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 from /healthz, got: resp=%+v, err=%v", resp, err)
 	}
+	_ = resp.Body.Close()
 
 	// 2. /readyz
 	resp, err = http.Get(ts.URL + "/readyz")
@@ -43,6 +44,7 @@ func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 	}
 	var readyBody map[string]interface{}
 	_ = json.NewDecoder(resp.Body).Decode(&readyBody)
+	_ = resp.Body.Close()
 	if readyBody["status"] != "ready" {
 		t.Errorf("unexpected readyz status: %+v", readyBody)
 	}
@@ -53,6 +55,7 @@ func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 		t.Fatalf("expected 200 from /metrics, got: resp=%+v, err=%v", resp, err)
 	}
 	metricsBytes, _ := io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
 	if !strings.Contains(string(metricsBytes), "airom_server_up 1") {
 		t.Errorf("missing expected prometheus metric in /metrics: %s", string(metricsBytes))
 	}
@@ -64,6 +67,7 @@ func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 	}
 	var infoBody map[string]interface{}
 	_ = json.NewDecoder(resp.Body).Decode(&infoBody)
+	_ = resp.Body.Close()
 	if infoBody["edition"] != "Enterprise" {
 		t.Errorf("unexpected info edition: %+v", infoBody)
 	}
@@ -72,7 +76,7 @@ func TestEnterpriseServer_HealthAndProbes(t *testing.T) {
 func TestEnterpriseServer_FullLifecycleE2E(t *testing.T) {
 	cfg := DefaultConfig()
 	srv := NewEnterpriseServer(cfg)
-	defer srv.Shutdown(context.Background())
+	defer func() { _ = srv.Shutdown(context.Background()) }()
 
 	ctx := context.Background()
 	orgID := "org-enterprise-acme"

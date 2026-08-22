@@ -25,7 +25,7 @@ approved:
   - purl: "pkg:npm/react@18.0.0"
     reason: "Standard UI lib"
 `)
-	err := os.WriteFile(filepath.Join(dir, ".airomapproved"), content, 0644)
+	err := os.WriteFile(filepath.Join(dir, ".airomapproved"), content, 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}

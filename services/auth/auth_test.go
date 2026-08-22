@@ -236,7 +236,8 @@ func TestHTTP_UserProvisioning_RoleUpdate_AuditLogs(t *testing.T) {
 	sBody, _ := json.Marshal(ssoPayload)
 	resp, _ := http.Post(ts.URL+"/api/v1/auth/sso/callback", "application/json", bytes.NewReader(sBody))
 	var authRes map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&authRes)
+	_ = json.NewDecoder(resp.Body).Decode(&authRes)
+	_ = resp.Body.Close()
 	adminToken := authRes["token"].(string)
 
 	// 2. Admin Provisions New User
