@@ -35,13 +35,9 @@ jobs:
       - name: go vet
         run: go vet ./...
       - name: golangci-lint
-        # v6 is required for golangci-lint v2 configs (.golangci.yml is v2).
-        uses: golangci/golangci-lint-action@v6
+        # v7 is required for golangci-lint v2 configs (.golangci.yml is v2).
+        uses: golangci/golangci-lint-action@v7
         with:
-          # Pinned, not `latest`. golangci-lint bundles its own gofumpt, so a
-          # release that bumps it changes what counts as "formatted" and turns
-          # an unrelated commit red. Bump this deliberately, with the reformat
-          # in the same commit.
           version: v2.12.2
           # The .golangci.yml depguard rules enforce the §4 import-direction law.
 
