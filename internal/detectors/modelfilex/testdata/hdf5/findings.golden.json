@@ -1,42 +1,4 @@
 {
-  "model.keras": [
-    {
-      "Claim": {
-        "Kind": "local-model-file",
-        "Name": "model.keras",
-        "Group": "",
-        "Version": "",
-        "Provider": "local",
-        "VersionConstraint": "",
-        "Licenses": null,
-        "Hashes": null,
-        "DownloadLocation": "",
-        "Model": {
-          "Task": "",
-          "Architecture": "",
-          "ParamCount": 0,
-          "Quantization": "",
-          "ContextLength": 0,
-          "Format": "hdf5",
-          "BaseModel": "",
-          "Card": null
-        },
-        "Data": null,
-        "Infra": null,
-        "Package": null,
-        "Risks": null
-      },
-      "Occurrence": {
-        "location": {
-          "path": ""
-        },
-        "detectorId": "",
-        "method": "binary-analysis",
-        "confidence": 0.85
-      },
-      "Relations": null
-    }
-  ],
   "weights.h5": [
     {
       "Claim": {

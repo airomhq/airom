@@ -20,7 +20,7 @@
         "Model": null,
         "Data": {
           "Format": "csv",
-          "SizeBytes": 104,
+          "SizeBytes": 100,
           "URL": ""
         },
         "Infra": null,
@@ -119,7 +119,7 @@
         "Model": null,
         "Data": {
           "Format": "jsonl",
-          "SizeBytes": 176,
+          "SizeBytes": 173,
           "URL": ""
         },
         "Infra": null,
