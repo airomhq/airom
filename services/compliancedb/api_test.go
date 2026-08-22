@@ -19,7 +19,7 @@ func TestAPI_Healthz(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to GET /healthz: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200 OK, got %d", resp.StatusCode)

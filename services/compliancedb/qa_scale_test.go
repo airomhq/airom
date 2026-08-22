@@ -547,8 +547,8 @@ func BenchmarkScale_ConcurrentIngestion(b *testing.B) {
 			}
 			reqBytes, _ := json.Marshal(req)
 			resp, err := client.Post(fmt.Sprintf("%s/api/v1/repos/%s/snapshots", ts.URL, repoID), "application/json", bytes.NewReader(reqBytes))
-			if err == nil {
-				resp.Body.Close()
+			if err == nil && resp != nil {
+				_ = resp.Body.Close()
 			}
 		}
 	})

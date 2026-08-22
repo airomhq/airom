@@ -242,7 +242,7 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	if err != nil || hResp.StatusCode != http.StatusOK {
 		t.Fatalf("healthz failed: %v", err)
 	}
-	hResp.Body.Close()
+	_ = hResp.Body.Close()
 
 	// 2. Create Document Package
 	createReq := CreatePackageRequest{
@@ -263,8 +263,8 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	}
 
 	var pkg DocumentPackage
-	json.NewDecoder(cResp.Body).Decode(&pkg)
-	cResp.Body.Close()
+	_ = json.NewDecoder(cResp.Body).Decode(&pkg)
+	_ = cResp.Body.Close()
 
 	// 3. Request Ephemeral Human Confirmation Token
 	tokReq := TokenRequest{
@@ -279,8 +279,8 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	}
 
 	var tokResp TokenResponse
-	json.NewDecoder(tResp.Body).Decode(&tokResp)
-	tResp.Body.Close()
+	_ = json.NewDecoder(tResp.Body).Decode(&tokResp)
+	_ = tResp.Body.Close()
 
 	// 4. Update Yellow Item via HTTP
 	yellowID := "yellow-ctrl-nyc.notice"
@@ -291,7 +291,7 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	if err != nil || yResp.StatusCode != http.StatusOK {
 		t.Fatalf("update yellow failed: %v", err)
 	}
-	yResp.Body.Close()
+	_ = yResp.Body.Close()
 
 	// 5. Certify Document Package via HTTP
 	certReq := CertifyRequest{
@@ -308,8 +308,8 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	}
 
 	var certifiedPkg DocumentPackage
-	json.NewDecoder(certResp.Body).Decode(&certifiedPkg)
-	certResp.Body.Close()
+	_ = json.NewDecoder(certResp.Body).Decode(&certifiedPkg)
+	_ = certResp.Body.Close()
 
 	if !certifiedPkg.IsCertified || certifiedPkg.CertifiedBy != "auditor-jane" {
 		t.Errorf("certification response mismatch: %+v", certifiedPkg)
@@ -320,7 +320,7 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	if err != nil || expResp.StatusCode != http.StatusOK {
 		t.Fatalf("export html failed: %v", err)
 	}
-	expResp.Body.Close()
+	_ = expResp.Body.Close()
 
 	// 7. Verify Audit Log via HTTP
 	auditResp, err := http.Get(ts.URL + "/api/v1/documents/audit-log")
@@ -328,8 +328,8 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 		t.Fatalf("get audit logs failed: %v", err)
 	}
 	var logs []FilingAuditEntry
-	json.NewDecoder(auditResp.Body).Decode(&logs)
-	auditResp.Body.Close()
+	_ = json.NewDecoder(auditResp.Body).Decode(&logs)
+	_ = auditResp.Body.Close()
 
 	if len(logs) != 1 || logs[0].DocumentID != pkg.ID {
 		t.Errorf("unexpected audit logs: %+v", logs)
