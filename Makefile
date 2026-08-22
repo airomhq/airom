@@ -52,6 +52,15 @@ build: ## Build the static airom binary (CGO_ENABLED=0) at ./airom
 install: ## Install airom into GOBIN with the same static build + version stamp
 	CGO_ENABLED=0 go install $(BUILDFLAGS) -ldflags '$(LDFLAGS)' $(MAIN_PKG)
 
+cross-compile: ## Build release binaries for Linux, macOS (Darwin), and Windows
+	@mkdir -p dist
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags '$(LDFLAGS)' -o dist/airom_linux_amd64 $(MAIN_PKG)
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags '$(LDFLAGS)' -o dist/airom_linux_arm64 $(MAIN_PKG)
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags '$(LDFLAGS)' -o dist/airom_darwin_amd64 $(MAIN_PKG)
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags '$(LDFLAGS)' -o dist/airom_darwin_arm64 $(MAIN_PKG)
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags '$(LDFLAGS)' -o dist/airom_windows_amd64.exe $(MAIN_PKG)
+	@echo "=> Cross-compilation complete in dist/"
+
 test: ## Run the full test suite with the race detector (§14: everything runs under -race)
 	go test -race ./...
 

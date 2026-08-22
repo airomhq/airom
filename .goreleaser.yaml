@@ -1,0 +1,71 @@
+# .goreleaser.yaml — Multi-platform release configuration for AIROM
+version: 2
+
+project_name: airom
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: airom
+    binary: airom
+    main: ./cmd/airom
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    builds:
+      - airom
+    name_template: "airom_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - NOTICE
+
+nfpms:
+  - id: packages
+    package_name: airom
+    vendor: AIROM HQ
+    homepage: https://github.com/airomhq/airom
+    maintainer: AIROM Maintainers <support@airom.dev>
+    description: Enterprise AI Bill of Materials & Automated Compliance Scanner
+    license: Apache-2.0
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/local/bin
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
