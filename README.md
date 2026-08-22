@@ -1,6 +1,6 @@
 # AIROM
 
-**Find the AI in your code, and prove it.**
+**The AI bill of materials that shows its work.**
 
 AIROM scans a filesystem, git repo, container image, or Kubernetes workload and
 generates an **AI Bill of Materials**: the models, prompts, datasets, embeddings,
