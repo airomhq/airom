@@ -65,14 +65,14 @@ func TestAPI_IngestSnapshotAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to POST snapshot: %v", err)
 	}
-	defer postResp1.Body.Close()
+	defer func() { _ = postResp1.Body.Close() }()
 
 	if postResp1.StatusCode != http.StatusCreated {
 		t.Fatalf("expected 201 Created, got %d", postResp1.StatusCode)
 	}
 
 	var ingResp1 IngestionResponse
-	json.NewDecoder(postResp1.Body).Decode(&ingResp1)
+	_ = json.NewDecoder(postResp1.Body).Decode(&ingResp1)
 	if ingResp1.SelfHash == "" || ingResp1.ChainStatus != "VALID" || ingResp1.NewIncidentsCount != 1 {
 		t.Errorf("unexpected ingestion response 1: %+v", ingResp1)
 	}
@@ -101,10 +101,10 @@ func TestAPI_IngestSnapshotAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to POST snapshot 2: %v", err)
 	}
-	defer postResp2.Body.Close()
+	defer func() { _ = postResp2.Body.Close() }()
 
 	var ingResp2 IngestionResponse
-	json.NewDecoder(postResp2.Body).Decode(&ingResp2)
+	_ = json.NewDecoder(postResp2.Body).Decode(&ingResp2)
 	if ingResp2.PrevHash != ingResp1.SelfHash || len(ingResp2.ResolvedIncidents) != 1 {
 		t.Errorf("unexpected ingestion response 2: %+v", ingResp2)
 	}
@@ -114,10 +114,10 @@ func TestAPI_IngestSnapshotAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to GET history: %v", err)
 	}
-	defer histResp.Body.Close()
+	defer func() { _ = histResp.Body.Close() }()
 
 	var history RepoHistoryResponse
-	json.NewDecoder(histResp.Body).Decode(&history)
+	_ = json.NewDecoder(histResp.Body).Decode(&history)
 	if history.TotalCount != 2 || !history.ChainReport.Valid {
 		t.Errorf("unexpected history response: %+v", history)
 	}
@@ -127,10 +127,10 @@ func TestAPI_IngestSnapshotAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to GET incidents: %v", err)
 	}
-	defer incResp.Body.Close()
+	defer func() { _ = incResp.Body.Close() }()
 
 	var incs RepoIncidentsResponse
-	json.NewDecoder(incResp.Body).Decode(&incs)
+	_ = json.NewDecoder(incResp.Body).Decode(&incs)
 	if incs.OpenCount != 0 || incs.Resolved != 1 {
 		t.Errorf("unexpected incidents response: %+v", incs)
 	}
@@ -168,7 +168,9 @@ func TestAPI_OrgComplianceAggregation(t *testing.T) {
 		},
 	}
 	b1, _ := json.Marshal(req1)
-	http.Post(fmt.Sprintf("%s/api/v1/repos/repo-1/snapshots", ts.URL), "application/json", bytes.NewReader(b1))
+	if r1, err := http.Post(fmt.Sprintf("%s/api/v1/repos/repo-1/snapshots", ts.URL), "application/json", bytes.NewReader(b1)); err == nil && r1 != nil {
+		_ = r1.Body.Close()
+	}
 
 	// Ingest for Repo 2 (NYC LL144: gap)
 	req2 := IngestionRequest{
@@ -186,21 +188,23 @@ func TestAPI_OrgComplianceAggregation(t *testing.T) {
 		},
 	}
 	b2, _ := json.Marshal(req2)
-	http.Post(fmt.Sprintf("%s/api/v1/repos/repo-2/snapshots", ts.URL), "application/json", bytes.NewReader(b2))
+	if r2, err := http.Post(fmt.Sprintf("%s/api/v1/repos/repo-2/snapshots", ts.URL), "application/json", bytes.NewReader(b2)); err == nil && r2 != nil {
+		_ = r2.Body.Close()
+	}
 
 	// Query Org Compliance aggregation
 	resp, err := http.Get(fmt.Sprintf("%s/api/v1/orgs/%s/compliance", ts.URL, orgID))
 	if err != nil {
 		t.Fatalf("failed to GET org compliance: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200 OK, got %d", resp.StatusCode)
 	}
 
 	var orgComp OrgComplianceResponse
-	json.NewDecoder(resp.Body).Decode(&orgComp)
+	_ = json.NewDecoder(resp.Body).Decode(&orgComp)
 
 	if orgComp.TotalRepos != 2 {
 		t.Errorf("expected 2 total repos, got %d", orgComp.TotalRepos)
@@ -220,28 +224,40 @@ func TestAPI_ErrorHandling(t *testing.T) {
 
 	// 1. Malformed JSON
 	resp1, _ := http.Post(ts.URL+"/api/v1/repos/r1/snapshots", "application/json", bytes.NewReader([]byte("{malformed: true")))
-	if resp1.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected 400 Bad Request on malformed json, got %d", resp1.StatusCode)
+	if resp1 != nil {
+		if resp1.StatusCode != http.StatusBadRequest {
+			t.Errorf("expected 400 Bad Request on malformed json, got %d", resp1.StatusCode)
+		}
+		_ = resp1.Body.Close()
 	}
 
 	// 2. Missing Commit SHA
 	req := IngestionRequest{RepoID: "r1"}
 	b, _ := json.Marshal(req)
 	resp2, _ := http.Post(ts.URL+"/api/v1/repos/r1/snapshots", "application/json", bytes.NewReader(b))
-	if resp2.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected 400 Bad Request on missing commit, got %d", resp2.StatusCode)
+	if resp2 != nil {
+		if resp2.StatusCode != http.StatusBadRequest {
+			t.Errorf("expected 400 Bad Request on missing commit, got %d", resp2.StatusCode)
+		}
+		_ = resp2.Body.Close()
 	}
 
 	// 3. Not Found Route
 	resp3, _ := http.Get(ts.URL + "/api/v1/unknown/endpoint")
-	if resp3.StatusCode != http.StatusNotFound {
-		t.Errorf("expected 404 on unknown route, got %d", resp3.StatusCode)
+	if resp3 != nil {
+		if resp3.StatusCode != http.StatusNotFound {
+			t.Errorf("expected 404 on unknown route, got %d", resp3.StatusCode)
+		}
+		_ = resp3.Body.Close()
 	}
 
 	// 4. Method Not Allowed
 	resp4, _ := http.Post(ts.URL+"/healthz", "application/json", nil)
-	if resp4.StatusCode != http.StatusMethodNotAllowed {
-		t.Errorf("expected 405 on POST /healthz, got %d", resp4.StatusCode)
+	if resp4 != nil {
+		if resp4.StatusCode != http.StatusMethodNotAllowed {
+			t.Errorf("expected 405 on POST /healthz, got %d", resp4.StatusCode)
+		}
+		_ = resp4.Body.Close()
 	}
 }
 
@@ -267,7 +283,9 @@ func BenchmarkAPI_IngestSnapshot(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		resp, _ := client.Post(ts.URL+"/api/v1/repos/repo-bench/snapshots", "application/json", bytes.NewReader(body))
-		resp.Body.Close()
+		if resp != nil {
+			_ = resp.Body.Close()
+		}
 	}
 }
 
@@ -284,6 +302,8 @@ func BenchmarkAPI_OrgCompliance(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		resp, _ := client.Get(url)
-		resp.Body.Close()
+		if resp != nil {
+			_ = resp.Body.Close()
+		}
 	}
 }

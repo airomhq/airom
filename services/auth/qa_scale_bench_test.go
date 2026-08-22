@@ -244,8 +244,8 @@ func TestQA_ConcurrentAuthStorm_100Workers(t *testing.T) {
 		t.Fatalf("failed to bootstrap admin SSO: %v", err)
 	}
 	var seedAdminRes map[string]interface{}
-	json.NewDecoder(resp1.Body).Decode(&seedAdminRes)
-	resp1.Body.Close()
+	_ = json.NewDecoder(resp1.Body).Decode(&seedAdminRes)
+	_ = resp1.Body.Close()
 	masterAdminToken := seedAdminRes["token"].(string)
 
 	seedDevSSO := map[string]string{
@@ -261,8 +261,8 @@ func TestQA_ConcurrentAuthStorm_100Workers(t *testing.T) {
 		t.Fatalf("failed to bootstrap dev SSO: %v", err)
 	}
 	var seedDevRes map[string]interface{}
-	json.NewDecoder(resp2.Body).Decode(&seedDevRes)
-	resp2.Body.Close()
+	_ = json.NewDecoder(resp2.Body).Decode(&seedDevRes)
+	_ = resp2.Body.Close()
 	masterDevToken := seedDevRes["token"].(string)
 
 	// Pre-mint a baseline API Key for API Key auth testing
@@ -278,8 +278,8 @@ func TestQA_ConcurrentAuthStorm_100Workers(t *testing.T) {
 		t.Fatalf("failed to mint baseline key: %v", err)
 	}
 	var kRes map[string]interface{}
-	json.NewDecoder(kResp.Body).Decode(&kRes)
-	kResp.Body.Close()
+	_ = json.NewDecoder(kResp.Body).Decode(&kRes)
+	_ = kResp.Body.Close()
 	baselineRawKey := kRes["raw_api_key"].(string)
 
 	// 2. Define Work Tasks across 4 main scenarios:
@@ -496,7 +496,7 @@ func TestQA_ConcurrentAuthStorm_100Workers(t *testing.T) {
 
 				statusCode := resp.StatusCode
 				_, _ = io.Copy(io.Discard, resp.Body)
-				resp.Body.Close()
+				_ = resp.Body.Close()
 
 				switch statusCode {
 				case http.StatusOK:

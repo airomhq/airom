@@ -192,10 +192,10 @@ func (s *Service) deliverWithRetry(ctx context.Context, cfg SIEMConfig, payload 
 		resp, err := s.client.Do(req)
 		if err == nil {
 			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-				resp.Body.Close()
+				_ = resp.Body.Close()
 				return nil
 			}
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			lastErr = fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 		} else {
 			lastErr = err

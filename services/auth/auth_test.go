@@ -254,8 +254,8 @@ func TestHTTP_UserProvisioning_RoleUpdate_AuditLogs(t *testing.T) {
 		t.Fatalf("provision user failed: %v", err)
 	}
 	var createdUser User
-	json.NewDecoder(uResp.Body).Decode(&createdUser)
-	uResp.Body.Close()
+	_ = json.NewDecoder(uResp.Body).Decode(&createdUser)
+	_ = uResp.Body.Close()
 
 	if createdUser.Role != RoleAuditor || createdUser.Email != "auditor@alpha.com" {
 		t.Errorf("unexpected created user: %+v", createdUser)
@@ -272,8 +272,8 @@ func TestHTTP_UserProvisioning_RoleUpdate_AuditLogs(t *testing.T) {
 		t.Fatalf("update role failed: %v", err)
 	}
 	var updatedUser User
-	json.NewDecoder(rResp.Body).Decode(&updatedUser)
-	rResp.Body.Close()
+	_ = json.NewDecoder(rResp.Body).Decode(&updatedUser)
+	_ = rResp.Body.Close()
 
 	if updatedUser.Role != RoleComplianceOfficer {
 		t.Errorf("expected COMPLIANCE_OFFICER, got: %s", updatedUser.Role)
@@ -287,8 +287,8 @@ func TestHTTP_UserProvisioning_RoleUpdate_AuditLogs(t *testing.T) {
 		t.Fatalf("get audit logs failed: %v", err)
 	}
 	var logs []AuthEvent
-	json.NewDecoder(aResp.Body).Decode(&logs)
-	aResp.Body.Close()
+	_ = json.NewDecoder(aResp.Body).Decode(&logs)
+	_ = aResp.Body.Close()
 
 	if len(logs) < 3 {
 		t.Errorf("expected at least 3 audit log events, got %d", len(logs))
