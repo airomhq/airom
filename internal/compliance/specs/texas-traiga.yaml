@@ -1,0 +1,18 @@
+id: texas-traiga
+name: "Texas Responsible AI Governance Act (TRAIGA / HB 2060)"
+version: "1.0"
+url: "https://capitol.texas.gov/BillLookup/History.aspx?LegSess=88R&Bill=HB2060"
+controls:
+  - id: tx.traiga.inventory-disclosure
+    title: "Algorithmic System Inventory & Registry (§ 2054.601)"
+    text: "Automated discovery of all deployed models and algorithms registered in verified AIBOM."
+    evidence_of: "hosted-llm | local-model-file | embedding-model | framework"
+  - id: tx.traiga.risk-tiering
+    title: "Algorithmic Risk Classification (§ 2054.602)"
+    manual: true
+  - id: tx.traiga.human-oversight
+    title: "Human-in-the-Loop Safeguards for Critical Decisions (§ 2054.603)"
+    manual: true
+  - id: tx.traiga.deceptive-ai-ban
+    title: "Synthetic Media Watermarking & Deceptive AI Prohibition"
+    manual: true

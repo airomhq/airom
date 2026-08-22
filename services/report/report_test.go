@@ -304,6 +304,117 @@ func TestEngineConfig_ValidationAndDefaults(t *testing.T) {
 	}
 }
 
+func TestBIPAReport_GenerationAndExport(t *testing.T) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"src/bio/face.py:12": {
+			AIBOMID:     "aibom-il-1",
+			FilePath:    "src/bio/face.py",
+			LineNumber:  12,
+			ComponentID: "comp-face-embed",
+			ModelName:   "facenet-embeddings",
+			Kind:        "local-model-file",
+			Confidence:  0.97,
+		},
+	}
+	req := ReportRequest{
+		OrgName:       "Biometric Security Corp",
+		RepoID:        "access-control-ai",
+		RepoName:      "facial-auth-pipeline",
+		CommitSHA:     "c-il-123",
+		EvidenceIndex: evIndex,
+	}
+
+	rep, err := GenerateBIPAReport(req, nil)
+	if err != nil {
+		t.Fatalf("failed to generate BIPA report: %v", err)
+	}
+	if rep.Framework != "illinois-bipa" || len(rep.Sections) != 4 {
+		t.Errorf("unexpected BIPA report structure: framework=%s, sections=%d", rep.Framework, len(rep.Sections))
+	}
+	md := RenderMarkdown(rep)
+	if !strings.Contains(md, "Illinois BIPA") || !strings.Contains(md, "Retention Schedule") {
+		t.Errorf("unexpected BIPA markdown: %s", md)
+	}
+	html := RenderHTML(rep)
+	if !strings.Contains(html, "Illinois BIPA") {
+		t.Errorf("unexpected BIPA HTML: %s", html)
+	}
+}
+
+func TestTRAIGAReport_GenerationAndExport(t *testing.T) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"src/decision/scorer.py:20": {
+			AIBOMID:     "aibom-tx-1",
+			FilePath:    "src/decision/scorer.py",
+			LineNumber:  20,
+			ComponentID: "comp-tx-scorer",
+			ModelName:   "texas-gov-decision-engine",
+			Kind:        "decision-system",
+			Confidence:  0.95,
+		},
+	}
+	req := ReportRequest{
+		OrgName:       "Lone Star Analytics LLC",
+		RepoID:        "benefits-scoring",
+		RepoName:      "state-benefits-decisions",
+		CommitSHA:     "c-tx-456",
+		EvidenceIndex: evIndex,
+	}
+
+	rep, err := GenerateTRAIGAReport(req, nil)
+	if err != nil {
+		t.Fatalf("failed to generate TRAIGA report: %v", err)
+	}
+	if rep.Framework != "texas-traiga" || len(rep.Sections) != 3 {
+		t.Errorf("unexpected TRAIGA report structure: framework=%s, sections=%d", rep.Framework, len(rep.Sections))
+	}
+	md := RenderMarkdown(rep)
+	if !strings.Contains(md, "Texas TRAIGA") || !strings.Contains(md, "State Registry ID") {
+		t.Errorf("unexpected TRAIGA markdown: %s", md)
+	}
+	html := RenderHTML(rep)
+	if !strings.Contains(html, "Texas Responsible AI Registry") {
+		t.Errorf("unexpected TRAIGA HTML: %s", html)
+	}
+}
+
+func TestVCDPAReport_GenerationAndExport(t *testing.T) {
+	evIndex := map[EvidenceKey]EvidenceRef{
+		"src/nlp/classifier.py:30": {
+			AIBOMID:     "aibom-va-1",
+			FilePath:    "src/nlp/classifier.py",
+			LineNumber:  30,
+			ComponentID: "comp-va-nlp",
+			ModelName:   "consumer-profiler-v1",
+			Kind:        "hosted-llm",
+			Confidence:  0.94,
+		},
+	}
+	req := ReportRequest{
+		OrgName:       "Old Dominion Data Inc",
+		RepoID:        "profiling-engine",
+		RepoName:      "automated-credit-profiling",
+		CommitSHA:     "c-va-789",
+		EvidenceIndex: evIndex,
+	}
+
+	rep, err := GenerateVCDPAReport(req, nil)
+	if err != nil {
+		t.Fatalf("failed to generate VCDPA report: %v", err)
+	}
+	if rep.Framework != "virginia-vcdpa" || len(rep.Sections) != 3 {
+		t.Errorf("unexpected VCDPA report structure: framework=%s, sections=%d", rep.Framework, len(rep.Sections))
+	}
+	md := RenderMarkdown(rep)
+	if !strings.Contains(md, "Virginia VCDPA") || !strings.Contains(md, "Opt-Out") {
+		t.Errorf("unexpected VCDPA markdown: %s", md)
+	}
+	html := RenderHTML(rep)
+	if !strings.Contains(html, "Data Protection Assessment") {
+		t.Errorf("unexpected VCDPA HTML: %s", html)
+	}
+}
+
 func BenchmarkCitation_ExtractionAndVerification(b *testing.B) {
 	prose := `
 Underwriting system deploys GPT-4o at src/scoring.py:47 [ev:aibom-1:src/scoring.py:47].

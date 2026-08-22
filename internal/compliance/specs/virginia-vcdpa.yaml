@@ -1,0 +1,15 @@
+id: virginia-vcdpa
+name: "Virginia Consumer Data Protection Act — Automated Profiling (Va. Code § 59.1-575)"
+version: "1.0"
+url: "https://law.lis.virginia.gov/vacodefull/title59.1/chapter53/"
+controls:
+  - id: va.vcdpa.data-protection-assessment
+    title: "Mandatory Data Protection Assessment for Profiling (§ 59.1-580)"
+    text: "Conduct Data Protection Assessment for automated profiling and high-risk algorithmic scoring."
+    gap_if: "risk | hosted-llm | decision-system"
+  - id: va.vcdpa.profiling-opt-out
+    title: "Consumer Right to Opt Out of Profiling (§ 59.1-577)"
+    manual: true
+  - id: va.vcdpa.purpose-limitation
+    title: "Data Minimization & Purpose Limitation (§ 59.1-578)"
+    manual: true

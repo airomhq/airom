@@ -189,3 +189,47 @@ func TestTestOnlyComponentsAreNotComplianceEvidence(t *testing.T) {
 		t.Error("--include-tests must let test-scoped components back into the mapping")
 	}
 }
+
+// TestMultiStatePacks_BIPA_TRAIGA_VCDPA validates that Phase 2 state compliance packs load and evaluate correctly.
+func TestMultiStatePacks_BIPA_TRAIGA_VCDPA(t *testing.T) {
+	fws, err := loadFrameworks()
+	if err != nil {
+		t.Fatalf("failed to load frameworks: %v", err)
+	}
+
+	for _, reqID := range []string{"illinois-bipa", "texas-traiga", "virginia-vcdpa"} {
+		fw, exists := fws[reqID]
+		if !exists {
+			t.Errorf("required multi-state framework %q is not embedded; embedded IDs: %v", reqID, IDs())
+			continue
+		}
+		if len(fw.Controls) == 0 {
+			t.Errorf("framework %q has 0 controls", reqID)
+		}
+	}
+
+	// Test evaluation on biometric inventory
+	bioInv := &airom.Inventory{
+		Root: "airom:0000",
+		Components: []airom.Component{
+			{
+				ID:   "airom:face_1",
+				Kind: airom.KindLocalModelFile,
+				Name: "face_recognition_weights.pt",
+				Evidence: airom.Evidence{
+					Occurrences: []airom.Occurrence{
+						{Location: airom.Location{Path: "src/biometric/face_rec.py", Line: 42}},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := Evaluate(bioInv, []string{"illinois-bipa", "texas-traiga", "virginia-vcdpa"}, false)
+	if err != nil {
+		t.Fatalf("multi-state evaluation failed: %v", err)
+	}
+	if len(results) != 3 {
+		t.Fatalf("expected 3 framework results, got %d", len(results))
+	}
+}

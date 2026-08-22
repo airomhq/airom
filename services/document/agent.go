@@ -264,6 +264,12 @@ func (a *Agent) CertifyPackage(docID string, req CertifyRequest) (*DocumentPacka
 		rep, err = report.GenerateNYCLL144Report(reportReq, nil)
 	case "ca-ab2013":
 		rep, err = report.GenerateCAAB2013Report(reportReq, nil)
+	case "illinois-bipa":
+		rep, err = report.GenerateBIPAReport(reportReq, nil)
+	case "texas-traiga":
+		rep, err = report.GenerateTRAIGAReport(reportReq, nil)
+	case "virginia-vcdpa":
+		rep, err = report.GenerateVCDPAReport(reportReq, nil)
 	default:
 		rep, err = report.GenerateColoradoReport(reportReq)
 	}

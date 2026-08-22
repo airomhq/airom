@@ -1,0 +1,18 @@
+id: illinois-bipa
+name: "Illinois Biometric Information Privacy Act (740 ILCS 14/)"
+version: "1.0"
+url: "https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=3004&ChapterID=57"
+controls:
+  - id: il.bipa.written-policy
+    title: "Retention Schedule & Destruction Guidelines Policy (§ 14/15(a))"
+    manual: true
+  - id: il.bipa.informed-consent
+    title: "Prior Written Informed Consent (§ 14/15(b))"
+    text: "Biometric AI models, computer vision pipelines, or voiceprint models require written consent and release before processing."
+    gap_if: "risk | local-model-file | hosted-llm"
+  - id: il.bipa.profit-prohibition
+    title: "Prohibition on Sale or Commercial Trading (§ 14/15(c))"
+    manual: true
+  - id: il.bipa.storage-security
+    title: "Standard of Care & Biometric Storage Security (§ 14/15(e))"
+    manual: true
