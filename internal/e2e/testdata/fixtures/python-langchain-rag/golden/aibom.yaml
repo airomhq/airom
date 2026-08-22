@@ -157,24 +157,6 @@ components:
     id: airom:43f7aec19ad0c8e0
     kind: prompt
     name: system.txt
-  - confidence: 0.5
-    evidence:
-      occurrences:
-        - confidence: 0.5
-          detectorId: rules/aiconfig/sampling
-          fields:
-            param: temperature
-          location:
-            column: 1
-            endColumn: 22
-            endLine: 16
-            line: 16
-            path: src/rag.py
-          method: source-code-analysis
-          snippet: temperature=0.2,
-    id: airom:6b1292e468717462
-    kind: ai-config
-    name: temperature
   - confidence: 0.95
     evidence:
       identity:
@@ -199,24 +181,26 @@ components:
     provider: langchain
     purl: pkg:pypi/langchain@0.2.16
     version: 0.2.16
-  - confidence: 0.5
+  - confidence: 0.95
     evidence:
       occurrences:
-        - confidence: 0.5
-          detectorId: rules/aiconfig/token-limits
+        - confidence: 0.95
+          detectorId: modelfile/gguf
           fields:
-            param: max_tokens
+            version: "3"
           location:
-            column: 1
-            endColumn: 21
-            endLine: 17
-            line: 17
-            path: src/rag.py
-          method: source-code-analysis
-          snippet: max_tokens=800,
-    id: airom:737f185ea7c9f67f
-    kind: ai-config
-    name: max_tokens
+            path: models/tiny.gguf
+          method: binary-analysis
+    hashes:
+      - alg: SHA-256
+        hex: a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99
+    id: airom:8887a713c3b94d50
+    kind: local-model-file
+    model:
+      format: gguf
+    name: tiny
+    provider: local
+    purl: pkg:generic/tiny?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99
   - confidence: 0.985
     evidence:
       identity:
@@ -315,26 +299,6 @@ components:
       - name: airom:model.id
         value: gpt-4.1
     provider: openai
-  - confidence: 0.95
-    evidence:
-      occurrences:
-        - confidence: 0.95
-          detectorId: modelfile/gguf
-          fields:
-            version: "3"
-          location:
-            path: models/tiny.gguf
-          method: binary-analysis
-    hashes:
-      - alg: SHA-256
-        hex: a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99
-    id: airom:e9e505aeb0e23154
-    kind: local-model-file
-    model:
-      format: gguf
-    name: tiny.gguf
-    provider: local
-    purl: pkg:generic/tiny.gguf?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99
 lifecycle: pre-build
 relationships:
   - confidence: 0.6

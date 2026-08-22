@@ -79,32 +79,6 @@
       ]
     },
     {
-      "id": "airom:737f185ea7c9f67f",
-      "kind": "ai-config",
-      "name": "max_tokens",
-      "confidence": 0.5,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "src/agent.ts",
-              "line": 8,
-              "endLine": 8,
-              "column": 1,
-              "endColumn": 18
-            },
-            "detectorId": "rules/aiconfig/token-limits",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "max_tokens: 512,",
-            "fields": {
-              "param": "max_tokens"
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:74c94e76beb18249",
       "kind": "framework",
       "name": "langchain",

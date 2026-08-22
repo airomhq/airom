@@ -9,7 +9,7 @@ rules:
     provider: azure-openai
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["azure_deployment", "deployment_name", "deployment_id", "azureDeployment"]
-    pattern: '\b(?:azure_deployment|deployment_name|deployment_id|azureDeployment)["'']?\s*[:=]\s*["''](?P<deployment>[\w.\-]+)["'']'
+    pattern: '\b(?:azure_deployment|deployment_name|deployment_id|azureDeployment)["'']?\s*(?:[:=]|\()\s*["''](?P<deployment>[\w.\-]+)["'']'
     regions: [code, string]
     claim: { name: "${deployment}" }
     confidence: 0.8

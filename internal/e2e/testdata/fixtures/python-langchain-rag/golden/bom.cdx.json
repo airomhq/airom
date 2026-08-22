@@ -330,36 +330,6 @@
       ]
     },
     {
-      "bom-ref": "airom:6b1292e468717462",
-      "type": "data",
-      "name": "temperature",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.5"
-        },
-        {
-          "name": "airom:kind",
-          "value": "ai-config"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "src/rag.py",
-            "line": 16,
-            "additionalContext": "temperature=0.2,"
-          }
-        ]
-      },
-      "data": [
-        {
-          "type": "configuration",
-          "name": "temperature"
-        }
-      ]
-    },
-    {
       "bom-ref": "airom:6ed15db34c48ea41",
       "type": "framework",
       "name": "langchain",
@@ -403,34 +373,41 @@
       }
     },
     {
-      "bom-ref": "airom:737f185ea7c9f67f",
-      "type": "data",
-      "name": "max_tokens",
+      "bom-ref": "airom:8887a713c3b94d50",
+      "type": "machine-learning-model",
+      "name": "tiny",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
+        }
+      ],
+      "purl": "pkg:generic/tiny?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
       "properties": [
         {
           "name": "airom:confidence",
-          "value": "0.5"
+          "value": "0.95"
         },
         {
           "name": "airom:kind",
-          "value": "ai-config"
+          "value": "local-model-file"
+        },
+        {
+          "name": "airom:model.format",
+          "value": "gguf"
+        },
+        {
+          "name": "airom:model.provider",
+          "value": "local"
         }
       ],
       "evidence": {
         "occurrences": [
           {
-            "location": "src/rag.py",
-            "line": 17,
-            "additionalContext": "max_tokens=800,"
+            "location": "models/tiny.gguf"
           }
         ]
-      },
-      "data": [
-        {
-          "type": "configuration",
-          "name": "max_tokens"
-        }
-      ]
+      }
     },
     {
       "bom-ref": "airom:a6ccf893ff130124",
@@ -524,43 +501,6 @@
             "location": "src/rag.py",
             "line": 15,
             "additionalContext": "model=\"gpt-4.1\","
-          }
-        ]
-      }
-    },
-    {
-      "bom-ref": "airom:e9e505aeb0e23154",
-      "type": "machine-learning-model",
-      "name": "tiny.gguf",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
-        }
-      ],
-      "purl": "pkg:generic/tiny.gguf?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.95"
-        },
-        {
-          "name": "airom:kind",
-          "value": "local-model-file"
-        },
-        {
-          "name": "airom:model.format",
-          "value": "gguf"
-        },
-        {
-          "name": "airom:model.provider",
-          "value": "local"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "models/tiny.gguf"
           }
         ]
       }

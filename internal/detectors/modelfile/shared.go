@@ -1,6 +1,9 @@
 package modelfile
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"strings"
+)
 
 // Safety caps. Every one of these bounds an allocation or a loop against an
 // attacker-controlled length field parsed out of an untrusted header (§13):
@@ -105,4 +108,14 @@ func (c *cursor) uvarint() (uint64, bool) {
 		s += 7
 	}
 	return 0, false // no terminating byte within the cap
+}
+
+// stemOf strips one serialization extension from a filename: the model is
+// "bench-mlp"; ".safetensors" is how it is stored. Only the final extension
+// goes, so "llama-3.1-8b.gguf" becomes "llama-3.1-8b", dots intact.
+func stemOf(base string) string {
+	if i := strings.LastIndexByte(base, '.'); i > 0 {
+		return base[:i]
+	}
+	return base
 }

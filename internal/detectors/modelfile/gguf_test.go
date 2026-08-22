@@ -26,8 +26,10 @@ func TestGGUFExtraction(t *testing.T) {
 	if f.Claim.Kind != airom.KindLocalModelFile {
 		t.Errorf("kind = %q, want %q", f.Claim.Kind, airom.KindLocalModelFile)
 	}
-	if f.Claim.Name != "model.gguf" {
-		t.Errorf("name = %q, want model.gguf", f.Claim.Name)
+	// The header declares general.name; the file's own claim about what it
+	// is beats the filename (airomhq/airom#18).
+	if f.Claim.Name != "tinyllama-test" {
+		t.Errorf("name = %q, want the header-declared tinyllama-test", f.Claim.Name)
 	}
 	if f.Claim.Provider != "local" {
 		t.Errorf("provider = %q, want local", f.Claim.Provider)

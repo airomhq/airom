@@ -144,14 +144,6 @@
       "type": "software_Package"
     },
     {
-      "comment": "airom:confidence 0.5; airom:evidence 1 occurrence(s); airom:kind ai-config",
-      "creationInfo": "_:creationInfo",
-      "name": "temperature",
-      "software_primaryPurpose": "configuration",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6b1292e468717462",
-      "type": "software_Package"
-    },
-    {
       "comment": "airom:package.ecosystem pypi; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind framework",
       "creationInfo": "_:creationInfo",
       "externalIdentifier": [
@@ -169,12 +161,29 @@
       "type": "software_Package"
     },
     {
-      "comment": "airom:confidence 0.5; airom:evidence 1 occurrence(s); airom:kind ai-config",
+      "comment": "airom:releaseTime NOASSERTION; airom:model.format gguf; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind local-model-file",
       "creationInfo": "_:creationInfo",
-      "name": "max_tokens",
-      "software_primaryPurpose": "configuration",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
-      "type": "software_Package"
+      "externalIdentifier": [
+        {
+          "externalIdentifierType": "packageUrl",
+          "identifier": "pkg:generic/tiny?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
+          "type": "ExternalIdentifier"
+        }
+      ],
+      "name": "tiny",
+      "software_downloadLocation": "NOASSERTION",
+      "software_packageVersion": "NOASSERTION",
+      "software_primaryPurpose": "model",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#8887a713c3b94d50",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
+      "type": "ai_AIPackage",
+      "verifiedUsing": [
+        {
+          "algorithm": "sha256",
+          "hashValue": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
+          "type": "Hash"
+        }
+      ]
     },
     {
       "comment": "airom:package.ecosystem pypi; airom:confidence 0.985; airom:evidence 2 occurrence(s); airom:kind library",
@@ -203,31 +212,6 @@
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cfc27e587216febe",
       "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-openai",
       "type": "ai_AIPackage"
-    },
-    {
-      "comment": "airom:releaseTime NOASSERTION; airom:model.format gguf; airom:confidence 0.95; airom:evidence 1 occurrence(s); airom:kind local-model-file",
-      "creationInfo": "_:creationInfo",
-      "externalIdentifier": [
-        {
-          "externalIdentifierType": "packageUrl",
-          "identifier": "pkg:generic/tiny.gguf?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
-          "type": "ExternalIdentifier"
-        }
-      ],
-      "name": "tiny.gguf",
-      "software_downloadLocation": "NOASSERTION",
-      "software_packageVersion": "NOASSERTION",
-      "software_primaryPurpose": "model",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#e9e505aeb0e23154",
-      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
-      "type": "ai_AIPackage",
-      "verifiedUsing": [
-        {
-          "algorithm": "sha256",
-          "hashValue": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
-          "type": "Hash"
-        }
-      ]
     },
     {
       "comment": "airom:source airom (high severity)",
@@ -293,12 +277,10 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3c77e68ca5b2bf87",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3e3a9735550d6b44",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43f7aec19ad0c8e0",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6b1292e468717462",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6ed15db34c48ea41",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#8887a713c3b94d50",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cfc27e587216febe",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#e9e505aeb0e23154"
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#cfc27e587216febe"
       ],
       "rootElement": [
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#0f9a0955ae2b259c"

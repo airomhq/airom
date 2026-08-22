@@ -272,7 +272,7 @@ func TestScanChaosDegradation(t *testing.T) {
 	// Valid components in the same tree are still found: the well-formed GGUF
 	// weight file and the langchain manifest entry.
 	names := componentNames(inv)
-	for _, want := range []string{"tiny.gguf", "langchain"} {
+	for _, want := range []string{"tiny", "langchain"} {
 		if !names[want] {
 			t.Errorf("valid component %q was dropped; found: %v", want, sortedKeys(names))
 		}

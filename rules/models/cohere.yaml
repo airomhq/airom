@@ -10,7 +10,7 @@ rules:
     provider: cohere
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["command-r", "command-light", "command-nightly", "command-a", "command"]
-    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>command(?:-(?:r(?:-plus)?|r7b|a|light|nightly)(?:-[\w.\-]+)?)?)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*(?:[:=]|\()\s*["''](?P<model>command(?:-(?:r(?:-plus)?|r7b|a|light|nightly)(?:-[\w.\-]+)?)?)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85

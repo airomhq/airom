@@ -194,7 +194,7 @@
           "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "local-model-file 'poisoned.gguf' detected (confidence 0.95)"
+            "text": "local-model-file 'poisoned' detected (confidence 0.95)"
           },
           "locations": [
             {
@@ -207,15 +207,15 @@
             }
           ],
           "partialFingerprints": {
-            "airomComponentIdentity/v1": "d4eb9cce99a48102d689c416e39beb697bdc2ce4fd6cd6bbf43e6cd0b5baecf3"
+            "airomComponentIdentity/v1": "cbbb022333637b7ad2c5863b377918b723fd5132e301adeb9286dbd8e9f78406"
           },
           "properties": {
-            "airom:componentId": "airom:2df08beb45af93fd",
+            "airom:componentId": "airom:3148b5beb41218a8",
             "airom:confidence": 0.95,
             "airom:kind": "local-model-file",
             "airom:occurrence.confidence": 0.95,
             "airom:provider": "local",
-            "airom:purl": "pkg:generic/poisoned.gguf?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca"
+            "airom:purl": "pkg:generic/poisoned?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca"
           }
         },
         {
@@ -419,7 +419,7 @@
           "ruleIndex": 6,
           "level": "warning",
           "message": {
-            "text": "Unsafe GGUF chat template in \"poisoned.gguf\": __globals__, os.popen"
+            "text": "Unsafe GGUF chat template in \"poisoned\": __globals__, os.popen"
           },
           "locations": [
             {
@@ -432,7 +432,7 @@
             }
           ],
           "properties": {
-            "airom:componentId": "airom:2df08beb45af93fd",
+            "airom:componentId": "airom:3148b5beb41218a8",
             "airom:risk.severity": "medium",
             "airom:risk.symbols": "__globals__|os.popen"
           }

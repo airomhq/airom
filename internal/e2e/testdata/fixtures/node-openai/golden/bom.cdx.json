@@ -120,36 +120,6 @@
       }
     },
     {
-      "bom-ref": "airom:737f185ea7c9f67f",
-      "type": "data",
-      "name": "max_tokens",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.5"
-        },
-        {
-          "name": "airom:kind",
-          "value": "ai-config"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "src/agent.ts",
-            "line": 8,
-            "additionalContext": "max_tokens: 512,"
-          }
-        ]
-      },
-      "data": [
-        {
-          "type": "configuration",
-          "name": "max_tokens"
-        }
-      ]
-    },
-    {
       "bom-ref": "airom:74c94e76beb18249",
       "type": "framework",
       "name": "langchain",

@@ -80,16 +80,16 @@
   },
   "components": [
     {
-      "bom-ref": "airom:2df08beb45af93fd",
+      "bom-ref": "airom:3148b5beb41218a8",
       "type": "machine-learning-model",
-      "name": "poisoned.gguf",
+      "name": "poisoned",
       "hashes": [
         {
           "alg": "SHA-256",
           "content": "bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca"
         }
       ],
-      "purl": "pkg:generic/poisoned.gguf?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
+      "purl": "pkg:generic/poisoned?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
       "properties": [
         {
           "name": "airom:confidence",
@@ -346,7 +346,7 @@
       "description": "The GGUF tokenizer.chat_template contains Jinja sandbox-escape gadgets; rendering a prompt with it can execute code.",
       "affects": [
         {
-          "ref": "airom:2df08beb45af93fd"
+          "ref": "airom:3148b5beb41218a8"
         }
       ],
       "properties": [

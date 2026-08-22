@@ -302,6 +302,11 @@ func mavenLookup(group, artifact string) (aiPkg, bool) {
 	switch {
 	case group == "dev.langchain4j":
 		return aiPkg{kFramework, provLangChain, ""}, true
+	case group == "com.aallam.openai":
+		// The de facto Kotlin OpenAI SDK (openai-client, openai-core).
+		// Absence found by airom-bench Tier S: a build.gradle.kts declaring
+		// it produced zero components (airomhq/airom#17).
+		return aiPkg{kLibrary, provOpenAI, ""}, true
 	case strings.HasPrefix(group, "com.theokanning.openai-gpt3-java"):
 		return aiPkg{kLibrary, provOpenAI, ""}, true
 	case group == "io.milvus" && artifact == "milvus-sdk-java":

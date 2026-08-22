@@ -68,11 +68,82 @@ func Build(findings []detect.Finding, unknowns []airom.Unknown, stats airom.Scan
 	}
 	sort.Slice(inv.Components, func(i, j int) bool { return inv.Components[i].ID < inv.Components[j].ID })
 
+	inv.Components = dropBoundAIConfig(inv.Components)
+
 	inv.Relationships = a.finishRelations()
 
 	sort.Strings(a.warnings)
 	inv.Stats.Warnings = append(inv.Stats.Warnings, a.warnings...)
 	return inv
+}
+
+// dropBoundAIConfig removes ai-config components whose every occurrence
+// duplicates a generation parameter ALREADY bound to a model (§9.5).
+//
+// KindAIConfig means UNBOUND generation params by definition. The aiconfig
+// rule pack is the weak standalone-config fallback, but a call-site kwarg is
+// line-anchored too, so the same `temperature=0.1` can arrive twice: once as
+// a BoundParam on the model (the strong capture_params story) and once as a
+// standalone ai-config claim. Emitting both misstates the ontology and
+// double-counts the fact. Found by airom-bench Tier S (airomhq/airom#20).
+//
+// Refusal-first: an occurrence is "the same fact" only when a same-named
+// bound param exists in the SAME file within the capture window (§9.5 binds
+// within 12 lines of the call). A component with any occurrence outside that
+// evidence is kept whole — a settings.py far from every model call is exactly
+// what the pack exists for, and dropping real evidence to tidy a duplicate
+// would be the worse bug.
+func dropBoundAIConfig(comps []airom.Component) []airom.Component {
+	const window = 12
+
+	type site struct {
+		path string
+		line int
+	}
+	bound := map[string][]site{} // param name -> where a model binds it
+	for i := range comps {
+		if comps[i].Model == nil {
+			continue
+		}
+		for _, bp := range comps[i].Model.GenerationParams {
+			if bp.Occurrence == nil || bp.Occurrence.Location.Path == "" {
+				continue
+			}
+			bound[bp.Name] = append(bound[bp.Name],
+				site{bp.Occurrence.Location.Path, bp.Occurrence.Location.Line})
+		}
+	}
+	if len(bound) == 0 {
+		return comps
+	}
+
+	covered := func(name, path string, line int) bool {
+		for _, s := range bound[name] {
+			if s.path == path && line >= s.line-window && line <= s.line+window {
+				return true
+			}
+		}
+		return false
+	}
+
+	out := comps[:0]
+	for _, c := range comps {
+		if c.Kind != airom.KindAIConfig {
+			out = append(out, c)
+			continue
+		}
+		all := len(c.Evidence.Occurrences) > 0
+		for _, occ := range c.Evidence.Occurrences {
+			if !covered(c.Name, occ.Location.Path, occ.Location.Line) {
+				all = false
+				break
+			}
+		}
+		if !all {
+			out = append(out, c)
+		}
+	}
+	return out
 }
 
 // ── Canonical identity (§9.1) ───────────────────────────────────────────────

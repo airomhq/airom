@@ -50,15 +50,15 @@
       "externalIdentifier": [
         {
           "externalIdentifierType": "packageUrl",
-          "identifier": "pkg:generic/poisoned.gguf?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
+          "identifier": "pkg:generic/poisoned?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
           "type": "ExternalIdentifier"
         }
       ],
-      "name": "poisoned.gguf",
+      "name": "poisoned",
       "software_downloadLocation": "NOASSERTION",
       "software_packageVersion": "NOASSERTION",
       "software_primaryPurpose": "model",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3148b5beb41218a8",
       "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-local",
       "type": "ai_AIPackage",
       "verifiedUsing": [
@@ -234,7 +234,7 @@
     {
       "comment": "airom:risk — a statically-detected structural finding, not a third-party advisory and not a VEX assessment",
       "creationInfo": "_:creationInfo",
-      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+      "from": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3148b5beb41218a8",
       "relationshipType": "hasAssociatedVulnerability",
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#VulnRelationship-0",
       "to": [
@@ -290,7 +290,7 @@
       "comment": "airom:lifecycle pre-build; airom:evidence SPDX 3.0.1 has no evidence slot; each package states its occurrence COUNT only. For the file:line evidence behind every component, take the CycloneDX (evidence.occurrences[]) or native JSON output.",
       "creationInfo": "_:creationInfo",
       "element": [
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#2df08beb45af93fd",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#3148b5beb41218a8",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#357bff4125ef88bb",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#43da64690b16bac7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",

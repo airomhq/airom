@@ -19,7 +19,7 @@ func NewGradle() *Gradle { return &Gradle{} }
 func (Gradle) ID() string { return "manifest/gradle" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (Gradle) Version() int { return 1 }
+func (Gradle) Version() int { return 2 }
 
 // Selector routes build.gradle and build.gradle.kts files.
 func (Gradle) Selector() detect.Selector {

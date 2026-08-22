@@ -11,7 +11,7 @@ rules:
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["mistral-", "mixtral-", "codestral-", "ministral-", "magistral-",
                "pixtral-", "devstral-"]
-    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>(?:open-mistral-|open-mixtral-|mistral-|mixtral-|codestral-|ministral-|magistral-|pixtral-|devstral-)[\w.\-]+)["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*(?:[:=]|\()\s*["''](?P<model>(?:open-mistral-|open-mixtral-|mistral-|mixtral-|codestral-|ministral-|magistral-|pixtral-|devstral-)[\w.\-]+)["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.85

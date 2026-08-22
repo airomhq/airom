@@ -24,20 +24,6 @@
               }
             },
             {
-              "id": "rules/aiconfig/token-limits",
-              "name": "RulesAiconfigTokenLimits",
-              "shortDescription": {
-                "text": "Components identified by the rules/aiconfig/token-limits detector."
-              },
-              "defaultConfiguration": {
-                "level": "note"
-              },
-              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
-              "properties": {
-                "airom:method": "source-code-analysis"
-              }
-            },
-            {
               "id": "rules/anthropic/model-literal",
               "name": "RulesAnthropicModelLiteral",
               "shortDescription": {
@@ -88,7 +74,7 @@
       "results": [
         {
           "ruleId": "rules/anthropic/model-literal",
-          "ruleIndex": 2,
+          "ruleIndex": 1,
           "level": "note",
           "message": {
             "text": "hosted-llm 'claude-sonnet-4-5' detected (confidence 0.85)"
@@ -121,42 +107,6 @@
             "airom:kind": "hosted-llm",
             "airom:occurrence.confidence": 0.85,
             "airom:provider": "anthropic"
-          }
-        },
-        {
-          "ruleId": "rules/aiconfig/token-limits",
-          "ruleIndex": 1,
-          "level": "note",
-          "message": {
-            "text": "ai-config 'max_tokens' detected (confidence 0.5)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/agent.ts",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 8,
-                  "startColumn": 1,
-                  "endLine": 8,
-                  "endColumn": 18,
-                  "snippet": {
-                    "text": "max_tokens: 512,"
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "046096e7d430b6d7aec17908d6937e7e7d2d144fb825d725b01e6503a9826b92"
-          },
-          "properties": {
-            "airom:componentId": "airom:737f185ea7c9f67f",
-            "airom:confidence": 0.5,
-            "airom:kind": "ai-config",
-            "airom:occurrence.confidence": 0.5
           }
         },
         {
@@ -229,7 +179,7 @@
         },
         {
           "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 3,
+          "ruleIndex": 2,
           "level": "note",
           "message": {
             "text": "library 'openai' detected (confidence 0.985)"

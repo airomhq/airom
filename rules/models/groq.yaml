@@ -20,7 +20,7 @@ rules:
     provider: groq
     languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
     keywords: ["-versatile", "-instant"]
-    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*[:=]\s*["''](?P<model>(?:llama|gemma|mixtral|qwen|deepseek)[\w.\-]*-(?:versatile|instant))["'']'
+    pattern: '\b(?i:[a-z0-9_]*model[a-z0-9_]*)["'']?\s*(?:[:=]|\()\s*["''](?P<model>(?:llama|gemma|mixtral|qwen|deepseek)[\w.\-]*-(?:versatile|instant))["'']'
     regions: [code, string]
     claim: { name: "${model}" }
     confidence: 0.8

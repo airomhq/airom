@@ -3,7 +3,7 @@
     {
       "Claim": {
         "Kind": "local-model-file",
-        "Name": "model.gguf",
+        "Name": "tinyllama-test",
         "Group": "",
         "Version": "",
         "Provider": "local",

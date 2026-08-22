@@ -797,3 +797,59 @@ func TestFoldByPublisherLeavesAmbiguityAlone(t *testing.T) {
 		t.Errorf("neither provider is the publisher, so both must stand; got %d", n)
 	}
 }
+
+// TestBoundParamsSuppressStandaloneAIConfig pins §9.5's definition at the
+// output: KindAIConfig means UNBOUND. A param already bound to a model must
+// not also surface as a standalone component (airomhq/airom#20), while a
+// genuinely standalone config — another file, or beyond the capture window —
+// must survive untouched.
+func TestBoundParamsSuppressStandaloneAIConfig(t *testing.T) {
+	occ := func(path string, line int) airom.Occurrence {
+		return airom.Occurrence{
+			Location:   airom.Location{Path: path, Line: line},
+			Method:     airom.MethodSourceCode,
+			Confidence: 0.5,
+			DetectorID: "rules/aiconfig/sampling",
+		}
+	}
+	model := detect.Finding{
+		Claim: detect.ComponentClaim{Kind: airom.KindHostedLLM, Name: "gpt-4o-mini", Provider: "openai"},
+		Occurrence: airom.Occurrence{
+			Location: airom.Location{Path: "src/app.py", Line: 20},
+			Method:   airom.MethodSourceCode, Confidence: 0.85, DetectorID: "rules/openai/model-literal",
+			Fields: map[string]string{"model": "gpt-4o-mini", "param.temperature": "0.1"},
+		},
+	}
+	dup := detect.Finding{ // same file, 2 lines from the binding call: bound
+		Claim:      detect.ComponentClaim{Kind: airom.KindAIConfig, Name: "temperature"},
+		Occurrence: occ("src/app.py", 22),
+	}
+	standalone := detect.Finding{ // different file: the pack's real purpose
+		Claim:      detect.ComponentClaim{Kind: airom.KindAIConfig, Name: "temperature"},
+		Occurrence: occ("settings.py", 3),
+	}
+
+	inv := Build([]detect.Finding{model, dup, standalone}, nil, airom.ScanStats{}, opts())
+
+	var aiconfigs []string
+	var boundOK bool
+	for _, c := range inv.Components {
+		if c.Kind == airom.KindAIConfig {
+			aiconfigs = append(aiconfigs,
+				c.Name+"@"+c.Evidence.Occurrences[0].Location.Path)
+		}
+		if c.Kind == airom.KindHostedLLM && c.Model != nil {
+			for _, bp := range c.Model.GenerationParams {
+				if bp.Name == "temperature" {
+					boundOK = true
+				}
+			}
+		}
+	}
+	if !boundOK {
+		t.Fatal("precondition failed: the model carries no bound temperature — the test is vacuous")
+	}
+	if len(aiconfigs) != 1 || aiconfigs[0] != "temperature@settings.py" {
+		t.Errorf("ai-config components = %v, want exactly [temperature@settings.py]", aiconfigs)
+	}
+}

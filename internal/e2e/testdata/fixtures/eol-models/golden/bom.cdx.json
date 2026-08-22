@@ -265,41 +265,6 @@
       }
     },
     {
-      "bom-ref": "airom:737f185ea7c9f67f",
-      "type": "data",
-      "name": "max_tokens",
-      "properties": [
-        {
-          "name": "airom:confidence",
-          "value": "0.525"
-        },
-        {
-          "name": "airom:kind",
-          "value": "ai-config"
-        }
-      ],
-      "evidence": {
-        "occurrences": [
-          {
-            "location": "app.py",
-            "line": 40,
-            "additionalContext": "max_tokens=64,"
-          },
-          {
-            "location": "app.py",
-            "line": 46,
-            "additionalContext": "max_tokens=64,"
-          }
-        ]
-      },
-      "data": [
-        {
-          "type": "configuration",
-          "name": "max_tokens"
-        }
-      ]
-    },
-    {
       "bom-ref": "airom:76a548bfe1b671c7",
       "type": "machine-learning-model",
       "name": "claude-opus-4-1-20250805",

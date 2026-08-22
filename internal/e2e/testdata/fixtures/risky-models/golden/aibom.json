@@ -17,11 +17,11 @@
   "root": "airom:d4e3be4126ba4a51",
   "components": [
     {
-      "id": "airom:2df08beb45af93fd",
+      "id": "airom:3148b5beb41218a8",
       "kind": "local-model-file",
-      "name": "poisoned.gguf",
+      "name": "poisoned",
       "provider": "local",
-      "purl": "pkg:generic/poisoned.gguf?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
+      "purl": "pkg:generic/poisoned?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca",
       "hashes": [
         {
           "alg": "SHA-256",

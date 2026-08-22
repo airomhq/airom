@@ -25,7 +25,7 @@ func NewSafetensors() *Safetensors { return &Safetensors{} }
 func (*Safetensors) ID() string { return "modelfile/safetensors" }
 
 // Version is the detector's behavior version.
-func (*Safetensors) Version() int { return 1 }
+func (*Safetensors) Version() int { return 2 }
 
 // Selector routes .safetensors files.
 func (*Safetensors) Selector() detect.Selector {
@@ -93,7 +93,7 @@ func (d *Safetensors) DetectFile(_ context.Context, f *detect.File) ([]detect.Fi
 	return []detect.Finding{{
 		Claim: detect.ComponentClaim{
 			Kind:     airom.KindLocalModelFile,
-			Name:     f.Base(),
+			Name:     stemOf(f.Base()), // the extension is storage, not identity (airomhq/airom#18)
 			Provider: "local",
 			Model:    model,
 		},

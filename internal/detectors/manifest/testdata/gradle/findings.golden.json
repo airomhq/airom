@@ -91,6 +91,36 @@
         "confidence": 0.95
       },
       "Relations": null
+    },
+    {
+      "Claim": {
+        "Kind": "library",
+        "Name": "openai-client",
+        "Group": "com.aallam.openai",
+        "Version": "3.8.2",
+        "Provider": "OpenAI",
+        "VersionConstraint": "",
+        "Licenses": null,
+        "Hashes": null,
+        "DownloadLocation": "",
+        "Model": null,
+        "Data": null,
+        "Infra": null,
+        "Package": {
+          "Ecosystem": "maven"
+        },
+        "Risks": null
+      },
+      "Occurrence": {
+        "location": {
+          "path": "",
+          "line": 9
+        },
+        "detectorId": "",
+        "method": "manifest-analysis",
+        "confidence": 0.95
+      },
+      "Relations": null
     }
   ]
 }

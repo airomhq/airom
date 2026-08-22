@@ -79,10 +79,15 @@ func Run(ctx context.Context, entries []Entry) ([]*RepoResult, airom.ToolInfo, e
 		if err != nil {
 			return nil, tool, fmt.Errorf("%s: %w", e.Name, err)
 		}
+		// NoCachedRules: the benchmark grades the rules the binary SHIPS.
+		// A cached bundle would make the numbers depend on machine state —
+		// two machines, two results, one version string. The report records
+		// rulesVersion/rulesHash either way, so what ran is never a guess.
 		cfg := &app.Config{
 			Source: app.SourceFS, Target: tree,
 			CVE: false, NoEOL: true, AutoUpdateRules: false,
-			Quiet: true, NoProgress: true,
+			NoCachedRules: true,
+			Quiet:         true, NoProgress: true,
 		}
 		inv, err := app.Scan(ctx, cfg)
 		cleanup()

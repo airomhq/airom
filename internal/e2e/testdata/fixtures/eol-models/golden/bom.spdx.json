@@ -79,14 +79,6 @@
       "type": "software_Package"
     },
     {
-      "comment": "airom:confidence 0.525; airom:evidence 2 occurrence(s); airom:kind ai-config",
-      "creationInfo": "_:creationInfo",
-      "name": "max_tokens",
-      "software_primaryPurpose": "configuration",
-      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
-      "type": "software_Package"
-    },
-    {
       "comment": "airom:releaseTime NOASSERTION; airom:eol deprecated; shutdown 2026-08-05; replacement claude-opus-4-8; https://platform.claude.com/docs/en/docs/about-claude/model-deprecations; airom:param.max_tokens 64; airom:model.provider anthropic; airom:model.id claude-opus-4-1-20250805; airom:confidence 0.85; airom:evidence 1 occurrence(s); airom:kind hosted-llm",
       "creationInfo": "_:creationInfo",
       "name": "claude-opus-4-1-20250805",
@@ -208,7 +200,6 @@
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#0b7828a4ff243920",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#1b13aab20f840ad4",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#65ac1a1b3af7edab",
-        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#737f185ea7c9f67f",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#76a548bfe1b671c7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#91e505cba56acc91",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a6ccf893ff130124",

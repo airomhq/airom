@@ -2,14 +2,13 @@ AI Bill of Materials — eol-models
 
 ┌─ Scan Summary ────────────────────────────────────────────────┐
 │ Target        eol-models                                      │
-│ Components    8                                               │
+│ Components    7                                               │
 │ Relationships 5                                               │
 │ Files         2 scanned                                       │
 │                                                               │
 │ By Type                                                       │
 │   hosted-llm         5                                        │
 │   library            2                                        │
-│   ai-config          1                                        │
 │                                                               │
 │ Model lifecycle                                               │
 │   retired            1                                        │
@@ -25,7 +24,6 @@ AI Bill of Materials — eol-models
 ┌────────────┬──────────────────────────┬─────────┬───────────┬────────┬─────────┬───────────┬──────────┐
 │ KIND       │ NAME                     │ VERSION │ PROVIDER  │ CONF   │ EOL     │ LOCATION  │ EVIDENCE │
 ├────────────┼──────────────────────────┼─────────┼───────────┼────────┼─────────┼───────────┼──────────┤
-│ ai-config  │ max_tokens               │ -       │ -         │ 0.525  │ -       │ app.py:40 │ 2 occ    │
 │ hosted-llm │ claude-opus-4-1-20250805 │ -       │ anthropic │ 0.85   │ 4d      │ app.py:39 │ 1 occ    │
 │ hosted-llm │ claude-sonnet-4-6        │ -       │ anthropic │ 0.85   │ -       │ app.py:45 │ 1 occ    │
 │ hosted-llm │ gpt-4-32k                │ -       │ openai    │ 0.85   │ retired │ app.py:19 │ 1 occ    │
