@@ -118,6 +118,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newServeCmd(),
 		newGatewayCmd(),
 		newRegWatchCmd(),
+		newFileCmd(),
 	)
 	return root
 }

@@ -13,9 +13,10 @@ import (
 // so every command we own declares a GroupID; the leftovers are cobra's own
 // (help, completion), which is exactly where they belong.
 const (
-	groupScan    = "scan"
-	groupInspect = "inspect"
-	groupDev     = "dev"
+	groupScan       = "scan"
+	groupInspect    = "inspect"
+	groupDev        = "dev"
+	groupCompliance = "compliance"
 )
 
 // helpPalette styles help text. Help goes to stdout, so that is what we probe:
@@ -39,6 +40,7 @@ func installHelp(root *cobra.Command) {
 		&cobra.Group{ID: groupScan, Title: heading("Scan a target:")},
 		&cobra.Group{ID: groupInspect, Title: heading("Inspect what AIROM knows:")},
 		&cobra.Group{ID: groupDev, Title: heading("Author detectors:")},
+		&cobra.Group{ID: groupCompliance, Title: heading("Compliance, Filings & Renewals:")},
 	)
 
 	cobra.AddTemplateFunc("hd", heading)
