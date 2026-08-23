@@ -120,7 +120,7 @@ func TestQA_AdversarialShadowModelInjection(t *testing.T) {
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			respBody, _ := io.ReadAll(resp.Body)
 
@@ -294,7 +294,7 @@ func TestQA_AdversarialParameterClampingExploits(t *testing.T) {
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode != http.StatusOK {
 				t.Fatalf("expected HTTP 200 OK from gateway proxy, got %d", resp.StatusCode)
@@ -613,7 +613,7 @@ func TestQA_AdversarialSecretLeakPrevention(t *testing.T) {
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode != http.StatusOK {
 				t.Fatalf("expected HTTP 200 OK from gateway, got %d", resp.StatusCode)

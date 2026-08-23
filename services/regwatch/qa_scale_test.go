@@ -319,7 +319,7 @@ func TestQA_ConcurrentFeedScraperStorm_100Workers(t *testing.T) {
 
 	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
-		go func(workerID int) {
+		go func() {
 			defer wg.Done()
 			for {
 				select {
@@ -354,7 +354,7 @@ func TestQA_ConcurrentFeedScraperStorm_100Workers(t *testing.T) {
 					}
 				}
 			}
-		}(w)
+		}()
 	}
 
 	wg.Wait()

@@ -236,13 +236,7 @@ func (s *Server) handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAnthropicMessages(w http.ResponseWriter, r *http.Request) {
-	// Anthropic messages endpoint delegation
 	s.handleChatCompletions(w, r)
-}
-
-type mcpInvokePayload struct {
-	ToolName  string                 `json:"tool_name"`
-	Arguments map[string]interface{} `json:"arguments"`
 }
 
 func (s *Server) handleMCPInvoke(w http.ResponseWriter, r *http.Request) {

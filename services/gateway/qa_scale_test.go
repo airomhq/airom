@@ -64,8 +64,8 @@ func TestQA_ExtremeRedactionScale_100KTokens(t *testing.T) {
 	for i := 0; i < entityCountPerType; i++ {
 		ssn := fmt.Sprintf("%03d-%02d-%04d", (i*7+100)%900+100, (i*13+10)%90+10, (i*37+1000)%9000+1000)
 		card := generateLuhnCard(i)
-		aws := fmt.Sprintf("AKIA%016X", uint64(1000000000000000+uint64(i)*7919))
-		openAI := fmt.Sprintf("sk-proj-%028X", uint64(2000000000000000+uint64(i)*9973))
+		aws := fmt.Sprintf("AKIA%016X", 1000000000000000+uint64(i)*7919)
+		openAI := fmt.Sprintf("sk-proj-%028X", 2000000000000000+uint64(i)*9973)
 		jwt := fmt.Sprintf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2Vy%06dIiwicm9sZSI6ImFkbWluIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQss%04d", i, i%10000)
 
 		ssnList[i] = ssn
@@ -244,7 +244,6 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 					resp, err = client.Do(httpReq)
 
 					if err == nil {
-						defer resp.Body.Close()
 						if resp.StatusCode == http.StatusOK {
 							var res map[string]interface{}
 							if json.NewDecoder(resp.Body).Decode(&res) == nil {
@@ -259,6 +258,7 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 						} else {
 							atomic.AddInt64(&failedReqs, 1)
 						}
+						_ = resp.Body.Close()
 					} else {
 						atomic.AddInt64(&droppedReqs, 1)
 					}
@@ -280,12 +280,12 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 					resp, err = client.Do(httpReq)
 
 					if err == nil {
-						defer resp.Body.Close()
 						if resp.StatusCode == http.StatusOK {
 							atomic.AddInt64(&successReqs, 1)
 						} else {
 							atomic.AddInt64(&failedReqs, 1)
 						}
+						_ = resp.Body.Close()
 					} else {
 						atomic.AddInt64(&droppedReqs, 1)
 					}
@@ -305,12 +305,12 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 					resp, err = client.Do(httpReq)
 
 					if err == nil {
-						defer resp.Body.Close()
 						if resp.StatusCode == http.StatusOK {
 							atomic.AddInt64(&successReqs, 1)
 						} else {
 							atomic.AddInt64(&failedReqs, 1)
 						}
+						_ = resp.Body.Close()
 					} else {
 						atomic.AddInt64(&droppedReqs, 1)
 					}
@@ -331,7 +331,6 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 					resp, err = client.Do(httpReq)
 
 					if err == nil {
-						defer resp.Body.Close()
 						if resp.StatusCode == http.StatusOK {
 							var res map[string]interface{}
 							if json.NewDecoder(resp.Body).Decode(&res) == nil && res["status"] == "executed" {
@@ -342,6 +341,7 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 						} else {
 							atomic.AddInt64(&failedReqs, 1)
 						}
+						_ = resp.Body.Close()
 					} else {
 						atomic.AddInt64(&droppedReqs, 1)
 					}
@@ -352,7 +352,6 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 					resp, err = client.Do(httpReq)
 
 					if err == nil {
-						defer resp.Body.Close()
 						if resp.StatusCode == http.StatusOK {
 							var res map[string]interface{}
 							if json.NewDecoder(resp.Body).Decode(&res) == nil && res["status"] == "healthy" {
@@ -363,6 +362,7 @@ func TestQA_ConcurrentGatewayStorm_100Workers(t *testing.T) {
 						} else {
 							atomic.AddInt64(&failedReqs, 1)
 						}
+						_ = resp.Body.Close()
 					} else {
 						atomic.AddInt64(&droppedReqs, 1)
 					}
@@ -542,8 +542,8 @@ func BenchmarkScale_RedactionEngine(b *testing.B) {
 	for i := 0; i < 200; i++ {
 		ssn := fmt.Sprintf("%03d-%02d-%04d", (i*7+100)%900+100, (i*13+10)%90+10, (i*37+1000)%9000+1000)
 		card := generateLuhnCard(i)
-		aws := fmt.Sprintf("AKIA%016X", uint64(1000000000000000+uint64(i)*7919))
-		openAI := fmt.Sprintf("sk-proj-%028X", uint64(2000000000000000+uint64(i)*9973))
+		aws := fmt.Sprintf("AKIA%016X", 1000000000000000+uint64(i)*7919)
+		openAI := fmt.Sprintf("sk-proj-%028X", 2000000000000000+uint64(i)*9973)
 		jwt := fmt.Sprintf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2Vy%06dIiwicm9sZSI6ImFkbWluIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQss%04d", i, i%10000)
 		email := fmt.Sprintf("user_%d_audit@enterprise.internal", i)
 

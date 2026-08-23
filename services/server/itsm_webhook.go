@@ -162,7 +162,7 @@ func (c *ITSMConnector) dispatchJira(ctx context.Context, inc ComplianceIncident
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respBody, _ := io.ReadAll(resp.Body)
@@ -228,7 +228,7 @@ func (c *ITSMConnector) dispatchServiceNow(ctx context.Context, inc ComplianceIn
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respBody, _ := io.ReadAll(resp.Body)
@@ -275,7 +275,7 @@ func (c *ITSMConnector) AutoResolveIncident(ctx context.Context, provider, exter
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode >= 400 {
 			return fmt.Errorf("jira resolution comment returned status %d", resp.StatusCode)
 		}
@@ -297,7 +297,7 @@ func (c *ITSMConnector) AutoResolveIncident(ctx context.Context, provider, exter
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode >= 400 {
 			return fmt.Errorf("servicenow resolve returned status %d", resp.StatusCode)
 		}

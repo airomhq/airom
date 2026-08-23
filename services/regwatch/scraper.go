@@ -68,7 +68,7 @@ func (s *RegulatoryScraper) FetchJurisdictionDocument(ctx context.Context, juris
 		// Fallback gracefully on network failure
 		return s.GetBuiltinDocument(jurisdiction)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return s.GetBuiltinDocument(jurisdiction)
