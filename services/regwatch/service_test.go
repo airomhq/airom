@@ -124,9 +124,12 @@ func TestRegWatch_LiveScraper_MockServerAndAlerts(t *testing.T) {
 
 	svc := NewService(cfg)
 
-	var receivedAlert *RegulatoryAlert
+	alertCh := make(chan RegulatoryAlert, 1)
 	svc.SubscribeAlerts(func(alert RegulatoryAlert) {
-		receivedAlert = &alert
+		select {
+		case alertCh <- alert:
+		default:
+		}
 	})
 
 	diff, alert, err := svc.CheckJurisdiction(context.Background(), JurisdictionNYC)
@@ -144,9 +147,13 @@ func TestRegWatch_LiveScraper_MockServerAndAlerts(t *testing.T) {
 		t.Errorf("expected NYC alert, got %s", alert.Jurisdiction)
 	}
 
-	time.Sleep(10 * time.Millisecond) // Allow async listener callback
-	if receivedAlert == nil {
-		t.Error("expected asynchronous alert listener to receive alert")
+	select {
+	case receivedAlert := <-alertCh:
+		if receivedAlert.Jurisdiction != JurisdictionNYC {
+			t.Errorf("expected NYC alert, got %s", receivedAlert.Jurisdiction)
+		}
+	case <-time.After(3 * time.Second):
+		t.Error("expected asynchronous alert listener to receive alert within 3s")
 	}
 
 	// Verify alert history in service
