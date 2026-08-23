@@ -122,6 +122,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newWorkforceCmd(),
 		newShadowCmd(),
 		newProvenanceCmd(),
+		newDashboardCmd(),
 	)
 	return root
 }
