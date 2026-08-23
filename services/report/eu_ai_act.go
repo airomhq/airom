@@ -191,7 +191,7 @@ func buildEUSystemDescriptionSection(req ReportRequest) (string, []Citation) {
 	var sb strings.Builder
 	var citations []Citation
 
-	sb.WriteString(fmt.Sprintf(
+	fmt.Fprintf(&sb,
 		"This technical documentation is established pursuant to Article 11 and Annex IV of Regulation (EU) 2024/1689 for the AI system deployed in repository `%s`.\n\n"+
 			"### Intended Purpose & Classification\n"+
 			"- **Target Repository:** `%s`\n"+
@@ -202,7 +202,7 @@ func buildEUSystemDescriptionSection(req ReportRequest) (string, []Citation) {
 		req.RepoName,
 		req.OrgName,
 		len(req.EvidenceIndex),
-	))
+	)
 
 	if len(req.EvidenceIndex) == 0 {
 		sb.WriteString("No AI model instances or decision system configurations were detected in the target commit.\n")
