@@ -51,6 +51,12 @@
       "type": "Organization"
     },
     {
+      "creationInfo": "_:creationInfo",
+      "name": "model-context-protocol",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-model-context-protocol",
+      "type": "Organization"
+    },
+    {
       "comment": "airom:kind application",
       "creationInfo": "_:creationInfo",
       "name": "agentic-stack",
@@ -65,6 +71,15 @@
       "software_primaryPurpose": "framework",
       "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6d183e4ec227484e",
       "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-crawl4ai",
+      "type": "software_Package"
+    },
+    {
+      "comment": "airom:package.ecosystem pypi; airom:confidence 0.8; airom:evidence 1 occurrence(s); airom:kind framework",
+      "creationInfo": "_:creationInfo",
+      "name": "mcp",
+      "software_primaryPurpose": "framework",
+      "spdxId": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#874318749fe9bd79",
+      "suppliedBy": "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#Agent-model-context-protocol",
       "type": "software_Package"
     },
     {
@@ -124,6 +139,7 @@
       "element": [
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#14f0893c734c4d89",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#6d183e4ec227484e",
+        "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#874318749fe9bd79",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#989de824357981e6",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#a9c29d22c69110c7",
         "https://airom.dev/spdxdocs/00000000-0000-4000-8000-000000000000#b8ff217b82fc34ca"

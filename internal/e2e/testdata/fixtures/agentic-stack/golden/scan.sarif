@@ -24,6 +24,20 @@
               }
             },
             {
+              "id": "mcp/server",
+              "name": "McpServer",
+              "shortDescription": {
+                "text": "Components identified by the mcp/server detector."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
+              "properties": {
+                "airom:method": "config-analysis"
+              }
+            },
+            {
               "id": "rules/agno/import",
               "name": "RulesAgnoImport",
               "shortDescription": {
@@ -164,7 +178,7 @@
         },
         {
           "ruleId": "rules/crawl4ai/import",
-          "ruleIndex": 4,
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "framework 'crawl4ai' detected (confidence 0.9875)"
@@ -201,7 +215,7 @@
         },
         {
           "ruleId": "rules/crawl4ai/crawler",
-          "ruleIndex": 3,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "framework 'crawl4ai' detected (confidence 0.9875)"
@@ -234,6 +248,40 @@
             "airom:kind": "framework",
             "airom:occurrence.confidence": 0.75,
             "airom:provider": "crawl4ai"
+          }
+        },
+        {
+          "ruleId": "mcp/server",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "framework 'mcp' detected (confidence 0.8)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 10,
+                  "snippet": {
+                    "text": "mcp = FastMCP(\"research-server\")"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "airomComponentIdentity/v1": "e0fc44a6a6a4bad30bfc009d77d7725544e5265b685132027f4e5bebfedd9e1c"
+          },
+          "properties": {
+            "airom:componentId": "airom:874318749fe9bd79",
+            "airom:confidence": 0.8,
+            "airom:kind": "framework",
+            "airom:occurrence.confidence": 0.8,
+            "airom:provider": "model-context-protocol"
           }
         },
         {
@@ -273,7 +321,7 @@
         },
         {
           "ruleId": "rules/agno/import",
-          "ruleIndex": 1,
+          "ruleIndex": 2,
           "level": "note",
           "message": {
             "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
@@ -311,7 +359,7 @@
         },
         {
           "ruleId": "rules/agno/import",
-          "ruleIndex": 1,
+          "ruleIndex": 2,
           "level": "note",
           "message": {
             "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
@@ -349,7 +397,7 @@
         },
         {
           "ruleId": "rules/agno/model-binding",
-          "ruleIndex": 2,
+          "ruleIndex": 3,
           "level": "note",
           "message": {
             "text": "framework 'agno' [2.8.5] detected (confidence 0.9881)"
@@ -422,7 +470,7 @@
         },
         {
           "ruleId": "rules/fastmcp/import",
-          "ruleIndex": 5,
+          "ruleIndex": 6,
           "level": "note",
           "message": {
             "text": "framework 'fastmcp' [3.4.5] detected (confidence 0.9875)"
@@ -460,7 +508,7 @@
         },
         {
           "ruleId": "rules/fastmcp/server",
-          "ruleIndex": 6,
+          "ruleIndex": 7,
           "level": "note",
           "message": {
             "text": "framework 'fastmcp' [3.4.5] detected (confidence 0.9875)"

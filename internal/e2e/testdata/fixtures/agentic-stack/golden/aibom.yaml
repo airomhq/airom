@@ -47,6 +47,25 @@ components:
       ecosystem: pypi
     provider: crawl4ai
     versionConstraint: '>=0.9.0'
+  - confidence: 0.8
+    evidence:
+      occurrences:
+        - confidence: 0.8
+          detectorId: mcp/server
+          fields:
+            ecosystem: pypi
+            sdk: mcp
+          location:
+            line: 10
+            path: src/server.py
+          method: config-analysis
+          snippet: mcp = FastMCP("research-server")
+    id: airom:874318749fe9bd79
+    kind: framework
+    name: mcp
+    package:
+      ecosystem: pypi
+    provider: model-context-protocol
   - confidence: 0.988125
     evidence:
       identity:
@@ -255,6 +274,10 @@ stats:
       id: manifest/yarn-lock
       invocations: 0
       ns: 0
+    - findings: 1
+      id: mcp/server
+      invocations: 2
+      ns: 0
     - findings: 0
       id: modelfile/gguf
       invocations: 0
@@ -344,6 +367,7 @@ stats:
     - 'manifest/pypi-pyproject: selected by "default"'
     - 'manifest/pypi-requirements: selected by "default"'
     - 'manifest/yarn-lock: selected by "default"'
+    - 'mcp/server: selected by "default"'
     - 'modelfile/gguf: selected by "default"'
     - 'modelfile/onnx: selected by "default"'
     - 'modelfile/safetensors: selected by "default"'

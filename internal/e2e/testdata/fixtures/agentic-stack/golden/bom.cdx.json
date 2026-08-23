@@ -119,6 +119,34 @@
       }
     },
     {
+      "bom-ref": "airom:874318749fe9bd79",
+      "type": "framework",
+      "name": "mcp",
+      "properties": [
+        {
+          "name": "airom:confidence",
+          "value": "0.8"
+        },
+        {
+          "name": "airom:kind",
+          "value": "framework"
+        },
+        {
+          "name": "airom:provider",
+          "value": "model-context-protocol"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "src/server.py",
+            "line": 10,
+            "additionalContext": "mcp = FastMCP(\"research-server\")"
+          }
+        ]
+      }
+    },
+    {
       "bom-ref": "airom:989de824357981e6",
       "type": "framework",
       "name": "agno",

@@ -15,6 +15,8 @@ import (
 
 	"github.com/airomhq/airom/internal/detectors/manifest"
 
+	"github.com/airomhq/airom/internal/detectors/mcp"
+
 	"github.com/airomhq/airom/internal/detectors/modelfile"
 
 	"github.com/airomhq/airom/internal/detectors/modelfilex"
@@ -50,6 +52,7 @@ func Builtin() []detect.Detector {
 		manifest.NewPyProject(),
 		manifest.NewRequirements(),
 		manifest.NewYarnLock(),
+		mcp.NewMCP(),
 		modelfile.NewGGUF(),
 		modelfile.NewONNX(),
 		modelfile.NewSafetensors(),

@@ -1,0 +1,30 @@
+# rules/security/owasp-agentic.yaml — OWASP Agentic Top 10 Security Rules.
+#
+# Flags insecure execution surfaces, unconstrained agent system tools,
+# and unbounded runaway agent execution patterns in source code.
+pack: owasp-agentic
+version: 1
+rules:
+  # Insecure output execution: passing LLM response text into eval() or exec()
+  - id: owasp-agentic/insecure-eval
+    kind: framework
+    provider: owasp
+    languages: [python]
+    keywords: ["eval(", "exec("]
+    pattern: '\b(?:exec|eval)\s*\(\s*(?:response|output|completion|res\.content|msg\.content)\b'
+    regions: [code]
+    claim: { name: "owasp-agentic-guard" }
+    risk: AIROM-RISK-AGENTIC-INSECURE-EXEC
+    confidence: 0.85
+
+  # Unconstrained agent tool execution: binding raw shell/bash tools
+  - id: owasp-agentic/unconstrained-shell-tool
+    kind: framework
+    provider: owasp
+    languages: [python]
+    keywords: ["ShellTool", "BashProcess", "PythonREPL"]
+    pattern: '\b(?:ShellTool|BashProcess|PythonREPL)\s*\('
+    regions: [code]
+    claim: { name: "owasp-agentic-guard" }
+    risk: AIROM-RISK-AGENTIC-UNCONSTRAINED-TOOL
+    confidence: 0.85

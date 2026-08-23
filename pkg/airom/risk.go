@@ -37,6 +37,12 @@ const (
 	// through an unsafe path (e.g. torch.load with weights_only=False), so a
 	// malicious checkpoint would execute code on load.
 	RiskUnsafeLoad RiskID = "AIROM-RISK-UNSAFE-LOAD"
+	// RiskAgenticInsecureExec is raised when agent output is fed into eval/exec/shell.
+	RiskAgenticInsecureExec RiskID = "AIROM-RISK-AGENTIC-INSECURE-EXEC"
+	// RiskAgenticUnconstrainedTool is raised when unconstrained system tools are bound.
+	RiskAgenticUnconstrainedTool RiskID = "AIROM-RISK-AGENTIC-UNCONSTRAINED-TOOL"
+	// RiskAgenticRunawayLoop is raised when agent loops lack termination ceilings.
+	RiskAgenticRunawayLoop RiskID = "AIROM-RISK-AGENTIC-RUNAWAY-LOOP"
 )
 
 // RiskSeverity is the deterministic severity bucket for a risk.
@@ -96,6 +102,27 @@ var RiskCatalog = map[RiskID]RiskMeta{
 		Description: "A source call site deserializes a model through an unsafe " +
 			"path (e.g. torch.load with weights_only=False); a malicious " +
 			"checkpoint would execute code on load.",
+	},
+	RiskAgenticInsecureExec: {
+		Severity: RiskHigh,
+		Slug:     "agentic-insecure-exec",
+		Title:    "Agentic insecure output execution",
+		Description: "Agent or LLM output is fed directly into dynamic code " +
+			"execution functions (eval/exec/shell) without strict validation.",
+	},
+	RiskAgenticUnconstrainedTool: {
+		Severity: RiskHigh,
+		Slug:     "agentic-unconstrained-tool",
+		Title:    "Unconstrained agent system tool",
+		Description: "Agent is equipped with arbitrary shell or code execution tools " +
+			"capable of unconstrained system modification.",
+	},
+	RiskAgenticRunawayLoop: {
+		Severity: RiskMedium,
+		Slug:     "agentic-runaway-loop",
+		Title:    "Agentic unbounded execution loop",
+		Description: "Agent execution loop lacks iteration bounds or circuit " +
+			"breaker safeguards, risking recursive execution churn.",
 	},
 }
 

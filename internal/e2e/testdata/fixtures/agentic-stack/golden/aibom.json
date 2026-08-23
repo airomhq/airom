@@ -85,6 +85,34 @@
       }
     },
     {
+      "id": "airom:874318749fe9bd79",
+      "kind": "framework",
+      "name": "mcp",
+      "provider": "model-context-protocol",
+      "package": {
+        "ecosystem": "pypi"
+      },
+      "confidence": 0.8,
+      "evidence": {
+        "occurrences": [
+          {
+            "location": {
+              "path": "src/server.py",
+              "line": 10
+            },
+            "detectorId": "mcp/server",
+            "method": "config-analysis",
+            "confidence": 0.8,
+            "snippet": "mcp = FastMCP(\"research-server\")",
+            "fields": {
+              "ecosystem": "pypi",
+              "sdk": "mcp"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "airom:989de824357981e6",
       "kind": "framework",
       "name": "agno",
@@ -285,6 +313,7 @@
       "manifest/pypi-pyproject: selected by \"default\"",
       "manifest/pypi-requirements: selected by \"default\"",
       "manifest/yarn-lock: selected by \"default\"",
+      "mcp/server: selected by \"default\"",
       "modelfile/gguf: selected by \"default\"",
       "modelfile/onnx: selected by \"default\"",
       "modelfile/safetensors: selected by \"default\"",
@@ -415,6 +444,12 @@
         "id": "manifest/yarn-lock",
         "invocations": 0,
         "findings": 0,
+        "ns": 0
+      },
+      {
+        "id": "mcp/server",
+        "invocations": 2,
+        "findings": 1,
         "ns": 0
       },
       {

@@ -147,6 +147,10 @@ stats:
       invocations: 0
       ns: 0
     - findings: 0
+      id: mcp/server
+      invocations: 0
+      ns: 0
+    - findings: 0
       id: modelfile/gguf
       invocations: 0
       ns: 0
@@ -235,6 +239,7 @@ stats:
     - 'manifest/pypi-pyproject: selected by "default"'
     - 'manifest/pypi-requirements: selected by "default"'
     - 'manifest/yarn-lock: selected by "default"'
+    - 'mcp/server: selected by "default"'
     - 'modelfile/gguf: selected by "default"'
     - 'modelfile/onnx: selected by "default"'
     - 'modelfile/safetensors: selected by "default"'
