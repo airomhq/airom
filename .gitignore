@@ -44,3 +44,12 @@ go.work.sum
 # for local rule-channel maintenance. It is its OWN git repo — never track it
 # from airom, or it gets committed as a gitlink.
 /airom-rules/
+
+# ── Python & Node artifacts ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+dist/

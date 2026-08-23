@@ -1,0 +1,19 @@
+apiVersion: v2
+name: airom-enterprise
+description: Production-grade Helm chart for AIROM Enterprise AI Governance, AIBOM Ledger & Runtime Security Proxy
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai-governance
+  - aibom
+  - security
+  - compliance
+  - eu-ai-act
+  - mcp
+home: https://airom.dev
+sources:
+  - https://github.com/airomhq/airom
+maintainers:
+  - name: AIROM Engineering
+    email: engineering@airom.dev

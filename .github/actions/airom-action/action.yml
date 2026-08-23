@@ -1,90 +1,74 @@
-name: 'AIROM Compliance & AIBOM Scanner'
-description: 'Discover AI components, verify .airomapproved governance, detect parameter drift, and generate compliance reports.'
-author: 'AIROM HQ'
+name: 'AIROM Security & Compliance Scanner'
+description: 'Automated AI Governance, AIBOM generation, Regulatory Compliance (EU AI Act, Colorado, NYC, California), and Security Scanning in CI/CD'
+author: 'AIROM Technologies'
 branding:
-  icon: 'shield'
-  color: 'blue'
+  icon: 'shield-check'
+  color: 'purple'
 
 inputs:
-  target:
-    description: 'Path or directory to scan'
+  path:
+    description: 'Path or repository directory to scan'
     required: false
     default: '.'
-  fail-on:
-    description: 'Policy gate expression to fail CI (e.g., "local-model-file&confidence>=0.9" or "cve:critical")'
+  output-format:
+    description: 'Output format (table, json, yaml, sarif, cdx, spdx, vex)'
     required: false
-    default: ''
-  compliance:
-    description: 'Compliance framework to evaluate (colorado-ai-act, nyc-ll144, ca-ab2013, nist-ai-rmf, owasp-llm-top-10)'
+    default: 'sarif'
+  output-file:
+    description: 'File path to save the scan report'
     required: false
-    default: ''
-  sarif-output:
-    description: 'Path to write SARIF report'
+    default: 'airom-report.sarif'
+  fail-on-risk:
+    description: 'Fail the action if risks at or above this level are found (none, low, medium, high, critical)'
     required: false
-    default: 'airom-results.sarif'
-  json-output:
-    description: 'Path to write CycloneDX AIBOM JSON'
+    default: 'high'
+  policy:
+    description: 'Policy level to enforce (recommended, strict, permissive)'
     required: false
-    default: 'aibom.cdx.json'
-  api-key:
-    description: 'AIROM Cloud API Key for ComplianceDB ledger upload'
-    required: false
-    default: ''
-  upload-sarif:
-    description: 'Automatically upload SARIF to GitHub Code Scanning (requires security-events: write)'
+    default: 'recommended'
+  post-pr-comment:
+    description: 'Whether to post a formatted summary comment on Pull Requests'
     required: false
     default: 'true'
+  github-token:
+    description: 'GitHub token for posting PR comments and check runs'
+    required: false
+    default: ${{ github.token }}
+  server-url:
+    description: 'AIROM Enterprise Server URL for ComplianceDB sync (optional)'
+    required: false
+    default: ''
+  api-key:
+    description: 'AIROM Enterprise API Key for authenticated sync (optional)'
+    required: false
+    default: ''
 
 outputs:
-  sarif-path:
-    description: 'Path to the generated SARIF file'
-    value: ${{ inputs.sarif-output }}
-  aibom-path:
-    description: 'Path to the generated CycloneDX AIBOM file'
-    value: ${{ inputs.json-output }}
-  exit-code:
-    description: 'Scan execution exit code'
-    value: ${{ steps.run-airom.outputs.exit-code }}
+  findings-count:
+    description: 'Total number of detected findings'
+  high-risks-count:
+    description: 'Total number of high or critical risk findings'
+  compliance-status:
+    description: 'Overall compliance status (pass, gap, manual_review)'
+  report-file:
+    description: 'Path to the generated report file'
 
 runs:
   using: 'composite'
   steps:
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.25'
-        cache: false
-
-    - name: Build AIROM CLI
+    - name: Run AIROM Governance Scan
       shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FORMAT: ${{ inputs.output-format }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        INPUT_FAIL_ON_RISK: ${{ inputs.fail-on-risk }}
+        INPUT_POLICY: ${{ inputs.policy }}
+        INPUT_POST_PR_COMMENT: ${{ inputs.post-pr-comment }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_SERVER_URL: ${{ inputs.server-url }}
+        INPUT_API_KEY: ${{ inputs.api-key }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        go build -o airom-bin ./cmd/airom
-
-    - name: Run AIROM Scan
-      id: run-airom
-      shell: bash
-      run: |
-        ARGS=()
-        if [ -n "${{ inputs.compliance }}" ]; then
-          ARGS+=(--compliance "${{ inputs.compliance }}")
-        fi
-        if [ -n "${{ inputs.fail-on }}" ]; then
-          ARGS+=(--fail-on "${{ inputs.fail-on }}")
-        fi
-
-        EXIT_CODE=0
-        ./airom-bin scan "${{ inputs.target }}" \
-          -o "sarif=${{ inputs.sarif-output }}" \
-          -o "cyclonedx=${{ inputs.json-output }}" \
-          -o table \
-          "${ARGS[@]}" || EXIT_CODE=$?
-
-        echo "exit-code=${EXIT_CODE:-0}" >> $GITHUB_OUTPUT
-        exit ${EXIT_CODE:-0}
-
-    - name: Upload SARIF to GitHub Code Scanning
-      if: ${{ inputs.upload-sarif == 'true' && (success() || failure()) }}
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: ${{ inputs.sarif-output }}
-        category: 'airom-governance'
+        bash ${{ github.action_path }}/entrypoint.sh

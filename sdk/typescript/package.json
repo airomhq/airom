@@ -1,0 +1,26 @@
+{
+  "name": "@airomhq/sdk",
+  "version": "1.0.0",
+  "description": "AIROM Enterprise TypeScript SDK for AI Bill of Materials (AIBOM), ComplianceDB Ledger, and Runtime Security Governance",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "keywords": [
+    "airom",
+    "aibom",
+    "ai-governance",
+    "compliance",
+    "mcp",
+    "security"
+  ],
+  "author": "AIROM Technologies",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  }
+}

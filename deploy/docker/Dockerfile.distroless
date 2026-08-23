@@ -1,0 +1,44 @@
+# Multi-Stage Hardened Distroless Container for AIROM Enterprise
+# Stage 1: Build static Go binary with security flags
+FROM golang:1.25-alpine AS builder
+
+WORKDIR /src
+
+# Install ca-certificates and git
+RUN apk add --no-cache ca-certificates git tzdata
+
+# Cache Go dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy full source
+COPY . .
+
+# Build fully static, stripped binary with CGO_ENABLED=0
+ARG TARGETOS
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
+    go build -ldflags="-s -w -extldflags '-static' -X github.com/airomhq/airom/cmd/airom.Version=1.0.0" \
+    -trimpath \
+    -o /bin/airom ./cmd/airom
+
+# Stage 2: Distroless Minimal Non-Root Runtime (<30MB)
+FROM gcr.io/distroless/static-debian12:nonroot
+
+LABEL org.opencontainers.image.title="AIROM Enterprise" \
+      org.opencontainers.image.description="Automated AI Governance, AIBOM Scanner & Runtime Security Proxy" \
+      org.opencontainers.image.url="https://airom.dev" \
+      org.opencontainers.image.source="https://github.com/airomhq/airom" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /bin/airom /usr/local/bin/airom
+
+# Use nonroot user (UID 65532)
+USER nonroot:nonroot
+
+EXPOSE 8080 8081
+
+ENTRYPOINT ["/usr/local/bin/airom"]
+CMD ["server", "--port", "8080"]

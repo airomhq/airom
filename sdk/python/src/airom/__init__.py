@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from ._run import ScanOptions, ScanResult, execute, raw
 from .api import fs, image, k8s, repo, scan, version
+from .client import AIROMClient
 from .errors import AiromError, BinaryNotFoundError, OutputError, ScanError
 from .models import (
     KV,
@@ -77,6 +78,7 @@ __all__ = [
     "raw",
     "ScanOptions",
     "ScanResult",
+    "AIROMClient",
     # Errors
     "AiromError",
     "BinaryNotFoundError",
