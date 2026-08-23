@@ -270,6 +270,8 @@ func (a *Agent) CertifyPackage(docID string, req CertifyRequest) (*DocumentPacka
 		rep, err = report.GenerateTRAIGAReport(reportReq, nil)
 	case "virginia-vcdpa":
 		rep, err = report.GenerateVCDPAReport(reportReq, nil)
+	case "eu-ai-act":
+		rep, err = report.GenerateEUAIActTechnicalDoc(reportReq)
 	default:
 		rep, err = report.GenerateColoradoReport(reportReq)
 	}

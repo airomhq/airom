@@ -336,6 +336,73 @@ func TestHTTP_FullDocumentLifecycle_EndToEnd(t *testing.T) {
 	}
 }
 
+func TestDocument_EUAIAct_CertificationFlow(t *testing.T) {
+	secret := []byte("test-eu-ai-act-secret-32bytes-len")
+	agent := NewAgent(secret)
+
+	req := CreatePackageRequest{
+		OrgID:       "org-eu",
+		OrgName:     "Acme Europe B.V.",
+		RepoID:      "repo-eu-risk",
+		RepoName:    "eu-risk-pipeline",
+		CommitSHA:   "commit-eu-12345",
+		Framework:   "eu-ai-act",
+		AIBOMSHA256: "aibom-sha-eu-999",
+		EvidenceIndex: map[report.EvidenceKey]report.EvidenceRef{
+			"src/models/scoring.py:10": {
+				AIBOMID:     "aibom-eu-1",
+				FilePath:    "src/models/scoring.py",
+				LineNumber:  10,
+				ComponentID: "comp-eu-1",
+				ModelName:   "openai/gpt-4o",
+				Kind:        "hosted-llm",
+				Confidence:  0.99,
+			},
+		},
+	}
+
+	pkg, err := agent.CreatePackage(req)
+	if err != nil {
+		t.Fatalf("CreatePackage failed: %v", err)
+	}
+
+	// Answer any yellow review item
+	for _, item := range pkg.Items {
+		if item.Status == StatusYellowAttestationRequired {
+			_ = agent.UpdateYellowAnswer(pkg.ID, item.ID, "In-App Banner")
+		}
+	}
+
+	tokenStr, _, err := GenerateHumanToken(secret, TokenRequest{
+		UserID:     "officer-eu",
+		UserEmail:  "officer@acme.eu",
+		DocumentID: pkg.ID,
+	}, 90*time.Second)
+	if err != nil {
+		t.Fatalf("GenerateHumanToken failed: %v", err)
+	}
+
+	certified, err := agent.CertifyPackage(pkg.ID, CertifyRequest{
+		UserID:                 "officer-eu",
+		UserEmail:              "officer@acme.eu",
+		UserTitle:              "EU Compliance Officer",
+		HumanConfirmationToken: tokenStr,
+	})
+	if err != nil {
+		t.Fatalf("CertifyPackage failed: %v", err)
+	}
+
+	if !certified.IsCertified {
+		t.Error("expected package to be certified")
+	}
+	if certified.Report == nil || certified.Report.Framework != "eu-ai-act" {
+		t.Errorf("unexpected certified report: %+v", certified.Report)
+	}
+	if !strings.Contains(certified.MarkdownPayload, "EU AI Act Annex IV Technical Documentation") {
+		t.Errorf("expected EU AI Act title in markdown, got: %s", certified.MarkdownPayload)
+	}
+}
+
 func BenchmarkSecurity_TokenGenerationAndVerification(b *testing.B) {
 	secret := []byte("bench-secret-gateway-32bytes-long")
 	req := TokenRequest{

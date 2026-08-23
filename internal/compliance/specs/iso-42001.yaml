@@ -1,0 +1,60 @@
+# ISO/IEC 42001:2023 Information Technology — Artificial Intelligence — Management System (AIMS)
+#
+# HONESTY CONTRACT: ISO/IEC 42001 specifies requirements for establishing, implementing,
+# maintaining, and continually improving an Artificial Intelligence Management System (AIMS).
+# Organizational policies, leadership commitment, and continual improvement clauses require
+# human compliance officer attestation (marked `manual`). Operational component inventories,
+# data quality records, third-party component mapping, and security mitigations are auto-evaluated.
+id: iso-42001
+name: "ISO/IEC 42001:2023 AI Management System (AIMS)"
+version: "2023"
+url: "https://www.iso.org/standard/81230.html"
+controls:
+  # ── Clause 4: Context of the Organization ─────────────────────────────────
+  - id: iso-42001.clause4.context-scope
+    title: "Context of the Organization and AIMS Scope (Clause 4.3)"
+    ref: "https://www.iso.org/standard/81230.html"
+    manual: true
+
+  # ── Clause 6: Planning & AI Risk Assessment ───────────────────────────────
+  - id: iso-42001.clause6.ai-risk-assessment
+    title: "AI Risk Assessment & Treatment Process (Clause 6.1.2)"
+    ref: "https://www.iso.org/standard/81230.html"
+    manual: true
+
+  # ── Clause 8: Operation & AI System Lifecycle ─────────────────────────────
+  - id: iso-42001.clause8.operational-inventory
+    title: "Operational Planning & AI System Inventory (Clause 8.1)"
+    text: >-
+      The organization must control the processes needed to meet AI requirements. An AIBOM
+      documenting active foundation models, weights, frameworks, and pipelines provides
+      concrete evidence of operational system control.
+    ref: "https://www.iso.org/standard/81230.html"
+    evidence_of: "hosted-llm | local-model-file | framework | dataset"
+
+  # ── Annex A: Control Objectives and Controls ──────────────────────────────
+  - id: iso-42001.annex-a.data-governance
+    title: "Data for AI Systems & Provenance (Annex A.6)"
+    text: >-
+      Data used for training, validation, and operations must meet established quality,
+      lineage, and provenance criteria. Discovered datasets or embedding models serve
+      as component evidence of data governance.
+    ref: "https://www.iso.org/standard/81230.html"
+    evidence_of: "dataset | embedding-model | rag-pipeline"
+
+  - id: iso-42001.annex-a.third-party-suppliers
+    title: "Third-Party AI Supplier Management (Annex A.7)"
+    text: >-
+      Risks associated with third-party AI assets, cloud APIs, and open-source models
+      must be evaluated. Provenance-backed identification of supplier packages and
+      hosted endpoints fulfills supply chain tracking.
+    ref: "https://www.iso.org/standard/81230.html"
+    evidence_of: "hosted-llm | framework | library"
+
+  - id: iso-42001.annex-a.system-security
+    title: "AI System Security & Vulnerability Management (Annex A.8)"
+    text: >-
+      Security risks unique to AI models, serialization vulnerabilities, and code execution
+      flaws must be mitigated. Discovered vulnerabilities or unsafe loads represent a gap.
+    ref: "https://www.iso.org/standard/81230.html"
+    gap_if: "risk"

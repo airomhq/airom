@@ -1,0 +1,50 @@
+# Canadian Artificial Intelligence and Data Act (AIDA - Bill C-27) — statutory control mapping.
+#
+# HONESTY CONTRACT: Canada's AIDA establishes federal requirements for high-impact AI systems,
+# requiring risk mitigation, bias oversight, data governance, and incident reporting. Organizational
+# policies and human monitoring programs are marked `manual`. Discovered models, dataset pipelines,
+# and static vulnerability findings are auto-evaluated against the AIBOM.
+id: canada-aida
+name: "Canadian Artificial Intelligence and Data Act (AIDA - Bill C-27)"
+version: "1.0"
+url: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27"
+controls:
+  # ── Section 5: High-Impact AI Classification ─────────────────────────────
+  - id: canada-aida.high-impact-inventory
+    title: "High-Impact System Classification & Inventory (§ 5)"
+    text: >-
+      Persons responsible for high-impact AI systems must identify and document system
+      components. An AIBOM detailing active models, frameworks, and datasets provides
+      component evidence of system classification.
+    ref: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27#sec_5"
+    evidence_of: "hosted-llm | local-model-file | framework | dataset"
+
+  # ── Section 6: Data Governance & Anonymization ───────────────────────────
+  - id: canada-aida.data-governance
+    title: "Measures Respecting Data Anonymization & Provenance (§ 6)"
+    text: >-
+      Establishes requirements for data governance and privacy in AI training pipelines.
+      Discovered datasets, vector stores, and embeddings provide component evidence.
+    ref: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27#sec_6"
+    evidence_of: "dataset | embedding-model | rag-pipeline"
+
+  # ── Section 7: System Robustness & Security ──────────────────────────────
+  - id: canada-aida.system-security
+    title: "Harm Mitigation & Security Safeguards (§ 7)"
+    text: >-
+      High-impact AI systems must be protected against malicious tampering, injection,
+      and critical vulnerabilities. Statically-detected risks constitute a compliance gap.
+    ref: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27#sec_7"
+    gap_if: "risk"
+
+  # ── Section 8: Bias Mitigation Measures ──────────────────────────────────
+  - id: canada-aida.bias-mitigation
+    title: "Assessment & Mitigation of Biased Output (§ 8)"
+    ref: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27#sec_8"
+    manual: true
+
+  # ── Section 9: Monitoring & Record-Keeping ────────────────────────────────
+  - id: canada-aida.incident-monitoring
+    title: "Continuous Monitoring & Incident Notification (§ 9)"
+    ref: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27#sec_9"
+    manual: true

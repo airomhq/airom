@@ -1,0 +1,80 @@
+# EU Artificial Intelligence Act (Regulation (EU) 2024/1689) — statutory control mapping.
+#
+# HONESTY CONTRACT: The EU AI Act defines statutory requirements for prohibited AI practices
+# (Title II), high-risk AI systems (Title III, Articles 9-15 & Annex IV), and general-purpose
+# AI models (Title VIII, Article 53). Controls involving organizational risk processes, human
+# oversight governance, and deployment operating procedures are marked `manual` and require
+# human compliance officer attestation. Technical documentation, dataset provenance, security
+# vulnerabilities, and GPAI transparency summaries are auto-evaluated against AIBOM components.
+id: eu-ai-act
+name: "EU Artificial Intelligence Act (Regulation (EU) 2024/1689)"
+version: "2024/1689"
+url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689"
+controls:
+  # ── Title II: Prohibited AI Practices (Article 5) ─────────────────────────
+  - id: eu.ai-act.title2.prohibited-practices
+    title: "Prohibition of Unacceptable Risk AI Practices (Art. 5)"
+    text: >-
+      Prohibits AI systems deploying subliminal manipulation, social scoring, untargeted
+      facial image scraping, biometric categorization for sensitive traits, and workplace
+      emotion recognition. Statically-detected prohibited artifacts constitute an immediate gap.
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_5"
+    gap_if: "risk"
+
+  # ── Title III: High-Risk AI Systems — Requirements (Articles 9–15) ────────
+  - id: eu.ai-act.title3.risk-mgmt-system
+    title: "Continuous Risk Management System (Art. 9)"
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_9"
+    manual: true
+
+  - id: eu.ai-act.title3.data-governance
+    title: "Data and Data Governance (Art. 10)"
+    text: >-
+      High-risk AI training, validation, and testing datasets must be examined for bias,
+      provenance, and statistical properties. Discovery of documented datasets or embedding
+      models provides component evidence of dataset governance.
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_10"
+    evidence_of: "dataset | embedding-model | rag-pipeline"
+
+  - id: eu.ai-act.title3.technical-documentation
+    title: "Technical Documentation & Annex IV (Art. 11)"
+    text: >-
+      Technical documentation must be drawn up before the system is placed on the market.
+      An AIBOM inventorying models, frameworks, parameters, and dependencies forms the
+      statutory basis of Annex IV technical documentation.
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_11"
+    evidence_of: "hosted-llm | local-model-file | framework"
+
+  - id: eu.ai-act.title3.record-keeping-logs
+    title: "Automatic Logging Capabilities (Art. 12)"
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_12"
+    manual: true
+
+  - id: eu.ai-act.title3.transparency-instructions
+    title: "Transparency & Instructions for Deployers (Art. 13)"
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_13"
+    manual: true
+
+  - id: eu.ai-act.title3.human-oversight
+    title: "Human Oversight Architecture & Stop Mechanisms (Art. 14)"
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_14"
+    manual: true
+
+  - id: eu.ai-act.title3.accuracy-robustness-cybersecurity
+    title: "Accuracy, Robustness & Cybersecurity (Art. 15)"
+    text: >-
+      High-risk AI systems must achieve an appropriate level of accuracy, robustness,
+      and cybersecurity resilience against adversarial exploitation. Detected security
+      flaws or unmitigated CVEs represent a statutory gap.
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_15"
+    gap_if: "risk"
+
+  # ── Title VIII: General-Purpose AI (GPAI) Models (Article 53) ─────────────
+  - id: eu.ai-act.title8.gpai-transparency-summary
+    title: "GPAI Model Transparency & Training Data Summary (Art. 53)"
+    text: >-
+      Providers of GPAI models must make publicly available a sufficiently detailed
+      summary about the content used for training according to the template provided
+      by the AI Office. Discovered generative models serve as inventory evidence.
+    ref: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689#art_53"
+    evidence_of: "hosted-llm | local-model-file"

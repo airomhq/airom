@@ -233,3 +233,82 @@ func TestMultiStatePacks_BIPA_TRAIGA_VCDPA(t *testing.T) {
 		t.Fatalf("expected 3 framework results, got %d", len(results))
 	}
 }
+
+// TestEUAIActEvaluation validates EU AI Act (Regulation (EU) 2024/1689) control evaluations.
+func TestEUAIActEvaluation(t *testing.T) {
+	fws, err := loadFrameworks()
+	if err != nil {
+		t.Fatalf("failed to load frameworks: %v", err)
+	}
+
+	fw, exists := fws["eu-ai-act"]
+	if !exists {
+		t.Fatalf("framework 'eu-ai-act' is not embedded; embedded IDs: %v", IDs())
+	}
+	if len(fw.Controls) != 9 {
+		t.Fatalf("expected 9 controls in eu-ai-act, got %d", len(fw.Controls))
+	}
+
+	// 1. Inventory with safe model & dataset
+	cleanInv := &airom.Inventory{
+		Root: "airom:root",
+		Components: []airom.Component{
+			{
+				ID:   "airom:c1",
+				Kind: airom.KindHostedLLM,
+				Name: "gpt-4o",
+				Evidence: airom.Evidence{
+					Occurrences: []airom.Occurrence{
+						{Location: airom.Location{Path: "src/llm.py", Line: 10}},
+					},
+				},
+			},
+			{
+				ID:   "airom:c2",
+				Kind: airom.KindDataset,
+				Name: "training-corpus",
+				Evidence: airom.Evidence{
+					Occurrences: []airom.Occurrence{
+						{Location: airom.Location{Path: "data/corpus.jsonl", Line: 1}},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := Evaluate(cleanInv, []string{"eu-ai-act"}, false)
+	if err != nil {
+		t.Fatalf("EU AI Act evaluation failed: %v", err)
+	}
+	if len(results) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(results))
+	}
+
+	controlStates := make(map[string]airom.ControlState)
+	for _, c := range results[0].Controls {
+		controlStates[c.ID] = c.State
+	}
+
+	// Verify Data Governance is Met
+	if controlStates["eu.ai-act.title3.data-governance"] != airom.ControlMet {
+		t.Errorf("expected Title III Data Governance to be Met, got %s", controlStates["eu.ai-act.title3.data-governance"])
+	}
+
+	// Verify Technical Documentation is Met
+	if controlStates["eu.ai-act.title3.technical-documentation"] != airom.ControlMet {
+		t.Errorf("expected Title III Technical Documentation to be Met, got %s", controlStates["eu.ai-act.title3.technical-documentation"])
+	}
+
+	// Verify GPAI Transparency is Met
+	if controlStates["eu.ai-act.title8.gpai-transparency-summary"] != airom.ControlMet {
+		t.Errorf("expected Title VIII GPAI Transparency to be Met, got %s", controlStates["eu.ai-act.title8.gpai-transparency-summary"])
+	}
+
+	// Verify Manual Controls
+	if controlStates["eu.ai-act.title3.risk-mgmt-system"] != airom.ControlManual {
+		t.Errorf("expected Title III Risk Mgmt to be Manual, got %s", controlStates["eu.ai-act.title3.risk-mgmt-system"])
+	}
+	if controlStates["eu.ai-act.title3.human-oversight"] != airom.ControlManual {
+		t.Errorf("expected Title III Human Oversight to be Manual, got %s", controlStates["eu.ai-act.title3.human-oversight"])
+	}
+}
