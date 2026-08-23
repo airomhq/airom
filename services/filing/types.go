@@ -24,12 +24,12 @@ const (
 type FilingStatus string
 
 const (
-	StatusDraft            FilingStatus = "DRAFT"
-	StatusVerified         FilingStatus = "VERIFIED"
-	StatusSubmitted        FilingStatus = "SUBMITTED"
-	StatusAcknowledged     FilingStatus = "ACKNOWLEDGED"
-	StatusRejected         FilingStatus = "REJECTED"
-	StatusRenewalRequired  FilingStatus = "RENEWAL_REQUIRED"
+	StatusDraft           FilingStatus = "DRAFT"
+	StatusVerified        FilingStatus = "VERIFIED"
+	StatusSubmitted       FilingStatus = "SUBMITTED"
+	StatusAcknowledged    FilingStatus = "ACKNOWLEDGED"
+	StatusRejected        FilingStatus = "REJECTED"
+	StatusRenewalRequired FilingStatus = "RENEWAL_REQUIRED"
 )
 
 // RenewalUrgency indicates the statutory timeline urgency for upcoming renewals.
@@ -110,16 +110,16 @@ func (m *FilingManifest) ComputePackageChecksum() string {
 
 // FilingReceipt represents an immutable proof of statutory filing transmission and acknowledgment.
 type FilingReceipt struct {
-	ReceiptID          string       `json:"receipt_id"`
-	PackageID          string       `json:"package_id"`
-	Jurisdiction       Jurisdiction `json:"jurisdiction"`
-	OrganizationID     string       `json:"organization_id"`
-	SubmittedAt        time.Time    `json:"submitted_at"`
-	PortalEndpoint     string       `json:"portal_endpoint"`
-	Status             FilingStatus `json:"status"`
-	AcknowledgmentToken string      `json:"acknowledgment_token"`
-	SubmissionHash     string       `json:"submission_hash"`
-	Message            string       `json:"message"`
+	ReceiptID           string       `json:"receipt_id"`
+	PackageID           string       `json:"package_id"`
+	Jurisdiction        Jurisdiction `json:"jurisdiction"`
+	OrganizationID      string       `json:"organization_id"`
+	SubmittedAt         time.Time    `json:"submitted_at"`
+	PortalEndpoint      string       `json:"portal_endpoint"`
+	Status              FilingStatus `json:"status"`
+	AcknowledgmentToken string       `json:"acknowledgment_token"`
+	SubmissionHash      string       `json:"submission_hash"`
+	Message             string       `json:"message"`
 }
 
 // RenewalScheduleItem tracks statutory deadlines and recurring audit schedules for a single jurisdiction.

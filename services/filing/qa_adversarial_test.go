@@ -54,9 +54,9 @@ func TestQA_AdversarialArtifactTampering(t *testing.T) {
 	agent := NewFilingAgent(nil)
 
 	tests := []struct {
-		name    string
-		tamper  func(pkgDir string, manifest *FilingManifest) error
-		errMsg  string
+		name   string
+		tamper func(pkgDir string, manifest *FilingManifest) error
+		errMsg string
 	}{
 		{
 			name: "Bit-flip in JSON disclosure",

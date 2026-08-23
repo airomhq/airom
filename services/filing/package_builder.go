@@ -19,20 +19,20 @@ func newPackageID() string {
 
 // BuildPackageOptions contains input metadata and configuration for assembling a statutory filing.
 type BuildPackageOptions struct {
-	Jurisdiction     Jurisdiction
-	OrganizationID   string
-	OrganizationName string
-	RepositoryID     string
-	SnapshotID       string
-	SystemName       string
-	SystemPurpose    string
-	ModelIDs         []string
-	SignerName       string
-	SignerTitle      string
-	SignerEmail      string
-	AuditDate        time.Time
-	ControlsMetCount int
-	ControlsGapCount int
+	Jurisdiction      Jurisdiction
+	OrganizationID    string
+	OrganizationName  string
+	RepositoryID      string
+	SnapshotID        string
+	SystemName        string
+	SystemPurpose     string
+	ModelIDs          []string
+	SignerName        string
+	SignerTitle       string
+	SignerEmail       string
+	AuditDate         time.Time
+	ControlsMetCount  int
+	ControlsGapCount  int
 	CustomDisclosures map[string]string
 }
 
@@ -229,11 +229,11 @@ func (b *PackageBuilder) buildCaliforniaArtifacts(opts BuildPackageOptions) []Fi
 
 func (b *PackageBuilder) buildNYCArtifacts(opts BuildPackageOptions) []FilingArtifact {
 	auditSummary := map[string]interface{}{
-		"statute":               "NYC Local Law 144 / DCWP § 20-870",
-		"aedt_tool_name":        opts.SystemName,
-		"independent_auditor":   "AIROM Statutory Conformance Engine",
-		"audit_date":            opts.AuditDate.Format(time.RFC3339),
-		"bias_audit_passed":     opts.ControlsGapCount == 0,
+		"statute":             "NYC Local Law 144 / DCWP § 20-870",
+		"aedt_tool_name":      opts.SystemName,
+		"independent_auditor": "AIROM Statutory Conformance Engine",
+		"audit_date":          opts.AuditDate.Format(time.RFC3339),
+		"bias_audit_passed":   opts.ControlsGapCount == 0,
 		"disparate_impact_ratios": map[string]float64{
 			"gender_male":   1.0,
 			"gender_female": 0.98,

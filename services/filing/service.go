@@ -9,10 +9,10 @@ import (
 
 // Service provides HTTP REST endpoints and internal coordination for filings and renewal schedules.
 type Service struct {
-	builder  *PackageBuilder
-	engine   *RenewalEngine
-	agent    *FilingAgent
-	mux      *http.ServeMux
+	builder *PackageBuilder
+	engine  *RenewalEngine
+	agent   *FilingAgent
+	mux     *http.ServeMux
 }
 
 // NewService constructs a new filing and renewal coordinator service.
