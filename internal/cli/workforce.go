@@ -176,7 +176,7 @@ Employees may request an individualized explanation of automated tooling or subm
 `, systemName, roleTitle, now.Format("2006-01-02"), effective.Format("2006-01-02"), roleTitle)
 
 			if outFile != "" {
-				if err := os.WriteFile(outFile, []byte(notice), 0644); err != nil {
+				if err := os.WriteFile(outFile, []byte(notice), 0o600); err != nil {
 					return fmt.Errorf("failed to write notice file: %w", err)
 				}
 				fmt.Fprintf(cmd.OutOrStdout(), "✅ Generated statutory duty-of-care notice: %s\n", outFile)

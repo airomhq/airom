@@ -69,7 +69,7 @@ func newShadowScanCmd() *cobra.Command {
 					relPath = path
 				}
 
-				contentBytes, err := os.ReadFile(path)
+				contentBytes, err := os.ReadFile(filepath.Clean(path)) // #nosec G304
 				if err != nil {
 					return nil
 				}

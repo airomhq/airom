@@ -18,7 +18,7 @@ func TestCLI_ShadowScan(t *testing.T) {
 
 	// Create test shadow AI file
 	envPath := filepath.Join(tempDir, ".env")
-	if err := os.WriteFile(envPath, []byte("OPENAI_API_KEY=sk-proj-019283746501928374650192837465\n"), 0644); err != nil {
+	if err := os.WriteFile(envPath, []byte("OPENAI_API_KEY=sk-proj-019283746501928374650192837465\n"), 0o644); err != nil {
 		t.Fatalf("failed to write test file: %v", err)
 	}
 

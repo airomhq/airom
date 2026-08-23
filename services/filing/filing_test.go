@@ -120,7 +120,7 @@ func TestFiling_PackageVerification_OnDisk(t *testing.T) {
 
 	// Adversarial Tampering: Corrupt one byte of an artifact
 	corruptFile := filepath.Join(tempDir, manifest.Artifacts[0].RelativePath)
-	if err := os.WriteFile(corruptFile, []byte("MALICIOUS_TAMPERED_CONTENT"), 0644); err != nil {
+	if err := os.WriteFile(corruptFile, []byte("MALICIOUS_TAMPERED_CONTENT"), 0o644); err != nil {
 		t.Fatalf("failed to tamper file: %v", err)
 	}
 

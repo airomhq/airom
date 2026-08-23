@@ -67,7 +67,7 @@ func TestQA_AdversarialArtifactTampering(t *testing.T) {
 					return err
 				}
 				content[0] = 'X' // Corrupt opening brace
-				return os.WriteFile(path, content, 0644)
+				return os.WriteFile(path, content, 0o644)
 			},
 			errMsg: "checksum mismatch",
 		},
@@ -80,7 +80,7 @@ func TestQA_AdversarialArtifactTampering(t *testing.T) {
 					return err
 				}
 				content = append(content, ' ')
-				return os.WriteFile(path, content, 0644)
+				return os.WriteFile(path, content, 0o644)
 			},
 			errMsg: "checksum mismatch",
 		},
@@ -88,7 +88,7 @@ func TestQA_AdversarialArtifactTampering(t *testing.T) {
 			name: "Appended trailing null bytes (size change)",
 			tamper: func(pkgDir string, manifest *FilingManifest) error {
 				path := filepath.Join(pkgDir, manifest.Artifacts[0].RelativePath)
-				f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+				f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0o644)
 				if err != nil {
 					return err
 				}

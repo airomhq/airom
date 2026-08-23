@@ -356,17 +356,17 @@ func (b *PackageBuilder) buildVirginiaArtifacts(_ BuildPackageOptions) []FilingA
 
 // ExportToDirectory writes all artifacts and the manifest JSON to a physical destination directory.
 func (b *PackageBuilder) ExportToDirectory(manifest *FilingManifest, targetDir string) error {
-	if err := os.MkdirAll(targetDir, 0750); err != nil {
+	if err := os.MkdirAll(targetDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
 
 	// Write each constituent artifact
 	for _, art := range manifest.Artifacts {
 		filePath := filepath.Join(targetDir, art.RelativePath)
-		if err := os.MkdirAll(filepath.Dir(filePath), 0750); err != nil {
+		if err := os.MkdirAll(filepath.Dir(filePath), 0o750); err != nil {
 			return err
 		}
-		if err := os.WriteFile(filePath, art.Content, 0600); err != nil {
+		if err := os.WriteFile(filePath, art.Content, 0o600); err != nil {
 			return fmt.Errorf("failed to write artifact %s: %w", art.RelativePath, err)
 		}
 	}
@@ -377,7 +377,7 @@ func (b *PackageBuilder) ExportToDirectory(manifest *FilingManifest, targetDir s
 		return fmt.Errorf("failed to serialize manifest: %w", err)
 	}
 	manifestPath := filepath.Join(targetDir, "filing_manifest.json")
-	if err := os.WriteFile(manifestPath, manifestBytes, 0600); err != nil {
+	if err := os.WriteFile(manifestPath, manifestBytes, 0o600); err != nil {
 		return fmt.Errorf("failed to write filing_manifest.json: %w", err)
 	}
 
