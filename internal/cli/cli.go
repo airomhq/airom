@@ -121,6 +121,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newFileCmd(),
 		newWorkforceCmd(),
 		newShadowCmd(),
+		newProvenanceCmd(),
 	)
 	return root
 }
