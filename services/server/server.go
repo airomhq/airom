@@ -15,9 +15,17 @@ import (
 	"github.com/airomhq/airom/services/audit"
 	"github.com/airomhq/airom/services/auth"
 	"github.com/airomhq/airom/services/billing"
+	"github.com/airomhq/airom/services/cluster"
 	"github.com/airomhq/airom/services/compliancedb"
+	"github.com/airomhq/airom/services/dashboard"
 	"github.com/airomhq/airom/services/document"
+	"github.com/airomhq/airom/services/filing"
+	"github.com/airomhq/airom/services/provenance"
+	"github.com/airomhq/airom/services/redteam"
+	"github.com/airomhq/airom/services/regwatch"
 	"github.com/airomhq/airom/services/report"
+	"github.com/airomhq/airom/services/shadowai"
+	"github.com/airomhq/airom/services/workforce"
 )
 
 // Config holds runtime configuration for the Enterprise Server Gateway.
@@ -121,6 +129,14 @@ func (s *EnterpriseServer) setupRoutes() {
 	mountHandler(s.mux, "/api/v1/billing/", s.billingSvc.Routes())
 	mountHandler(s.mux, "/api/v1/documents", document.NewServer(s.docAgent).Routes())
 	mountHandler(s.mux, "/api/v1/documents/", document.NewServer(s.docAgent).Routes())
+	mountHandler(s.mux, "/api/v1/regwatch/", regwatch.NewService(regwatch.ScraperConfig{}).Routes())
+	mountHandler(s.mux, "/api/v1/filings/", filing.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/workforce/", workforce.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/shadowai/", shadowai.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/provenance/", provenance.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/dashboard/", dashboard.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/redteam/", redteam.NewService().Routes())
+	mountHandler(s.mux, "/api/v1/cluster/", cluster.NewService().Routes())
 }
 
 func mountHandler(mux *http.ServeMux, prefix string, h http.Handler) {
@@ -149,6 +165,14 @@ func (s *EnterpriseServer) handleReadyz(w http.ResponseWriter, r *http.Request) 
 			"billing":      "ready",
 			"document":     "ready",
 			"report":       "ready",
+			"regwatch":     "ready",
+			"filing":       "ready",
+			"workforce":    "ready",
+			"shadowai":     "ready",
+			"provenance":   "ready",
+			"dashboard":    "ready",
+			"redteam":      "ready",
+			"cluster":      "ready",
 		},
 	})
 }

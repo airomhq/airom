@@ -2,7 +2,9 @@ package regwatch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -161,4 +163,18 @@ func deriveActionRequired(sev DeltaSeverity) string {
 	default:
 		return "Informational statutory notice. No immediate remediation required."
 	}
+}
+
+// Routes returns the HTTP handler for mounting the regwatch service.
+func (s *Service) Routes() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v1/regwatch/alerts", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(s.GetAlerts())
+	})
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "healthy", "service": "regwatch"})
+	})
+	return mux
 }
