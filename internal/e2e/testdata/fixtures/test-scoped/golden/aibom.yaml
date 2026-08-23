@@ -517,7 +517,7 @@ stats:
       id: ruleengine
       invocations: 3
       ns: 0
-  dirsPruned: 1
+  dirsPruned: 2
   durationNs: 0
   enrichment:
     cve:

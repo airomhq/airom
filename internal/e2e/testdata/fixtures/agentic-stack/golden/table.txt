@@ -2,11 +2,11 @@ AI Bill of Materials — agentic-stack
 
 ┌─ Scan Summary ────────────────────────────────────────────────┐
 │ Target        agentic-stack                                   │
-│ Components    4                                               │
+│ Components    5                                               │
 │ Files         3 scanned                                       │
 │                                                               │
 │ By Type                                                       │
-│   framework          4                                        │
+│   framework          5                                        │
 │                                                               │
 │ Assurance                                                     │
 │   ignored            0 files, 1 dirs pruned                   │
@@ -15,11 +15,12 @@ AI Bill of Materials — agentic-stack
 │ Confidence    evidence-weighted/1; not empirically calibrated │
 └───────────────────────────────────────────────────────────────┘
 
-┌───────────┬──────────┬─────────┬──────────┬────────┬────────────────────┬──────────┐
-│ KIND      │ NAME     │ VERSION │ PROVIDER │ CONF   │ LOCATION           │ EVIDENCE │
-├───────────┼──────────┼─────────┼──────────┼────────┼────────────────────┼──────────┤
-│ framework │ agno     │ 2.8.5   │ agno     │ 0.9881 │ requirements.txt:2 │ 4 occ    │
-│ framework │ crawl4ai │ >=0.9.0 │ crawl4ai │ 0.9875 │ requirements.txt:3 │ 3 occ    │
-│ framework │ fastmcp  │ 3.4.5   │ fastmcp  │ 0.9875 │ requirements.txt:4 │ 3 occ    │
-│ framework │ mcp      │ 2.0.0   │ mcp      │ 0.95   │ requirements.txt:5 │ 1 occ    │
-└───────────┴──────────┴─────────┴──────────┴────────┴────────────────────┴──────────┘
+┌───────────┬──────────┬─────────┬────────────────────────┬────────┬────────────────────┬──────────┐
+│ KIND      │ NAME     │ VERSION │ PROVIDER               │ CONF   │ LOCATION           │ EVIDENCE │
+├───────────┼──────────┼─────────┼────────────────────────┼────────┼────────────────────┼──────────┤
+│ framework │ agno     │ 2.8.5   │ agno                   │ 0.9881 │ requirements.txt:2 │ 4 occ    │
+│ framework │ crawl4ai │ >=0.9.0 │ crawl4ai               │ 0.9875 │ requirements.txt:3 │ 3 occ    │
+│ framework │ fastmcp  │ 3.4.5   │ fastmcp                │ 0.9875 │ requirements.txt:4 │ 3 occ    │
+│ framework │ mcp      │ -       │ model-context-protocol │ 0.8    │ src/server.py:10   │ 1 occ    │
+│ framework │ mcp      │ 2.0.0   │ mcp                    │ 0.95   │ requirements.txt:5 │ 1 occ    │
+└───────────┴──────────┴─────────┴────────────────────────┴────────┴────────────────────┴──────────┘
