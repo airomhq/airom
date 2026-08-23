@@ -123,6 +123,7 @@ Exit codes: 0 = scan completed (findings are NOT failures); use
 		newShadowCmd(),
 		newProvenanceCmd(),
 		newDashboardCmd(),
+		newRedTeamCmd(),
 	)
 	return root
 }
