@@ -213,7 +213,6 @@ func TestQA_AdversarialMalformedFeedInjection(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(tc.handler)
 			defer server.Close()
@@ -539,7 +538,6 @@ func TestQA_AdversarialStatutoryDriftExploits(t *testing.T) {
 	}
 
 	for _, tc := range driftTestCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tc.modifiedDoc.ComputeHash()
 			diff := diffEngine.ComputeDiff(baselineDoc, tc.modifiedDoc)

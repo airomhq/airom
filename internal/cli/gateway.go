@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -52,7 +53,15 @@ real-time PII & secret redaction, parameter clamping ceilings, and agentic runaw
 			addr := fmt.Sprintf("0.0.0.0:%d", port)
 			slog.Info("Starting AIROM Runtime AI Security Gateway Proxy", "addr", addr)
 			fmt.Fprintf(cmd.OutOrStdout(), "AIROM Security Gateway listening on http://%s\n", addr)
-			return http.ListenAndServe(addr, srv.Routes())
+			httpServer := &http.Server{
+				Addr:              addr,
+				Handler:           srv.Routes(),
+				ReadHeaderTimeout: 10 * time.Second,
+				ReadTimeout:       30 * time.Second,
+				WriteTimeout:      30 * time.Second,
+				IdleTimeout:       60 * time.Second,
+			}
+			return httpServer.ListenAndServe()
 		},
 	}
 

@@ -31,7 +31,7 @@ func TestProxy_ApprovedModel_Succeeds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected status 200, got %d", resp.StatusCode)
@@ -58,7 +58,7 @@ func TestProxy_UnapprovedModel_BlockedWith403(t *testing.T) {
 	if err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusForbidden {
 		t.Errorf("expected status 403 Forbidden for unapproved model, got %d", resp.StatusCode)
@@ -118,7 +118,7 @@ func TestProxy_RedactionAndCircuitBreaker_EndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("4th request failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusTooManyRequests {
 		t.Errorf("expected 429 Too Many Requests on tripped circuit breaker, got %d", resp.StatusCode)
@@ -143,7 +143,7 @@ func TestProxy_MCPInvoke_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("mcp invoke failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200 OK, got %d", resp.StatusCode)

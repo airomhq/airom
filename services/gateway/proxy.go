@@ -224,7 +224,7 @@ func (s *Server) handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Upstream gateway error: %v", err), http.StatusBadGateway)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	for k, vv := range resp.Header {
 		for _, v := range vv {

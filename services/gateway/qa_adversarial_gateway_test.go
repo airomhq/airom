@@ -104,7 +104,6 @@ func TestQA_AdversarialShadowModelInjection(t *testing.T) {
 	}
 
 	for _, tc := range adversarialModels {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			payload := map[string]interface{}{
 				"model": tc.modelString,
@@ -268,7 +267,6 @@ func TestQA_AdversarialParameterClampingExploits(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			receivedMu.Lock()
 			receivedPayloads = nil
@@ -596,7 +594,6 @@ func TestQA_AdversarialSecretLeakPrevention(t *testing.T) {
 	}
 
 	for _, tc := range secretAttacks {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			receivedMu.Lock()
 			receivedRawTexts = nil

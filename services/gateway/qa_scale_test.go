@@ -75,8 +75,8 @@ func TestQA_ExtremeRedactionScale_100KTokens(t *testing.T) {
 		jwtList[i] = jwt
 
 		// Interleave entities with natural language context simulating conversational LLM chat tokens
-		sb.WriteString(fmt.Sprintf("LogRecord-%04d: Session user with SSN %s executed transaction with credit card %s using AWS credential %s and OpenAI key %s with active bearer token %s\n",
-			i, ssn, card, aws, openAI, jwt))
+		fmt.Fprintf(&sb, "LogRecord-%04d: Session user with SSN %s executed transaction with credit card %s using AWS credential %s and OpenAI key %s with active bearer token %s\n",
+			i, ssn, card, aws, openAI, jwt)
 	}
 
 	payload := sb.String()
@@ -547,8 +547,8 @@ func BenchmarkScale_RedactionEngine(b *testing.B) {
 		jwt := fmt.Sprintf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2Vy%06dIiwicm9sZSI6ImFkbWluIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQss%04d", i, i%10000)
 		email := fmt.Sprintf("user_%d_audit@enterprise.internal", i)
 
-		sb.WriteString(fmt.Sprintf("Event %d: user=%s ssn=%s card=%s aws=%s openai=%s jwt=%s\n",
-			i, email, ssn, card, aws, openAI, jwt))
+		fmt.Fprintf(&sb, "Event %d: user=%s ssn=%s card=%s aws=%s openai=%s jwt=%s\n",
+			i, email, ssn, card, aws, openAI, jwt)
 	}
 	payload := sb.String()
 	b.SetBytes(int64(len(payload)))

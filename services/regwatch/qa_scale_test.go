@@ -231,7 +231,7 @@ func TestQA_ConcurrentFeedScraperStorm_100Workers(t *testing.T) {
 		atomic.AddInt64(&httpReqCount, 1)
 		path := r.URL.Path
 
-		var matchedJ Jurisdiction = JurisdictionEU
+		matchedJ := JurisdictionEU
 		for _, j := range allJurisdictions {
 			if strings.Contains(path, string(j)) {
 				matchedJ = j

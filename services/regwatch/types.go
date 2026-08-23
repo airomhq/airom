@@ -62,9 +62,9 @@ type StatutoryDocument struct {
 // ComputeHash calculates deterministic SHA-256 over all constituent sections.
 func (d *StatutoryDocument) ComputeHash() string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s|%s|%s\n", d.Jurisdiction, d.Title, d.Version))
+	fmt.Fprintf(&b, "%s|%s|%s\n", d.Jurisdiction, d.Title, d.Version)
 	for i := range d.Sections {
-		b.WriteString(fmt.Sprintf("%s:%s\n", d.Sections[i].ID, d.Sections[i].ComputeHash()))
+		fmt.Fprintf(&b, "%s:%s\n", d.Sections[i].ID, d.Sections[i].ComputeHash())
 	}
 	sum := sha256.Sum256([]byte(b.String()))
 	d.DocumentHash = hex.EncodeToString(sum[:])
