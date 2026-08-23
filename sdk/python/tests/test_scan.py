@@ -198,8 +198,7 @@ def test_wheel_puts_airom_on_path(tmp_path):
     names = zipfile.ZipFile(whl).namelist()
 
     scripts = [
-        n for n in names
-        if ".data/scripts/" in n and n.rsplit("/", 1)[-1].startswith("airom")
+        n for n in names if ".data/scripts/" in n and n.rsplit("/", 1)[-1].startswith("airom")
     ]
     assert scripts, (
         f"{whl.name} installs no airom script -> `pip install airom` would not put "

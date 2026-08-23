@@ -44,12 +44,12 @@ the SDK hands you all of it.
 ## Scanning
 
 ```python
-airom.scan("./app")                       # auto-detect: path, git URL, or image ref
-airom.fs("./app")                         # a directory tree
-airom.repo("https://github.com/o/r")      # remote (shallow clone) or a local worktree
-airom.image(input="img.tar")              # docker save -o img.tar <ref>
-airom.k8s(manifests="./deploy")           # offline: enumerate workload images
-airom.version()                           # the underlying binary's ToolInfo
+airom.scan("./app")  # auto-detect: path, git URL, or image ref
+airom.fs("./app")  # a directory tree
+airom.repo("https://github.com/o/r")  # remote (shallow clone) or a local worktree
+airom.image(input="img.tar")  # docker save -o img.tar <ref>
+airom.k8s(manifests="./deploy")  # offline: enumerate workload images
+airom.version()  # the underlying binary's ToolInfo
 ```
 
 Common keyword args mirror the CLI flags: `select`, `rules`, `ignore`, `min_confidence`,
@@ -81,23 +81,24 @@ SDK preserves the distinction rather than collapsing it into `None`:
 | a value | known | `Presence.KNOWN` |
 
 ```python
-c.version.known           # bool — only True when a real value is present
-c.version.or_none()       # value, or None (collapses absent and unknown)
-c.version.or_default("-") # value, or your fallback
-c.version.presence        # the full distinction, when you need it
+c.version.known  # bool — only True when a real value is present
+c.version.or_none()  # value, or None (collapses absent and unknown)
+c.version.or_default("-")  # value, or your fallback
+c.version.presence  # the full distinction, when you need it
 ```
 
 ## Navigating the graph
 
 ```python
-inv.components                  # sorted, deterministic
+inv.components  # sorted, deterministic
 inv.by_kind("vector-db", "framework")
 inv.get("airom:1f3a9b2c4d5e6f70")
-inv.application                 # the scan-root component
-inv.edges_from(c.id)            # typed, evidenced relationships
-inv.unknowns                    # "looked relevant, could not process" — honesty channel
-inv.stats.files_walked          # requires stats=True
-len(inv); [c for c in inv]      # Inventory is sized and iterable
+inv.application  # the scan-root component
+inv.edges_from(c.id)  # typed, evidenced relationships
+inv.unknowns  # "looked relevant, could not process" — honesty channel
+inv.stats.files_walked  # requires stats=True
+len(inv)
+[c for c in inv]  # Inventory is sized and iterable
 ```
 
 ## CI gating

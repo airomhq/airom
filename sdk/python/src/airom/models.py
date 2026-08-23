@@ -639,7 +639,7 @@ class Relationship:
 
 @dataclass(frozen=True)
 class Unknown:
-    """"Looked relevant, could not process" — honesty over silence."""
+    """ "Looked relevant, could not process" — honesty over silence."""
 
     path: str
     detector_id: str

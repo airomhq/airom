@@ -18,7 +18,7 @@ import json
 import socket
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import pytest
@@ -34,15 +34,15 @@ class MockAIROMHandler(BaseHTTPRequestHandler):
     """
 
     # Shared records for test inspection
-    requests_log: List[Dict[str, Any]] = []
-    custom_responses: Dict[str, Any] = {}
-    custom_status_codes: Dict[str, int] = {}
+    requests_log: list[dict[str, Any]] = []
+    custom_responses: dict[str, Any] = {}
+    custom_status_codes: dict[str, int] = {}
 
     def log_message(self, format: str, *args: Any) -> None:
         # Suppress standard HTTP server console logging during test runs
         pass
 
-    def _record_request(self) -> Dict[str, Any]:
+    def _record_request(self) -> dict[str, Any]:
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else ""
         parsed_body = None
@@ -66,7 +66,7 @@ class MockAIROMHandler(BaseHTTPRequestHandler):
         return req_record
 
     def do_GET(self) -> None:
-        rec = self._record_request()
+        _ = self._record_request()
         parsed_url = urlparse(self.path)
         path = parsed_url.path
 
@@ -125,7 +125,9 @@ class MockAIROMHandler(BaseHTTPRequestHandler):
                         "commit_sha": "a1b2c3d4e5f6",
                         "branch": "main",
                         "scan_timestamp": "2026-08-23T14:00:00Z",
-                        "self_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                        "self_hash": (
+                            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                        ),
                         "prev_snapshot_hash": "",
                         "components_count": 18,
                         "controls_met": 10,
@@ -151,7 +153,7 @@ class MockAIROMHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"status": "ok"}).encode("utf-8"))
 
     def do_POST(self) -> None:
-        rec = self._record_request()
+        _ = self._record_request()
         parsed_url = urlparse(self.path)
         path = parsed_url.path
 
@@ -216,6 +218,7 @@ def mock_server():
 # ---------------------------------------------------------------------------
 # Test Cases
 # ---------------------------------------------------------------------------
+
 
 def test_client_import_and_initialization():
     """Verify AIROMClient is exported in root module and initializes cleanly."""

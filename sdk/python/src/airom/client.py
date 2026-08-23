@@ -7,9 +7,9 @@ scan orchestration, and real-time governance stream.
 from __future__ import annotations
 
 import json
-import urllib.request
 import urllib.error
-from typing import Any, Dict, List, Optional
+import urllib.request
+from typing import Any, cast
 
 
 class AIROMClient:
@@ -20,14 +20,14 @@ class AIROMClient:
     def __init__(
         self,
         base_url: str = "http://localhost:8080",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         timeout: int = 15,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.timeout = timeout
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self) -> dict[str, str]:
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -41,8 +41,8 @@ class AIROMClient:
         self,
         method: str,
         path: str,
-        data: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         url = f"{self.base_url}{path}"
         req_data = json.dumps(data).encode("utf-8") if data is not None else None
         req = urllib.request.Request(
@@ -56,40 +56,43 @@ class AIROMClient:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 resp_bytes = resp.read()
                 if resp_bytes:
-                    return json.loads(resp_bytes.decode("utf-8"))
+                    parsed = json.loads(resp_bytes.decode("utf-8"))
+                    if isinstance(parsed, dict):
+                        return cast(dict[str, Any], parsed)
                 return {}
         except urllib.error.HTTPError as err:
             err_body = err.read().decode("utf-8") if err.fp else ""
-            raise RuntimeError(
-                f"AIROM API Error ({err.code}): {err.reason} - {err_body}"
-            ) from err
+            raise RuntimeError(f"AIROM API Error ({err.code}): {err.reason} - {err_body}") from err
         except urllib.error.URLError as err:
             raise ConnectionError(f"Failed to connect to AIROM at {url}: {err.reason}") from err
 
-    def get_compliance_status(self, org_id: str) -> Dict[str, Any]:
+    def get_compliance_status(self, org_id: str) -> dict[str, Any]:
         """
         Fetch high-level compliance aggregation across all repositories in an organization.
         """
         return self._request("GET", f"/api/v1/orgs/{org_id}/compliance")
 
-    def get_snapshot_history(self, repo_id: str) -> List[Dict[str, Any]]:
+    def get_snapshot_history(self, repo_id: str) -> list[dict[str, Any]]:
         """
         Retrieve chronological hash-chain snapshot ledger for a repository.
         """
         result = self._request("GET", f"/api/v1/repos/{repo_id}/history")
-        return result.get("snapshots", [])
+        snapshots = result.get("snapshots")
+        if isinstance(snapshots, list):
+            return cast(list[dict[str, Any]], snapshots)
+        return []
 
     def ingest_snapshot(
         self,
         repo_id: str,
-        scan_payload: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        scan_payload: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Ingest a new scan snapshot and atomically append it to the unbroken SHA-256 hash ledger.
         """
         return self._request("POST", f"/api/v1/repos/{repo_id}/snapshots", data=scan_payload)
 
-    def verify_chain_integrity(self, repo_id: str) -> Dict[str, Any]:
+    def verify_chain_integrity(self, repo_id: str) -> dict[str, Any]:
         """
         Perform zero-trust cryptographic audit over the repository's snapshot chain.
         """
@@ -102,7 +105,7 @@ class AIROMClient:
         decision: str,
         attester: str,
         notes: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Sign a manual governance attestation (green / yellow / red review).
         """

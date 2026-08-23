@@ -74,7 +74,6 @@ def _wheel_tag() -> str:
     return f"py3-none-{plat}"
 
 
-
 def _refuse(reason: str) -> None:
     """Fail the build rather than ship a wheel that installs no command.
 
@@ -140,9 +139,14 @@ class AiromBuildHook(BuildHookInterface):
             ldflags.append(f"-X main.date={date}")
 
         cmd = [
-            "go", "build", "-trimpath",
-            "-ldflags", " ".join(ldflags),
-            "-o", str(out), "./cmd/airom",
+            "go",
+            "build",
+            "-trimpath",
+            "-ldflags",
+            " ".join(ldflags),
+            "-o",
+            str(out),
+            "./cmd/airom",
         ]
         self.app.display_info(f"bundling airom: {' '.join(cmd)} (in {REPO_ROOT})")
         try:
