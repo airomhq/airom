@@ -55,7 +55,7 @@ type UsageCategory string
 
 const (
 	CategoryIDETooling       UsageCategory = "IDE_EXTENSION"
-	CategoryAPIToken         UsageCategory = "RAW_API_KEY"
+	CategoryAPIToken         UsageCategory = "RAW_API_KEY" // #nosec G101 -- enumeration constant
 	CategoryProductivitySaaS UsageCategory = "SAAS_WORKSPACE"
 	CategoryCIPipeline       UsageCategory = "CI_CD_SECRET"
 	CategoryBrowserExtension UsageCategory = "BROWSER_EXTENSION"

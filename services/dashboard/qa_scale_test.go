@@ -101,7 +101,7 @@ func TestQA_ConcurrentDashboardCalculations_100Workers(t *testing.T) {
 
 	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
-		go func(workerID int) {
+		go func(_ int) {
 			defer wg.Done()
 			for i := 0; i < rollupsPerWorker; i++ {
 				matrix, err := engine.CalculateExecutivePosture(sampleOrgs)

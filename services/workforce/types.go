@@ -44,7 +44,7 @@ const (
 
 // AISystemCapability represents functional abilities of an evaluated AI system.
 type AISystemCapability struct {
-	Name                string   `json:"name"`                  // e.g. "code-generation", "customer-dialogue", "resume-screening"
+	Name                string   `json:"name"`                  // e.g. "code-generation", "customer-dialog", "resume-screening"
 	AutomatedTasks      []string `json:"automated_tasks"`       // Specific task definitions
 	AutonomyLevel       float64  `json:"autonomy_level"`        // 0.0 (assisted) to 1.0 (fully autonomous)
 	HighImpactDecisions bool     `json:"high_impact_decisions"` // Adverse employment consequential decisions

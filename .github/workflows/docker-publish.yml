@@ -57,11 +57,7 @@ jobs:
 
       - name: Sign image with Cosign
         env:
-          TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: |
-          images=""
-          for tag in ${TAGS}; do
-            images+="${tag}@${DIGEST} "
-          done
-          cosign sign --yes ${images}
+          cosign sign --yes "ghcr.io/${{ github.repository }}@${DIGEST}"
+

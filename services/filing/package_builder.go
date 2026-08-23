@@ -168,12 +168,12 @@ This artificial intelligence system has undergone continuous automated code, mod
 - Consumer opt-out and algorithmic dispute mechanisms are active.
 `, opts.SystemName, opts.RepositoryID, opts.AuditDate.Format(time.RFC3339), len(opts.ModelIDs), strings.Join(opts.ModelIDs, ", "), opts.ControlsMetCount, opts.ControlsGapCount)
 
-	mitigationPlan := fmt.Sprintf(`# Colorado AI Act Impact Mitigation & Risk Monitoring Plan
+	mitigationPlan := `# Colorado AI Act Impact Mitigation & Risk Monitoring Plan
 
 - **Pre-deployment Verification**: Continuous automated AIBOM generation and vulnerability assessment.
 - **Incident Escalation**: Real-time ITSM dispatch on detected algorithmic drift or unvetted shadow models.
 - **Annual Review Cadence**: Next annual statutory review scheduled within 365 calendar days.
-`)
+`
 
 	return []FilingArtifact{
 		{
@@ -299,7 +299,7 @@ func (b *PackageBuilder) buildEUArtifacts(opts BuildPackageOptions) []FilingArti
 	}
 }
 
-func (b *PackageBuilder) buildIllinoisArtifacts(opts BuildPackageOptions) []FilingArtifact {
+func (b *PackageBuilder) buildIllinoisArtifacts(_ BuildPackageOptions) []FilingArtifact {
 	bipaSchedule := map[string]interface{}{
 		"statute":                  "740 ILCS 14/15(a)",
 		"biometric_retention_days": 1095, // 3-year statutory limit
@@ -335,7 +335,7 @@ func (b *PackageBuilder) buildTexasArtifacts(opts BuildPackageOptions) []FilingA
 	}
 }
 
-func (b *PackageBuilder) buildVirginiaArtifacts(opts BuildPackageOptions) []FilingArtifact {
+func (b *PackageBuilder) buildVirginiaArtifacts(_ BuildPackageOptions) []FilingArtifact {
 	vcdpa := map[string]interface{}{
 		"statute":                 "Va. Code § 59.1-575",
 		"dpa_completed":           true,
@@ -356,17 +356,17 @@ func (b *PackageBuilder) buildVirginiaArtifacts(opts BuildPackageOptions) []Fili
 
 // ExportToDirectory writes all artifacts and the manifest JSON to a physical destination directory.
 func (b *PackageBuilder) ExportToDirectory(manifest *FilingManifest, targetDir string) error {
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0750); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
 
 	// Write each constituent artifact
 	for _, art := range manifest.Artifacts {
 		filePath := filepath.Join(targetDir, art.RelativePath)
-		if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(filePath), 0750); err != nil {
 			return err
 		}
-		if err := os.WriteFile(filePath, art.Content, 0644); err != nil {
+		if err := os.WriteFile(filePath, art.Content, 0600); err != nil {
 			return fmt.Errorf("failed to write artifact %s: %w", art.RelativePath, err)
 		}
 	}
@@ -377,7 +377,7 @@ func (b *PackageBuilder) ExportToDirectory(manifest *FilingManifest, targetDir s
 		return fmt.Errorf("failed to serialize manifest: %w", err)
 	}
 	manifestPath := filepath.Join(targetDir, "filing_manifest.json")
-	if err := os.WriteFile(manifestPath, manifestBytes, 0644); err != nil {
+	if err := os.WriteFile(manifestPath, manifestBytes, 0600); err != nil {
 		return fmt.Errorf("failed to write filing_manifest.json: %w", err)
 	}
 
