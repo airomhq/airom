@@ -202,48 +202,6 @@
       }
     },
     {
-      "id": "airom:737f185ea7c9f67f",
-      "kind": "ai-config",
-      "name": "max_tokens",
-      "confidence": 0.525,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "app.py",
-              "line": 40,
-              "endLine": 40,
-              "column": 1,
-              "endColumn": 17
-            },
-            "detectorId": "rules/aiconfig/token-limits",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "max_tokens=64,",
-            "fields": {
-              "param": "max_tokens"
-            }
-          },
-          {
-            "location": {
-              "path": "app.py",
-              "line": 46,
-              "endLine": 46,
-              "column": 1,
-              "endColumn": 17
-            },
-            "detectorId": "rules/aiconfig/token-limits",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "max_tokens=64,",
-            "fields": {
-              "param": "max_tokens"
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:76a548bfe1b671c7",
       "kind": "hosted-llm",
       "name": "claude-opus-4-1-20250805",
@@ -647,6 +605,7 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
+    "dirsPruned": 1,
     "headerBytes": 1558,
     "contentBytes": 1558,
     "durationNs": 0,
@@ -905,6 +864,16 @@
         "findings": 12,
         "ns": 0
       }
-    ]
+    ],
+    "enrichment": {
+      "cve": {
+        "enabled": false
+      },
+      "eol": {
+        "enabled": true,
+        "catalogLoaded": true
+      }
+    },
+    "confidenceModel": "evidence-weighted/1; not empirically calibrated"
   }
 }

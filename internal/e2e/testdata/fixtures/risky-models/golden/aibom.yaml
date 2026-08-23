@@ -12,13 +12,13 @@ components:
     hashes:
       - alg: SHA-256
         hex: bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca
-    id: airom:2df08beb45af93fd
+    id: airom:3148b5beb41218a8
     kind: local-model-file
     model:
       format: gguf
-    name: poisoned.gguf
+    name: poisoned
     provider: local
-    purl: pkg:generic/poisoned.gguf?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca
+    purl: pkg:generic/poisoned?checksum=sha256:bf2744e85d3b8946848bc0e1f46b4a1494262b52b5dd593973f34347b5897aca
     risks:
       - detail:
           - __globals__
@@ -33,6 +33,35 @@ components:
             path: models/poisoned.gguf
           method: binary-analysis
         severity: medium
+  - confidence: 0.85
+    evidence:
+      occurrences:
+        - confidence: 0.85
+          detectorId: modelfilex/hdf5
+          location:
+            path: models/lambda.h5
+          method: binary-analysis
+    hashes:
+      - alg: SHA-256
+        hex: 94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755
+    id: airom:357bff4125ef88bb
+    kind: local-model-file
+    model:
+      format: hdf5
+    name: lambda.h5
+    provider: local
+    purl: pkg:generic/lambda.h5?checksum=sha256:94b3916e37dea30e98d7ca9eb6418fe8b7dcf76e8621094fced71249a0a80755
+    risks:
+      - detail:
+          - Lambda
+        id: AIROM-RISK-KERAS-LAMBDA
+        occurrence:
+          confidence: 0.85
+          detectorId: modelfilex/hdf5
+          location:
+            path: models/lambda.h5
+          method: binary-analysis
+        severity: high
   - confidence: 0.9
     evidence:
       occurrences:
@@ -176,7 +205,8 @@ source:
   kind: dir
   target: risky-models
 stats:
-  contentBytes: 464
+  confidenceModel: evidence-weighted/1; not empirically calibrated
+  contentBytes: 613
   detectors:
     - findings: 0
       id: dataset/file
@@ -254,10 +284,6 @@ stats:
       id: manifest/yarn-lock
       invocations: 0
       ns: 0
-    - findings: 0
-      id: mcp/server
-      invocations: 1
-      ns: 0
     - findings: 1
       id: modelfile/gguf
       invocations: 1
@@ -270,9 +296,9 @@ stats:
       id: modelfile/safetensors
       invocations: 0
       ns: 0
-    - findings: 0
+    - findings: 1
       id: modelfilex/hdf5
-      invocations: 0
+      invocations: 1
       ns: 0
     - findings: 1
       id: modelfilex/savedmodel
@@ -322,11 +348,18 @@ stats:
       id: ruleengine
       invocations: 1
       ns: 0
+  dirsPruned: 1
   durationNs: 0
+  enrichment:
+    cve:
+      enabled: false
+    eol:
+      catalogLoaded: true
+      enabled: true
   filesFailed: 0
   filesProcessed: 6
   filesWalked: 6
-  headerBytes: 614
+  headerBytes: 613
   selection:
     - 'dataset/file: selected by "default"'
     - 'frozen/pyinstaller: selected by "default"'
@@ -347,7 +380,6 @@ stats:
     - 'manifest/pypi-pyproject: selected by "default"'
     - 'manifest/pypi-requirements: selected by "default"'
     - 'manifest/yarn-lock: selected by "default"'
-    - 'mcp/server: selected by "default"'
     - 'modelfile/gguf: selected by "default"'
     - 'modelfile/onnx: selected by "default"'
     - 'modelfile/safetensors: selected by "default"'

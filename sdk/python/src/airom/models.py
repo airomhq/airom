@@ -68,6 +68,9 @@ __all__ = [
     "K8sInfo",
     "SourceInfo",
     "DetectorStat",
+    "CVEEnrichment",
+    "EOLEnrichment",
+    "EnrichmentStats",
     "ScanStats",
     "Inventory",
 ]
@@ -731,6 +734,48 @@ class DetectorStat:
 
 
 @dataclass(frozen=True)
+class CVEEnrichment:
+    """Whether the CVE overlay ran, and how much of the scan it covered."""
+
+    enabled: bool = False
+    unchecked: int = 0
+
+    @classmethod
+    def from_json(cls, o: dict[str, Any]) -> CVEEnrichment:
+        return cls(enabled=bool(o.get("enabled", False)), unchecked=o.get("unchecked", 0))
+
+
+@dataclass(frozen=True)
+class EOLEnrichment:
+    """Whether the model-lifecycle overlay ran and a catalog loaded."""
+
+    enabled: bool = False
+    catalog_loaded: bool = False
+
+    @classmethod
+    def from_json(cls, o: dict[str, Any]) -> EOLEnrichment:
+        return cls(
+            enabled=bool(o.get("enabled", False)),
+            catalog_loaded=bool(o.get("catalogLoaded", False)),
+        )
+
+
+@dataclass(frozen=True)
+class EnrichmentStats:
+    """Which overlays ran: "no CVEs" and "no CVE check" are different claims."""
+
+    cve: CVEEnrichment = field(default_factory=CVEEnrichment)
+    eol: EOLEnrichment = field(default_factory=EOLEnrichment)
+
+    @classmethod
+    def from_json(cls, o: dict[str, Any]) -> EnrichmentStats:
+        return cls(
+            cve=CVEEnrichment.from_json(o.get("cve") or {}),
+            eol=EOLEnrichment.from_json(o.get("eol") or {}),
+        )
+
+
+@dataclass(frozen=True)
 class ScanStats:
     """The honesty block: what the scan looked at, skipped, and spent."""
 
@@ -739,23 +784,34 @@ class ScanStats:
     files_failed: int = 0
     header_bytes: int = 0
     content_bytes: int = 0
+    files_ignored: int = 0
+    dirs_pruned: int = 0
+    files_truncated: int = 0
     duration_ns: int = 0
     selection: list[str] = field(default_factory=list)
     detectors: list[DetectorStat] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    enrichment: EnrichmentStats | None = None
+    confidence_model: str = ""
 
     @classmethod
     def from_json(cls, o: dict[str, Any]) -> ScanStats:
+        enrich = o.get("enrichment")
         return cls(
             files_walked=o.get("filesWalked", 0),
             files_processed=o.get("filesProcessed", 0),
             files_failed=o.get("filesFailed", 0),
+            files_ignored=o.get("filesIgnored", 0),
+            dirs_pruned=o.get("dirsPruned", 0),
+            files_truncated=o.get("filesTruncated", 0),
             header_bytes=o.get("headerBytes", 0),
             content_bytes=o.get("contentBytes", 0),
             duration_ns=o.get("durationNs", 0),
             selection=list(o.get("selection") or []),
             detectors=_list(o, "detectors", DetectorStat.from_json),
             warnings=list(o.get("warnings") or []),
+            enrichment=EnrichmentStats.from_json(enrich) if enrich else None,
+            confidence_model=o.get("confidenceModel", ""),
         )
 
 

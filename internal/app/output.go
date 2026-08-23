@@ -46,6 +46,16 @@ func emit(ctx context.Context, inv *airom.Inventory, cfg *Config) error {
 			FilesWalked:    inv.Stats.FilesWalked,
 			FilesProcessed: inv.Stats.FilesProcessed,
 			FilesFailed:    inv.Stats.FilesFailed,
+			// The assurance fields survive for the same reason Warnings do:
+			// they say what the scan did NOT see (ignored files, pruned
+			// directories, truncated reads, overlays that never ran, what the
+			// confidence numbers mean). Dropping them would make a partial
+			// scan byte-identical to a complete one.
+			FilesIgnored:    inv.Stats.FilesIgnored,
+			DirsPruned:      inv.Stats.DirsPruned,
+			FilesTruncated:  inv.Stats.FilesTruncated,
+			Enrichment:      inv.Stats.Enrichment,
+			ConfidenceModel: inv.Stats.ConfidenceModel,
 			// Warnings survive the reset. They are the honesty channel, not a
 			// volatile timing counter: they record where the scan could NOT see
 			// (an unreachable advisory database, an unusable lifecycle catalog),

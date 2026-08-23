@@ -22,7 +22,7 @@ func NewCSProj() *CSProj { return &CSProj{} }
 func (CSProj) ID() string { return "manifest/nuget" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (CSProj) Version() int { return 1 }
+func (CSProj) Version() int { return 2 }
 
 // Selector routes *.csproj files by extension, needing full content.
 func (CSProj) Selector() detect.Selector {

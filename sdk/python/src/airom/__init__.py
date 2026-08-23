@@ -31,10 +31,13 @@ from .models import (
     Component,
     ComponentKind,
     Considerations,
+    CVEEnrichment,
     DataFacet,
     DetectionMethod,
     DetectorStat,
     EnergyConsumption,
+    EnrichmentStats,
+    EOLEnrichment,
     Evidence,
     GitInfo,
     Hash,
@@ -62,7 +65,7 @@ from .models import (
     Unknown,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "__version__",
@@ -121,5 +124,8 @@ __all__ = [
     "K8sInfo",
     "SourceInfo",
     "DetectorStat",
+    "CVEEnrichment",
+    "EnrichmentStats",
+    "EOLEnrichment",
     "ScanStats",
 ]

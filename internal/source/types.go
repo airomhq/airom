@@ -57,6 +57,16 @@ type Info struct {
 	Target string
 }
 
+// WalkStats is a Walk's exclusion accounting, feeding the scan assurance
+// block (ScanStats): FilesIgnored counts files the ignore rules excluded;
+// DirsPruned counts directories excluded whole, whose contents were never
+// enumerated — one line per directory, because the walker cannot count what
+// it never listed.
+type WalkStats struct {
+	FilesIgnored int64
+	DirsPruned   int64
+}
+
 // Source is the engine-facing contract every acquisition implements (§7).
 type Source interface {
 	Name() string
@@ -72,6 +82,11 @@ type Source interface {
 	// WalkUnknowns returns the walk-level Unknown records accumulated by
 	// the most recent Walk. Valid after Walk returns.
 	WalkUnknowns() []Unknown
+	// WalkStats returns the most recent Walk's exclusion accounting: what the
+	// walk deliberately did not enumerate. Sources with no ignore rules
+	// (image archives, rendered manifests) return the zero value, which is
+	// the honest answer: nothing was excluded.
+	WalkStats() WalkStats
 	// Resolver is the pull-style query API for phase-2 project detectors.
 	Resolver() Resolver
 	Info() Info

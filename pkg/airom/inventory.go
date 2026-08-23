@@ -95,15 +95,58 @@ type DetectorStat struct {
 // fields are legitimately nondeterministic; writers normalize them to keep
 // the P7 byte-identical contract.
 type ScanStats struct {
-	FilesWalked    int64          `json:"filesWalked"`
-	FilesProcessed int64          `json:"filesProcessed"`
-	FilesFailed    int64          `json:"filesFailed"`
+	FilesWalked    int64 `json:"filesWalked"`
+	FilesProcessed int64 `json:"filesProcessed"`
+	FilesFailed    int64 `json:"filesFailed"`
+	// FilesIgnored counts files the ignore rules excluded from the walk;
+	// DirsPruned counts directories excluded WHOLE, whose contents were never
+	// enumerated — a pruned directory is one line here, not one per file,
+	// because the walker cannot count what it never listed.
+	FilesIgnored int64 `json:"filesIgnored,omitempty"`
+	DirsPruned   int64 `json:"dirsPruned,omitempty"`
+	// FilesTruncated counts files whose content read stopped at the
+	// --max-file-size cap: detectors saw a prefix, not the file. A finding in
+	// the unseen tail is a finding this scan could not have made.
+	FilesTruncated int64          `json:"filesTruncated,omitempty"`
 	HeaderBytes    int64          `json:"headerBytes"`
 	ContentBytes   int64          `json:"contentBytes"`
 	Duration       time.Duration  `json:"durationNs"`
 	Selection      []string       `json:"selection,omitempty"` // which expression enabled which detector (§6.2)
 	Detectors      []DetectorStat `json:"detectors,omitempty"`
 	Warnings       []string       `json:"warnings,omitempty"` // e.g. dangling relation hints (§9.2)
+	// Enrichment records which overlays ran and how they fared, structurally.
+	// The warnings above tell a human; these fields let a machine (or an
+	// auditor's checklist) distinguish "checked and clean" from "not checked".
+	Enrichment *EnrichmentStats `json:"enrichment,omitempty"`
+	// ConfidenceModel names the scoring scheme this document's confidence
+	// values come from (ConfidenceModelV1). An explicit label, so a consumer
+	// never has to guess whether the numbers claim statistical calibration.
+	ConfidenceModel string `json:"confidenceModel,omitempty"`
+}
+
+// EnrichmentStats is the assurance record for the network- and catalog-backed
+// overlays: not what they found (findings live on components), but whether
+// they RAN — the difference between "no CVEs" and "no CVE check".
+type EnrichmentStats struct {
+	CVE CVEEnrichment `json:"cve"`
+	EOL EOLEnrichment `json:"eol"`
+}
+
+// CVEEnrichment records the OSV.dev overlay's coverage of this scan.
+type CVEEnrichment struct {
+	Enabled bool `json:"enabled"`
+	// Unchecked counts components the overlay could not check (network
+	// failure). Zero with Enabled=true means every eligible component was
+	// checked; anything else means "absence of CVEs" is not a claim.
+	Unchecked int `json:"unchecked,omitempty"`
+}
+
+// EOLEnrichment records the model-lifecycle overlay's coverage. The catalog
+// identity itself lives in ToolInfo.EOLCatalog; this records whether one
+// loaded at all.
+type EOLEnrichment struct {
+	Enabled       bool `json:"enabled"`
+	CatalogLoaded bool `json:"catalogLoaded,omitempty"`
 }
 
 // Inventory is THE document: the assembled component graph every writer

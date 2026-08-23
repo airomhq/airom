@@ -225,6 +225,41 @@ func writeSummary(w io.Writer, inv *airom.Inventory, comps []airom.Component) {
 		}
 	}
 
+	// Assurance — what this scan did NOT establish. Printed whenever there is
+	// something to say: excluded files, truncated reads, an overlay that never
+	// ran, or a component the CVE overlay could not check. A fully-covered scan
+	// with both overlays on says so in one line, because "checked and clean"
+	// is a claim worth making out loud.
+	lines = append(lines, "", "Assurance")
+	st := inv.Stats
+	if st.FilesIgnored > 0 || st.DirsPruned > 0 {
+		lines = append(lines, fmt.Sprintf("  %-18s %d files, %d dirs pruned", "ignored", st.FilesIgnored, st.DirsPruned))
+	}
+	if st.FilesTruncated > 0 {
+		lines = append(lines, fmt.Sprintf("  %-18s %d files read only to the size cap", "truncated", st.FilesTruncated))
+	}
+	if e := st.Enrichment; e != nil {
+		switch {
+		case !e.CVE.Enabled:
+			lines = append(lines, "  cve                not checked (overlay off)")
+		case e.CVE.Unchecked > 0:
+			lines = append(lines, fmt.Sprintf("  cve                %d component(s) NOT checked (network)", e.CVE.Unchecked))
+		default:
+			lines = append(lines, "  cve                all eligible components checked")
+		}
+		switch {
+		case !e.EOL.Enabled:
+			lines = append(lines, "  lifecycle          not checked (overlay off)")
+		case !e.EOL.CatalogLoaded:
+			lines = append(lines, "  lifecycle          catalog unavailable, nothing checked")
+		default:
+			lines = append(lines, "  lifecycle          catalog consulted")
+		}
+	}
+	if st.ConfidenceModel != "" {
+		lines = append(lines, kv("Confidence", st.ConfidenceModel))
+	}
+
 	SummaryBox(w, "Scan Summary", lines)
 }
 

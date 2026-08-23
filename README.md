@@ -1,6 +1,6 @@
 # AIROM
 
-**Find the AI in your code, and prove it.**
+**The AI bill of materials that shows its work.**
 
 AIROM scans a filesystem, git repo, container image, or Kubernetes workload and
 generates an **AI Bill of Materials**: the models, prompts, datasets, embeddings,
@@ -82,8 +82,8 @@ Why? Where?"*
 
 Most tools can't answer. They describe a model you named in a registry, or they
 never look at your code. AIROM is **evidence-first**: every component carries
-the `file:line` it was seen at, the technique that found it, and a calibrated
-confidence score, emitted as CycloneDX `evidence.occurrences[]` that other
+the `file:line` it was seen at, the technique that found it, and an
+evidence-weighted confidence score, emitted as CycloneDX `evidence.occurrences[]` that other
 AIBOM tools leave empty.
 
 It is also honest about what it doesn't know. A version it couldn't resolve
@@ -135,7 +135,7 @@ See **[writing rules](docs/rule-schema.md)** and
 
 ## Status
 
-**v0.4.0**, early but real. The pipeline, detectors, writers, and overlays are
+**v0.4.1**, early but real. The pipeline, detectors, writers, and overlays are
 implemented and tested; expect rough edges.
 
 Known gaps, each also surfaced in the affected flag's `--help`: caching is not

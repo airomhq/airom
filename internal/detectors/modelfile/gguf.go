@@ -44,7 +44,7 @@ func NewGGUF() *GGUF { return &GGUF{} }
 func (*GGUF) ID() string { return "modelfile/gguf" }
 
 // Version is the detector's behavior version.
-func (*GGUF) Version() int { return 2 }
+func (*GGUF) Version() int { return 3 }
 
 // Selector routes .gguf files whose header carries the GGUF magic.
 func (*GGUF) Selector() detect.Selector {
@@ -113,10 +113,19 @@ func (d *GGUF) DetectFile(_ context.Context, f *detect.File) ([]detect.Finding, 
 		fields["parameter_count"] = strconv.FormatInt(info.paramCount, 10)
 	}
 
+	// The model's name, in preference order: what the header itself declares
+	// (general.name — the file's own claim about what it is), else the
+	// filename with the serialization extension stripped. "bench-tiny-llama"
+	// is a model; ".gguf" is how it is stored. Found by airom-bench Tier S
+	// (airomhq/airom#18): the header was parsed and its name ignored.
+	name := info.name
+	if name == "" {
+		name = stemOf(f.Base())
+	}
 	return []detect.Finding{{
 		Claim: detect.ComponentClaim{
 			Kind:     airom.KindLocalModelFile,
-			Name:     f.Base(),
+			Name:     name,
 			Provider: "local",
 			Model:    model,
 			Risks:    chatTemplateRisk(info.chatTemplate),

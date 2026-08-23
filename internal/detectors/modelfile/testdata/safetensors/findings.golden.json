@@ -3,7 +3,7 @@
     {
       "Claim": {
         "Kind": "local-model-file",
-        "Name": "model.safetensors",
+        "Name": "model",
         "Group": "",
         "Version": "",
         "Provider": "local",

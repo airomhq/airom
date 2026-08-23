@@ -17,29 +17,6 @@
   "root": "airom:f7e06de2ad26950f",
   "components": [
     {
-      "id": "airom:cffbe1cb532342ef",
-      "kind": "library",
-      "name": "github.com/sashabaranov/go-openai",
-      "package": {
-        "ecosystem": "golang"
-      },
-      "confidence": 0.8,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "main.go",
-              "line": 7
-            },
-            "detectorId": "gosrc/ast",
-            "method": "ast-fingerprint",
-            "confidence": 0.8,
-            "snippet": "openai \"github.com/sashabaranov/go-openai\""
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:d641d9eba24d3a58",
       "kind": "hosted-llm",
       "name": "gpt-4o",
@@ -83,7 +60,7 @@
       "package": {
         "ecosystem": "golang"
       },
-      "confidence": 0.95,
+      "confidence": 0.99,
       "evidence": {
         "occurrences": [
           {
@@ -95,6 +72,16 @@
             "method": "manifest-analysis",
             "confidence": 0.95,
             "snippet": "require github.com/sashabaranov/go-openai v1.32.0"
+          },
+          {
+            "location": {
+              "path": "main.go",
+              "line": 7
+            },
+            "detectorId": "gosrc/ast",
+            "method": "ast-fingerprint",
+            "confidence": 0.8,
+            "snippet": "openai \"github.com/sashabaranov/go-openai\""
           }
         ],
         "identity": [
@@ -114,6 +101,7 @@
     "filesWalked": 2,
     "filesProcessed": 2,
     "filesFailed": 0,
+    "dirsPruned": 1,
     "headerBytes": 547,
     "contentBytes": 547,
     "durationNs": 0,
@@ -372,6 +360,16 @@
         "findings": 0,
         "ns": 0
       }
-    ]
+    ],
+    "enrichment": {
+      "cve": {
+        "enabled": false
+      },
+      "eol": {
+        "enabled": true,
+        "catalogLoaded": true
+      }
+    },
+    "confidenceModel": "evidence-weighted/1; not empirically calibrated"
   }
 }

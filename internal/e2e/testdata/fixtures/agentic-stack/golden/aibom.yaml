@@ -196,6 +196,7 @@ source:
   kind: dir
   target: agentic-stack
 stats:
+  confidenceModel: evidence-weighted/1; not empirically calibrated
   contentBytes: 915
   detectors:
     - findings: 0
@@ -342,7 +343,14 @@ stats:
       id: ruleengine
       invocations: 2
       ns: 0
+  dirsPruned: 1
   durationNs: 0
+  enrichment:
+    cve:
+      enabled: false
+    eol:
+      catalogLoaded: true
+      enabled: true
   filesFailed: 0
   filesProcessed: 3
   filesWalked: 3

@@ -241,12 +241,17 @@ Refusal over guessing.
 Float, `0 < c ≤ 0.99`, the confidence of **one sighting by this rule alone**. Rules cannot
 assert `1.0`: certainty is reserved for hash-comparison against known weights and (v2)
 verified attestations (§9.3). Corroboration is the assembler's job, grouped noisy-OR
-across detection methods, so calibrate the single sighting honestly:
+across detection methods, so score the single sighting honestly:
 
 - `0.85–0.9`: a provider-distinctive model-ID literal in a `model=`/`model:` position.
 - `0.6–0.75`: an SDK import or call-site shape (tells you the library is present, not which
   model).
 - `≤ 0.5`: weak contextual hints.
+
+These bands are evidence weights, not measured precision: nothing yet
+establishes that rules scored 0.85 are right 85% of the time. Pick the band by
+how distinctive the evidence is, and leave proving the numbers to the
+benchmark.
 
 Repetition cannot launder into certainty: twelve sightings of one 0.85 rule assemble to
 ≈ 0.87, not 0.999.

@@ -134,14 +134,18 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	sort.Slice(detStats, func(i, j int) bool { return detStats[i].ID < detStats[j].ID })
 
 	stats := airom.ScanStats{
-		FilesWalked:    out.Stats.FilesWalked,
-		FilesProcessed: out.Stats.FilesProcessed,
-		FilesFailed:    int64(len(failedPaths)),
-		HeaderBytes:    out.Stats.HeaderBytes,
-		ContentBytes:   out.Stats.ContentBytes,
-		Duration:       out.Stats.Duration,
-		Selection:      sel.Explanation,
-		Detectors:      detStats,
+		FilesWalked:     out.Stats.FilesWalked,
+		FilesProcessed:  out.Stats.FilesProcessed,
+		FilesFailed:     int64(len(failedPaths)),
+		FilesIgnored:    out.Stats.FilesIgnored,
+		DirsPruned:      out.Stats.DirsPruned,
+		FilesTruncated:  out.Stats.FilesTruncated,
+		HeaderBytes:     out.Stats.HeaderBytes,
+		ContentBytes:    out.Stats.ContentBytes,
+		Duration:        out.Stats.Duration,
+		Selection:       sel.Explanation,
+		Detectors:       detStats,
+		ConfidenceModel: airom.ConfidenceModelV1,
 	}
 	if autoUpdateNote != "" {
 		stats.Warnings = append(stats.Warnings, autoUpdateNote)
@@ -179,8 +183,17 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 	// EXCEPT when a CVE gate is active: a gate that silently passes because the
 	// fetch failed is CI theater, so there we fail closed with a clear error
 	// rather than let the outage look like a clean build.
+	// Enrichment accounting (assurance): not what the overlays found, but
+	// whether they ran — "no CVEs" and "no CVE check" must never look alike.
+	enrich := &airom.EnrichmentStats{
+		CVE: airom.CVEEnrichment{Enabled: cfg.CVE},
+		EOL: airom.EOLEnrichment{Enabled: !cfg.NoEOL},
+	}
+	inv.Stats.Enrichment = enrich
 	if cfg.CVE {
-		if failed := osv.Enrich(ctx, inv, osv.Options{SkipTestOnly: !cfg.IncludeTests}); failed > 0 && cfg.Policy.ReferencesCVE() {
+		failed := osv.Enrich(ctx, inv, osv.Options{SkipTestOnly: !cfg.IncludeTests})
+		enrich.CVE.Unchecked = failed
+		if failed > 0 && cfg.Policy.ReferencesCVE() {
 			return nil, fmt.Errorf(
 				"cve gate (--fail-on %s) cannot be evaluated: %d component(s) could not be checked against OSV.dev; re-run when it is reachable",
 				cfg.Policy, failed,
@@ -222,6 +235,7 @@ func runScanPipeline(ctx context.Context, cfg *Config, src source.Source) (*airo
 			// Recorded even when nothing matched: "this catalog had nothing to
 			// say about your models" and "no catalog ran" are different claims.
 			inv.Tool.EOLCatalog = catSource
+			enrich.EOL.CatalogLoaded = true
 		}
 	}
 

@@ -4,8 +4,8 @@
 >
 > AIROM is a single static Go binary that discovers AI
 > assets in a filesystem, source repository, container image, or Kubernetes workload and emits
-> an AI Bill of Materials (AIBOM), with file:line evidence, detection technique, and a
-> calibrated confidence score behind every entry.
+> an AI Bill of Materials (AIBOM), with file:line evidence, detection technique, and an
+> evidence-weighted confidence score behind every entry.
 >
 > This document is the canonical architecture. It was produced by researching Syft,
 > gitleaks, and semgrep internals; verifying the CycloneDX 1.6/1.7 ML-BOM, SPDX 3.0.1 AI
@@ -734,6 +734,16 @@ Step 3  clamp 0.99. Only MethodHash against a known-weights digest — or a v2
         verified attestation — may assert 1.0.
 ```
 
+**What these numbers are, and are not.** Per-sighting scores are author-assigned
+evidence weights (rule-schema.md defines the bands), and the calculus above
+combines them. The result is ordinal: a 0.9 rests on stronger evidence than a
+0.6. It is **not** an empirically calibrated probability: no study has
+established that findings scored 0.85 are correct ~85% of the time. AIROM's
+docs deliberately say "evidence-weighted", never "calibrated", until a public
+benchmark exists to measure calibration error against ground truth; claiming
+statistical calibration without that measurement would be the kind of
+over-claim this tool exists to catch.
+
 Worked examples: `gpt-4.1` regex literal (0.85) in 12 files → ≈0.87. A GGUF found by
 extension (0.5, filename) then confirmed by magic+header parse (0.95, binary-analysis) →
 1−(0.5·0.05) = 0.975. A hundred filename-only hints saturate near 0.65, one method bucket.
@@ -762,6 +772,15 @@ type.
    warning, **never a guessed edge**. Call-site capture beats the proximity window when
    both fire. Conflicting values are never merged: two call sites with different
    temperatures are two `BoundParam`s.
+
+**Bound beats standalone (airom-bench finding, 2026-08).** A call-site kwarg
+is line-anchored, so the standalone aiconfig fallback pack can see the same
+`temperature=0.1` the capture_params story already bound to the model. The
+assembler drops an ai-config component only when every one of its occurrences
+duplicates a same-named bound param in the same file within the capture
+window; one occurrence outside that evidence keeps the component whole. An
+ai-config component in the output therefore always means UNBOUND, which is
+what the kind is defined to mean.
 
 ## 10. Caching (`internal/cache`, bbolt)
 

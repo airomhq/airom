@@ -239,6 +239,10 @@ func (s *Source) Walk(ctx context.Context, fn source.WalkFunc) error {
 	return nil
 }
 
+// WalkStats returns the zero value: this source applies no ignore rules, so
+// nothing is ever deliberately excluded from its walk.
+func (s *Source) WalkStats() source.WalkStats { return source.WalkStats{} }
+
 // WalkUnknowns returns the Unknown records accumulated during materialization
 // (unreadable/whiteout-inconsistent/zstd layers, oversized truncations).
 func (s *Source) WalkUnknowns() []source.Unknown {

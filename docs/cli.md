@@ -92,7 +92,7 @@ Every scan command accepts these. `<size>` values take `k`/`m`/`g` suffixes.
 | `--offline` | bool | `false` | Assert no network access for the entire run; an operation that would touch the network fails fast **before** reaching it, rather than erroring after the fact. In practice the one such operation is cloning a remote `repo` URL, `fs`, local `repo`, `image --input`, and `k8s --manifests` never touch the network, and live registry pulls / live-cluster scanning are not implemented (they fail regardless). |
 | `--pprof[=addr]` | string | disabled | Serve `net/http/pprof`; bare flag binds `localhost:6060`. A custom address must be attached with `=` (`--pprof=localhost:7070`). The space-separated form is rejected with a pointer to this rule. |
 | `--trace <file>` | path | — | Write a Go execution trace with per-phase regions (walk / detect / phase-2 / assemble / write). |
-| `--stats` | bool | `false` | Emit the full `ScanStats` block (files walked/skipped, bytes read vs bytes in tree, cache hit rates, per-detector timings, selection explanation). Always collected; this controls emission. |
+| `--stats` | bool | `false` | Emit the full `ScanStats` block (files walked/skipped, bytes read vs bytes in tree, cache hit rates, per-detector timings, selection explanation). Always collected; this controls emission. The **assurance fields** are exempt and always emitted: ignored files, pruned directories, truncated reads, whether each overlay ran, and the confidence model. They record what the scan did not see, and dropping them would make a partial scan indistinguishable from a complete one. |
 | `--wide` | bool | `false` | Table output only: list every `file:line` occurrence (with the detector that fired) under each component. The default table shows just the primary `LOCATION` and an occurrence count; `--wide` is the terminal equivalent of the JSON `evidence.occurrences[]`. |
 | `-v` / `-q` | count / bool | — | Verbose (repeatable; raises log detail, `-vv` adds source locations) / quiet (errors only). |
 | `--no-progress` | bool | `false` | Disable the scan progress indicator. It is already auto-disabled when stderr is not a terminal (pipes, redirects, CI) and under `-q`, so this is only for suppressing it on an interactive terminal. Progress renders to **stderr only**, it never touches the AIBOM on stdout. |
@@ -123,6 +123,15 @@ ignore:
   - "**/test-fixtures/**"
   - "**/*.example.py"
 ```
+
+**The `--fix` family is flag-only.** `--fix`, `--fix-all`, and `--fix-verify`
+cannot be set from `.airom.yaml` or an `AIROM_*` variable, and either one is a
+fatal configuration error naming the reason. Every other key selects read-only
+behaviour; these write to your tree, and `.airom.yaml` is discovered in the
+working directory — it arrives with the repository being scanned. Accepting
+them there let a checked-in file turn `airom scan .` into a command that
+rewrote the caller's manifests with no flag typed (shipped in v0.4.0, fixed in
+v0.4.1). A scan writes to your tree only when you type so.
 
 ## `.airomignore`
 
@@ -235,6 +244,26 @@ $ airom k8s --namespace ml-serving -o table
 $ airom k8s prod -A -o cyclonedx=cluster-aibom.json
 $ airom k8s --manifests ./deploy/rendered --offline
 ```
+
+### `airom bench <corpus-dir>`
+
+Runs the detection benchmark ([benchmark.md](./benchmark.md)) against a
+labeled corpus and prints the metric report: precision and recall overall,
+per kind, and per language, attribute accuracy, trap violations, coverage
+rates, and the per-band calibration table, every rate beside its counts.
+
+Scans run offline with the overlays off: the benchmark grades detection, and
+a number that moves when OSV.dev does is not measuring the scanner.
+
+```console
+$ airom bench ../airom-bench --json bench.json
+$ airom bench ../airom-bench --baseline baselines/v0.4.1.json   # exits nonzero on regression
+```
+
+`--baseline` applies the gate policy of benchmark.md §5: fail on a >1-point
+precision or recall drop (overall, or any kind with at least 20 labels), and
+on ANY increase in trap violations or wrong versions. Improvements print a
+reminder to update the baseline in the same PR.
 
 ### `airom diff <old-aibom.json> <new-aibom.json>`
 

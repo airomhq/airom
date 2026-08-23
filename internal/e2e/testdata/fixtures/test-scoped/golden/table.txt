@@ -1,15 +1,21 @@
 AI Bill of Materials — test-scoped
 
-┌─ Scan Summary ────────────┐
-│ Target        test-scoped │
-│ Components    4           │
-│ Relationships 2           │
-│ Files         4 scanned   │
-│                           │
-│ By Type                   │
-│   hosted-llm         2    │
-│   library            2    │
-└───────────────────────────┘
+┌─ Scan Summary ────────────────────────────────────────────────┐
+│ Target        test-scoped                                     │
+│ Components    4                                               │
+│ Relationships 2                                               │
+│ Files         4 scanned                                       │
+│                                                               │
+│ By Type                                                       │
+│   hosted-llm         2                                        │
+│   library            2                                        │
+│                                                               │
+│ Assurance                                                     │
+│   ignored            0 files, 1 dirs pruned                   │
+│   cve                not checked (overlay off)                │
+│   lifecycle          catalog consulted                        │
+│ Confidence    evidence-weighted/1; not empirically calibrated │
+└───────────────────────────────────────────────────────────────┘
 
 ┌────────────┬─────────────┬─────────┬───────────┬────────┬────────────────────┬──────────┐
 │ KIND       │ NAME        │ VERSION │ PROVIDER  │ CONF   │ LOCATION           │ EVIDENCE │

@@ -21,7 +21,7 @@ func NewMaven() *Maven { return &Maven{} }
 func (Maven) ID() string { return "manifest/maven" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (Maven) Version() int { return 1 }
+func (Maven) Version() int { return 2 }
 
 // Selector routes pom.xml files, needing full content.
 func (Maven) Selector() detect.Selector {

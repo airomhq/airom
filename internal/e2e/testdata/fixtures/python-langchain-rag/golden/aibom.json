@@ -255,32 +255,6 @@
       }
     },
     {
-      "id": "airom:6b1292e468717462",
-      "kind": "ai-config",
-      "name": "temperature",
-      "confidence": 0.5,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "src/rag.py",
-              "line": 16,
-              "endLine": 16,
-              "column": 1,
-              "endColumn": 22
-            },
-            "detectorId": "rules/aiconfig/sampling",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "temperature=0.2,",
-            "fields": {
-              "param": "temperature"
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "airom:6ed15db34c48ea41",
       "kind": "framework",
       "name": "langchain",
@@ -317,26 +291,32 @@
       }
     },
     {
-      "id": "airom:737f185ea7c9f67f",
-      "kind": "ai-config",
-      "name": "max_tokens",
-      "confidence": 0.5,
+      "id": "airom:8887a713c3b94d50",
+      "kind": "local-model-file",
+      "name": "tiny",
+      "provider": "local",
+      "purl": "pkg:generic/tiny?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "hex": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
+        }
+      ],
+      "model": {
+        "format": "gguf"
+      },
+      "confidence": 0.95,
       "evidence": {
         "occurrences": [
           {
             "location": {
-              "path": "src/rag.py",
-              "line": 17,
-              "endLine": 17,
-              "column": 1,
-              "endColumn": 21
+              "path": "models/tiny.gguf"
             },
-            "detectorId": "rules/aiconfig/token-limits",
-            "method": "source-code-analysis",
-            "confidence": 0.5,
-            "snippet": "max_tokens=800,",
+            "detectorId": "modelfile/gguf",
+            "method": "binary-analysis",
+            "confidence": 0.95,
             "fields": {
-              "param": "max_tokens"
+              "version": "3"
             }
           }
         ]
@@ -480,38 +460,6 @@
           "value": "gpt-4.1"
         }
       ]
-    },
-    {
-      "id": "airom:e9e505aeb0e23154",
-      "kind": "local-model-file",
-      "name": "tiny.gguf",
-      "provider": "local",
-      "purl": "pkg:generic/tiny.gguf?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99",
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "hex": "a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
-        }
-      ],
-      "model": {
-        "format": "gguf"
-      },
-      "confidence": 0.95,
-      "evidence": {
-        "occurrences": [
-          {
-            "location": {
-              "path": "models/tiny.gguf"
-            },
-            "detectorId": "modelfile/gguf",
-            "method": "binary-analysis",
-            "confidence": 0.95,
-            "fields": {
-              "version": "3"
-            }
-          }
-        ]
-      }
     }
   ],
   "relationships": [
@@ -586,6 +534,7 @@
     "filesWalked": 6,
     "filesProcessed": 6,
     "filesFailed": 0,
+    "dirsPruned": 1,
     "headerBytes": 1211,
     "contentBytes": 1126,
     "durationNs": 0,
@@ -844,6 +793,16 @@
         "findings": 7,
         "ns": 0
       }
-    ]
+    ],
+    "enrichment": {
+      "cve": {
+        "enabled": false
+      },
+      "eol": {
+        "enabled": true,
+        "catalogLoaded": true
+      }
+    },
+    "confidenceModel": "evidence-weighted/1; not empirically calibrated"
   }
 }

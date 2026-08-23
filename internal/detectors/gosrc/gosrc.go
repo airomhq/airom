@@ -23,7 +23,7 @@ func NewGoSource() *GoSource { return &GoSource{} }
 func (*GoSource) ID() string { return "gosrc/ast" }
 
 // Version participates in the cache key; bump on any behavior change.
-func (*GoSource) Version() int { return 1 }
+func (*GoSource) Version() int { return 2 }
 
 // Selector routes every .go file (by extension and language) to DetectFile.
 func (*GoSource) Selector() detect.Selector {
@@ -36,19 +36,25 @@ func (*GoSource) Selector() detect.Selector {
 
 // aiModule is a known AI import prefix and the component kind it implies.
 type aiModule struct {
-	prefix string
-	kind   airom.ComponentKind
+	prefix   string
+	kind     airom.ComponentKind
+	provider string
 }
 
 // aiModules is the recognized set of Go AI SDK import prefixes. A prefix
 // matches an import path that equals it or is a subpackage of it.
+// Providers mirror the go.mod catalog exactly: CanonicalKey includes the
+// provider, so an AST sighting and a manifest sighting of the same module
+// merge only when both say the same thing. A provider here without one there
+// (or vice versa) split github.com/sashabaranov/go-openai into two identical
+// components — found by airom-bench Tier S.
 var aiModules = []aiModule{
-	{"github.com/sashabaranov/go-openai", airom.KindLibrary},
-	{"github.com/tmc/langchaingo", airom.KindFramework},
-	{"github.com/pinecone-io/go-pinecone", airom.KindVectorDB},
-	{"github.com/qdrant/go-client", airom.KindVectorDB},
-	{"github.com/ollama/ollama/api", airom.KindLibrary},
-	{"github.com/milvus-io", airom.KindVectorDB},
+	{"github.com/sashabaranov/go-openai", airom.KindLibrary, "openai"},
+	{"github.com/tmc/langchaingo", airom.KindFramework, "langchain"},
+	{"github.com/pinecone-io/go-pinecone", airom.KindVectorDB, "pinecone"},
+	{"github.com/qdrant/go-client", airom.KindVectorDB, "qdrant"},
+	{"github.com/ollama/ollama/api", airom.KindLibrary, "ollama"},
+	{"github.com/milvus-io", airom.KindVectorDB, "milvus"},
 }
 
 // DetectFile parses the file and emits import and model-literal findings. A
@@ -114,9 +120,10 @@ func moduleRoot(p string) string {
 func importFinding(mod aiModule, importPath string, line int) detect.Finding {
 	return detect.Finding{
 		Claim: detect.ComponentClaim{
-			Kind:    mod.kind,
-			Name:    moduleRoot(importPath),
-			Package: &detect.PackageClaim{Ecosystem: "golang"},
+			Kind:     mod.kind,
+			Name:     moduleRoot(importPath),
+			Provider: mod.provider,
+			Package:  &detect.PackageClaim{Ecosystem: "golang"},
 		},
 		Occurrence: airom.Occurrence{
 			Location:   airom.Location{Line: line},

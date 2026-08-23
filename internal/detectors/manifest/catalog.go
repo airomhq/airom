@@ -286,9 +286,12 @@ var cargoCatalog = catalog{
 // restores the conventional casing.
 var nugetCatalog = catalog{
 	exact: map[string]aiPkg{
-		"azure.ai.openai":          {kLibrary, provMicrosoft, "Azure.AI.OpenAI"},
-		"openai":                   {kLibrary, provOpenAI, "OpenAI"},
-		"microsoft.semantickernel": {kFramework, provMicrosoft, "Microsoft.SemanticKernel"},
+		"azure.ai.openai": {kLibrary, provMicrosoft, "Azure.AI.OpenAI"},
+		"openai":          {kLibrary, provOpenAI, "OpenAI"},
+		// Display name folds with the rule pack's claim ("semantic-kernel");
+		// the declared NuGet identity travels in the purl. Split-brain found
+		// by airom-bench Tier S.
+		"microsoft.semantickernel": {kFramework, provMicrosoft, "semantic-kernel"},
 		"langchain":                {kFramework, provLangChain, "LangChain"},
 		"betalgo.openai":           {kLibrary, provOpenAI, "Betalgo.OpenAI"},
 		"pinecone.net":             {kVectorDB, provPinecone, "Pinecone.NET"},
@@ -302,6 +305,11 @@ func mavenLookup(group, artifact string) (aiPkg, bool) {
 	switch {
 	case group == "dev.langchain4j":
 		return aiPkg{kFramework, provLangChain, ""}, true
+	case group == "com.aallam.openai":
+		// The de facto Kotlin OpenAI SDK (openai-client, openai-core).
+		// Absence found by airom-bench Tier S: a build.gradle.kts declaring
+		// it produced zero components (airomhq/airom#17).
+		return aiPkg{kLibrary, provOpenAI, ""}, true
 	case strings.HasPrefix(group, "com.theokanning.openai-gpt3-java"):
 		return aiPkg{kLibrary, provOpenAI, ""}, true
 	case group == "io.milvus" && artifact == "milvus-sdk-java":

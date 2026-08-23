@@ -79,7 +79,7 @@ Conventions used throughout:
 | `Components` | `components[]` *(native)* | `@graph` elements (one per component + shared `CreationInfo`) | `results[]`, **one result per Occurrence**, not per component (§7.3) | `components[]` |
 | `Relationships` | see §3.10: `dependencies[]` / `modelCard…datasets[].ref` / `airom:rel.*` | `Relationship` elements `{from, to[], relationshipType}` | — | `relationships[]` |
 | `Unknowns` | *(lossy)* count only: `metadata.properties[]` `airom:unknowns` | — | `runs[].invocations[].toolExecutionNotifications[]` (§3.11) | `unknowns[]` *(native)* |
-| `Stats` | — | — | — | `stats` *(native; only when `--stats`)* |
+| `Stats` | *(lossy)* the assurance subset only: `airom:assurance.*` (§6.5) | — | — | `stats` *(native)*. The assurance fields (`filesIgnored`, `dirsPruned`, `filesTruncated`, `enrichment`, `confidenceModel`) are always present; the volatile timing and per-detector counters only under `--stats` |
 
 ### 3.2 `Component`: identity and shared fields
 
@@ -435,6 +435,11 @@ and meaningful (multi-edge `airom:rel.*`, repeated `airom:param.*`).
 | `airom:source.git.remote` / `airom:source.git.commit` / `airom:source.git.dirty` | git provenance; dirty is `"true"`/`"false"` |
 | `airom:source.k8s.context` | kube context, k8s scans only |
 | `airom:unknowns` | count of `Unknown` records (lossy CDX marker; full records in native/SARIF) |
+| `airom:assurance.filesIgnored` / `airom:assurance.dirsPruned` | walk exclusions (nonzero only): files the ignore rules excluded, and directories excluded whole, whose contents were never enumerated |
+| `airom:assurance.filesTruncated` | files whose content read stopped at `--max-file-size` (nonzero only): detectors saw a prefix, not the file |
+| `airom:assurance.cve.enabled` / `airom:assurance.cve.unchecked` | whether the CVE overlay ran, and how many components it could not check; `enabled=true` with no `unchecked` means every eligible component was checked |
+| `airom:assurance.eol.enabled` | whether the model-lifecycle overlay ran (catalog identity in `airom:eol.catalog`) |
+| `airom:assurance.confidenceModel` | the scoring scheme behind every confidence value (`evidence-weighted/1; not empirically calibrated`) — the document says what its numbers mean |
 
 **Component scope (CDX `components[].properties[]`, and SARIF `result.properties` where §3 says so):**
 

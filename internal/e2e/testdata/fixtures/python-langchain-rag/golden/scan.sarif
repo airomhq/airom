@@ -80,34 +80,6 @@
               }
             },
             {
-              "id": "rules/aiconfig/sampling",
-              "name": "RulesAiconfigSampling",
-              "shortDescription": {
-                "text": "Components identified by the rules/aiconfig/sampling detector."
-              },
-              "defaultConfiguration": {
-                "level": "note"
-              },
-              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
-              "properties": {
-                "airom:method": "source-code-analysis"
-              }
-            },
-            {
-              "id": "rules/aiconfig/token-limits",
-              "name": "RulesAiconfigTokenLimits",
-              "shortDescription": {
-                "text": "Components identified by the rules/aiconfig/token-limits detector."
-              },
-              "defaultConfiguration": {
-                "level": "note"
-              },
-              "helpUri": "https://github.com/airomhq/airom/blob/main/docs/",
-              "properties": {
-                "airom:method": "source-code-analysis"
-              }
-            },
-            {
               "id": "rules/chroma/client",
               "name": "RulesChromaClient",
               "shortDescription": {
@@ -313,7 +285,7 @@
         },
         {
           "ruleId": "rules/openai/embedding-literal",
-          "ruleIndex": 10,
+          "ruleIndex": 8,
           "level": "note",
           "message": {
             "text": "embedding-model 'text-embedding-3-large' detected (confidence 0.85)"
@@ -384,7 +356,7 @@
         },
         {
           "ruleId": "rules/chroma/import",
-          "ruleIndex": 8,
+          "ruleIndex": 6,
           "level": "note",
           "message": {
             "text": "vector-db 'chroma' [0.5.5] detected (confidence 0.985)"
@@ -421,7 +393,7 @@
         },
         {
           "ruleId": "rules/chroma/client",
-          "ruleIndex": 7,
+          "ruleIndex": 5,
           "level": "note",
           "message": {
             "text": "vector-db 'chroma' [0.5.5] detected (confidence 0.985)"
@@ -484,42 +456,6 @@
           }
         },
         {
-          "ruleId": "rules/aiconfig/sampling",
-          "ruleIndex": 5,
-          "level": "note",
-          "message": {
-            "text": "ai-config 'temperature' detected (confidence 0.5)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/rag.py",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 16,
-                  "startColumn": 1,
-                  "endLine": 16,
-                  "endColumn": 22,
-                  "snippet": {
-                    "text": "temperature=0.2,"
-                  }
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "d02a1d7cb140b3f4c63ad9b922e619f758659cfaf47d6a230c118aa33ff494d6"
-          },
-          "properties": {
-            "airom:componentId": "airom:6b1292e468717462",
-            "airom:confidence": 0.5,
-            "airom:kind": "ai-config",
-            "airom:occurrence.confidence": 0.5
-          }
-        },
-        {
           "ruleId": "manifest/pypi-requirements",
           "ruleIndex": 0,
           "level": "note",
@@ -555,39 +491,32 @@
           }
         },
         {
-          "ruleId": "rules/aiconfig/token-limits",
-          "ruleIndex": 6,
+          "ruleId": "modelfile/gguf",
+          "ruleIndex": 1,
           "level": "note",
           "message": {
-            "text": "ai-config 'max_tokens' detected (confidence 0.5)"
+            "text": "local-model-file 'tiny' detected (confidence 0.95)"
           },
           "locations": [
             {
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "src/rag.py",
+                  "uri": "models/tiny.gguf",
                   "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 17,
-                  "startColumn": 1,
-                  "endLine": 17,
-                  "endColumn": 21,
-                  "snippet": {
-                    "text": "max_tokens=800,"
-                  }
                 }
               }
             }
           ],
           "partialFingerprints": {
-            "airomComponentIdentity/v1": "fde9b75dc3057081dcc519656b4e4157b6c132a6335499aae9f30587769483f6"
+            "airomComponentIdentity/v1": "22931a27123ff5f8518aae19992f01e7e90a16a76bbfdc7e0916c9510f1c2f4c"
           },
           "properties": {
-            "airom:componentId": "airom:737f185ea7c9f67f",
-            "airom:confidence": 0.5,
-            "airom:kind": "ai-config",
-            "airom:occurrence.confidence": 0.5
+            "airom:componentId": "airom:8887a713c3b94d50",
+            "airom:confidence": 0.95,
+            "airom:kind": "local-model-file",
+            "airom:occurrence.confidence": 0.95,
+            "airom:provider": "local",
+            "airom:purl": "pkg:generic/tiny?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
           }
         },
         {
@@ -627,7 +556,7 @@
         },
         {
           "ruleId": "rules/openai/chat-call",
-          "ruleIndex": 9,
+          "ruleIndex": 7,
           "level": "note",
           "message": {
             "text": "library 'openai' [1.51.0] detected (confidence 0.985)"
@@ -665,7 +594,7 @@
         },
         {
           "ruleId": "rules/openai/model-literal",
-          "ruleIndex": 11,
+          "ruleIndex": 9,
           "level": "note",
           "message": {
             "text": "hosted-llm 'gpt-4.1' detected (confidence 0.85)"
@@ -701,37 +630,8 @@
           }
         },
         {
-          "ruleId": "modelfile/gguf",
-          "ruleIndex": 1,
-          "level": "note",
-          "message": {
-            "text": "local-model-file 'tiny.gguf' detected (confidence 0.95)"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "models/tiny.gguf",
-                  "uriBaseId": "SRCROOT"
-                }
-              }
-            }
-          ],
-          "partialFingerprints": {
-            "airomComponentIdentity/v1": "b895ff9a82a8d84870a872212e0461e3cfa7e1a5e8651cf1141a7b8267de465c"
-          },
-          "properties": {
-            "airom:componentId": "airom:e9e505aeb0e23154",
-            "airom:confidence": 0.95,
-            "airom:kind": "local-model-file",
-            "airom:occurrence.confidence": 0.95,
-            "airom:provider": "local",
-            "airom:purl": "pkg:generic/tiny.gguf?checksum=sha256:a4e5e156ddec27e286f75328784d7106b60a4eb1d246e950a001a3f944fbda99"
-          }
-        },
-        {
           "ruleId": "risk/pickle-import",
-          "ruleIndex": 12,
+          "ruleIndex": 10,
           "level": "error",
           "message": {
             "text": "Unsafe pickle import in \"poisoned.pt\": os.system"

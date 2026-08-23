@@ -34,6 +34,17 @@ from day one. `imagesource` and `k8ssource` are inside v0.1.0 scope: they land i
 behind the unchanged seam, and Phase 8's golden E2E matrix (OCI layout, k8s manifests)
 gates the release on them.
 
+## The active arc: measurement rigor (2026-08)
+
+The ten phases above are complete. The next arc, chosen over breadth, is
+making detection quality measurable: a public benchmark corpus with per-kind
+precision and recall, attribute accuracy, trap regressions, and the
+calibration study that decides whether the confidence bands earn the word
+"calibrated" back. Design accepted in [benchmark.md](./benchmark.md); the
+Scan Assurance Statement (every document carries its own coverage account)
+already shipped as its first installment. The evaluator, the corpus
+(airomhq/airom-bench), and a report-only baseline come next, in that order.
+
 ## v0.2 and beyond: reserved slots, zero model changes
 
 Everything below is **explicitly deferred, not undecided**. The list is §16 of the
