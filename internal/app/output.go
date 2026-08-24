@@ -12,6 +12,7 @@ import (
 	_ "github.com/airomhq/airom/internal/writer/compliancew"
 	_ "github.com/airomhq/airom/internal/writer/nativejson"
 	_ "github.com/airomhq/airom/internal/writer/sarifw"
+	_ "github.com/airomhq/airom/internal/writer/spdx3"
 	_ "github.com/airomhq/airom/internal/writer/spdxw"
 	_ "github.com/airomhq/airom/internal/writer/tablew"
 	_ "github.com/airomhq/airom/internal/writer/vexw"
