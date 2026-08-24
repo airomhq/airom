@@ -1,9 +1,11 @@
 # Benchmark design: measuring what the scanner actually does
 
-> **Status:** Design accepted; the evaluator (`airom bench`) is implemented;
-> the corpus is not yet built. Results do not exist until it is. Nothing in
-> AIROM's docs may cite a precision, recall, or calibration number before this
-> benchmark produces it in CI.
+> **Status:** Live. The evaluator is `airom bench`; the corpus is
+> [airomhq/airom-bench](https://github.com/airomhq/airom-bench) — 13 synthetic
+> entries and 3 real-world ones; the first baseline is `v0.4.3`; and CI runs
+> the gate **report-only** for two releases per §5. Any precision, recall, or
+> calibration number cited in AIROM's docs must come from this benchmark and
+> carry its `n`. Calibration stays unclaimed until §6's conditions are met.
 
 ## 1. Why
 
