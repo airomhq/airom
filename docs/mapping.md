@@ -219,7 +219,7 @@ evidence.
 
 | Internal (§5) | CycloneDX 1.6 | SPDX 3.0.1 (v2) | SARIF 2.1.0 | Native JSON |
 |---|---|---|---|---|
-| `Field` (`name \| version \| purl \| hash`) | `evidence.identity[].field` *(native: AIROM's four values are a strict subset of the CDX enum `group \| name \| version \| purl \| cpe \| omniborId \| swhid \| swid \| hash`)* | — | — | `evidence.identity[].field` |
+| `Field` (`name \| version \| purl \| hash`) | `evidence.identity[].field` *(native: AIROM's four values are a strict subset of the CDX enum `group \| name \| version \| purl \| cpe \| omniborId \| swhid \| swid \| hash`)* | — | — | `evidence.identity[].field` Claims whose field is NOT in that enum (`versionConstraint`) are **not** emitted here: the enum is closed and a strict consumer rejects a document that invents a value. They travel as `airom:evidence.versionConstraint` (§6.5) instead, so the claim survives the format that has no slot for it. |
 | `Value` | `evidence.identity[].concludedValue` *(native)* | — | — | `evidence.identity[].value` |
 | `Confidence` | `evidence.identity[].confidence` *(native; number 0–1, format §6.2)* | — | — | `evidence.identity[].confidence` |
 | `Methods` (`[]DetectionMethod`) | `evidence.identity[].methods[]`. One entry per method: `{technique: <§5 table>, confidence: <the claim's confidence>}`; `config-analysis` additionally sets `methods[].value: "config-analysis"` (§5 recovery marker) | — | — | `evidence.identity[].methods[]` |
@@ -461,6 +461,7 @@ and meaningful (multi-edge `airom:rel.*`, repeated `airom:param.*`).
 | `airom:dataset.*` | `dataset` / `prompt` components | enumerated keys in §3.5: `types`, `size`, `usesSensitivePII`, `collectionProcess`, `intendedUse`, `knownBias`, `preprocessing`, `anonymization`, `availability`, `noise`, `updateMechanism`, `builtTime` |
 | `airom:service.endpoint` | `service` / `infra` components | endpoint URL |
 | `airom:infra.*`, `airom:package.*` | reserved prefixes | individual keys registered here when `InfraFacet` / `PackageFacet` enumerations land (§3.6) |
+| `airom:evidence.versionConstraint` | a declared range recorded as an identity CLAIM, when `evidence.identity[]` cannot carry it (its `field` enum is closed). Repeated when sightings disagree |
 
 **SARIF-only keys (never in CDX):**
 

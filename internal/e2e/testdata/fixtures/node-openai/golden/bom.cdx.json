@@ -129,6 +129,10 @@
           "value": "0.95"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "^0.3.2"
+        },
+        {
           "name": "airom:kind",
           "value": "framework"
         },
@@ -142,19 +146,7 @@
         }
       ],
       "evidence": {
-        "identity": [
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "^0.3.2",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
+        "identity": [],
         "occurrences": [
           {
             "location": "package.json",
@@ -174,6 +166,10 @@
           "value": "0.985"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "^4.67.1"
+        },
+        {
           "name": "airom:kind",
           "value": "library"
         },
@@ -191,19 +187,7 @@
         }
       ],
       "evidence": {
-        "identity": [
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "^4.67.1",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
+        "identity": [],
         "occurrences": [
           {
             "location": "package.json",
@@ -228,6 +212,10 @@
           "value": "0.95"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "^0.27.3"
+        },
+        {
           "name": "airom:kind",
           "value": "library"
         },
@@ -242,17 +230,6 @@
       ],
       "evidence": {
         "identity": [
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "^0.27.3",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          },
           {
             "field": "name",
             "confidence": 0.95,

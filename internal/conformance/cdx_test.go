@@ -13,6 +13,7 @@ import (
 	cyclonedx "github.com/CycloneDX/cyclonedx-go"
 
 	"github.com/airomhq/airom/internal/writer"
+	"github.com/airomhq/airom/internal/writer/writertest"
 	"github.com/airomhq/airom/pkg/airom"
 )
 
@@ -468,4 +469,106 @@ func cdxSchemaDir() (string, bool) {
 	}
 	dir := strings.TrimSpace(string(out))
 	return dir, dir != ""
+}
+
+// ── evidence.identity[].field is a CLOSED enum ──────────────────────────────
+
+// cdxIdentityFieldEnum is the schema's own allowed set for
+// evidence.identity[].field, cross-checked against the shipped schema by
+// TestCDXIdentityFieldEnumMatchesSchema below.
+var cdxIdentityFieldEnum = map[string]bool{
+	"group": true, "name": true, "version": true, "purl": true,
+	"cpe": true, "omniborId": true, "swhid": true, "swid": true, "hash": true,
+}
+
+// TestCDXIdentityFieldIsInEnum is the regression test for a document that
+// re-decoded cleanly and was still schema-invalid. AIROM's claim vocabulary is
+// wider than the spec's: versionConstraint records that a manifest declared a
+// range while a lockfile resolved the release. The writer passed it straight
+// into the typed field, and cyclonedx-go accepted it because the Go type is a
+// bare string — so the library re-decode above could never catch it. A real
+// scan produced 12 violations across 10 components.
+//
+// The fixture deliberately carries a component with BOTH a resolved version
+// and a declared constraint, so this test cannot pass vacuously.
+func TestCDXIdentityFieldIsInEnum(t *testing.T) {
+	inv := writertest.BuildFixture()
+	// A component resolved to a concrete release by a lockfile, whose manifest
+	// declared a range: exactly the shape that produced the invalid field.
+	for i := range inv.Components {
+		if inv.Components[i].Kind == airom.KindVectorDB {
+			inv.Components[i].Evidence.Identity = append(inv.Components[i].Evidence.Identity,
+				airom.IdentityClaim{
+					Field: "versionConstraint", Value: ">=0.5.0,<0.6", Confidence: 0.95,
+					Methods: []airom.DetectionMethod{airom.MethodManifest},
+				})
+		}
+	}
+	for _, ver := range cdxVersions {
+		raw := renderInv(t, "cyclonedx", writer.Options{CDXVersion: ver}, inv)
+
+		var bom cyclonedx.BOM
+		if err := cyclonedx.NewBOMDecoder(strings.NewReader(string(raw)), cyclonedx.BOMFileFormatJSON).
+			Decode(&bom); err != nil {
+			t.Fatalf("CDX %s: %v", ver, err)
+		}
+		if bom.Components == nil {
+			t.Fatalf("CDX %s: no components", ver)
+		}
+
+		sawConstraintClaim := false
+		for _, c := range *bom.Components {
+			if c.Evidence == nil || c.Evidence.Identity == nil || c.Evidence.Identity.Identities == nil {
+				continue
+			}
+			for _, id := range *c.Evidence.Identity.Identities {
+				if !cdxIdentityFieldEnum[string(id.Field)] {
+					t.Errorf("CDX %s: %s has evidence.identity[].field = %q, which is not in the schema enum",
+						ver, c.Name, id.Field)
+				}
+			}
+			for _, v := range allPropVals(c.Properties, "airom:evidence.versionConstraint") {
+				sawConstraintClaim = true
+				if v != ">=0.5.0,<0.6" {
+					t.Errorf("CDX %s: constraint claim value = %q", ver, v)
+				}
+			}
+		}
+		// Dropping the claim from identity[] must not lose it: the whole point
+		// of routing rather than deleting.
+		if !sawConstraintClaim {
+			t.Errorf("CDX %s: the versionConstraint claim vanished; it must travel as a property", ver)
+		}
+	}
+}
+
+// TestCDXIdentityFieldEnumMatchesSchema proves the set above is the schema's
+// own, the same way the pattern constants are proven.
+func TestCDXIdentityFieldEnumMatchesSchema(t *testing.T) {
+	dir, ok := cdxSchemaDir()
+	if !ok {
+		t.Skip("cannot locate cyclonedx-go module dir")
+	}
+	for _, ver := range cdxVersions {
+		schema := mustJSONMap(t, mustReadFile(t, dir+"/schema/bom-"+ver+".schema.json"))
+		defs := obj(t, schema["definitions"])
+		field := obj(t, obj(t, defs["componentIdentityEvidence"])["properties"])["field"]
+		raw, ok := obj(t, field)["enum"].([]any)
+		if !ok {
+			t.Fatalf("bom-%s: componentIdentityEvidence.field has no enum", ver)
+		}
+		got := map[string]bool{}
+		for _, v := range raw {
+			got[v.(string)] = true
+		}
+		if len(got) != len(cdxIdentityFieldEnum) {
+			t.Errorf("bom-%s enum drift: schema has %d values, constant has %d: %v",
+				ver, len(got), len(cdxIdentityFieldEnum), raw)
+		}
+		for v := range got {
+			if !cdxIdentityFieldEnum[v] {
+				t.Errorf("bom-%s: schema allows %q, constant does not", ver, v)
+			}
+		}
+	}
 }
