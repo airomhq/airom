@@ -29,6 +29,7 @@ var formatNames = map[OutputFormat]string{
 	FormatCompliance: "compliance",
 	FormatVEX:        "vex",
 	FormatSPDX:       "spdx",
+	FormatSPDX3:      "spdx3",
 }
 
 // emit renders the assembled inventory to every configured output

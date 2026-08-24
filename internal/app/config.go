@@ -42,6 +42,7 @@ const (
 	FormatCompliance OutputFormat = "compliance"
 	FormatVEX        OutputFormat = "vex"
 	FormatSPDX       OutputFormat = "spdx"
+	FormatSPDX3      OutputFormat = "spdx3"
 )
 
 // Formats lists every valid output format, sorted, for error messages and
@@ -50,7 +51,7 @@ func Formats() []string {
 	fs := []string{
 		string(FormatTable), string(FormatJSON), string(FormatCycloneDX),
 		string(FormatSARIF), string(FormatYAML), string(FormatCompliance),
-		string(FormatVEX), string(FormatSPDX),
+		string(FormatVEX), string(FormatSPDX), string(FormatSPDX3),
 	}
 	sort.Strings(fs)
 	return fs
@@ -79,6 +80,8 @@ func ParseFormat(s string) (OutputFormat, error) {
 		return FormatVEX, nil
 	case FormatSPDX:
 		return FormatSPDX, nil
+	case FormatSPDX3:
+		return FormatSPDX3, nil
 	default:
 		return "", fmt.Errorf("unknown output format %q (valid: %s)", s, strings.Join(Formats(), ", "))
 	}
