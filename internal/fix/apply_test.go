@@ -397,3 +397,80 @@ func TestGoModuleIsNotMatchedInsideALongerPath(t *testing.T) {
 		t.Fatalf("Apply matched a module inside a longer path; file is now %q", got)
 	}
 }
+
+// TestApplySameLineMultiPackageEditsTheRightOne: a PEP 621 inline array puts
+// several packages on one line. The guards are per package, so fixing openai
+// must not rewrite langchain's pin just because it comes first on the line.
+func TestApplySameLineMultiPackageEditsTheRightOne(t *testing.T) {
+	root := t.TempDir()
+	p := filepath.Join(root, "pyproject.toml")
+	if err := os.WriteFile(p, []byte(`[project]
+dependencies = ["langchain==1.0.0", "openai==1.0.0"]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Apply(root, target("openai", "1.0.0", "1.55.3", "pyproject.toml", 2, ""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, _ := os.ReadFile(p)
+	want := `[project]
+dependencies = ["langchain==1.0.0", "openai==1.55.3"]
+`
+	if string(got) != want {
+		t.Errorf("file after fix:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+// TestApplyThroughSymlinkRewritesTheTarget: a symlinked manifest must have
+// its TARGET rewritten and the link left standing. Replacing the link with a
+// regular file would leave the real manifest vulnerable while reporting success.
+func TestApplyThroughSymlinkRewritesTheTarget(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "shared"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	linkTarget := filepath.Join(root, "shared", "requirements.txt")
+	if err := os.WriteFile(linkTarget, []byte("openai==1.0.0\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(root, "requirements.txt")
+	if err := os.Symlink(filepath.Join("shared", "requirements.txt"), link); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if _, err := Apply(root, target("openai", "1.0.0", "1.55.3", "requirements.txt", 1, "")); err != nil {
+		t.Fatal(err)
+	}
+	fi, err := os.Lstat(link)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fi.Mode()&os.ModeSymlink == 0 {
+		t.Error("the symlink was replaced by a regular file")
+	}
+	got, _ := os.ReadFile(linkTarget)
+	if string(got) != "openai==1.55.3\n" {
+		t.Errorf("target = %q, want the fix applied THERE", got)
+	}
+}
+
+// TestApplyRefusesSymlinkOutOfRoot: a manifest that links outside the scan
+// root is a write the user never scoped. Refuse, and leave the target alone.
+func TestApplyRefusesSymlinkOutOfRoot(t *testing.T) {
+	root := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "requirements.txt")
+	if err := os.WriteFile(outside, []byte("openai==1.0.0\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(root, "requirements.txt")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	_, err := Apply(root, target("openai", "1.0.0", "1.55.3", "requirements.txt", 1, ""))
+	if err == nil {
+		t.Fatal("Apply followed a symlink out of the scan root")
+	}
+	got, _ := os.ReadFile(outside)
+	if string(got) != "openai==1.0.0\n" {
+		t.Errorf("the out-of-root target was modified: %q", got)
+	}
+}

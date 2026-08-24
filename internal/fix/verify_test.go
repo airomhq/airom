@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -416,4 +417,53 @@ func TestManifestsSkipsWhatWillNotBeTouched(t *testing.T) {
 			t.Errorf("Manifests = %v, want %v", got, want)
 		}
 	}
+}
+
+// TestGoVerifyJudgesPinsNotStaleSums: after any go.mod edit the project's
+// go.sum is stale by construction. That must never read as a conflict the fix
+// introduced; the check judges the PINS, in a staged copy, and leaves the
+// project's go.sum byte-identical. Uses a module already in this build's
+// module cache, so it resolves without the network.
+func TestGoVerifyJudgesPinsNotStaleSums(t *testing.T) {
+	if _, err := exec.LookPath("go"); err != nil {
+		t.Skip("go not on PATH")
+	}
+	write := func(root, gomod, gosum string) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte(gomod), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if gosum != "" {
+			if err := os.WriteFile(filepath.Join(root, "go.sum"), []byte(gosum), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	const modOK = "module example.com/v\n\ngo 1.22\n\nrequire golang.org/x/term v0.45.0\n"
+	const staleSum = "golang.org/x/term v0.44.0 h1:deadbeef=\n" // the pre-bump entry: stale on purpose
+
+	t.Run("valid pin with a stale go.sum is OK, and go.sum is untouched", func(t *testing.T) {
+		root := t.TempDir()
+		write(root, modOK, staleSum)
+		got := Verify(context.Background(), root, []string{"go.mod"})[0]
+		if got.Status == VerifyConflict {
+			t.Fatalf("a stale go.sum was reported as a conflict: %+v", got)
+		}
+		if got.Status != VerifyOK {
+			t.Skipf("resolver could not reach a verdict here (%s: %s); the no-conflict assertion above still held", got.Status, got.Reason)
+		}
+		after, _ := os.ReadFile(filepath.Join(root, "go.sum"))
+		if string(after) != staleSum {
+			t.Errorf("the project's go.sum was rewritten by a check that promises not to write:\n%s", after)
+		}
+	})
+
+	t.Run("a version that does not exist is still a conflict", func(t *testing.T) {
+		root := t.TempDir()
+		write(root, "module example.com/v\n\ngo 1.22\n\nrequire golang.org/x/term v1.99.99\n", "")
+		got := Verify(context.Background(), root, []string{"go.mod"})[0]
+		if got.Status != VerifyConflict {
+			t.Errorf("status = %s (%s), want conflict for a nonexistent version", got.Status, got.Reason)
+		}
+	})
 }
