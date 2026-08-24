@@ -18,7 +18,7 @@ func NewPyProject() *PyProject { return &PyProject{} }
 func (PyProject) ID() string { return "manifest/pypi-pyproject" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (PyProject) Version() int { return 1 }
+func (PyProject) Version() int { return 2 }
 
 // Selector routes pyproject.toml files, needing full content.
 func (PyProject) Selector() detect.Selector {

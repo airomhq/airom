@@ -272,36 +272,6 @@
     },
     {
       "Claim": {
-        "Kind": "vector-db",
-        "Name": "redis",
-        "Group": "",
-        "Version": "5.0.4",
-        "Provider": "Redis",
-        "VersionConstraint": "",
-        "Licenses": null,
-        "Hashes": null,
-        "DownloadLocation": "",
-        "Model": null,
-        "Data": null,
-        "Infra": null,
-        "Package": {
-          "Ecosystem": "pypi"
-        },
-        "Risks": null
-      },
-      "Occurrence": {
-        "location": {
-          "path": "",
-          "line": 14
-        },
-        "detectorId": "",
-        "method": "manifest-analysis",
-        "confidence": 0.95
-      },
-      "Relations": null
-    },
-    {
-      "Claim": {
         "Kind": "library",
         "Name": "sentence-transformers",
         "Group": "",
@@ -322,7 +292,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 15
+          "line": 18
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -352,7 +322,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 18
+          "line": 21
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -382,7 +352,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 19
+          "line": 22
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -412,7 +382,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 20
+          "line": 23
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -442,7 +412,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 21
+          "line": 24
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -472,7 +442,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 22
+          "line": 25
         },
         "detectorId": "",
         "method": "manifest-analysis",
@@ -502,7 +472,7 @@
       "Occurrence": {
         "location": {
           "path": "",
-          "line": 23
+          "line": 26
         },
         "detectorId": "",
         "method": "manifest-analysis",

@@ -173,6 +173,12 @@ func extractTarGz(src, dst string) error {
 			if err := w.Close(); err != nil {
 				return err
 			}
+		case tar.TypeXGlobalHeader:
+			// Every tarball git produces opens with a pax_global_header
+			// carrying the commit SHA. It is metadata, not a file, and
+			// GitHub's codeload archives all have one — refusing it rejected
+			// real corpus snapshots outright. Skip it; it extracts to nothing.
+			continue
 		default:
 			// Symlinks and specials do not belong in a corpus snapshot;
 			// skipping silently would hide a malformed archive.

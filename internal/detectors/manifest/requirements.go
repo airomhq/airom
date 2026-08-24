@@ -18,7 +18,7 @@ func NewRequirements() *Requirements { return &Requirements{} }
 func (Requirements) ID() string { return "manifest/pypi-requirements" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (Requirements) Version() int { return 1 }
+func (Requirements) Version() int { return 2 }
 
 // Selector routes requirements*.txt files, needing full content.
 func (Requirements) Selector() detect.Selector {

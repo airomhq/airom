@@ -199,9 +199,21 @@ var pypiCatalog = catalog{
 		"faiss-cpu":             {kVectorDB, provMeta, ""},
 		"faiss-gpu":             {kVectorDB, provMeta, ""},
 		"pymilvus":              {kVectorDB, provMilvus, ""},
-		"redis":                 {kVectorDB, "Redis", ""},
-		"deeplake":              {kVectorDB, "activeloop", ""},
-		"pgvector":              {kVectorDB, "pgvector", ""},
+		// redis is deliberately ABSENT. It is a dual-use datastore: the pip
+		// package is a cache/broker/queue client, and it is a vector store
+		// only with Redis Stack's vector-search API. A bare dependency line
+		// does not establish which, so claiming vector-db from it asserted
+		// what nothing showed — real-world proof: Flask's own celery example
+		// pins redis==4.5.4 and was reported as a vector database at 0.95
+		// confidence (airom-bench r-flask).
+		//
+		// Same treatment elasticsearch and mongodb already get: the vector
+		// claim lives in rules/vectordb/redis-vector.yaml, which fires on
+		// actual vector usage (VectorField, FT.CREATE) and claims the same
+		// name and provider, so a genuine RAG stack is still detected — with
+		// evidence behind it.
+		"deeplake": {kVectorDB, "activeloop", ""},
+		"pgvector": {kVectorDB, "pgvector", ""},
 	},
 	prefixes: []prefixRule{
 		{"langchain-", aiPkg{kFramework, provLangChain, ""}},

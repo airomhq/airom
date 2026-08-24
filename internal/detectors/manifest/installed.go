@@ -44,7 +44,7 @@ func NewInstalled() *Installed { return &Installed{} }
 func (Installed) ID() string { return "manifest/pypi-installed" }
 
 // Version participates in cache keys; bump on any behavior change.
-func (Installed) Version() int { return 1 }
+func (Installed) Version() int { return 2 }
 
 // Selector routes the two metadata filenames. Both are small headers followed
 // by a long description, so the cap is well under the manifest default.
