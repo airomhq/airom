@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/airomhq/airom/internal/app"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -63,7 +64,15 @@ nonzero on a regression.`,
 				for _, f := range failures {
 					fmt.Fprintf(cmd.ErrOrStderr(), "bench: FAIL %s\n", f)
 				}
-				return fmt.Errorf("benchmark gate: %d regression(s) against %s", len(failures), baseline)
+				// A regression is a POLICY failure, not a fatal one. Exit 2 is
+				// reserved for "the tool could not run" — an unreadable corpus,
+				// a malformed truth file, bad flags — and CI has to be able to
+				// tell that apart from "detection got worse": one means the
+				// harness is broken, the other means the change is. Same
+				// sentinel and same default code as --fail-on.
+				fmt.Fprintf(cmd.ErrOrStderr(),
+					"bench: %d regression(s) against %s\n", len(failures), baseline)
+				return &app.PolicyExit{Code: 1}
 			}
 			fmt.Fprintf(cmd.ErrOrStderr(), "bench: gate passed against %s\n", baseline)
 			return nil

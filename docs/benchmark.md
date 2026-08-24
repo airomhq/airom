@@ -174,6 +174,12 @@ lexers, or the assembler, and compares against the newest baseline:
 | Wrong-version count increases | fail, no threshold |
 | Anything improves | update the baseline in the same PR |
 
+Exit codes follow the CLI's contract (docs/cli.md): **1** for a regression,
+the same code `--fail-on` uses, because a regression is a policy failure;
+**2** only when the benchmark could not run at all — an unreadable corpus, a
+malformed truth file, bad flags. CI has to tell "the harness is broken" from
+"detection got worse", because the response to each is different.
+
 First two releases run **report-only**: the numbers publish, the gate does
 not block. Enforcement begins once the numbers have survived two releases of
 scrutiny, because gating on an unvalidated measurement enforces its bugs.
