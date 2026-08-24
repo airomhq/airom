@@ -135,7 +135,7 @@ See **[writing rules](docs/rule-schema.md)** and
 
 ## Status
 
-**v0.4.2**, early but real. The pipeline, detectors, writers, and overlays are
+**v0.4.3**, early but real. The pipeline, detectors, writers, and overlays are
 implemented and tested; expect rough edges.
 
 Known gaps, each also surfaced in the affected flag's `--help`: caching is not

@@ -253,7 +253,7 @@ a number that moves when OSV.dev does is not measuring the scanner.
 
 ```console
 $ airom bench ../airom-bench --json bench.json
-$ airom bench ../airom-bench --baseline baselines/v0.4.2.json   # exits nonzero on regression
+$ airom bench ../airom-bench --baseline baselines/v0.4.3.json   # exits nonzero on regression
 ```
 
 `--baseline` applies the gate policy of benchmark.md §5: fail on a >1-point
