@@ -16,18 +16,18 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/charlievieth/fastwalk v1.0.14
 	github.com/cloudflare/ahocorasick v0.0.0-20240916140611-054963ec9396
-	github.com/go-git/go-git/v5 v5.19.1
-	github.com/knadh/koanf/parsers/yaml v1.1.0
+	github.com/go-git/go-git/v5 v5.19.2
+	github.com/knadh/koanf/parsers/yaml v1.1.1
 	github.com/knadh/koanf/providers/file v1.2.1
-	github.com/knadh/koanf/providers/posflag v1.0.1
-	github.com/knadh/koanf/v2 v2.3.5
+	github.com/knadh/koanf/providers/posflag v1.0.2
+	github.com/knadh/koanf/v2 v2.3.6
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/zeebo/xxh3 v1.1.0
-	golang.org/x/mod v0.38.0
+	golang.org/x/mod v0.40.0
 	golang.org/x/sync v0.22.0
 	golang.org/x/term v0.45.0
-	golang.org/x/tools v0.48.0
+	golang.org/x/tools v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -43,7 +43,7 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
