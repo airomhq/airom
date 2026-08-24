@@ -2,8 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/airomhq/airom/internal/app"
 	"os"
+
+	"github.com/airomhq/airom/internal/app"
 
 	"github.com/spf13/cobra"
 
