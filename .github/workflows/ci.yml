@@ -194,6 +194,55 @@ jobs:
           "$VENV/bin/python" -m pip install --quiet --no-index --find-links dist "airom==$VERSION"
           python ../../.github/scripts/smoke_wheel.py "$VENV/bin" "$VERSION"
 
+  bench:
+    name: Benchmark (report-only)
+    # Detection quality, measured against the labeled corpus rather than
+    # asserted. Runs when a change can move the numbers: rules, detectors,
+    # the lexers, the assembler, or the evaluator itself.
+    #
+    # REPORT-ONLY for two releases (docs/benchmark.md §5). continue-on-error
+    # is the whole mechanism: the numbers publish and a regression is visible
+    # in the summary, but it cannot block a merge until the measurement has
+    # itself survived scrutiny. Gating on an unvalidated instrument enforces
+    # its bugs. Flip it by deleting that line.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      # The corpus is a separate repository on purpose: it is data, it is
+      # held out from this repo's fixtures, and pinning it here keeps a
+      # corpus edit from silently changing this repo's numbers.
+      - name: Fetch the corpus
+        uses: actions/checkout@v7
+        with:
+          repository: airomhq/airom-bench
+          path: .bench-corpus
+      - name: Measure
+        run: |
+          go build -o /tmp/airom ./cmd/airom
+          base=$(ls .bench-corpus/baselines/v*.json 2>/dev/null | sort -V | tail -1)
+          if [ -z "$base" ]; then
+            echo "::notice::no baseline in the corpus yet; reporting numbers only"
+            /tmp/airom bench .bench-corpus | tee "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "baseline: $base"
+          set +e
+          /tmp/airom bench .bench-corpus --baseline "$base" > report.md 2> gate.txt
+          code=$?
+          set -e
+          cat report.md | tee "$GITHUB_STEP_SUMMARY"
+          { echo; echo '### Gate'; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          case $code in
+            0) echo "::notice::benchmark gate passed against $base" ;;
+            1) echo "::warning::benchmark REGRESSION against $base (report-only; see summary)" ;;
+            *) echo "::error::benchmark could not run (exit $code)"; exit $code ;;
+          esac
+
   fuzz:
     name: Fuzz smoke
     runs-on: ubuntu-latest
