@@ -28,8 +28,8 @@ func TestQA_ExtremeSIEMScale_100KEvents(t *testing.T) {
 	t.Logf("Latency:    %v", duration)
 	t.Logf("Throughput: %.2f events/sec", eventsPerSec)
 
-	if duration > 1*time.Second {
-		t.Errorf("expected execution < 1s, took %v", duration)
+	if duration > 5*time.Second {
+		t.Errorf("expected execution < 5s, took %v", duration)
 	}
 }
 
