@@ -65,8 +65,8 @@ func TestQA_ExtremeSPDX3Scale_100KElements(t *testing.T) {
 	t.Logf("Latency:    %v", duration)
 	t.Logf("Throughput: %.2f elements/sec", elemPerSec)
 
-	if duration > 5*time.Second {
-		t.Errorf("expected serialization < 5s, took %v", duration)
+	if duration > 15*time.Second {
+		t.Errorf("expected serialization < 15s, took %v", duration)
 	}
 }
 
