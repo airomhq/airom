@@ -535,7 +535,7 @@
     "filesWalked": 4,
     "filesProcessed": 4,
     "filesFailed": 0,
-    "dirsPruned": 2,
+    "dirsPruned": 1,
     "headerBytes": 1522,
     "contentBytes": 1522,
     "durationNs": 0,

@@ -11,7 +11,7 @@ AI Bill of Materials — test-scoped
 │   library            2                                        │
 │                                                               │
 │ Assurance                                                     │
-│   ignored            0 files, 2 dirs pruned                   │
+│   ignored            0 files, 1 dirs pruned                   │
 │   cve                not checked (overlay off)                │
 │   lifecycle          catalog consulted                        │
 │ Confidence    evidence-weighted/1; not empirically calibrated │
