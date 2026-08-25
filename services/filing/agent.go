@@ -1,3 +1,10 @@
+// Package filing provides technical artifact compilation, cryptographic manifest hashing,
+// and developer dispatch adapters for state compliance disclosure portals.
+//
+// DISCLAIMER: AIROM provides technical payload packaging and developer dispatch utilities.
+// AIROM DOES NOT provide legal advice, statutory certifications, or official government
+// compliance endorsements. Operating organizations remain solely responsible for validating
+// statutory compliance and verifying government portal submission requirements.
 package filing
 
 import (
@@ -23,7 +30,7 @@ func randID(n int) string {
 	return hex.EncodeToString(b)
 }
 
-// FilingAgent coordinates package verification, state portal transmission, and receipt ledger tracking.
+// FilingAgent coordinates technical package verification, portal payload transmission, and receipt ledger tracking.
 type FilingAgent struct {
 	mu       sync.RWMutex
 	receipts map[string][]FilingReceipt // Key: OrganizationID

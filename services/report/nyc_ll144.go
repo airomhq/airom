@@ -143,7 +143,7 @@ func GenerateNYCLL144Report(req ReportRequest, auditData *NYCLL144Data) (*Compli
 	)
 	sections = append(sections, ReportSection{
 		ID:                "sec-05-auditor-signoff",
-		Title:             "5. Auditor Certification & Public Website Notice",
+		Title:             "5. Auditor Attestation & Public Website Notice",
 		Prose:             sec5Prose,
 		AttestationStatus: StatusVerified,
 		StatuteRef:        "NYC Admin Code § 20-871(a)",

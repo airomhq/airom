@@ -117,10 +117,10 @@ func GenerateEUAIActTechnicalDoc(req ReportRequest) (*ComplianceReport, error) {
 
 	attestationBlock := ReportSection{
 		ID:    "sec-06-eu-attestation",
-		Title: "6. EU Declaration of Conformity & Legal Attestation",
+		Title: "6. EU Declaration of Conformity & Technical Attestation",
 		Prose: fmt.Sprintf(
-			"I, **%s**, serving as **%s** for **%s**, certify that this Technical Documentation for AI system `%s` (commit `%s`) "+
-				"complies with the statutory requirements set out in Title III and Annex IV of Regulation (EU) 2024/1689.\n\n"+
+			"I, **%s**, serving as **%s** for **%s**, confirm that the technical documentation and evidence mappings compiled for AI system `%s` (commit `%s`) "+
+				"accurately represent the technical architecture evaluated under Title III and Annex IV of Regulation (EU) 2024/1689.\n\n"+
 				"- **Attestation Execution Date:** `%s`\n"+
 				"- **Legal Basis:** EU AI Act Annex IV (Regulation (EU) 2024/1689)\n"+
 				"- **Signer Signature:** `/s/ %s`",

@@ -100,14 +100,14 @@ func GenerateColoradoReport(req ReportRequest) (*ComplianceReport, error) {
 	}
 
 	sec5Prose := fmt.Sprintf(
-		"I, **%s** (%s), hereby attest under penalty of administrative sanctions that the high-risk AI decision systems deployed within repository `%s` (commit `%s`) have undergone the annual impact assessment mandated by Colorado Senate Bill 24-205.\n\n"+
+		"I, **%s** (%s), hereby confirm that the technical evidence mappings, algorithmic disclosures, and risk evaluations compiled for AI system `%s` (commit `%s`) accurately reflect the operational implementation evaluated for Colorado Senate Bill 24-205 technical documentation.\n\n"+
 			"All algorithmic safeguards, data disclosures, and consumer recourse procedures documented herein are active in production.\n\n"+
 			"**Attestation Signature:** `/s/ %s`\n**Date of Execution:** %s",
 		signerName, signerTitle, req.RepoName, req.CommitSHA, signerName, now.Format("2006-01-02"),
 	)
 	sections = append(sections, ReportSection{
 		ID:                "sec-05-attestation",
-		Title:             "5. Formal Executive Attestation & Sign-Off",
+		Title:             "5. Technical Evidence Attestation & Sign-Off",
 		Prose:             sec5Prose,
 		AttestationStatus: StatusVerified,
 		StatuteRef:        "CO SB 24-205 § 6-1-1703(4)",

@@ -77,7 +77,7 @@ func GenerateBIPAReport(req ReportRequest, data *BIPAData) (*ComplianceReport, e
 
 	// 3. Informed Consent & Commercial Prohibition
 	sec3Prose := fmt.Sprintf(
-		"Pursuant to 740 ILCS 14/15(b)-(c), the deployer certifies prior informed written consent and commercial trading restrictions:\n\n"+
+		"Pursuant to 740 ILCS 14/15(b)-(c), the deployer discloses prior informed written consent and commercial trading restrictions:\n\n"+
 			"- **Biometric Modalities:** %s\n"+
 			"- **Executed Written Releases:** %d subjects\n"+
 			"- **Commercial Sale Prohibition:** Strict operational bar on selling, leasing, or trading biometric data.",
