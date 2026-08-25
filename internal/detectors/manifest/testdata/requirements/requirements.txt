@@ -11,6 +11,9 @@ flask
 numpy>=1.26
 tiktoken
 faiss-cpu==1.8.0
+# Dual-use: the pip package is a cache/broker client, and a vector store only
+# with Redis Stack's vector API. Claimed by rules/vectordb/redis-vector.yaml on
+# actual usage, never from this line — so it must NOT appear in the golden.
 redis==5.0.4
 sentence-transformers
 -e git+https://github.com/example/pkg.git#egg=example

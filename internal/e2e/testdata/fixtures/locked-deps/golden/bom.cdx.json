@@ -89,6 +89,10 @@
           "value": "0.95"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "\u003e=0.5.0,\u003c0.6"
+        },
+        {
           "name": "airom:kind",
           "value": "vector-db"
         },
@@ -103,17 +107,6 @@
       ],
       "evidence": {
         "identity": [
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "\u003e=0.5.0,\u003c0.6",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          },
           {
             "field": "name",
             "confidence": 0.95,
@@ -147,6 +140,10 @@
           "value": "0.96"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "\u003e=0.34.0"
+        },
+        {
           "name": "airom:kind",
           "value": "library"
         },
@@ -165,17 +162,6 @@
               {
                 "technique": "manifest-analysis",
                 "confidence": 0.96
-              }
-            ]
-          },
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "\u003e=0.34.0",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
               }
             ]
           }
@@ -247,6 +233,10 @@
           "value": "0.95"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "^0.2.0"
+        },
+        {
           "name": "airom:kind",
           "value": "framework"
         },
@@ -260,19 +250,7 @@
         }
       ],
       "evidence": {
-        "identity": [
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "^0.2.0",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
-              }
-            ]
-          }
-        ],
+        "identity": [],
         "occurrences": [
           {
             "location": "web/package.json",
@@ -294,6 +272,10 @@
           "value": "0.96"
         },
         {
+          "name": "airom:evidence.versionConstraint",
+          "value": "^4.20.0"
+        },
+        {
           "name": "airom:kind",
           "value": "library"
         },
@@ -312,17 +294,6 @@
               {
                 "technique": "manifest-analysis",
                 "confidence": 0.96
-              }
-            ]
-          },
-          {
-            "field": "versionConstraint",
-            "confidence": 0.95,
-            "concludedValue": "^4.20.0",
-            "methods": [
-              {
-                "technique": "manifest-analysis",
-                "confidence": 0.95
               }
             ]
           }

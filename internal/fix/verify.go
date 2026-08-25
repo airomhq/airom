@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -75,6 +77,13 @@ type checker struct {
 	probe []string
 	// args builds the check command for a manifest, relative to the scan root.
 	args func(manifest string) []string
+	// stage, when set, prepares an out-of-tree working directory for the
+	// check and returns it with a cleanup. It exists for resolvers that cannot
+	// judge a manifest without also rewriting its lockfile: the copy absorbs
+	// the write, the project is never touched, and the verdict is real.
+	stage func(dir string) (runDir string, cleanup func(), err error)
+	// env is appended to the check command's environment.
+	env []string
 	// markers begin the part of the output worth showing. The first one that
 	// appears wins; when none do, the tail of the output is used.
 	markers []string
@@ -134,17 +143,27 @@ var checkers = map[string]checker{
 	"go.mod": {
 		tool:  "go",
 		probe: []string{"go", "version"},
+		// Staged out of tree, on purpose. EVERY go.mod edit invalidates go.sum,
+		// so judging the project in place made `go list -m all` fail on
+		// "missing go.sum entry" after every single fix — read as a conflict
+		// the fix introduced, which then offered to revert correct
+		// remediations on every Go project. That is the expected mechanical
+		// consequence of the edit, not a verdict about the pins. The copy
+		// carries go.mod and go.sum; -mod=mod lets go regenerate go.sum THERE,
+		// the project's files stay byte-identical, and the verdict that comes
+		// back is about whether the new pins resolve.
+		stage: stageGoModule,
+		env:   []string{"GOFLAGS=-mod=mod", "GOWORK=off"},
 		args: func(string) []string {
-			// The module graph alone: it fails on a version that does not exist
-			// and on a go.sum the bump has invalidated, without building or
-			// writing anything.
+			// The module graph alone: it fails on a version that does not
+			// exist, without building anything.
 			//
 			// Emphatically NOT -e. That flag exists to report module errors in
 			// the output and exit 0 anyway, which is the opposite of what a
-			// check needs: with it, `go list` returns success for both failures
-			// above — the exact two this check is here to catch — and prints the
-			// bad version as though it resolved. Verified: a parseable but
-			// nonexistent version exits 1 without -e and 0 with it.
+			// check needs: with it, `go list` returns success for the failure
+			// this check is here to catch, and prints the bad version as though
+			// it resolved. Verified: a parseable but nonexistent version exits 1
+			// without -e and 0 with it.
 			return []string{"go", "list", "-m", "all"}
 		},
 		markers:      []string{"missing go.sum entry", "go: ", "error"},
@@ -218,7 +237,17 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 		return res
 	}
 
-	out, halted, err := run(ctx, dir, c.args(path.Base(manifest)), VerifyTimeout)
+	runDir := dir
+	if c.stage != nil {
+		staged, cleanup, serr := c.stage(dir)
+		if serr != nil {
+			res.Status, res.Reason = VerifySkipped, c.tool+" could not be staged: "+serr.Error()
+			return res
+		}
+		defer cleanup()
+		runDir = staged
+	}
+	out, halted, err := run(ctx, runDir, c.args(path.Base(manifest)), VerifyTimeout, c.env...)
 	switch {
 	case halted:
 		res.Status, res.Reason = VerifyErrored, haltReason(c.tool, err)
@@ -242,7 +271,7 @@ func verifyOne(ctx context.Context, root, manifest string) VerifyResult {
 // nothing in the project can influence what is executed.
 // run reports halted when the context ended the command — a timeout or a
 // Ctrl-C — so the caller can tell "no verdict" from "the resolver said no".
-func run(ctx context.Context, dir string, argv []string, timeout time.Duration) (out string, halted bool, err error) {
+func run(ctx context.Context, dir string, argv []string, timeout time.Duration, env ...string) (out string, halted bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -251,6 +280,7 @@ func run(ctx context.Context, dir string, argv []string, timeout time.Duration) 
 	// A resolver that stops to ask a question would hang the fix session.
 	cmd.Stdin = nil
 	cmd.Env = append(cmd.Environ(), "PIP_DISABLE_PIP_VERSION_CHECK=1", "NO_COLOR=1")
+	cmd.Env = append(cmd.Env, env...)
 
 	b, err := cmd.CombinedOutput()
 	// A killed resolver never rendered a verdict. Reporting its nonzero exit as
@@ -260,6 +290,54 @@ func run(ctx context.Context, dir string, argv []string, timeout time.Duration) 
 		return string(b), true, cerr
 	}
 	return string(b), false, err
+}
+
+// stageGoModule copies go.mod and go.sum (when present) from dir into a fresh
+// temp directory. `go list -m all` needs only the module graph, so this is
+// enough to judge the pins, and anything go writes (a regenerated go.sum)
+// lands in the copy. Cleanup removes the copy.
+func stageGoModule(dir string) (string, func(), error) {
+	tmp, err := os.MkdirTemp("", "airom-verify-go-*")
+	if err != nil {
+		return "", nil, err
+	}
+	cleanup := func() { _ = os.RemoveAll(tmp) }
+
+	// os.Root confines every read below dir structurally: a name that tried to
+	// escape cannot resolve, which is a stronger guarantee than a comment
+	// asserting these two constants are safe.
+	src, err := os.OpenRoot(dir)
+	if err != nil {
+		cleanup()
+		return "", nil, fmt.Errorf("open %s: %w", dir, err)
+	}
+	defer func() { _ = src.Close() }()
+
+	for _, name := range []string{"go.mod", "go.sum"} {
+		b, err := readRootFile(src, name)
+		if err != nil {
+			if name == "go.sum" && errors.Is(err, os.ErrNotExist) {
+				continue // a module with no go.sum yet is legitimate
+			}
+			cleanup()
+			return "", nil, fmt.Errorf("stage %s: %w", name, err)
+		}
+		if err := os.WriteFile(filepath.Join(tmp, name), b, 0o600); err != nil {
+			cleanup()
+			return "", nil, err
+		}
+	}
+	return tmp, cleanup, nil
+}
+
+// readRootFile reads name from within root, which cannot escape it.
+func readRootFile(root *os.Root, name string) ([]byte, error) {
+	f, err := root.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	return io.ReadAll(f)
 }
 
 func containsAny(s string, needles []string) bool {

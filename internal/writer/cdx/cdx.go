@@ -234,6 +234,17 @@ func (b *builder) metadata() *cyclonedx.Metadata {
 	return md
 }
 
+// cdxIdentityFields is the closed enum the CycloneDX schema allows for
+// evidence.identity[].field. AIROM emits a subset (name, version, purl,
+// hash); anything else it knows about a component's identity has no home
+// here and travels as a property.
+var cdxIdentityFields = map[string]bool{
+	"group": true, "name": true, "version": true, "purl": true,
+	"cpe": true, "omniborId": true, "swhid": true, "swid": true, "hash": true,
+}
+
+func cdxIdentityField(f string) bool { return cdxIdentityFields[f] }
+
 // ── component (§3.2) ────────────────────────────────────────────────────────
 
 func (b *builder) component(c *airom.Component) cyclonedx.Component {
@@ -527,6 +538,15 @@ func evidence(c *airom.Component) *cyclonedx.Evidence {
 	if len(c.Evidence.Identity) > 0 {
 		ids := make([]cyclonedx.EvidenceIdentity, 0, len(c.Evidence.Identity))
 		for _, ic := range c.Evidence.Identity {
+			// evidence.identity[].field is a CLOSED enum in the spec. AIROM's
+			// own claim vocabulary is wider — versionConstraint records that a
+			// manifest declared a range while a lockfile resolved the release
+			// — and passing that through produced documents a strict consumer
+			// rejects. Claims with no slot in the enum are routed to a
+			// property instead (§6.5), never smuggled into a typed field.
+			if !cdxIdentityField(ic.Field) {
+				continue
+			}
 			ei := cyclonedx.EvidenceIdentity{
 				Field:          cyclonedx.EvidenceIdentityFieldType(ic.Field),
 				ConcludedValue: ic.Value,
@@ -591,6 +611,17 @@ func (b *builder) properties(c *airom.Component) *[]cyclonedx.Property {
 	// purl) and the constraint is carried here instead of being dropped.
 	if c.VersionConstraint != "" {
 		p.add("airom:version.constraint", c.VersionConstraint)
+	}
+
+	// Constraint CLAIMS that evidence.identity[] cannot carry, because the
+	// spec's field enum has no value for them. Repeated names are how this
+	// document already carries multi-valued facts (airom:rel.*, airom:param.*),
+	// so competing declarations each get their own entry and the disagreement
+	// survives instead of being flattened or dropped.
+	for _, ic := range c.Evidence.Identity {
+		if ic.Field == "versionConstraint" && ic.Value != "" {
+			p.add("airom:evidence.versionConstraint", ic.Value)
+		}
 	}
 
 	// ReleaseTime — any component (§3.2).

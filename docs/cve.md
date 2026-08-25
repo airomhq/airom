@@ -161,7 +161,7 @@ and only the ecosystem's resolver can answer it.
 |---|---|---|
 | `requirements.txt` | `pip install --dry-run --report` | `--report` puts pip in resolution mode, which skips the install-target checks a PEP 668 system Python would otherwise refuse on |
 | `package.json` | `npm install --dry-run` | |
-| `go.mod` | `go list -m all` | catches a version that does not exist and a `go.sum` the bump invalidated. Deliberately without `-e`, which would report those errors in the output and exit 0 anyway |
+| `go.mod` | `go list -m all`, in a staged copy | catches a version that does not exist. Runs against a temp copy of `go.mod`+`go.sum`, never the project: EVERY `go.mod` edit invalidates `go.sum`, so checking in place reported that mechanical staleness as a conflict the fix had introduced, on every Go project. The copy lets `go` regenerate `go.sum` there, so the verdict is about the pins; your files are untouched. Deliberately without `-e`, which would report module errors in the output and exit 0 anyway: success for the one failure this check exists to catch. |
 | everything else | — | reported as **not checked**, with the reason. `pyproject.toml`, `Cargo.toml`, and `build.gradle` resolve by writing a lockfile, and a check that mutates your tree is not a check |
 
 **A conflict is attributed before it is acted on.** The same check also runs

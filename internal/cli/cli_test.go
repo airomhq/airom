@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -654,6 +655,23 @@ func TestFixFlagsAreFlagOnly(t *testing.T) {
 			t.Error("expected --fix-all --no-cve to be rejected for lacking the CVE overlay")
 		} else if strings.Contains(err.Error(), "command-line flags") {
 			t.Errorf("--fix-all was refused as if it came from a config file: %v", err)
+		}
+	})
+}
+
+// TestBenchGateExitCodes pins the three answers apart. A benchmark regression
+// is a POLICY failure (exit 1, the --fail-on code), not a fatal one: exit 2
+// is reserved for "the tool could not run", and CI has to tell "the harness
+// is broken" from "detection got worse" because the responses differ.
+func TestBenchGateExitCodes(t *testing.T) {
+	t.Run("a corpus that cannot be read is fatal", func(t *testing.T) {
+		_, err := execute(t, "bench", filepath.Join(t.TempDir(), "nope"))
+		if err == nil {
+			t.Fatal("a missing corpus was accepted")
+		}
+		var pe *app.PolicyExit
+		if errors.As(err, &pe) {
+			t.Error("an unreadable corpus surfaced as a policy exit; it is a fatal error")
 		}
 	})
 }

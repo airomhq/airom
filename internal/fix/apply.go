@@ -82,8 +82,19 @@ func edit(root, file string, line int, pkg, from, to string) (before, after stri
 	if err != nil {
 		return "", "", err
 	}
+	// Write to what the path RESOLVES to. A manifest that is a symlink
+	// (monorepos share requirements files this way) must have its target
+	// rewritten and the link left standing; renaming a temp file over the
+	// link path would replace the link with a regular file and leave the real
+	// manifest — the one every other consumer reads — still vulnerable, while
+	// reporting success. The resolved target must still sit inside the scan
+	// root: a link pointing out of it is a write the user never scoped.
+	abs, err = realInRoot(root, abs)
+	if err != nil {
+		return "", "", err
+	}
 
-	data, err := os.ReadFile(abs) // #nosec G304 -- path is confined to the scan root by resolveInRoot
+	data, err := os.ReadFile(abs) // #nosec G304 -- path is confined to the scan root by resolveInRoot+realInRoot
 	if err != nil {
 		return "", "", fmt.Errorf("read %s: %w", file, err)
 	}
@@ -105,10 +116,17 @@ func edit(root, file string, line int, pkg, from, to string) (before, after stri
 		body, cr = trimmed, "\r"
 	}
 
-	if !mentionsPackage(body, pkg) {
+	// The guards are per PACKAGE, not per line. Where one line declares
+	// several packages — a PEP 621 inline array, a minified package.json — the
+	// first matching version token may belong to a neighbor, so the rewrite
+	// is anchored at this package's own name and searches only to its right.
+	// Every ecosystem in scope writes the version after the name.
+	at := packageAt(body, pkg)
+	if at < 0 {
 		return "", "", fmt.Errorf("%s:%d no longer declares %s — re-run the scan", file, line, pkg)
 	}
-	next, ok := replaceVersion(body, from, to)
+	tail, ok := replaceVersion(body[at:], from, to)
+	next := body[:at] + tail
 	if !ok {
 		return "", "", fmt.Errorf("%s:%d no longer pins %s %s — re-run the scan", file, line, pkg, from)
 	}
@@ -142,8 +160,26 @@ func resolveInRoot(root, rel string) (string, error) {
 	return abs, nil
 }
 
-// mentionsPackage reports whether line declares pkg — as a WHOLE name, not as a
-// substring of a longer one.
+// realInRoot resolves symlinks in abs and confirms the result still lies inside
+// the scan root, returning the resolved path. resolveInRoot checks the lexical
+// path; this checks where it actually leads.
+func realInRoot(root, abs string) (string, error) {
+	realRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", fmt.Errorf("resolve scan root: %w", err)
+	}
+	resolved, err := filepath.EvalSymlinks(abs)
+	if err != nil {
+		return "", fmt.Errorf("resolve %s: %w", abs, err)
+	}
+	if resolved != realRoot && !strings.HasPrefix(resolved, realRoot+string(filepath.Separator)) {
+		return "", fmt.Errorf("refusing to edit %s: it is a symlink to %s, outside the scan root", abs, resolved)
+	}
+	return resolved, nil
+}
+
+// packageAt returns the offset at which line declares pkg — as a WHOLE name,
+// not as a substring of a longer one — or -1.
 //
 // The distinction is the entire value of this guard. `langchain` is a prefix of
 // `langchain-core`, `langchain-community`, and `langchain-openai`; `llama-index`
@@ -159,10 +195,10 @@ func resolveInRoot(root, rel string) (string, error) {
 // Comparison is under the normalization every ecosystem in scope tolerates:
 // case-insensitive, with `_` and `.` equivalent to `-` (PEP 503 for PyPI,
 // harmless elsewhere). normalizeName is length-preserving — it maps single
-// runes to single runes — so offsets in the normalized string still address the
-// original.
-func mentionsPackage(line, pkg string) bool {
-	return indexName(normalizeName(line), normalizeName(pkg)) >= 0
+// bytes to single bytes, ASCII-only — so the offset returned here addresses the
+// ORIGINAL line, which is what anchors the rewrite to this package's own span.
+func packageAt(line, pkg string) int {
+	return indexName(normalizeName(line), normalizeName(pkg))
 }
 
 // indexName returns the offset of the first occurrence of name in s that stands
@@ -212,10 +248,21 @@ func continuesName(s string, i int) bool {
 // of the same package share. Length-preserving by construction: callers rely on
 // offsets surviving it.
 func normalizeName(s string) string {
-	s = strings.ToLower(s)
-	s = strings.ReplaceAll(s, "_", "-")
-	s = strings.ReplaceAll(s, ".", "-")
-	return s
+	// ASCII-only folding, byte for byte. strings.ToLower is NOT
+	// length-preserving (U+0130 and U+212A shrink), and edit() now uses the
+	// offset this function's output yields to address the ORIGINAL line; a
+	// non-ASCII letter therefore stays as it is, which means a non-ASCII
+	// package name fails to match and the fix refuses — the safe side.
+	b := []byte(s)
+	for i, c := range b {
+		switch {
+		case c >= 'A' && c <= 'Z':
+			b[i] = c + ('a' - 'A')
+		case c == '_', c == '.':
+			b[i] = '-'
+		}
+	}
+	return string(b)
 }
 
 // replaceVersion swaps the version token old for next inside line, leaving the
