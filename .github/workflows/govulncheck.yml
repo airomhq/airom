@@ -1,0 +1,42 @@
+name: govulncheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Not only on push: the verdict changes when the vulnerability database
+    # does, not when our code does. A newly published, reachable vulnerability
+    # would otherwise sit unreported until someone happened to commit.
+    - cron: "43 5 * * *" # daily, 05:43 UTC (off the hour: shared runners are busiest there)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.26" # newest 1.26.x at run time via check-latest (see ci.yml)
+
+jobs:
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache: true
+      - name: govulncheck
+        # Fails only on vulnerabilities our code can reach (symbol-level call
+        # analysis); imported-but-uncalled ones are listed, not fatal. Most of
+        # what it finds is in the standard library, fixed by a newer Go patch
+        # rather than a go.mod bump — so it must run on the check-latest
+        # toolchain above, not whatever the runner image cached.
+        #
+        # Pinned so a govulncheck release can't change CI's behavior
+        # unannounced. The database it queries is live regardless, so pinning
+        # the tool does not stale the results. Dependabot can't see a version
+        # inside `run:`; bump it by hand.
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...

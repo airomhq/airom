@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: "1.26"
+  GO_VERSION: "1.26" # newest 1.26.x at run time via check-latest (see ci.yml)
 
 jobs:
   # Enumerate targets rather than hard-coding them: a new Fuzz* function should
@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
+          check-latest: true
           cache: true
       - id: list
         run: |
@@ -68,6 +69,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
+          check-latest: true
           cache: true
 
       - name: Fuzz ${{ matrix.target }}
