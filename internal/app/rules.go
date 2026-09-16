@@ -23,20 +23,22 @@ import (
 // empty set. nil means "no embedded packs".
 var EmbeddedRules fs.FS
 
-// resolveRuleBase picks the base rule layer for a scan: a verified, cached
-// bundle when one is installed (and --no-cached-rules is off), else the
-// embedded packs — the offline floor. It returns the filesystem plus a
-// provenance label ("builtin" or the bundle version). --rules overlays layer
-// on top of whichever wins, downstream in ruleengine.Load.
-func resolveRuleBase(cfg *Config) (fs.FS, string) {
+// resolveBundleLayer returns the verified, cached rule bundle when one is
+// installed and --no-cached-rules is off, plus its version. A nil filesystem
+// means "no bundle": the scan runs on the embedded packs alone.
+//
+// The bundle is a LAYER over the embedded packs, never a replacement for them
+// (ruleengine.Load). Returning it as the base is what made a bundle missing a
+// pack delete that pack for every updated user.
+func resolveBundleLayer(cfg *Config) (fs.FS, string) {
 	if cfg.NoCachedRules {
-		return EmbeddedRules, "builtin"
+		return nil, ""
 	}
 	dir := cacheDirFor(cfg)
 	if bundle, version, ok := rulesync.Active(dir); ok {
 		return bundle, version
 	}
-	return EmbeddedRules, "builtin"
+	return nil, ""
 }
 
 // cacheDirFor resolves the cache directory a scan reads rules and lifecycle
@@ -44,10 +46,10 @@ func resolveRuleBase(cfg *Config) (fs.FS, string) {
 //
 // Indirected through a var so the test binary can point it somewhere disposable.
 // Without that, whether these tests pass depends on whether the developer has
-// ever run `airom rules update` on the machine — a cached bundle overrides the
-// embedded packs, so the ruleset under test silently changes. Auto-update makes
-// a populated cache the normal state rather than the exception, which turns
-// that latent coupling into a routine one.
+// ever run `airom rules update` on the machine — a cached bundle layers over the
+// embedded packs and can override rules by ID, so the ruleset under test
+// silently changes. Auto-update makes a populated cache the normal state rather
+// than the exception, which turns that latent coupling into a routine one.
 var cacheDirFor = func(cfg *Config) string {
 	if cfg.CacheDir != "" {
 		return cfg.CacheDir
@@ -118,9 +120,9 @@ func autoUpdateRules(ctx context.Context, cfg *Config) string {
 	)
 }
 
-// loadEOLCatalogFor picks the lifecycle catalog the same way resolveRuleBase
-// picks rules: a verified, cached bundle when it carries one, else the embedded
-// catalog — the offline floor. Retirement data changes on a provider's
+// loadEOLCatalogFor picks the lifecycle catalog the way loadRuleset picks
+// rules: the embedded catalog is the floor, and a verified, cached bundle
+// layers over it when it carries one. Retirement data changes on a provider's
 // calendar, not on AIROM's release schedule, so shipping it through the signed
 // channel is what makes `airom rules update` able to refresh it.
 //
@@ -171,12 +173,19 @@ func loadEOLCatalogFor(cfg *Config) (cat *eol.Catalog, source, warn string, err 
 // overlays) and a warning, so a bad fetch degrades instead of turning every
 // scan fatal.
 func loadRuleset(cfg *Config) (*ruleengine.Ruleset, string, error) {
-	base, version := resolveRuleBase(cfg)
-	rs, err := ruleengine.Load(base, cfg.RulePaths, os.ReadFile)
-	if err != nil && version != "builtin" {
-		slog.Warn("cached rule bundle failed to load; using the built-in packs", "version", version, "error", err)
+	bundle, bundleVersion := resolveBundleLayer(cfg)
+	version := "builtin"
+	if bundle != nil {
+		// "builtin+vX", like the lifecycle catalog's label: after a merge both
+		// layers really are answering, so naming only the bundle would overstate
+		// what it supplied.
+		version = "builtin+" + bundleVersion
+	}
+	rs, err := ruleengine.Load(EmbeddedRules, bundle, "bundle "+bundleVersion, cfg.RulePaths, os.ReadFile)
+	if err != nil && bundle != nil {
+		slog.Warn("cached rule bundle failed to load; using the built-in packs", "version", bundleVersion, "error", err)
 		version = "builtin"
-		rs, err = ruleengine.Load(EmbeddedRules, cfg.RulePaths, os.ReadFile)
+		rs, err = ruleengine.Load(EmbeddedRules, nil, "", cfg.RulePaths, os.ReadFile)
 	}
 	if err != nil {
 		return nil, "", &UsageError{Err: err}
@@ -237,7 +246,7 @@ func LintEOLCatalog(path string) (*EOLLintResult, error) {
 // contract and reports its fixture coverage (docs/rule-schema.md). fixtures
 // are expected under <pack-dir>/testdata/<pack>/ when present.
 func RulesLint(path string) (*ruletest.Report, error) {
-	rs, err := ruleengine.Load(nil, []string{path}, os.ReadFile)
+	rs, err := ruleengine.Load(nil, nil, "", []string{path}, os.ReadFile)
 	if err != nil {
 		return nil, &UsageError{Err: err}
 	}

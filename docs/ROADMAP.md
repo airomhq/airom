@@ -71,7 +71,7 @@ surgery, that's an architecture bug to review, not a normal feature cost.
    seam; adopted **only** when the CGO tree-sitter accuracy oracle (§14, a dev-time CI job
    that never ships) shows measured precision/recall failures of the lexer+regex core. The
    decision is evidence-driven, not faith-based.
-5. **Remote/OCI rule registry**: the third rule layer ([rule-schema.md](./rule-schema.md#the-three-rule-layers-and-merge-semantics)).
+5. **Remote/OCI rule registry**: the fourth rule layer ([rule-schema.md](./rule-schema.md#the-rule-layers-and-merge-semantics)).
    Needs pack signing and a trust policy; pairs with the attestation work. The layered
    merge semantics already reserve its position.
 6. **Server mode, shared remote cache, SBOM ingestion/merge, Dependency-Track push, VEX.**

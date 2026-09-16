@@ -544,9 +544,11 @@ file: the region lexer classifies code/comment/string; the trie runs over code+s
 only regexes whose keywords hit ever execute. Hundreds of rules × 100k files stays cheap
 because the regex engine is literal-gated (the shape gitleaks and semgrep both proved).
 
-Three rule layers: **embedded defaults** (`go:embed`, offline, versioned with the binary) →
-**user overlay** (`--rules extra.yaml`; merge by ID: add/override/disable) → **remote
-registry** (v2, OCI-distributed, pairs with signing work). The SHA-256 of the *effective
+Four rule layers: **embedded defaults** (`go:embed`, offline, versioned with the binary) →
+**signed bundle** (airom-rules, installed by `airom rules update`, layered over the
+built-ins rather than replacing them) → **user overlay** (`--rules extra.yaml`) → **remote
+registry** (v2, OCI-distributed, pairs with signing work). Every join merges by rule ID:
+add/override/disable. The SHA-256 of the *effective
 compiled ruleset* participates in every cache key, rules-as-data is self-invalidating,
 which structurally eliminates the forgotten-`Version()`-bump stale-cache bug for the
 entire fast-moving surface.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/airomhq/airom/pkg/airom"
 	"github.com/airomhq/airom/pkg/airom/detect"
@@ -59,7 +60,7 @@ def ask(q):
 
 func loadTestPack(t *testing.T, yaml string) *Matcher {
 	t.Helper()
-	rs, err := Load(nil, []string{"test.yaml"}, func(string) ([]byte, error) { return []byte(yaml), nil })
+	rs, err := Load(nil, nil, "", []string{"test.yaml"}, func(string) ([]byte, error) { return []byte(yaml), nil })
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -266,7 +267,7 @@ rules:
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := Load(nil, []string{"test.yaml"}, func(string) ([]byte, error) { return []byte(tc.yaml), nil })
+			_, err := Load(nil, nil, "", []string{"test.yaml"}, func(string) ([]byte, error) { return []byte(tc.yaml), nil })
 			if err == nil || !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("err = %v, want containing %q", err, tc.want)
 			}
@@ -292,7 +293,7 @@ rules:
     confidence: 0.9
 `
 	files := map[string]string{"openai.yaml": openaiPack, "extra.yaml": overlay}
-	rs, err := Load(nil, []string{"openai.yaml", "extra.yaml"}, func(p string) ([]byte, error) {
+	rs, err := Load(nil, nil, "", []string{"openai.yaml", "extra.yaml"}, func(p string) ([]byte, error) {
 		return []byte(files[p]), nil
 	})
 	if err != nil {
@@ -321,7 +322,7 @@ rules:
     claim: { name: "${model}" }
     confidence: 0.5
 `
-	if _, err := Load(nil, []string{"bad.yaml"}, func(string) ([]byte, error) { return []byte(bad), nil }); err == nil {
+	if _, err := Load(nil, nil, "", []string{"bad.yaml"}, func(string) ([]byte, error) { return []byte(bad), nil }); err == nil {
 		t.Error("non-namespaced overlay add accepted")
 	}
 }
@@ -594,7 +595,7 @@ def ask(cfg):
 // non-model VALUE claims nothing. (Adversarial review: "command-line",
 // "o365", and "buy-instant" all minted hosted-llm components.)
 func TestWidenedModelKeyRejectsNonModelValues(t *testing.T) {
-	rs, err := Load(rules.FS(), nil, nil)
+	rs, err := Load(rules.FS(), nil, "", nil, nil)
 	if err != nil {
 		t.Fatalf("Load embedded packs: %v", err)
 	}
@@ -670,5 +671,102 @@ rules:
 		if got := detectOn(t, m, "a.py", tc.content); len(got) != 1 {
 			t.Errorf("%s: got %d findings, want 1", tc.name, len(got))
 		}
+	}
+}
+
+// pack returns a minimal, valid one-rule pack for layering tests.
+func pack(name, id string, conf float64) []byte {
+	return fmt.Appendf(nil, `pack: %s
+version: 1
+rules:
+  - id: %s
+    kind: framework
+    provider: %s
+    languages: [python]
+    keywords: ["%s"]
+    pattern: '\b%s\b'
+    regions: [code]
+    claim: { name: "%s" }
+    confidence: %g
+`, name, id, name, name, name, name, conf)
+}
+
+// TestBundleLayersOverEmbeddedRatherThanReplacingIt is the regression test for
+// the v0.1.8 incident: the cached bundle used to be selected INSTEAD of the
+// embedded packs, so a bundle that did not carry a pack deleted it for every
+// user who had run `airom rules update`. Publishing a 9-pack bundle against a
+// 69-pack built-in set took a scan of `messages.create(model="claude-opus-5")`
+// from three components to zero.
+//
+// Without the fix this fails on the two embedded rules, not on the bundle one.
+func TestBundleLayersOverEmbeddedRatherThanReplacingIt(t *testing.T) {
+	embedded := fstest.MapFS{
+		"frameworks/alpha.yaml": {Data: pack("alpha", "alpha/one", 0.5)},
+		"frameworks/beta.yaml":  {Data: pack("beta", "beta/one", 0.5)},
+	}
+	// A bundle that carries neither of the embedded packs — the shape that broke.
+	bundle := fstest.MapFS{
+		"frameworks/gamma.yaml": {Data: pack("gamma", "gamma/one", 0.5)},
+	}
+
+	rs, err := Load(embedded, bundle, "bundle v0.1.8", nil, nil)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	got := map[string]string{}
+	for _, r := range rs.Rules {
+		got[r.ID] = r.Layer
+	}
+	for _, id := range []string{"alpha/one", "beta/one"} {
+		if _, ok := got[id]; !ok {
+			t.Errorf("embedded rule %q vanished when a bundle was installed; the bundle replaced the built-ins instead of layering over them", id)
+		}
+	}
+	if layer, ok := got["gamma/one"]; !ok {
+		t.Error("bundle rule gamma/one missing: the bundle layer did not apply")
+	} else if layer != "bundle v0.1.8" {
+		t.Errorf("gamma/one layer = %q, want %q", layer, "bundle v0.1.8")
+	}
+}
+
+// TestBundleOverridesEmbeddedRuleByID: shipping a fix for a built-in rule
+// without a scanner release is the channel's reason to exist, so a bundle rule
+// with an embedded rule's ID must win and say so.
+func TestBundleOverridesEmbeddedRuleByID(t *testing.T) {
+	embedded := fstest.MapFS{"frameworks/alpha.yaml": {Data: pack("alpha", "alpha/one", 0.50)}}
+	bundle := fstest.MapFS{"frameworks/alpha.yaml": {Data: pack("alpha", "alpha/one", 0.91)}}
+
+	rs, err := Load(embedded, bundle, "bundle v1", nil, nil)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if len(rs.Rules) != 1 {
+		t.Fatalf("got %d rules, want 1 (the override must replace, not duplicate)", len(rs.Rules))
+	}
+	if got := rs.Rules[0].Confidence; got != 0.91 {
+		t.Errorf("confidence = %v, want 0.91 — the embedded rule won", got)
+	}
+	if got := rs.Rules[0].Layer; got != "bundle v1" {
+		t.Errorf("layer = %q, want %q", got, "bundle v1")
+	}
+}
+
+// TestBundleSkipsNonRulePackDirs: a bundle carrying model lifecycle catalogs
+// under eol/ must still load its rules. ParsePack uses KnownFields, so walking
+// that directory would fail the whole ruleset — publishing a catalog would
+// switch the channel's rules off.
+func TestBundleSkipsNonRulePackDirs(t *testing.T) {
+	embedded := fstest.MapFS{"frameworks/alpha.yaml": {Data: pack("alpha", "alpha/one", 0.5)}}
+	bundle := fstest.MapFS{
+		"frameworks/gamma.yaml": {Data: pack("gamma", "gamma/one", 0.5)},
+		"eol/anthropic.yaml":    {Data: []byte("provider: anthropic\nversion: 1\nmodels: []\n")},
+	}
+
+	rs, err := Load(embedded, bundle, "bundle v1", nil, nil)
+	if err != nil {
+		t.Fatalf("Load with a catalog in the bundle: %v", err)
+	}
+	if len(rs.Rules) != 2 {
+		t.Errorf("got %d rules, want 2 (alpha/one + gamma/one)", len(rs.Rules))
 	}
 }

@@ -22,7 +22,7 @@ var categories = []string{
 // the Aho-Corasick build. A single invalid rule fails here (and would abort
 // the real binary).
 func TestEmbeddedRulesetLoads(t *testing.T) {
-	rs, err := ruleengine.Load(FS(), nil, os.ReadFile)
+	rs, err := ruleengine.Load(FS(), nil, "", nil, os.ReadFile)
 	if err != nil {
 		t.Fatalf("embedded ruleset does not load: %v", err)
 	}

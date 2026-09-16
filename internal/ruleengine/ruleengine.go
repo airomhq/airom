@@ -176,48 +176,41 @@ var NonRulePackDirs = map[string]bool{
 	"eol": true, // model lifecycle catalogs (internal/eol)
 }
 
-// Load assembles the effective ruleset from the embedded layer (nil-able
-// fs.FS holding <category>/<pack>.yaml) plus overlay files in flag order,
-// applying the documented merge semantics (add / override / disable by rule
-// ID; later layers win) and the full startup lint contract.
-func Load(embedded fs.FS, overlayPaths []string, readFile func(string) ([]byte, error)) (*Ruleset, error) {
+// Load assembles the effective ruleset from the embedded layer (nil-able fs.FS
+// holding <category>/<pack>.yaml), then a signed bundle layered ON TOP of it,
+// then overlay files in flag order — applying the documented merge semantics
+// (add / override / disable by rule ID; later layers win) and the full startup
+// lint contract.
+//
+// The bundle is a layer, not a replacement. It used to be the alternative base:
+// a scan took the cached bundle INSTEAD of the embedded packs, so a bundle that
+// omitted a pack deleted it for every user who had run `airom rules update`,
+// whatever their airom version. That made airom-rules' documented workflow —
+// promote a stable pack into airom, then delete it from the overlay —
+// user-breaking, and it duplicated 60 packs across the two repos to work around
+// a rule nobody could follow. Layering is also what the merge semantics already
+// promised, and what --rules and eol.Overlay always did.
+//
+// bundleLabel names the bundle in each rule's Layer (e.g. "bundle v0.1.9"), so
+// `airom rules list` says which layer a rule actually came from.
+func Load(embedded, bundle fs.FS, bundleLabel string, overlayPaths []string, readFile func(string) ([]byte, error)) (*Ruleset, error) {
 	effective := map[string]EffectiveRule{}
 
-	if embedded != nil {
-		var paths []string
-		err := fs.WalkDir(embedded, ".", func(p string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			// A signed bundle carries more than rule packs: NonRulePackDirs are
-			// sibling namespaces (today the model lifecycle catalogs) with their
-			// own schemas. ParsePack uses KnownFields, so walking one would fail
-			// the ENTIRE ruleset and silently drop the scan back to the built-in
-			// packs — publishing a catalog would turn off the channel's rules.
-			if d.IsDir() && NonRulePackDirs[p] {
-				return fs.SkipDir
-			}
-			if !d.IsDir() && strings.HasSuffix(p, ".yaml") {
-				paths = append(paths, p)
-			}
-			return nil
-		})
-		if err != nil {
-			return nil, fmt.Errorf("walk embedded rules: %w", err)
+	// Embedded is the strict base: no duplicate IDs, no disable, pack stem must
+	// match the filename.
+	if err := loadPackFS(effective, embedded, "embedded", true); err != nil {
+		return nil, err
+	}
+	// The bundle layers over it with overlay semantics — add, override by rule
+	// ID, or disable — because overriding a built-in rule (and retiring one that
+	// misfires) without a scanner release is the whole point of the channel.
+	if bundle != nil {
+		label := bundleLabel
+		if label == "" {
+			label = "bundle"
 		}
-		sort.Strings(paths)
-		for _, p := range paths {
-			data, err := fs.ReadFile(embedded, p)
-			if err != nil {
-				return nil, fmt.Errorf("read embedded %s: %w", p, err)
-			}
-			pack, err := ParsePack(stem(p), data)
-			if err != nil {
-				return nil, fmt.Errorf("embedded %s: %w", p, err)
-			}
-			if err := applyLayer(effective, pack, "embedded", true); err != nil {
-				return nil, fmt.Errorf("embedded %s: %w", p, err)
-			}
+		if err := loadPackFS(effective, bundle, label, false); err != nil {
+			return nil, err
 		}
 	}
 
@@ -266,6 +259,51 @@ func rulesOnly(effective []EffectiveRule) []Rule {
 
 func stem(p string) string {
 	return strings.TrimSuffix(path.Base(p), path.Ext(p))
+}
+
+// loadPackFS merges every rule pack in fsys into the effective set, in sorted
+// path order so the result does not depend on walk order. A nil fsys is a
+// no-op: "no embedded packs" and "no bundle installed" are both ordinary.
+func loadPackFS(effective map[string]EffectiveRule, fsys fs.FS, label string, base bool) error {
+	if fsys == nil {
+		return nil
+	}
+	var paths []string
+	err := fs.WalkDir(fsys, ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		// A signed bundle carries more than rule packs: NonRulePackDirs are
+		// sibling namespaces (today the model lifecycle catalogs) with their
+		// own schemas. ParsePack uses KnownFields, so walking one would fail
+		// the ENTIRE ruleset and silently drop the scan back to the built-in
+		// packs — publishing a catalog would turn off the channel's rules.
+		if d.IsDir() && NonRulePackDirs[p] {
+			return fs.SkipDir
+		}
+		if !d.IsDir() && strings.HasSuffix(p, ".yaml") {
+			paths = append(paths, p)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("walk %s rules: %w", label, err)
+	}
+	sort.Strings(paths)
+	for _, p := range paths {
+		data, err := fs.ReadFile(fsys, p)
+		if err != nil {
+			return fmt.Errorf("read %s %s: %w", label, p, err)
+		}
+		pack, err := ParsePack(stem(p), data)
+		if err != nil {
+			return fmt.Errorf("%s %s: %w", label, p, err)
+		}
+		if err := applyLayer(effective, pack, label, base); err != nil {
+			return fmt.Errorf("%s %s: %w", label, p, err)
+		}
+	}
+	return nil
 }
 
 // applyLayer merges one pack into the effective set. base layers may not

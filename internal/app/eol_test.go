@@ -340,9 +340,12 @@ func TestBundleCatalogOverridesEmbedded(t *testing.T) {
 	// the catalog share the bundle root, and a catalog is not a parseable rule
 	// pack — so publishing one used to fail the whole ruleset and silently drop
 	// the scan back to the built-in packs, turning off the channel it shipped in.
-	if inv.Tool.RulesVersion != "v9.9.9" {
-		t.Errorf("rulesVersion = %q, want the bundle version: a catalog must not break the rule layer",
-			inv.Tool.RulesVersion)
+	// The label names BOTH layers because both answer: the bundle merges over
+	// the embedded packs rather than replacing them, so claiming only "v9.9.9"
+	// would overstate what the bundle supplied.
+	if inv.Tool.RulesVersion != "builtin+v9.9.9" {
+		t.Errorf("rulesVersion = %q, want %q: a catalog must not break the rule layer",
+			inv.Tool.RulesVersion, "builtin+v9.9.9")
 	}
 
 	// --no-cached-rules pins the scan to the built-in catalog, which says

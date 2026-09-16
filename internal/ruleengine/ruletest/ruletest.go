@@ -62,7 +62,7 @@ var annotationRe = regexp.MustCompile(`(?:#|//|--)\s*airom(-ok)?:\s*(\S+)`)
 // RunPackFile compiles one pack file and runs it against fixtures in
 // fixturesDir (typically <pack-dir>/testdata/<pack>/).
 func RunPackFile(packPath, fixturesDir string) (*Report, error) {
-	rs, err := ruleengine.Load(nil, []string{packPath}, os.ReadFile)
+	rs, err := ruleengine.Load(nil, nil, "", []string{packPath}, os.ReadFile)
 	if err != nil {
 		return nil, err
 	}

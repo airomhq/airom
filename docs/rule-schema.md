@@ -46,7 +46,7 @@ loop, a parser, cross-file correlation, is a Go detector, not a rule
 | `capture_params` | map | no | Same-call-site generation-parameter capture |
 | `risk` | string | no | Catalog `RiskID` to attach to the claimed component (see [risks.md](./risks.md)); lint-rejected if not a known id |
 | `confidence` | float | yes | Per-sighting confidence, `0 < c ≤ 0.99` |
-| `disable` | bool | overlay only | Disables an existing rule by ID (see [Merge semantics](#the-three-rule-layers-and-merge-semantics)) |
+| `disable` | bool | overlay only | Disables an existing rule by ID (see [Merge semantics](#the-rule-layers-and-merge-semantics)) |
 
 ### `id`
 
@@ -286,20 +286,35 @@ every rules PR; command lands in Phase 3, complete validation with the Phase 5 c
 9. `confidence` ∈ (0, 0.99].
 10. **≥ 1 positive and ≥ 1 negative fixture annotation per rule**; goldens up to date.
 
-## The three rule layers and merge semantics
+<a id="the-three-rule-layers-and-merge-semantics"></a>
 
-The effective ruleset is assembled from up to three layers:
+## The rule layers and merge semantics
+
+The effective ruleset is assembled from up to four layers:
 
 ```
 1. embedded defaults    rules/**  compiled into the binary via go:embed
                         (offline by construction, versioned with the release)
         ▼  merged by rule ID
-2. user overlay         --rules extra.yaml (repeatable, applied in flag order)
+2. signed bundle        airom-rules, installed by `airom rules update` and
+                        verified against the embedded ed25519 key. Layered OVER
+                        the built-ins, never instead of them.
         ▼  merged by rule ID
-3. remote registry      v2 — OCI-distributed packs; reserved slot, pairs with
+3. user overlay         --rules extra.yaml (repeatable, applied in flag order)
+        ▼  merged by rule ID
+4. remote registry      v2 — OCI-distributed packs; reserved slot, pairs with
                         signing/trust-policy work (see ROADMAP.md). Precedence and
                         trust rules are settled with that design.
 ```
+
+Layer 2 was a replacement until v0.4.6: a scan took the cached bundle *instead
+of* the embedded packs. A bundle that omitted a pack therefore deleted it for
+every user who had run `airom rules update`, whatever their airom version — and
+that made airom-rules' own workflow (promote a stable pack into airom, delete it
+from the overlay) user-breaking, which is why 60 packs sat duplicated across the
+two repos. It is a layer now, on the same add/override/disable terms as the
+others, so the bundle can fix or retire a built-in rule without a scanner
+release and without carrying the whole vocabulary.
 
 Overlay merge is **by rule ID**, with three operations:
 
