@@ -8,7 +8,11 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Getting set up
 
-You need **Go 1.26+**. Everything else is a `make` target.
+You need **Go 1.26+**. Everything else is a `make` target, except
+`golangci-lint`, which `make lint` takes from your `PATH` — install **v2.13.2+**
+(older builds cannot type-check Go 1.27's standard library and fail before they
+reach our code). CI pins the exact version in
+[ci.yml](.github/workflows/ci.yml).
 
 ```sh
 git clone https://github.com/airomhq/airom

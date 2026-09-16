@@ -48,7 +48,13 @@ jobs:
           # release that bumps it changes what counts as "formatted" and turns
           # an unrelated commit red. Bump this deliberately, with the reformat
           # in the same commit.
-          version: v2.12.2
+          #
+          # v2.13.2 is also the floor for working on a Go 1.27 machine: v2.12.2
+          # was built with go1.26.2, and its type-checker rejects 1.27's
+          # math/rand/v2 outright, so `make lint` fails before it reaches our
+          # code. v2.13.2 is clean on both 1.26.8 (what this job runs) and
+          # 1.27.1, with no reformat in either direction.
+          version: v2.13.2
           # The .golangci.yml depguard rules enforce the §4 import-direction law.
 
   generate:
