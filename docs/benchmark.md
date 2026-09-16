@@ -2,8 +2,9 @@
 
 > **Status:** Live. The evaluator is `airom bench`; the corpus is
 > [airomhq/airom-bench](https://github.com/airomhq/airom-bench) — 13 synthetic
-> entries and 3 real-world ones; the first baseline is `v0.4.3`; and CI runs
-> the gate **report-only** for two releases per §5. Any precision, recall, or
+> entries and 3 real-world ones; the first baseline is `v0.4.3`; and CI
+> **enforces** the gate since v0.4.5, after the two report-only cycles §5
+> requires. Any precision, recall, or
 > calibration number cited in AIROM's docs must come from this benchmark and
 > carry its `n`. Calibration stays unclaimed until §6's conditions are met.
 
@@ -182,9 +183,25 @@ the same code `--fail-on` uses, because a regression is a policy failure;
 malformed truth file, bad flags. CI has to tell "the harness is broken" from
 "detection got worse", because the response to each is different.
 
-First two releases run **report-only**: the numbers publish, the gate does
-not block. Enforcement begins once the numbers have survived two releases of
+The first two releases ran **report-only**: the numbers published, the gate
+did not block. Enforcement began once they had survived two releases of
 scrutiny, because gating on an unvalidated measurement enforces its bugs.
+
+**Enforcing since v0.4.5**, the two cycles being v0.4.4 and v0.4.5. Two
+notes on what that means in practice:
+
+- At 31 labels, one new error moves precision about 3pt — past the 1pt
+  threshold — so the gate currently reads as "no new mistakes" rather than
+  as a tolerance band. That tightness is a property of a small corpus, not
+  a stricter policy, and it loosens toward the stated thresholds as Tier R
+  grows. The scores it enforces are 100% precision and 100% recall
+  (n=31), which also means the corpus cannot yet distinguish a good
+  scanner from a slightly better one. Growing it is what makes the number
+  informative; enforcing it is what stops it silently rotting.
+- CI pins the corpus to a commit rather than tracking its default branch,
+  so a corpus edit cannot turn this repo red on its own. Updating the pin
+  is a deliberate commit that states what the corpus change did to the
+  numbers.
 
 ## 6. The calibration study
 

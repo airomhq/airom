@@ -212,18 +212,26 @@ jobs:
           python ../../.github/scripts/smoke_wheel.py "$VENV/bin" "$VERSION"
 
   bench:
-    name: Benchmark (report-only)
+    name: Benchmark
     # Detection quality, measured against the labeled corpus rather than
-    # asserted. Runs when a change can move the numbers: rules, detectors,
-    # the lexers, the assembler, or the evaluator itself.
+    # asserted. Runs on every push and PR — there is no path filter, because
+    # the changes that move these numbers are not reliably the ones that
+    # look like they would.
     #
-    # REPORT-ONLY for two releases (docs/benchmark.md §5). continue-on-error
-    # is the whole mechanism: the numbers publish and a regression is visible
-    # in the summary, but it cannot block a merge until the measurement has
-    # itself survived scrutiny. Gating on an unvalidated instrument enforces
-    # its bugs. Flip it by deleting that line.
+    # ENFORCING since v0.4.5, after the two report-only cycles §5 requires
+    # (v0.4.4 and v0.4.5). A regression now fails the job. Two things hold
+    # the gate shut, and removing either re-opens it silently:
+    #
+    #   1. No continue-on-error on this job.
+    #   2. The `1)` branch below exits 1. Without it the case statement ends
+    #      on a successful echo, so the step passes and deleting
+    #      continue-on-error alone would have changed nothing.
+    #
+    # At 31 labels a single new error moves precision ~3pt, well past the
+    # 1pt threshold, so in practice this gates on "no new mistakes". That is
+    # the intent while the corpus is small; it also means a genuine
+    # improvement needs its baseline updated in the same PR (§5).
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -234,10 +242,17 @@ jobs:
       # The corpus is a separate repository on purpose: it is data, it is
       # held out from this repo's fixtures, and pinning it here keeps a
       # corpus edit from silently changing this repo's numbers.
+      #
+      # The pin was the claim this comment made while `ref` was absent and
+      # the job took airom-bench@HEAD. That was survivable report-only; with
+      # the gate enforcing, an edit in a repo with its own cadence could turn
+      # this repo's main red. Bump this SHA deliberately, in a commit that
+      # says what the corpus change did to the numbers.
       - name: Fetch the corpus
         uses: actions/checkout@v7
         with:
           repository: airomhq/airom-bench
+          ref: 93f1a230b119999190c98a6e9b9a55ea7f199769 # baselines: v0.4.3, the first one
           path: .bench-corpus
       - name: Measure
         run: |
@@ -257,7 +272,7 @@ jobs:
           { echo; echo '### Gate'; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           case $code in
             0) echo "::notice::benchmark gate passed against $base" ;;
-            1) echo "::warning::benchmark REGRESSION against $base (report-only; see summary)" ;;
+            1) echo "::error::benchmark REGRESSION against $base (see summary)"; exit 1 ;;
             *) echo "::error::benchmark could not run (exit $code)"; exit $code ;;
           esac
 

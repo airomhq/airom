@@ -43,7 +43,8 @@ calibration study that decides whether the confidence bands earn the word
 "calibrated" back. Design accepted in [benchmark.md](./benchmark.md); the
 Scan Assurance Statement (every document carries its own coverage account)
 already shipped as its first installment. The evaluator, the corpus
-(airomhq/airom-bench), and a report-only baseline come next, in that order.
+(airomhq/airom-bench), and the baseline all shipped in that order; the gate
+has enforced since v0.4.5, after its two report-only cycles.
 
 ## v0.2 and beyond: reserved slots, zero model changes
 
