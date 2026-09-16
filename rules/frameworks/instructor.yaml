@@ -1,0 +1,29 @@
+# rules/frameworks/instructor.yaml — instructor structured-output / function-calling
+# library (jxnl/instructor). Distinct from the INSTRUCTOR embedding models
+# (rules/embeddings/instructor-embedding.yaml): the patterns are case-sensitive
+# lowercase `instructor`, so they never match the uppercase INSTRUCTOR class or
+# the hkunlp/instructor-* model literals.
+pack: instructor
+version: 1
+rules:
+  - id: instructor/import
+    kind: library
+    provider: instructor
+    languages: [python]
+    keywords: ["instructor"]
+    pattern: '\b(?:import|from)\s+instructor\b'
+    regions: [code]
+    claim: { name: "instructor" }
+    confidence: 0.7
+
+  # instructor.from_openai()/from_anthropic()/patch() — the library's distinctive
+  # client-wrapping entrypoints.
+  - id: instructor/patch
+    kind: library
+    provider: instructor
+    languages: [python]
+    keywords: ["instructor.from_", "instructor.patch"]
+    pattern: '\binstructor\.(?:from_\w+|a?patch)\s*\('
+    regions: [code]
+    claim: { name: "instructor" }
+    confidence: 0.75

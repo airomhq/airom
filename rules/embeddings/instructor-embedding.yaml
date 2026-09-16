@@ -1,0 +1,28 @@
+# rules/embeddings/instructor-embedding.yaml — INSTRUCTOR instruction-tuned
+# embedding models (hkunlp/instructor-*). Named "instructor-embedding" to
+# disambiguate from the unrelated `instructor` structured-output LLM library
+# (rules/frameworks/instructor.yaml).
+pack: instructor-embedding
+version: 1
+rules:
+  # INSTRUCTOR("hkunlp/instructor-large") constructor — capture the model argument.
+  - id: instructor-embedding/constructor
+    kind: embedding-model
+    provider: hkunlp
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["INSTRUCTOR"]
+    pattern: '\bINSTRUCTOR\s*\(\s*["''](?P<model>[\w.\-/]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.8
+
+  # The hkunlp/instructor-* repo ids anywhere (instructor-base, -large, -xl).
+  - id: instructor-embedding/model-literal
+    kind: embedding-model
+    provider: hkunlp
+    languages: [python, javascript, typescript, go, java, rust, csharp, kotlin]
+    keywords: ["hkunlp/instructor-"]
+    pattern: '["''](?P<model>hkunlp/instructor-[\w.\-]+)["'']'
+    regions: [code, string]
+    claim: { name: "${model}" }
+    confidence: 0.85

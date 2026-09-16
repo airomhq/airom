@@ -1,0 +1,16 @@
+# rules/frameworks/openai-agents.yaml — OpenAI Agents SDK usage.
+pack: openai-agents
+version: 1
+rules:
+  # The SDK imports from the generic module name `agents`, so require a
+  # distinctive SDK symbol (Runner/function_tool/...) to avoid matching an
+  # unrelated local `agents` module.
+  - id: openai-agents/import
+    kind: framework
+    provider: openai-agents
+    languages: [python]
+    keywords: ["agents"]
+    pattern: '\bfrom\s+agents\s+import\b[^\n]*\b(?:Runner|function_tool|ModelSettings|RunConfig|handoff)\b'
+    regions: [code]
+    claim: { name: "openai-agents" }
+    confidence: 0.7

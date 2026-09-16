@@ -1,0 +1,24 @@
+# rules/frameworks/langgraph.yaml — LangGraph agent/graph runtime usage.
+pack: langgraph
+version: 1
+rules:
+  - id: langgraph/import
+    kind: framework
+    provider: langgraph
+    languages: [python]
+    keywords: ["langgraph"]
+    pattern: '\b(?:import|from)\s+langgraph\b'
+    regions: [code]
+    claim: { name: "langgraph" }
+    confidence: 0.7
+
+  # StateGraph is LangGraph's core graph builder — distinctive to the framework.
+  - id: langgraph/construct
+    kind: framework
+    provider: langgraph
+    languages: [python]
+    keywords: ["StateGraph"]
+    pattern: '\bStateGraph\s*\('
+    regions: [code]
+    claim: { name: "langgraph" }
+    confidence: 0.7

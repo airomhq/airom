@@ -1,0 +1,15 @@
+# rules/frameworks/pydantic-ai.yaml — PydanticAI agent framework usage.
+pack: pydantic-ai
+version: 1
+rules:
+  # The import module (pydantic_ai) is distinctive; the Agent class name is not,
+  # so detection keys on the import rather than a generic constructor.
+  - id: pydantic-ai/import
+    kind: framework
+    provider: pydantic-ai
+    languages: [python]
+    keywords: ["pydantic_ai"]
+    pattern: '\b(?:import|from)\s+pydantic_ai\b'
+    regions: [code]
+    claim: { name: "pydantic-ai" }
+    confidence: 0.75

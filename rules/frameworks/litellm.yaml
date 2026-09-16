@@ -1,0 +1,24 @@
+# rules/frameworks/litellm.yaml — LiteLLM unified LLM SDK / gateway usage.
+pack: litellm
+version: 1
+rules:
+  - id: litellm/import
+    kind: library
+    provider: litellm
+    languages: [python]
+    keywords: ["litellm"]
+    pattern: '\b(?:import|from)\s+litellm\b'
+    regions: [code]
+    claim: { name: "litellm" }
+    confidence: 0.75
+
+  # The litellm.completion/embedding call surface is distinctive to the library.
+  - id: litellm/call
+    kind: library
+    provider: litellm
+    languages: [python]
+    keywords: ["litellm.completion", "litellm.acompletion", "litellm.embedding"]
+    pattern: '\blitellm\.(?:a?completion|embedding|a?text_completion)\s*\('
+    regions: [code]
+    claim: { name: "litellm" }
+    confidence: 0.7

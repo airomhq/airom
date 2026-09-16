@@ -1,0 +1,32 @@
+# rules/frameworks/mcp.yaml — Model Context Protocol (MCP) SDK usage.
+#
+# The `FastMCP(` constructor used to be claimed here. It is not the official
+# SDK's class: it belongs to the standalone `fastmcp` distribution, which the
+# mcp SDK only ever vendored under `mcp.server.fastmcp` in its 1.x line (gone
+# in 2.0). Claiming it here as well would report one server twice — once as
+# `mcp`, once as `fastmcp` — so it lives in rules/frameworks/fastmcp.yaml
+# alone, and this pack identifies the protocol SDK itself.
+pack: mcp
+version: 2
+rules:
+  - id: mcp/import
+    kind: framework
+    provider: mcp
+    languages: [python]
+    keywords: ["mcp"]
+    pattern: '\b(?:import|from)\s+mcp\b'
+    regions: [code]
+    claim: { name: "mcp" }
+    confidence: 0.7
+
+  # A server exposing tools to a model is the AI surface itself, so the
+  # session/server entrypoints are worth their own sighting.
+  - id: mcp/server
+    kind: framework
+    provider: mcp
+    languages: [python]
+    keywords: ["stdio_server", "ClientSession"]
+    pattern: '\b(?:stdio_server|ClientSession)\s*\('
+    regions: [code]
+    claim: { name: "mcp" }
+    confidence: 0.7

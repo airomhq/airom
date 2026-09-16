@@ -1,0 +1,24 @@
+# rules/frameworks/smolagents.yaml — Hugging Face smolagents usage.
+pack: smolagents
+version: 1
+rules:
+  - id: smolagents/import
+    kind: framework
+    provider: smolagents
+    languages: [python]
+    keywords: ["smolagents"]
+    pattern: '\b(?:import|from)\s+smolagents\b'
+    regions: [code]
+    claim: { name: "smolagents" }
+    confidence: 0.75
+
+  # CodeAgent / ToolCallingAgent are smolagents' distinctive agent classes.
+  - id: smolagents/construct
+    kind: framework
+    provider: smolagents
+    languages: [python]
+    keywords: ["CodeAgent", "ToolCallingAgent"]
+    pattern: '\b(?:CodeAgent|ToolCallingAgent)\s*\('
+    regions: [code]
+    claim: { name: "smolagents" }
+    confidence: 0.7

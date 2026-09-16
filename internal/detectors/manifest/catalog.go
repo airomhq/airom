@@ -190,15 +190,20 @@ var pypiCatalog = catalog{
 		"mistralai":             {kLibrary, provMistral, ""},
 		"groq":                  {kLibrary, provGroq, ""},
 		"voyageai":              {kLibrary, provVoyage, ""},
-		"instructor":            {kLibrary, "", ""},
-		"litellm":               {kLibrary, "", ""},
-		"chromadb":              {kVectorDB, provChroma, ""},
-		"pinecone-client":       {kVectorDB, provPinecone, ""},
-		"qdrant-client":         {kVectorDB, provQdrant, ""},
-		"weaviate-client":       {kVectorDB, provWeaviate, ""},
-		"faiss-cpu":             {kVectorDB, provMeta, ""},
-		"faiss-gpu":             {kVectorDB, provMeta, ""},
-		"pymilvus":              {kVectorDB, provMilvus, ""},
+		// Self-named vendors, like crewai and dspy above: the project is the
+		// provider. Both were provider-less here while their rule packs named
+		// one, so a manifest pin and a code sighting of the same library did
+		// not fold — CanonicalKey includes Provider — and an AIBOM listed
+		// litellm twice, once with a version and once without.
+		"instructor":      {kLibrary, "instructor", ""},
+		"litellm":         {kLibrary, "litellm", ""},
+		"chromadb":        {kVectorDB, provChroma, ""},
+		"pinecone-client": {kVectorDB, provPinecone, ""},
+		"qdrant-client":   {kVectorDB, provQdrant, ""},
+		"weaviate-client": {kVectorDB, provWeaviate, ""},
+		"faiss-cpu":       {kVectorDB, provMeta, ""},
+		"faiss-gpu":       {kVectorDB, provMeta, ""},
+		"pymilvus":        {kVectorDB, provMilvus, ""},
 		// redis is deliberately ABSENT. It is a dual-use datastore: the pip
 		// package is a cache/broker/queue client, and it is a vector store
 		// only with Redis Stack's vector-search API. A bare dependency line
