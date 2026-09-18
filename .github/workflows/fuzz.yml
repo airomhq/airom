@@ -79,6 +79,14 @@ jobs:
           TARGET: ${{ matrix.target }}
           FUZZTIME: ${{ github.event.inputs.fuzztime || '10m' }}
         run: |
+          # errexit OFF, deliberately and explicitly. GitHub runs a Linux `run:`
+          # step as `bash -e {0}`, and `set -uo pipefail` does NOT clear that -e
+          # — so the failing pipeline below terminated the step immediately and
+          # every branch after it was dead code. The campaign therefore reported
+          # a deadline race exactly like a crash, and never printed any of these
+          # messages: three nights of the five before 2026-09-18 went red on a
+          # timing race, which is how a fuzz campaign teaches people to ignore it.
+          set +e
           set -uo pipefail
           go test -run '^$' -fuzz "^${TARGET}$" -fuzztime "$FUZZTIME" "$PKG" 2>&1 | tee /tmp/fuzz.log
           rc=${PIPESTATUS[0]}
