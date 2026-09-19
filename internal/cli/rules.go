@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -50,6 +51,11 @@ func newRulesUpdateCmd() *cobra.Command {
 			w := cmd.OutOrStdout()
 			fmt.Fprintf(w, "Installed rule bundle %s — %d pack(s), %d rule(s)\n", res.Version, res.PackCount, res.RuleCount)
 			fmt.Fprintf(w, "  sha256: %s\n", res.SHA256)
+			// Versions are monotonic but say nothing about age. A bundle whose
+			// content is a year old reads exactly like yesterday's without this.
+			if age := bundleAge(res.CreatedAt, time.Now()); age != "" {
+				fmt.Fprintf(w, "  built:  %s\n", age)
+			}
 			fmt.Fprintf(w, "  cache:  %s\n", res.Path)
 			fmt.Fprintln(w, "Scans now use this bundle. Use --no-cached-rules to fall back to the built-in packs, or 'airom clean' to remove it.")
 			return nil
@@ -162,4 +168,29 @@ func reportResult(cmd *cobra.Command, path string, report *ruletest.Report) erro
 		fmt.Fprintf(w, "  rule %s: missing a negative fixture (# airom-ok: %s)\n", id, id)
 	}
 	return &app.UsageError{Err: fmt.Errorf("%s: rule pack has failures", path)}
+}
+
+// bundleAge renders a manifest's createdAt as "<timestamp> (N days ago)", or
+// "" when the bundle carries no build time (published before the field existed)
+// or carries one that will not parse. Age is reported, never judged: how old is
+// too old depends on how fast the channel is moving, which the person reading
+// this knows and this code does not.
+func bundleAge(createdAt string, now time.Time) string {
+	if createdAt == "" {
+		return ""
+	}
+	t, err := time.Parse(time.RFC3339, createdAt)
+	if err != nil {
+		return ""
+	}
+	switch d := now.Sub(t); {
+	case d < 0:
+		return createdAt // a future stamp; Update already refused anything beyond skew
+	case d < 24*time.Hour:
+		return createdAt + " (today)"
+	case d < 48*time.Hour:
+		return createdAt + " (1 day ago)"
+	default:
+		return fmt.Sprintf("%s (%d days ago)", createdAt, int(d.Hours()/24))
+	}
 }

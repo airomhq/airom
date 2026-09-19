@@ -13,7 +13,8 @@ import (
 type current struct {
 	Version   string `json:"version"`
 	SHA256    string `json:"sha256"`
-	FetchedAt string `json:"fetchedAt"`
+	FetchedAt string `json:"fetchedAt"` // when THIS machine installed it
+	CreatedAt string `json:"createdAt,omitempty"`
 }
 
 func currentPath(cacheDir string) string { return filepath.Join(rulesDir(cacheDir), "current.json") }

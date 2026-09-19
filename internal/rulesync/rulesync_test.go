@@ -19,6 +19,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"golang.org/x/mod/semver"
 )
 
 const tarballName = "airom-rules.tar.gz"
@@ -268,5 +271,159 @@ func TestUntarRejectsEmptyBundle(t *testing.T) {
 	tgz := makeTarGz(t, map[string]string{"README.md": "no packs here\n"})
 	if err := untar(tgz, t.TempDir()); err == nil {
 		t.Error("untar accepted a bundle with no rule packs")
+	}
+}
+
+// signedManifestFull is signedManifest with the fields item 4 added: a build
+// time and a minimum-airom floor.
+func signedManifestFull(t *testing.T, version, createdAt, minAirom string, tarball []byte, priv ed25519.PrivateKey) (manifest, sig []byte) {
+	t.Helper()
+	sum := sha256.Sum256(tarball)
+	mb, err := json.Marshal(Manifest{
+		Version: version, Tarball: tarballName, SHA256: hex.EncodeToString(sum[:]),
+		RuleCount: 2, PackCount: 1, CreatedAt: createdAt, MinAirom: minAirom,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return mb, []byte(base64.StdEncoding.EncodeToString(ed25519.Sign(priv, mb)))
+}
+
+// updateWith runs one Update against a served bundle carrying createdAt and
+// minAirom, as the build named by selfVersion.
+func updateWith(t *testing.T, createdAt, minAirom, selfVersion string, now time.Time) (*Result, string, error) {
+	t.Helper()
+	pub, priv := genKey(t)
+	tgz := makeTarGz(t, map[string]string{"models/openai.yaml": "pack: openai\nversion: 1\n"})
+	manifest, sig := signedManifestFull(t, "v1.0.0", createdAt, minAirom, tgz, priv)
+	base := serve(t, manifest, sig, tgz)
+	cache := t.TempDir()
+	res, err := Update(context.Background(), Options{
+		CacheDir: cache, Source: base, PublicKey: pub,
+		SelfVersion: selfVersion,
+		Now:         func() time.Time { return now },
+	})
+	return res, cache, err
+}
+
+// TestMinAiromFloorRefusesAnOlderBuild: a bundle that needs a newer airom is
+// refused AT INSTALL. Without this it installs, and then every scan afterwards
+// fails to parse it, warns, and silently falls back to the embedded packs — a
+// daily symptom a long way from its cause.
+func TestMinAiromFloorRefusesAnOlderBuild(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+	_, cache, err := updateWith(t, "", "v0.9.0", "0.4.6", now)
+	if !errors.Is(err, ErrIncompatible) {
+		t.Fatalf("err = %v, want ErrIncompatible", err)
+	}
+	if !strings.Contains(err.Error(), "v0.9.0") || !strings.Contains(err.Error(), "0.4.6") {
+		t.Errorf("error should name both versions, got: %v", err)
+	}
+	// Fail-closed: nothing installed.
+	if _, _, ok := Active(cache); ok {
+		t.Error("a refused bundle must leave the cache untouched")
+	}
+}
+
+func TestMinAiromFloorAcceptsEqualAndNewer(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+	for _, self := range []string{"v0.9.0", "0.9.0", "v0.9.1", "v1.2.0"} {
+		if _, _, err := updateWith(t, "", "v0.9.0", self, now); err != nil {
+			t.Errorf("self %q against floor v0.9.0: %v", self, err)
+		}
+	}
+}
+
+// A version string that cannot be compared cannot be gated: "dev" is not a
+// point on the line, and refusing it would break every `go build` the moment a
+// floor is published. A `git describe` version is a different case — it IS
+// valid semver (the suffix is a prerelease), so it is comparable, and a
+// from-source build genuinely older than the floor is held to it like any
+// other. Both halves are asserted here because the distinction is the whole
+// design: skip what is unknown, gate what is known.
+func TestMinAiromFloorGatesOnlyComparableVersions(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+
+	for _, self := range []string{"", "dev"} {
+		if _, _, err := updateWith(t, "", "v9.9.9", self, now); err != nil {
+			t.Errorf("self %q is not comparable and must not be gated: %v", self, err)
+		}
+	}
+
+	describe := "v0.4.6-4-gabc1234-dirty"
+	if !semver.IsValid(describe) {
+		t.Fatalf("precondition: %q should be valid semver, or this test proves nothing", describe)
+	}
+	if _, _, err := updateWith(t, "", "v9.9.9", describe, now); !errors.Is(err, ErrIncompatible) {
+		t.Errorf("self %q is comparable and below the floor; err = %v, want ErrIncompatible", describe, err)
+	}
+}
+
+// TestCreatedAtRejectsTheImpossible: a build time in the future beyond clock
+// skew, or one that is not RFC 3339, means the manifest is wrong — and it is
+// inside the signed bytes, so it is the publisher's claim, not noise in transit.
+func TestCreatedAtRejectsTheImpossible(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+	for _, tc := range []struct{ name, createdAt string }{
+		{"far future", now.Add(72 * time.Hour).Format(time.RFC3339)},
+		{"not rfc3339", "20 September 2026"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, cache, err := updateWith(t, tc.createdAt, "", "v0.4.6", now)
+			if !errors.Is(err, ErrManifest) {
+				t.Fatalf("err = %v, want ErrManifest", err)
+			}
+			if _, _, ok := Active(cache); ok {
+				t.Error("a refused bundle must leave the cache untouched")
+			}
+		})
+	}
+}
+
+// Skew inside the allowance, and a bundle with no build time at all (published
+// before the field existed), both install.
+func TestCreatedAtToleratesSkewAndAbsence(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+	for _, tc := range []struct{ name, createdAt string }{
+		{"slightly ahead", now.Add(2 * time.Hour).Format(time.RFC3339)},
+		{"absent", ""},
+		{"old but fine", now.Add(-365 * 24 * time.Hour).Format(time.RFC3339)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := updateWith(t, tc.createdAt, "", "v0.4.6", now); err != nil {
+				t.Errorf("Update: %v", err)
+			}
+		})
+	}
+}
+
+// TestCreatedAtIsRecorded: the build time has to survive the install, or a scan
+// months later still cannot say how old its rules are.
+func TestCreatedAtIsRecorded(t *testing.T) {
+	now := time.Date(2026, 9, 20, 12, 0, 0, 0, time.UTC)
+	built := "2026-09-18T10:00:00Z"
+	res, cache, err := updateWith(t, built, "", "v0.4.6", now)
+	if err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+	if res.CreatedAt != built {
+		t.Errorf("Result.CreatedAt = %q, want %q", res.CreatedAt, built)
+	}
+	b, err := os.ReadFile(filepath.Join(cache, "rules", "current.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var c struct{ CreatedAt, FetchedAt string }
+	if err := json.Unmarshal(b, &c); err != nil {
+		t.Fatal(err)
+	}
+	if c.CreatedAt != built {
+		t.Errorf("current.json createdAt = %q, want %q", c.CreatedAt, built)
+	}
+	// The two are different facts: when the publisher built it, and when this
+	// machine fetched it. Collapsing them would make a year-old bundle fetched
+	// today look fresh.
+	if c.FetchedAt == c.CreatedAt {
+		t.Errorf("fetchedAt must not be the build time: both %q", c.FetchedAt)
 	}
 }

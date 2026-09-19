@@ -104,6 +104,7 @@ func autoUpdateRules(ctx context.Context, cfg *Config) string {
 			CacheDir:              dir,
 			Source:                cfg.RulesSource,
 			InsecureSkipSignature: cfg.InsecureSkipSignature,
+			SelfVersion:           Tool.Version,
 		},
 	})
 	if err != nil || res == nil || !res.Updated {
@@ -216,6 +217,10 @@ func RulesUpdate(ctx context.Context, cfg *Config, version string) (*rulesync.Re
 		Source:                cfg.RulesSource,
 		Offline:               cfg.Offline,
 		InsecureSkipSignature: cfg.InsecureSkipSignature,
+		// So a bundle declaring a minAirom floor above this build is refused
+		// here, with one clear message, instead of installing and then failing
+		// to parse on every scan from now on.
+		SelfVersion: Tool.Version,
 	})
 }
 
